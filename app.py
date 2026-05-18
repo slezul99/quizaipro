@@ -200,7 +200,68 @@ def inject_globals():
         "new_achievements": new_ach,
         "goal_reminder": goal_reminder,
         "is_super_admin": is_super_admin(user),
+        "welcome_steps_json": _welcome_steps_json(session.get("lang", "ru")),
     }
+
+
+def _welcome_steps_json(lang: str) -> str:
+    """Shagovaya privetstvennaya instruktsiya — vozvrashayet JSON-array dlya Alpine."""
+    import json as _json
+    if lang == "en":
+        steps = [
+            {"icon": "👋", "title": "Welcome to QuizPro!",
+             "desc": "Smart flashcards with spaced repetition. Let's set you up in 3 minutes."},
+            {"icon": "📚", "title": "1. Create your first deck",
+             "desc": "A deck = a set of cards (questions/terms). Click + New deck on the dashboard.",
+             "link": "/dashboard", "cta": "Open Dashboard"},
+            {"icon": "📥", "title": "2. Import or add cards",
+             "desc": "Paste text, upload PDF/Word, or use AI to generate questions automatically.",
+             "link": "/import", "cta": "Import"},
+            {"icon": "🃏", "title": "3. Study with Flashcards",
+             "desc": "Click 🃏 Flashcards on a deck. Flip cards, rate Easy/Good/Hard. Algorithm picks the best moment for review."},
+            {"icon": "🎯", "title": "4. Set a goal",
+             "desc": "Pick a deadline and difficulty — the system splits your work into daily chunks and reminds you.",
+             "link": "/goals", "cta": "My goals"},
+            {"icon": "❓", "title": "Need help?",
+             "desc": "Click ❓ in the top right anytime to see a full guide. Or message us — we listen to feedback."},
+        ]
+    elif lang == "uz":
+        steps = [
+            {"icon": "👋", "title": "QuizPro ga xush kelibsiz!",
+             "desc": "Aqlli kartochkalar va takrorlash algoritmi. 3 daqiqada sozlab beramiz."},
+            {"icon": "📚", "title": "1. Birinchi kolodani yarating",
+             "desc": "Koloda = savol/javoblar to'plami. Dashboardda + Yangi koloda tugmasini bosing.",
+             "link": "/dashboard", "cta": "Dashboard"},
+            {"icon": "📥", "title": "2. Kartalar import qiling",
+             "desc": "Matn yuklang, PDF/Word import qiling, yoki AI orqali avtomatik savollar yarating.",
+             "link": "/import", "cta": "Import"},
+            {"icon": "🃏", "title": "3. Flashcards bilan oʻqing",
+             "desc": "Kolodada 🃏 Flashcards bosing. Kartalarni aylantirish, baho berish — algoritm sizga eng yaxshi paytda eslatadi."},
+            {"icon": "🎯", "title": "4. Maqsad qoʻying",
+             "desc": "Muddat tanlang — tizim ishni har kunlik kichik qismlarga ajratadi va eslatib turadi.",
+             "link": "/goals", "cta": "Maqsadlar"},
+            {"icon": "❓", "title": "Yordam kerakmi?",
+             "desc": "Yuqori oʻng burchakdagi ❓ tugmasini istalgan vaqt bosing — toʻliq qoʻllanma bor."},
+        ]
+    else:  # ru default
+        steps = [
+            {"icon": "👋", "title": "Добро пожаловать в QuizPro!",
+             "desc": "Умные карточки с алгоритмом повторений. Давайте настроим всё за 3 минуты."},
+            {"icon": "📚", "title": "Шаг 1. Создайте первую колоду",
+             "desc": "Колода = набор карточек (вопросы или термины). На дашборде нажмите + Новая колода.",
+             "link": "/dashboard", "cta": "На дашборд"},
+            {"icon": "📥", "title": "Шаг 2. Загрузите карточки",
+             "desc": "Можно вставить текстом, загрузить PDF/Word, или использовать AI чтобы сгенерировать вопросы за 30 секунд.",
+             "link": "/import", "cta": "Импорт"},
+            {"icon": "🃏", "title": "Шаг 3. Учите через Flashcards",
+             "desc": "Откройте колоду → нажмите 🃏 Flashcards. Переворачивайте карты, оценивайте Сложно/Хорошо/Легко. Алгоритм SM-2 решит когда показать снова — учиться будете в 2-3 раза эффективнее."},
+            {"icon": "🎯", "title": "Шаг 4. Поставьте цель",
+             "desc": "Выберите колоду и срок — система сама посчитает сколько карт делать в день и будет напоминать. Если отстанете — поддержит.",
+             "link": "/goals", "cta": "Мои цели"},
+            {"icon": "❓", "title": "Нужна помощь?",
+             "desc": "Кнопка ❓ в правом верхнем углу — там подробное руководство по всем функциям. Дуэли, Match, Live test, чаты, AI — всё разобрано с примерами."},
+        ]
+    return _json.dumps(steps, ensure_ascii=False)
 
 
 def slugify(s):
@@ -467,6 +528,24 @@ def auth_google_callback():
 
 
 # ---------------------- dashboard -------------------------------------------
+
+@app.route("/help")
+@login_required
+def help_page():
+    """Stranitsa pomoshchi — kak polzovatsya saytom."""
+    return render_template("help.html")
+
+
+@app.route("/api/welcome/dismiss", methods=["POST"])
+@login_required
+def api_welcome_dismiss():
+    """Otmechaem chto polzovatel' uvidel privetstvennyy tour."""
+    user = current_user()
+    conn = db.get_conn()
+    conn.execute("UPDATE users SET welcome_shown=1 WHERE id=?", (user["id"],))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
 
 @app.route("/dashboard")
 @login_required

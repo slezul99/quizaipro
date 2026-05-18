@@ -501,6 +501,11 @@ def init_db():
         c.execute("ALTER TABLE user_card_progress ADD COLUMN is_difficult INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
         pass
+    # Welcome tour pokazan li polzovatelyu
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN welcome_shown INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
     # Tip kolody: mcq (testy s variantami) ili terms (slovari/terminy/pravila)
     try:
         c.execute("ALTER TABLE decks ADD COLUMN deck_type TEXT DEFAULT 'mcq'")

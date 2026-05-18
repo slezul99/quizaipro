@@ -493,6 +493,10 @@
         <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">0</span>
       </a>
 
+      <a href="/help" class="flex items-center px-2 py-1.5 rounded-lg hover:bg-amber-50 transition" title="{{ t('nav_help') }}">
+        ❓
+      </a>
+
       {% if is_super_admin %}
       <a href="/superadmin" class="hidden md:flex items-center px-2 py-1.5 rounded-lg hover:bg-purple-50 transition" title="Super Admin">
         🔐
@@ -584,6 +588,96 @@
 <main class="fade-in">
 {% block content %}{% endblock %}
 </main>
+
+{% if current_user and not current_user.welcome_shown %}
+<!-- Welcome modal — pokazyvaem 1 raz novomu polzovatelyu -->
+<div x-data="welcomeModal()" x-init="init()" x-show="open" x-cloak x-transition
+  class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+  @click.self="dismiss()">
+  <div class="glass-strong rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-7 scale-in"
+    style="background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(238,242,255,0.98));">
+    <div class="flex justify-between items-start mb-3">
+      <div>
+        <div class="text-5xl mb-2">👋</div>
+        <h2 class="h-display text-3xl text-slate-900">{{ t('welcome_title') }}</h2>
+      </div>
+      <button @click="dismiss()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+    </div>
+
+    <!-- Steps -->
+    <div class="space-y-3 mb-5">
+      <template x-for="(step, i) in steps" :key="i">
+        <div class="rounded-2xl p-4 transition"
+          :class="i === current ? 'bg-indigo-50 border-2 border-indigo-300' : 'bg-white/60 border border-gray-200'">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl flex-shrink-0" x-text="step.icon"></div>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-slate-900" x-text="step.title"></div>
+              <div class="text-sm text-slate-700 mt-0.5" x-text="step.desc"></div>
+              <a x-show="i === current && step.link" :href="step.link"
+                class="inline-block mt-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
+                <span x-text="step.cta || 'Начать'"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Nav -->
+    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+      <button @click="prev()" :disabled="current === 0"
+        :class="current === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'"
+        class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700">← {{ t('back') if t('back') != 'back' else 'Назад' }}</button>
+      <div class="flex gap-1.5">
+        <template x-for="(s, i) in steps" :key="i">
+          <div class="w-2 h-2 rounded-full transition"
+            :class="i === current ? 'bg-indigo-600 w-6' : (i < current ? 'bg-indigo-300' : 'bg-gray-200')"></div>
+        </template>
+      </div>
+      <button x-show="current < steps.length - 1" @click="next()"
+        class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold">{{ t('next') if t('next') != 'next' else 'Далее' }} →</button>
+      <button x-show="current >= steps.length - 1" @click="dismiss()"
+        class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold">✓ {{ t('start_using') if t('start_using') != 'start_using' else 'Начать использовать' }}</button>
+    </div>
+
+    <div class="text-center mt-4">
+      <button @click="dismiss()" class="text-xs text-slate-500 hover:text-slate-700 underline">
+        {{ t('skip_welcome') if t('skip_welcome') != 'skip_welcome' else 'Пропустить' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function welcomeModal() {
+  return {
+    open: true,
+    current: 0,
+    steps: {{ welcome_steps_json|safe }},
+
+    init() {
+      // Pokazyvaem tol'ko 1 raz
+    },
+
+    next() {
+      if (this.current < this.steps.length - 1) this.current++;
+    },
+    prev() {
+      if (this.current > 0) this.current--;
+    },
+    async dismiss() {
+      this.open = false;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        await fetch('/api/welcome/dismiss', { method: 'POST', body: fd });
+      } catch(e) {}
+    },
+  };
+}
+</script>
+{% endif %}
 
 {% if goal_reminder and current_user %}
 <!-- Goals reminder toast -->
