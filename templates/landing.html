@@ -606,27 +606,34 @@
       <p class="reveal text-lg text-slate-600 max-w-2xl mx-auto">{{ t('lp_demo_sub') }}</p>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+    <!-- IN-PROGRESS -->
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center" x-show="!finished">
       <div class="reveal">
+        <!-- Progress bar over the deck -->
+        <div class="mb-4 flex items-center justify-between text-sm text-slate-600">
+          <span>{{ t('lp_demo_card') }} <strong x-text="answered + 1"></strong> / <strong x-text="total"></strong></span>
+          <span class="flex items-center gap-3">
+            <span style="color:#059669;">✓ <span x-text="correct"></span></span>
+            <span style="color:#dc2626;">✗ <span x-text="wrong"></span></span>
+          </span>
+        </div>
+        <div class="demo-progress mb-6">
+          <div class="demo-progress-bar" :style="`width: ${(answered/total)*100}%`"></div>
+        </div>
+
         <div class="demo-card" :class="{ 'flipped': flipped }" @click="flip()">
           <div class="demo-card-inner">
             <div class="demo-face demo-front">
-              <span class="demo-cat" x-text="cards[idx].cat"></span>
-              <div class="demo-q" x-text="cards[idx].q"></div>
+              <span class="demo-cat" x-text="current().cat"></span>
+              <div class="demo-q" x-text="current().q"></div>
               <div class="demo-hint">{{ t('lp_demo_hint_front') }}</div>
             </div>
             <div class="demo-face demo-back">
-              <span class="demo-cat" x-text="cards[idx].cat"></span>
-              <div class="demo-q" x-text="cards[idx].a"></div>
+              <span class="demo-cat" x-text="current().cat"></span>
+              <div class="demo-q" x-text="current().a"></div>
               <div class="demo-hint">{{ t('lp_demo_hint_back') }}</div>
             </div>
           </div>
-        </div>
-
-        <div class="mt-6 flex items-center justify-center gap-3">
-          <button class="demo-btn-nav" @click.stop="prev()">‹</button>
-          <button class="demo-btn-nav" @click.stop="reset()">↻</button>
-          <button class="demo-btn-nav" @click.stop="next()">›</button>
         </div>
 
         <div class="mt-5 flex items-center justify-center gap-3" x-show="flipped" x-transition>
@@ -648,24 +655,45 @@
               <div class="text-xs text-slate-600 mt-1">{{ t('lp_demo_unknown') }}</div>
             </div>
           </div>
-          <div class="demo-progress">
-            <div class="demo-progress-bar" :style="`width: ${pct()}%`"></div>
-          </div>
-          <p class="text-xs text-slate-500 mt-2" x-text="(correct+wrong) > 0 ? `{{ t('lp_demo_accuracy') }}: ${pct()}%` : `{{ t('lp_demo_answer_to_see') }}`"></p>
+          <p class="text-xs text-slate-500" x-text="answered > 0 ? `{{ t('lp_demo_accuracy') }}: ${pct()}%` : `{{ t('lp_demo_answer_to_see') }}`"></p>
         </div>
 
         <div class="demo-stat" style="text-align:left; padding:1.5rem; background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08)); border-color: rgba(99,102,241,0.2);">
           <h3 class="text-lg font-bold text-slate-900 mb-2">{{ t('lp_demo_sm2_t') }}</h3>
           <p class="text-sm text-slate-600 leading-relaxed">{{ t('lp_demo_sm2_d') }}</p>
         </div>
+      </div>
+    </div>
 
-        <div class="flex items-center gap-3 text-sm text-slate-500 flex-wrap">
-          <span class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full" style="background:#6366f1;"></span>
-            {{ t('lp_demo_card') }} <span x-text="idx+1"></span> / <span x-text="cards.length"></span>
-          </span>
-          <span>·</span>
-          <a href="/register" class="text-indigo-600 font-semibold hover:underline">{{ t('lp_demo_create_deck') }}</a>
+    <!-- FINISHED -->
+    <div x-show="finished" x-transition class="reveal max-w-2xl mx-auto text-center">
+      <div class="demo-stat" style="padding: 3rem 2rem;">
+        <div class="text-6xl mb-4" x-text="trophy()"></div>
+        <h3 class="text-3xl md:text-4xl font-black text-slate-900 mb-2">{{ t('lp_demo_finish_title') }}</h3>
+        <p class="text-slate-600 mb-6">{{ t('lp_demo_finish_sub') }}</p>
+
+        <p class="text-lg font-semibold mb-2" x-text="finishMsg()"></p>
+
+        <!-- Big score -->
+        <div class="my-6">
+          <div class="text-xs uppercase tracking-widest text-slate-500 mb-1">{{ t('lp_demo_finish_score') }}</div>
+          <div class="text-7xl md:text-8xl font-black"
+               :style="`background: linear-gradient(135deg, ${pct() >= 70 ? '#10b981, #059669' : pct() >= 40 ? '#f59e0b, #f97316' : '#ec4899, #f43f5e'}); -webkit-background-clip: text; background-clip: text; color: transparent;`"
+               x-text="`${pct()}%`"></div>
+          <div class="text-slate-600 mt-2">
+            <span style="color:#059669;">✓ <span x-text="correct"></span></span>
+            <span class="mx-2 text-slate-400">·</span>
+            <span style="color:#dc2626;">✗ <span x-text="wrong"></span></span>
+            <span class="mx-2 text-slate-400">·</span>
+            <span x-text="`${total} ${('{{ lang }}'==='en'?'cards':('{{ lang }}'==='uz'?'karta':'карточек'))}`"></span>
+          </div>
+        </div>
+
+        <p class="text-sm text-slate-600 mb-6 max-w-md mx-auto">{{ t('lp_demo_finish_register_hint') }}</p>
+
+        <div class="flex gap-3 justify-center flex-wrap">
+          <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_demo_finish_register') }}</a>
+          <button class="btn-hero btn-hero-ghost" @click="reset()">{{ t('lp_demo_finish_retry') }}</button>
         </div>
       </div>
     </div>
@@ -782,33 +810,75 @@
 </footer>
 
 <script>
-  // Demo cards data — server provides translated text per language
+  // Demo cards data — server provides translated text per language (10 cards)
   const DEMO_CARDS = [
     { cat: {{ t('lp_demo_c1_cat')|tojson }}, q: {{ t('lp_demo_c1_q')|tojson }}, a: {{ t('lp_demo_c1_a')|tojson }} },
     { cat: {{ t('lp_demo_c2_cat')|tojson }}, q: {{ t('lp_demo_c2_q')|tojson }}, a: {{ t('lp_demo_c2_a')|tojson }} },
     { cat: {{ t('lp_demo_c3_cat')|tojson }}, q: {{ t('lp_demo_c3_q')|tojson }}, a: {{ t('lp_demo_c3_a')|tojson }} },
     { cat: {{ t('lp_demo_c4_cat')|tojson }}, q: {{ t('lp_demo_c4_q')|tojson }}, a: {{ t('lp_demo_c4_a')|tojson }} },
     { cat: {{ t('lp_demo_c5_cat')|tojson }}, q: {{ t('lp_demo_c5_q')|tojson }}, a: {{ t('lp_demo_c5_a')|tojson }} },
+    { cat: {{ t('lp_demo_c6_cat')|tojson }}, q: {{ t('lp_demo_c6_q')|tojson }}, a: {{ t('lp_demo_c6_a')|tojson }} },
+    { cat: {{ t('lp_demo_c7_cat')|tojson }}, q: {{ t('lp_demo_c7_q')|tojson }}, a: {{ t('lp_demo_c7_a')|tojson }} },
+    { cat: {{ t('lp_demo_c8_cat')|tojson }}, q: {{ t('lp_demo_c8_q')|tojson }}, a: {{ t('lp_demo_c8_a')|tojson }} },
+    { cat: {{ t('lp_demo_c9_cat')|tojson }}, q: {{ t('lp_demo_c9_q')|tojson }}, a: {{ t('lp_demo_c9_a')|tojson }} },
+    { cat: {{ t('lp_demo_c10_cat')|tojson }}, q: {{ t('lp_demo_c10_q')|tojson }}, a: {{ t('lp_demo_c10_a')|tojson }} },
   ];
+
+  // Fisher-Yates shuffle (returns new array, doesn't mutate input)
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 
   function flashDemo() {
     return {
-      idx: 0,
-      flipped: false,
+      total: DEMO_CARDS.length,  // 10
+      cards: shuffle(DEMO_CARDS),
+      answered: 0,                // how many answered so far (0..10)
       correct: 0,
       wrong: 0,
-      cards: DEMO_CARDS,
-      flip() { this.flipped = !this.flipped; },
-      next() { this.flipped = false; setTimeout(() => { this.idx = (this.idx + 1) % this.cards.length; }, 200); },
-      prev() { this.flipped = false; setTimeout(() => { this.idx = (this.idx - 1 + this.cards.length) % this.cards.length; }, 200); },
+      flipped: false,
+      finished: false,
+      current() { return this.cards[this.answered] || this.cards[0]; },
+      flip() { if (!this.finished) this.flipped = !this.flipped; },
       answer(ok) {
+        if (this.finished) return;
         if (ok) this.correct++; else this.wrong++;
-        this.next();
+        this.answered++;
+        this.flipped = false;
+        if (this.answered >= this.total) {
+          // Animate to finished after a tick
+          setTimeout(() => { this.finished = true; }, 250);
+        }
       },
-      reset() { this.idx = 0; this.flipped = false; this.correct = 0; this.wrong = 0; },
+      reset() {
+        this.cards = shuffle(DEMO_CARDS);
+        this.answered = 0;
+        this.correct = 0;
+        this.wrong = 0;
+        this.flipped = false;
+        this.finished = false;
+      },
       pct() {
-        const tot = this.correct + this.wrong;
-        return tot === 0 ? 0 : Math.round((this.correct / tot) * 100);
+        return this.answered === 0 ? 0 : Math.round((this.correct / this.answered) * 100);
+      },
+      trophy() {
+        const p = this.pct();
+        if (p === 100) return '🏆';
+        if (p >= 70) return '🎯';
+        if (p >= 40) return '👍';
+        return '💪';
+      },
+      finishMsg() {
+        const p = this.pct();
+        if (p === 100) return {{ t('lp_demo_finish_perfect')|tojson }};
+        if (p >= 70) return {{ t('lp_demo_finish_great')|tojson }};
+        if (p >= 40) return {{ t('lp_demo_finish_good')|tojson }};
+        return {{ t('lp_demo_finish_keep')|tojson }};
       },
     };
   }
