@@ -589,7 +589,7 @@
 {% block content %}{% endblock %}
 </main>
 
-{% if current_user and not current_user.welcome_shown %}
+{% if current_user and not current_user.get('welcome_shown', 1) %}
 <!-- Welcome modal — pokazyvaem 1 raz novomu polzovatelyu -->
 <div x-data="welcomeModal()" x-init="init()" x-show="open" x-cloak x-transition
   class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
