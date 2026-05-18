@@ -2765,6 +2765,23 @@ def api_notifications_unread():
     return jsonify({"count": n})
 
 
+@app.route("/_debug")
+@super_admin_required
+def _debug_info():
+    """Diagnostika: kakie env vars videt prilozhenie. Tol'ko super-admin."""
+    return jsonify({
+        "DATA_DIR_env": os.environ.get("DATA_DIR", "(not set)"),
+        "GEMINI_API_KEY_set": bool(os.environ.get("GEMINI_API_KEY", "").strip()),
+        "GEMINI_API_KEY_len": len(os.environ.get("GEMINI_API_KEY", "").strip()),
+        "GEMINI_API_KEY_prefix": (os.environ.get("GEMINI_API_KEY", "")[:4] or "(empty)"),
+        "SECRET_KEY_set": bool(os.environ.get("SECRET_KEY", "").strip()),
+        "ai_available": ai_gen.is_available(),
+        "db_path": str(db.DB_PATH),
+        "db_exists": db.DB_PATH.exists(),
+        "db_size_kb": (db.DB_PATH.stat().st_size // 1024) if db.DB_PATH.exists() else 0,
+    })
+
+
 # === END FRIENDS ===
 
 
