@@ -30,6 +30,10 @@ UPLOAD = Path(_DATA_DIR) / "uploads"
 UPLOAD.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
+# Doverem zagolovkam X-Forwarded-* ot proksi (Railway + Cloudflare)
+# Eto nuzhno chtoby url_for(_external=True) generiroval https://, a ne http://
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
 app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
