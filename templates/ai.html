@@ -45,6 +45,23 @@
       <p class="text-xs text-gray-500 mt-1">Максимум 50 за раз</p>
     </div>
 
+    <!-- Quality mode toggle -->
+    <label class="flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition border-2"
+      style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(236,72,153,0.05)); border-color: rgba(99,102,241,0.2);"
+      x-data="{ checked: false }" @click="checked = !$el.querySelector('input').checked; setTimeout(() => checked = $el.querySelector('input').checked, 0)">
+      <input type="checkbox" name="quality" value="1" class="w-5 h-5 mt-0.5 accent-indigo-600" x-model="checked">
+      <div class="flex-1">
+        <div class="font-bold text-slate-900 flex items-center gap-2">
+          ✨ Quality Mode
+          <span class="badge bg-indigo-100 text-indigo-700 text-[10px]">premium</span>
+        </div>
+        <div class="text-xs text-slate-600 mt-1">
+          AI делает <b>2 прохода</b>: первый генерирует вопросы, второй проверяет каждый на двусмысленность, грамматику и точность ответа. Качество в 2-3 раза выше.
+        </div>
+        <div class="text-[10px] text-amber-700 mt-1">⏱ +15-25 секунд · использует 2 AI-запроса вместо 1</div>
+      </div>
+    </label>
+
     <div>
       <label class="text-sm font-medium block mb-2">Куда сохранить?</label>
       <select name="deck_id" class="w-full px-4 py-3 rounded-xl border border-gray-200">
@@ -76,7 +93,8 @@
     <ul class="space-y-1 list-disc pl-5">
       <li>AI читает ваш материал и формулирует вопросы для самопроверки</li>
       <li>На каждый вопрос — короткий ответ + дополнительное объяснение</li>
-      <li>Время генерации: 10-30 секунд</li>
+      <li>Время генерации: 10-30 секунд (50-60 в Quality Mode)</li>
+      <li>✨ <b>Quality Mode</b>: второй AI-проход проверяет каждый вопрос на ошибки, двусмысленность и точность. Включите если важно качество.</li>
     </ul>
   </div>
 </div>

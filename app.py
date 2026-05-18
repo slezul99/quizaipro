@@ -5416,6 +5416,8 @@ def ai_page():
         new_deck_name = request.form.get("new_deck_name", "").strip()
         category_id = request.form.get("category_id", type=int)
         lang = session.get("lang", "ru")
+        # Quality mode: dvuhproxodnaya generatsiya s AI-kritikom
+        quality = request.form.get("quality") == "1"
 
         # Limit check
         ok, used, limit = billing.check_ai_limit(user)
@@ -5430,14 +5432,14 @@ def ai_page():
                 if len(text) < 50:
                     flash("Tekst slishkom korotkiy (min 50 simvolov)", "error")
                     return redirect(url_for("ai_page"))
-                cards = ai_gen.generate_from_text(text, count, lang)
+                cards = ai_gen.generate_from_text(text, count, lang, quality=quality)
             elif kind == "topic":
                 topic = request.form.get("topic", "").strip()
                 difficulty = request.form.get("difficulty", "medium")
                 if len(topic) < 3:
                     flash("Tema slishkom korotkaya", "error")
                     return redirect(url_for("ai_page"))
-                cards = ai_gen.generate_from_topic(topic, count, lang, difficulty)
+                cards = ai_gen.generate_from_topic(topic, count, lang, difficulty, quality=quality)
             elif kind == "pdf":
                 file = request.files.get("file")
                 if not file or not file.filename:
@@ -5446,7 +5448,7 @@ def ai_page():
                 fname = secure_filename(file.filename)
                 fpath = UPLOAD / fname
                 file.save(str(fpath))
-                cards = ai_gen.generate_from_pdf(fpath, count, lang)
+                cards = ai_gen.generate_from_pdf(fpath, count, lang, quality=quality)
                 fpath.unlink(missing_ok=True)
         except Exception as e:
             flash(f"AI oshibka: {e}", "error")

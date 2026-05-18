@@ -96,8 +96,87 @@ def _parse_cards_json(text: str) -> list[dict]:
     return out
 
 
-def generate_from_text(text: str, count: int = 10, lang: str = "ru") -> list[dict]:
-    """Generiruyet voprosy iz proizvol'nogo teksta."""
+def _critique_and_improve(cards: list[dict], lang: str = "ru") -> list[dict]:
+    """Quality mode: vtoroy proxod cherez AI-kritika.
+    Pervyy AI sgeneriroval vopros, vtoroy proveryaet i ispravlyaet pered podachey polzovatelyu.
+
+    Proveryaet:
+      - dvusmyslennost' formulirovki
+      - grammaticheskie oshibki
+      - sliskom ochevidnyy / sliskom nelogichnyy otvet
+      - zadvoeniya s drugimi voprosami
+      - nepravil'nyy otvet po sushchestvu
+
+    Esli iz N kart ostalos' < N — ne kriticheski; eto fitcha (filtruyem ploxie).
+    """
+    if not cards:
+        return []
+
+    # Otpravlyaem AI batchom — ekonomim API quota
+    cards_json = json.dumps(cards, ensure_ascii=False, indent=2)
+    lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
+    lang_name = lang_map.get(lang, "русском")
+
+    prompt = f"""Ty — strogiy AI-redaktor obuchayushchih voprosov.
+
+Tebe dali spisok karta-voprosov sgenerirovannyh drugim AI. Proverь kazhdyy vopros po kriteriyam:
+
+1. **Dvusmyslennost'**: mozhno li ponyat' vopros odnoznachno? Vyderzhivaesh li otvet?
+2. **Tochnost' otveta**: pravilen li otvet po sushchestvu? Net li faktologicheskih oshibok?
+3. **Yazyk**: vse na yazyke "{lang_name}", net pereputannyh slov, grammatika OK?
+4. **Trivial'nost'**: vopros ne sliskom ochevidnyy ("kto napisal Voinu i mir? Tolstoy")?
+5. **Dubli**: net li blizkih po smyslu duplikatov sredi voprosov?
+
+Tvoya zadacha: vernut' VSE voprosy s ulushchhennoy formulirovkoy, gde nuzhno — ispravit'.
+Esli vopros sovsem ploxoy (faktologicheski neverno, dvusmyslenno, ne mozhno spasti) — propusti ego.
+
+Vyhod TOL'KO JSON:
+{{"cards": [{{"question":"...","answer":"...","note":"..."}}, ...], "removed_count": N}}
+
+VHODNYE KARTY:
+{cards_json}"""
+
+    raw = _call_gemini(prompt, max_tokens=8000)
+    if not raw:
+        return cards  # Fallback: vozvrashchaem kak est' esli kritik upal
+
+    # Razbiraem otvet
+    try:
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+        data = json.loads(text)
+    except Exception:
+        m = re.search(r"\{.*\}", raw, re.DOTALL)
+        if not m:
+            return cards
+        try:
+            data = json.loads(m.group(0))
+        except Exception:
+            return cards
+
+    improved = data.get("cards") if isinstance(data, dict) else None
+    if not isinstance(improved, list):
+        return cards
+
+    out = []
+    for item in improved:
+        if not isinstance(item, dict):
+            continue
+        q = (item.get("question") or item.get("front") or "").strip()
+        a = (item.get("answer") or item.get("back") or "").strip()
+        n = (item.get("note") or item.get("explanation") or "").strip()
+        if q and a:
+            out.append({"front": q, "back": a, "note": n})
+
+    # Esli kritik vse otsek — vozvrashchaem ishodnye
+    if not out:
+        return cards
+    return out
+
+
+def generate_from_text(text: str, count: int = 10, lang: str = "ru",
+                       quality: bool = False) -> list[dict]:
+    """Generiruyet voprosy iz proizvol'nogo teksta.
+    quality=True — dopolnitelnyy proxod cherez AI-kritika (medlenno, no luchshe)."""
     lang_map = {
         "ru": "русском", "en": "English", "uz": "oʻzbek tilida",
     }
@@ -121,12 +200,17 @@ TEKST:
 {text[:8000]}"""
 
     raw = _call_gemini(prompt, max_tokens=8000)
-    return _parse_cards_json(raw or "")
+    cards = _parse_cards_json(raw or "")
+    if quality and cards:
+        cards = _critique_and_improve(cards, lang=lang)
+    return cards
 
 
 def generate_from_topic(topic: str, count: int = 10, lang: str = "ru",
-                          difficulty: str = "medium") -> list[dict]:
-    """Generiruyet voprosy po teme (bez ishodnogo teksta)."""
+                          difficulty: str = "medium",
+                          quality: bool = False) -> list[dict]:
+    """Generiruyet voprosy po teme.
+    quality=True — dopolnitelnyy proxod cherez AI-kritika."""
     lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
     lang_name = lang_map.get(lang, "русском")
     diff_map = {
@@ -154,10 +238,14 @@ Vyhod TOL'KO JSON-arrey:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
     raw = _call_gemini(prompt, max_tokens=8000)
-    return _parse_cards_json(raw or "")
+    cards = _parse_cards_json(raw or "")
+    if quality and cards:
+        cards = _critique_and_improve(cards, lang=lang)
+    return cards
 
 
-def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru") -> list[dict]:
+def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru",
+                      quality: bool = False) -> list[dict]:
     """Chitaet PDF i generiruet voprosy."""
     try:
         from pypdf import PdfReader
@@ -167,7 +255,7 @@ def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru") -> list
     text = "\n".join(p.extract_text() or "" for p in reader.pages[:30])
     if not text.strip():
         return []
-    return generate_from_text(text, count=count, lang=lang)
+    return generate_from_text(text, count=count, lang=lang, quality=quality)
 
 
 
