@@ -65,10 +65,10 @@
     <div class="flex justify-between items-start mb-3 flex-wrap gap-2">
       <div>
         <h3 class="font-bold text-slate-900 flex items-center gap-2">
-          🎯 Цель на сегодня
-          <span x-show="isDone" class="badge bg-emerald-100 text-emerald-700">Выполнено! 🎉</span>
+          🎯 {{ t('today_goal') }}
+          <span x-show="isDone" class="badge bg-emerald-100 text-emerald-700">{{ t('today_done_label') }}</span>
         </h3>
-        <p class="text-xs text-slate-500 mt-1">Изучите карты и закрепите материал</p>
+        <p class="text-xs text-slate-500 mt-1">{{ t('today_goal_desc') }}</p>
       </div>
       <div class="flex items-center gap-2">
         <template x-if="!editing">
@@ -76,7 +76,7 @@
             <span class="text-sm text-slate-700">
               <span class="font-bold text-indigo-600" x-text="done"></span> / <span x-text="goal"></span>
             </span>
-            <button @click="editing = true; newGoal = goal" class="text-xs text-indigo-600 hover:underline">Изменить</button>
+            <button @click="editing = true; newGoal = goal" class="text-xs text-indigo-600 hover:underline">{{ t('today_change') }}</button>
           </div>
         </template>
         <template x-if="editing">
@@ -91,8 +91,8 @@
     </div>
     <div class="progress-bar h-3"><div :style="`width: ${pct}%`"></div></div>
     <div class="flex justify-between mt-2 text-xs text-gray-400">
-      <span x-show="!isDone">Осталось: <span class="font-semibold text-orange-600" x-text="goal - done"></span></span>
-      <span x-show="isDone" class="text-emerald-600 font-semibold">Отличная работа! Можно продолжать.</span>
+      <span x-show="!isDone">{{ t('today_remaining') }}: <span class="font-semibold text-orange-600" x-text="goal - done"></span></span>
+      <span x-show="isDone" class="text-emerald-600 font-semibold">{{ t('today_great_job') }}</span>
       <span x-text="pct + '%'"></span>
     </div>
   </div>
@@ -140,8 +140,8 @@
         <div class="flex items-start justify-between mb-4">
           <div class="text-4xl">{{ d.icon }}</div>
           {% if current_user.role in ['admin','teacher','individual'] %}
-          <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('Удалить колоду?')">
-            <button class="text-gray-300 hover:text-red-500 text-sm transition" title="Удалить">✕</button>
+          <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('{{ t('delete_deck_confirm') }}')">
+            <button class="text-gray-300 hover:text-red-500 text-sm transition" title="{{ t('btn_delete') }}">✕</button>
           </form>
           {% endif %}
         </div>
@@ -164,7 +164,7 @@
           </a>
           {% else %}
           <a href="/deck/{{ d.id }}/test?count=10&shuffle=1" class="btn btn-success flex-1 justify-center text-sm {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}">
-            📝 Тест
+            📝 {{ t('btn_test') }}
           </a>
           {% endif %}
           <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
@@ -206,9 +206,9 @@
         <input name="icon" maxlength="2" value="📚" class="w-16 text-3xl text-center px-2 py-3 rounded-xl border border-gray-200 bg-white">
         <input name="name" required placeholder="{{ t('deck_name_label') }}" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white">
       </div>
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">📁 Категория</label>
+      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">📁 {{ t('category_label') }}</label>
       <select name="category_id" class="w-full px-4 py-3 mb-5 rounded-xl border border-gray-200 bg-white">
-        <option value="">— Без категории —</option>
+        <option value="">{{ t('no_category') }}</option>
         {% set roots = (all_categories or []) | selectattr('parent_id', 'none') | list %}
         {% for r in roots %}
         <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>

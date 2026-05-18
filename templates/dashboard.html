@@ -58,7 +58,7 @@
         <a href="/deck/{{ d['id'] }}/flashcards" class="flex-1 justify-center text-sm rounded-2xl px-4 py-2 font-bold text-white text-center transition {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}"
           style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);">🃏 Flashcards</a>
         {% else %}
-        <a href="/deck/{{ d['id'] }}/test?count=10&shuffle=1" class="btn btn-success flex-1 justify-center text-sm {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}">📝 Тест</a>
+        <a href="/deck/{{ d['id'] }}/test?count=10&shuffle=1" class="btn btn-success flex-1 justify-center text-sm {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}">📝 {{ t('btn_test') }}</a>
         {% endif %}
         <a href="/deck/{{ d['id'] }}" class="btn btn-ghost text-sm">⚙</a>
       </div>
