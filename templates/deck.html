@@ -30,6 +30,17 @@ function deckEditor() {
       { key: 'mastered', label: 'Усвоены',   icon: '🎓' },
     ],
 
+    init() {
+      // Garantiruem chto perPage vsegda chislo
+      if (!Number.isFinite(this.perPage) || this.perPage < 1) {
+        this.perPage = 50;
+      }
+      // Ogranichivaem testCount esli kart men'she
+      if (this.cards && this.cards.length > 0 && this.testCount > this.cards.length) {
+        this.testCount = this.cards.length;
+      }
+    },
+
     cardCountByDifficulty(key) {
       return this.cards.filter(c => c.difficulty?.key === key).length;
     },
@@ -103,11 +114,13 @@ function deckEditor() {
 
     get pagedCards() {
       const start = (this.page - 1) * this.perPage;
-      return this.filteredCards.slice(start, start + this.perPage);
+      const pp = (Number.isFinite(this.perPage) && this.perPage > 0) ? this.perPage : 50;
+      return this.filteredCards.slice(start, start + pp);
     },
 
     get totalPages() {
-      return Math.max(1, Math.ceil(this.filteredCards.length / this.perPage));
+      const pp = (Number.isFinite(this.perPage) && this.perPage > 0) ? this.perPage : 50;
+      return Math.max(1, Math.ceil(this.filteredCards.length / pp));
     },
 
     globalIdx(localIdx) {
@@ -310,7 +323,7 @@ function deckEditor() {
           :class="perPage === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent' : 'bg-white border-gray-200 hover:border-indigo-300'"
           class="px-3 py-1.5 rounded-lg border-2 font-semibold transition" x-text="n"></button>
       </template>
-      <input type="number" min="1" :max="cards.length" x-model.number="perPage" @input="page = 1"
+      <input type="number" min="1" :max="cards.length" x-model.number="perPage" @input="if(!perPage || perPage < 1) perPage = 50; page = 1"
         class="w-20 px-2 py-1.5 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white font-semibold text-center">
       <button @click="perPage = cards.length; page = 1" class="btn btn-ghost text-xs px-3 py-1.5">Все</button>
     </div>
@@ -346,6 +359,12 @@ function deckEditor() {
 
   <!-- Cards -->
   <div class="space-y-4">
+    <!-- DEBUG: show why cards may not render -->
+    <div x-show="cards.length > 0 && pagedCards.length === 0" class="glass rounded-2xl p-4 text-sm" style="background:rgba(254,243,199,0.9); border:1px solid #fbbf24;">
+      ⚠️ Карты загружены (<span x-text="cards.length"></span>), но не отображаются.
+      Фильтр: <strong x-text="diffFilter"></strong>, поиск: "<span x-text="search"></span>".
+      <button @click="diffFilter='all'; search=''; page=1" class="ml-2 underline text-amber-700">Сбросить фильтры</button>
+    </div>
     <template x-for="(card, idx) in pagedCards" :key="card.id">
       <div class="glass rounded-3xl p-6 group">
         <div class="flex items-start gap-3 mb-4">
