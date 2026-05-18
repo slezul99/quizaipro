@@ -8,11 +8,8 @@
     overflow: hidden;
     min-height: 100vh;
     background-image:
-      /* Solnechnyy glow poverh */
       radial-gradient(circle at 88% 12%, rgba(255, 240, 180, 0.5), transparent 30%),
-      /* God rays */
       linear-gradient(217deg, rgba(255,248,220,0.15) 0%, transparent 30%),
-      /* Anime nebo: photo Unsplash */
       url('https://images.unsplash.com/photo-1601297183305-6df142704ea2?w=2400&q=85&fm=jpg');
     background-size: cover, cover, cover;
     background-position: center, center, center top;
@@ -23,29 +20,49 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    /* Belyy myagkiy svetovoy overlay svehu chtoby tekst chitalsya */
     background: radial-gradient(ellipse 80% 50% at 50% 30%, rgba(255,255,255,0.45), transparent 70%);
     z-index: 1;
   }
-  /* Mesh grid — otklyuchaem dlya anime fona */
-  .hero-grid {
-    display: none;
-  }
-  /* Noise grain — minimal'no */
+  .hero-grid { display: none; }
   .hero-noise {
     position:absolute; inset:0; pointer-events:none; opacity:0.015;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  /* Glowing blobs — otklyuchaem dlya foto-fona */
   .blob { display: none; }
 
-  /* Hero stage 3D space */
-  .stage {
-    position: relative;
-    perspective: 1400px;
-    perspective-origin: 50% 35%;
-    z-index: 2;
+  /* Lang switcher for guests */
+  .lp-lang {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 50;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.15);
   }
+  .lp-lang a {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .lp-lang a:hover { background: rgba(99,102,241,0.08); color: #4f46e5; }
+  .lp-lang a.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+  }
+
+  /* Hero stage 3D space */
+  .stage { position: relative; perspective: 1400px; perspective-origin: 50% 35%; z-index: 2; }
 
   /* Center brain orb */
   .brain-orb {
@@ -111,7 +128,6 @@
   @keyframes fc-float-5 { 0%,100%{transform:translateZ(20px) translateY(0) rotateY(20deg);} 50%{transform:translateZ(20px) translateY(-12px) rotateY(22deg);} }
   @keyframes fc-float-6 { 0%,100%{transform:translateZ(30px) translateY(0) rotateY(-18deg);} 50%{transform:translateZ(30px) translateY(14px) rotateY(-20deg);} }
 
-  /* Floating geometric particles */
   .particle {
     position: absolute;
     border-radius: 50%;
@@ -129,7 +145,6 @@
     50% { transform: translateY(-30px) translateX(10px); opacity:1; }
   }
 
-  /* Neural connections SVG */
   .neural-svg {
     position:absolute; inset:0; width:100%; height:100%;
     pointer-events:none; z-index:1; opacity:0.5;
@@ -143,13 +158,7 @@
   }
   @keyframes dash { to { stroke-dashoffset: -240; } }
 
-  /* Hero text */
-  .hero-text {
-    position: relative;
-    z-index: 3;
-    text-align: center;
-    padding: 8rem 1rem 2rem;
-  }
+  .hero-text { position: relative; z-index: 3; text-align: center; padding: 8rem 1rem 2rem; }
   .hero-title {
     font-size: clamp(2.8rem, 7vw, 5.5rem);
     font-weight: 800;
@@ -205,7 +214,6 @@
   }
   .btn-hero-ghost:hover { background: rgba(255,255,255,0.9); transform: translateY(-2px); }
 
-  /* Stage 3D parallax mouse handler */
   .stage-3d {
     position: relative;
     height: 480px;
@@ -215,7 +223,6 @@
     transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
   }
 
-  /* Section spacing */
   .section { padding: 6rem 1.5rem; position: relative; }
   .section-inner { max-width: 1200px; margin: 0 auto; }
   .section-label {
@@ -235,7 +242,6 @@
     color: #0f172a;
   }
 
-  /* Feature cards */
   .feature {
     background: rgba(255,255,255,0.7);
     backdrop-filter: blur(20px);
@@ -260,7 +266,6 @@
     margin-bottom: 1rem;
   }
 
-  /* Reveal animations */
   .reveal {
     opacity: 0;
     transform: translateY(30px);
@@ -268,7 +273,6 @@
   }
   .reveal.in { opacity: 1; transform: translateY(0); }
 
-  /* Marquee logos */
   .marquee-track {
     display: flex; gap: 60px;
     animation: scroll 35s linear infinite;
@@ -279,39 +283,29 @@
     to { transform: translateX(-50%); }
   }
 
-  /* Mobile fixes */
   @media (max-width: 768px) {
     .float-card { transform: translateZ(20px) !important; }
     .fc-5, .fc-6 { display: none; }
     .brain-orb { width: 200px; height: 200px; }
     .brain-orb::after { font-size: 56px; }
     .stage-3d { height: 360px; }
+    .lp-lang { top: 12px; right: 12px; padding: 3px; }
+    .lp-lang a { padding: 4px 10px; font-size: 12px; }
   }
 
   /* === Interactive Flashcard Demo === */
-  .demo-card {
-    perspective: 1500px;
-    width: 100%;
-    aspect-ratio: 4/3;
-    cursor: pointer;
-  }
+  .demo-card { perspective: 1500px; width: 100%; aspect-ratio: 4/3; cursor: pointer; }
   .demo-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: relative; width: 100%; height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .demo-card.flipped .demo-card-inner { transform: rotateY(180deg); }
   .demo-face {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     border-radius: 24px;
     padding: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -346,22 +340,14 @@
     line-height: 1.3;
     margin-bottom: 1.5rem;
   }
-  .demo-hint {
-    font-size: 13px;
-    opacity: 0.7;
-    margin-top: auto;
-  }
+  .demo-hint { font-size: 13px; opacity: 0.7; margin-top: auto; }
   .demo-btn {
     padding: 12px 20px;
     border-radius: 14px;
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 600; font-size: 14px;
     transition: all 0.25s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; border: 1px solid transparent;
   }
   .demo-btn-correct {
     background: linear-gradient(135deg, #10b981, #059669);
@@ -370,9 +356,7 @@
   }
   .demo-btn-correct:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -5px rgba(16,185,129,0.7); }
   .demo-btn-wrong {
-    background: white;
-    color: #dc2626;
-    border-color: #fecaca;
+    background: white; color: #dc2626; border-color: #fecaca;
   }
   .demo-btn-wrong:hover { background: #fef2f2; transform: translateY(-2px); }
   .demo-btn-nav {
@@ -382,15 +366,11 @@
     backdrop-filter: blur(12px);
     border: 1px solid rgba(99,102,241,0.15);
     color: #4f46e5;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-flex; align-items: center; justify-content: center;
     transition: all 0.2s;
-    font-size: 18px;
-    cursor: pointer;
+    font-size: 18px; cursor: pointer;
   }
   .demo-btn-nav:hover { background: white; transform: scale(1.08); box-shadow: 0 8px 20px -5px rgba(99,102,241,0.3); }
-
   .demo-stat {
     background: rgba(255,255,255,0.7);
     backdrop-filter: blur(20px);
@@ -399,12 +379,7 @@
     padding: 1.25rem;
     text-align: center;
   }
-  .demo-progress {
-    height: 8px;
-    background: #e2e8f0;
-    border-radius: 999px;
-    overflow: hidden;
-  }
+  .demo-progress { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
   .demo-progress-bar {
     height: 100%;
     background: linear-gradient(90deg, #6366f1, #10b981);
@@ -441,19 +416,44 @@
     line-height: 1.6;
     font-size: 15px;
   }
+
+  .pill-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(255,255,255,0.1) inset,
+                0 1px 0 rgba(255,255,255,0.2) inset;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+  }
+  .pill-feature:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 20px 40px -8px rgba(0,0,0,0.4),
+                0 0 0 1px rgba(255,255,255,0.2) inset,
+                0 1px 0 rgba(255,255,255,0.3) inset;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- ============== Lang switcher (guest only) ============== -->
+<div class="lp-lang">
+  <a href="/set-lang/ru" class="{% if lang == 'ru' %}active{% endif %}">RU</a>
+  <a href="/set-lang/en" class="{% if lang == 'en' %}active{% endif %}">EN</a>
+  <a href="/set-lang/uz" class="{% if lang == 'uz' %}active{% endif %}">UZ</a>
+</div>
+
 <!-- ============== HERO ============== -->
 <section class="hero-wrap">
   <div class="hero-grid"></div>
   <div class="hero-noise"></div>
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
 
-  <!-- Neural connections background -->
   <svg class="neural-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
     <defs>
       <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -471,68 +471,55 @@
   <div class="hero-text">
     <div class="reveal hero-tag">
       <span class="dot"></span>
-      AI-powered learning · Запустись за 30 секунд
+      {{ t('lp_hero_tag') }}
     </div>
     <h1 class="reveal hero-title">
-      Учись<br>как никогда раньше.
+      {{ t('lp_hero_title_1') }}<br>{{ t('lp_hero_title_2') }}
     </h1>
-    <p class="reveal hero-sub">
-      QuizPro строит твою память научно. AI генерирует карточки из любого
-      материала, алгоритм SM-2 показывает их в нужный день.
-      <strong>Запоминай навсегда.</strong>
-    </p>
+    <p class="reveal hero-sub">{{ t('lp_hero_sub_html') | safe }}</p>
     <div class="reveal flex gap-3 justify-center flex-wrap">
-      <a href="/register" class="btn-hero btn-hero-primary">Начать бесплатно →</a>
-      <a href="#try-it" class="btn-hero btn-hero-ghost">Попробовать карточку</a>
+      <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_btn_start') }}</a>
+      <a href="#try-it" class="btn-hero btn-hero-ghost">{{ t('lp_btn_try') }}</a>
     </div>
   </div>
 
-  <!-- 3D Stage with floating cards -->
   <div class="stage" id="stage">
     <div class="stage-3d" id="stage3d">
-
       <div class="float-card fc-1">
         <div class="q">English Grammar</div>
         <div class="a">What is Past Perfect?</div>
         <span class="pill" style="background:#dbeafe; color:#1e40af;">Tense</span>
       </div>
-
       <div class="float-card fc-2">
         <div class="q">Anatomy</div>
         <div class="a">How many bones in human body?</div>
         <span class="pill" style="background:#fce7f3; color:#9f1239;">Medical</span>
       </div>
-
       <div class="float-card fc-3">
         <div class="q">Mathematics</div>
         <div class="a">Solve: x² + 5x + 6 = 0</div>
         <span class="pill" style="background:#fef3c7; color:#92400e;">Algebra</span>
       </div>
-
       <div class="float-card fc-4">
         <div class="q">Geography</div>
         <div class="a">Capital of Uzbekistan?</div>
         <span class="pill" style="background:#d1fae5; color:#065f46;">Capitals</span>
       </div>
-
       <div class="float-card fc-5">
         <div class="q">Programming</div>
         <div class="a">What is REST API?</div>
       </div>
-
       <div class="float-card fc-6">
         <div class="q">Physics</div>
         <div class="a">Speed of light?</div>
       </div>
 
-      <!-- Particles -->
       <div class="particle p1"></div>
       <div class="particle p2"></div>
       <div class="particle p3"></div>
       <div class="particle p4"></div>
       <div class="particle p5"></div>
 
-      <!-- Brain center -->
       <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
         <div class="brain-orb"></div>
       </div>
@@ -543,189 +530,142 @@
 <!-- ============== TRUSTED BY ============== -->
 <section class="py-16 border-y border-indigo-200 relative overflow-hidden"
   style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);">
-  <!-- Decorative glow -->
   <div class="absolute -top-32 left-1/4 w-96 h-96 rounded-full opacity-30" style="background:radial-gradient(circle, #8b5cf6, transparent 70%); filter: blur(80px);"></div>
   <div class="absolute -bottom-32 right-1/4 w-96 h-96 rounded-full opacity-30" style="background:radial-gradient(circle, #ec4899, transparent 70%); filter: blur(80px);"></div>
 
   <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
     <p class="text-xs uppercase tracking-[0.3em] font-black mb-3"
       style="background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444); -webkit-background-clip: text; background-clip: text; color: transparent;">
-      ⚡ Что внутри
+      {{ t('lp_trust_label') }}
     </p>
     <h2 class="text-3xl md:text-5xl font-black text-white mb-8 leading-tight">
-      Всё необходимое<br>
+      {{ t('lp_trust_title_1') }}<br>
       <span style="background: linear-gradient(90deg,#a78bfa,#f0abfc,#fb7185); -webkit-background-clip:text; background-clip:text; color:transparent;">
-        в одном продукте
+        {{ t('lp_trust_title_2') }}
       </span>
     </h2>
     <div class="flex flex-wrap justify-center gap-3 md:gap-4">
-      <span class="pill-feature" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
-        🤖 AI-генерация
-      </span>
-      <span class="pill-feature" style="background: linear-gradient(135deg, #8b5cf6, #d946ef);">
-        🧠 SM-2 алгоритм
-      </span>
-      <span class="pill-feature" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">
-        📊 Smart Mix 50/30/20
-      </span>
-      <span class="pill-feature" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
-        📥 Импорт PDF/DOCX/TXT
-      </span>
-      <span class="pill-feature" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
-        👥 Группы и роли
-      </span>
-      <span class="pill-feature" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
-        🌍 RU / EN / UZ
-      </span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">{{ t('lp_pill_ai') }}</span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #8b5cf6, #d946ef);">{{ t('lp_pill_sm2') }}</span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">{{ t('lp_pill_smart') }}</span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #10b981, #06b6d4);">{{ t('lp_pill_import') }}</span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">{{ t('lp_pill_groups') }}</span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">{{ t('lp_pill_langs') }}</span>
     </div>
   </div>
-
-  <style>
-    .pill-feature {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 22px;
-      border-radius: 999px;
-      color: white;
-      font-size: 15px;
-      font-weight: 700;
-      box-shadow: 0 10px 30px -8px rgba(0,0,0,0.3),
-                  0 0 0 1px rgba(255,255,255,0.1) inset,
-                  0 1px 0 rgba(255,255,255,0.2) inset;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      cursor: default;
-    }
-    .pill-feature:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 20px 40px -8px rgba(0,0,0,0.4),
-                  0 0 0 1px rgba(255,255,255,0.2) inset,
-                  0 1px 0 rgba(255,255,255,0.3) inset;
-    }
-  </style>
 </section>
 
 <!-- ============== FEATURES ============== -->
 <section class="section">
   <div class="section-inner">
     <div class="text-center mb-16">
-      <p class="reveal section-label">Возможности</p>
-      <h2 class="reveal section-title">Не просто карточки.<br>Наука о памяти.</h2>
+      <p class="reveal section-label">{{ t('lp_f_label') }}</p>
+      <h2 class="reveal section-title">{{ t('lp_f_title_1') }}<br>{{ t('lp_f_title_2') }}</h2>
     </div>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div class="reveal feature">
         <div class="feature-icon">🤖</div>
-        <h3 class="text-xl font-bold mb-2">AI-генерация</h3>
-        <p class="text-gray-600 text-sm leading-relaxed">Вставь лекцию, статью или PDF — AI создаст качественные вопросы для самопроверки за 15 секунд.</p>
+        <h3 class="text-xl font-bold mb-2">{{ t('lp_f1_t') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('lp_f1_d') }}</p>
       </div>
       <div class="reveal feature">
         <div class="feature-icon">🧠</div>
-        <h3 class="text-xl font-bold mb-2">SM-2 алгоритм</h3>
-        <p class="text-gray-600 text-sm leading-relaxed">Карточки появляются ровно когда вы начинаете забывать. Доказанная наукой методика с 1985 года.</p>
+        <h3 class="text-xl font-bold mb-2">{{ t('lp_f2_t') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('lp_f2_d') }}</p>
       </div>
       <div class="reveal feature">
         <div class="feature-icon">📊</div>
-        <h3 class="text-xl font-bold mb-2">Smart Mix 50/30/20</h3>
-        <p class="text-gray-600 text-sm leading-relaxed">50% новых, 30% с ошибками, 20% повторение. Слабые места укрепляются автоматически.</p>
+        <h3 class="text-xl font-bold mb-2">{{ t('lp_f3_t') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('lp_f3_d') }}</p>
       </div>
       <div class="reveal feature">
         <div class="feature-icon">🏢</div>
-        <h3 class="text-xl font-bold mb-2">Для учебных центров</h3>
-        <p class="text-gray-600 text-sm leading-relaxed">Преподаватель создаёт колоды, студенты учат, дашборд показывает прогресс по группам и категориям.</p>
+        <h3 class="text-xl font-bold mb-2">{{ t('lp_f4_t') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('lp_f4_d') }}</p>
       </div>
       <div class="reveal feature">
         <div class="feature-icon">📥</div>
-        <h3 class="text-xl font-bold mb-2">Импорт всего</h3>
-        <p class="text-gray-600 text-sm leading-relaxed">.txt, .csv, .docx, .pdf — любой формат с любой нумерацией. Парсер всё понимает.</p>
+        <h3 class="text-xl font-bold mb-2">{{ t('lp_f5_t') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('lp_f5_d') }}</p>
       </div>
       <div class="reveal feature">
         <div class="feature-icon">🌍</div>
-        <h3 class="text-xl font-bold mb-2">3 языка</h3>
-        <p class="text-gray-600 text-sm leading-relaxed">Русский · English · Oʻzbek. Интерфейс адаптируется под учеников, контент — на любом языке.</p>
+        <h3 class="text-xl font-bold mb-2">{{ t('lp_f6_t') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('lp_f6_d') }}</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============== INTERACTIVE DEMO — try a flashcard now! ============== -->
+<!-- ============== INTERACTIVE DEMO ============== -->
 <section class="section" x-data="flashDemo()" id="try-it">
   <div class="section-inner max-w-6xl">
     <div class="text-center mb-12">
-      <p class="reveal section-label">Попробуй прямо сейчас</p>
-      <h2 class="reveal section-title">Это работает.<br>Убедись сам.</h2>
-      <p class="reveal text-lg text-slate-600 max-w-2xl mx-auto">Кликни на карточку чтобы увидеть ответ. Оцени знание. Так ты учишься в QuizPro каждый день.</p>
+      <p class="reveal section-label">{{ t('lp_demo_label') }}</p>
+      <h2 class="reveal section-title">{{ t('lp_demo_title_1') }}<br>{{ t('lp_demo_title_2') }}</h2>
+      <p class="reveal text-lg text-slate-600 max-w-2xl mx-auto">{{ t('lp_demo_sub') }}</p>
     </div>
 
     <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-      <!-- Card -->
       <div class="reveal">
         <div class="demo-card" :class="{ 'flipped': flipped }" @click="flip()">
           <div class="demo-card-inner">
             <div class="demo-face demo-front">
               <span class="demo-cat" x-text="cards[idx].cat"></span>
               <div class="demo-q" x-text="cards[idx].q"></div>
-              <div class="demo-hint">👆 Кликни чтобы увидеть ответ</div>
+              <div class="demo-hint">{{ t('lp_demo_hint_front') }}</div>
             </div>
             <div class="demo-face demo-back">
               <span class="demo-cat" x-text="cards[idx].cat"></span>
               <div class="demo-q" x-text="cards[idx].a"></div>
-              <div class="demo-hint">Знал? Оцени себя ↓</div>
+              <div class="demo-hint">{{ t('lp_demo_hint_back') }}</div>
             </div>
           </div>
         </div>
 
-        <!-- nav -->
         <div class="mt-6 flex items-center justify-center gap-3">
-          <button class="demo-btn-nav" @click.stop="prev()" title="Предыдущая">‹</button>
-          <button class="demo-btn-nav" @click.stop="reset()" title="Сбросить">↻</button>
-          <button class="demo-btn-nav" @click.stop="next()" title="Следующая">›</button>
+          <button class="demo-btn-nav" @click.stop="prev()">‹</button>
+          <button class="demo-btn-nav" @click.stop="reset()">↻</button>
+          <button class="demo-btn-nav" @click.stop="next()">›</button>
         </div>
 
-        <!-- answer buttons -->
         <div class="mt-5 flex items-center justify-center gap-3" x-show="flipped" x-transition>
-          <button class="demo-btn demo-btn-wrong" @click.stop="answer(false)">
-            ✗ Не знал
-          </button>
-          <button class="demo-btn demo-btn-correct" @click.stop="answer(true)">
-            ✓ Знал!
-          </button>
+          <button class="demo-btn demo-btn-wrong" @click.stop="answer(false)">{{ t('lp_demo_btn_unknown') }}</button>
+          <button class="demo-btn demo-btn-correct" @click.stop="answer(true)">{{ t('lp_demo_btn_known') }}</button>
         </div>
       </div>
 
-      <!-- Stats panel -->
       <div class="reveal space-y-4">
         <div class="demo-stat" style="text-align:left; padding:1.5rem;">
-          <h3 class="text-lg font-bold text-slate-900 mb-4">Прогресс сессии</h3>
+          <h3 class="text-lg font-bold text-slate-900 mb-4">{{ t('lp_demo_progress') }}</h3>
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="rounded-xl p-4" style="background:rgba(16,185,129,0.1);">
               <div class="text-3xl font-black" style="color:#059669;" x-text="correct"></div>
-              <div class="text-xs text-slate-600 mt-1">Знал</div>
+              <div class="text-xs text-slate-600 mt-1">{{ t('lp_demo_known') }}</div>
             </div>
             <div class="rounded-xl p-4" style="background:rgba(239,68,68,0.1);">
               <div class="text-3xl font-black" style="color:#dc2626;" x-text="wrong"></div>
-              <div class="text-xs text-slate-600 mt-1">Не знал</div>
+              <div class="text-xs text-slate-600 mt-1">{{ t('lp_demo_unknown') }}</div>
             </div>
           </div>
           <div class="demo-progress">
             <div class="demo-progress-bar" :style="`width: ${pct()}%`"></div>
           </div>
-          <p class="text-xs text-slate-500 mt-2" x-text="(correct+wrong) > 0 ? `Точность: ${pct()}%` : 'Ответь чтобы увидеть точность'"></p>
+          <p class="text-xs text-slate-500 mt-2" x-text="(correct+wrong) > 0 ? `{{ t('lp_demo_accuracy') }}: ${pct()}%` : `{{ t('lp_demo_answer_to_see') }}`"></p>
         </div>
 
         <div class="demo-stat" style="text-align:left; padding:1.5rem; background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08)); border-color: rgba(99,102,241,0.2);">
-          <h3 class="text-lg font-bold text-slate-900 mb-2">🧠 Что делает SM-2</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
-            Знал — карточка вернётся через 1, 6, 14 дней. Не знал — через 10 минут. Алгоритм подстраивается под твою память: легкие отдалит, сложные приблизит.
-          </p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ t('lp_demo_sm2_t') }}</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">{{ t('lp_demo_sm2_d') }}</p>
         </div>
 
-        <div class="flex items-center gap-3 text-sm text-slate-500">
+        <div class="flex items-center gap-3 text-sm text-slate-500 flex-wrap">
           <span class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full" style="background:#6366f1;"></span>
-            Карта <span x-text="idx+1"></span> из <span x-text="cards.length"></span>
+            {{ t('lp_demo_card') }} <span x-text="idx+1"></span> / <span x-text="cards.length"></span>
           </span>
           <span>·</span>
-          <a href="/register" class="text-indigo-600 font-semibold hover:underline">Создай свою колоду →</a>
+          <a href="/register" class="text-indigo-600 font-semibold hover:underline">{{ t('lp_demo_create_deck') }}</a>
         </div>
       </div>
     </div>
@@ -736,14 +676,14 @@
 <section class="section" style="background:linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.04) 50%, transparent 100%);">
   <div class="section-inner max-w-4xl">
     <div class="text-center mb-16">
-      <p class="reveal section-label">Как это работает</p>
-      <h2 class="reveal section-title">Три шага.<br>Без боли.</h2>
+      <p class="reveal section-label">{{ t('lp_how_label') }}</p>
+      <h2 class="reveal section-title">{{ t('lp_how_title_1') }}<br>{{ t('lp_how_title_2') }}</h2>
     </div>
 
     {% set steps = [
-      ('01', 'Импорт или AI', 'Загружай PDF/Word, или попроси AI создать вопросы по теме за секунды.'),
-      ('02', 'Учись с алгоритмом', 'Карточка → ответ → оценка от 0 до 5. SM-2 решает когда показать снова.'),
-      ('03', 'Преподаватель видит всё', 'Дашборд по группам, категориям, тестам. Кто отстаёт — видно сразу.'),
+      ('01', t('lp_step1_t'), t('lp_step1_d')),
+      ('02', t('lp_step2_t'), t('lp_step2_d')),
+      ('03', t('lp_step3_t'), t('lp_step3_d')),
     ] %}
     <div class="space-y-4">
       {% for n, title, txt in steps %}
@@ -766,25 +706,25 @@
 <section class="section" style="background:radial-gradient(ellipse 60% 50% at 50% 50%, rgba(168,85,247,0.06), transparent 70%);">
   <div class="section-inner">
     <div class="text-center mb-12">
-      <p class="reveal section-label">Технологии</p>
-      <h2 class="reveal section-title">Не маркетинг.<br>Реальные возможности.</h2>
+      <p class="reveal section-label">{{ t('lp_stats_label') }}</p>
+      <h2 class="reveal section-title">{{ t('lp_stats_title_1') }}<br>{{ t('lp_stats_title_2') }}</h2>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
       <div class="reveal text-center">
         <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">SM-2</div>
-        <p class="text-gray-600 text-sm">алгоритм с 1985 года, основа Anki</p>
+        <p class="text-gray-600 text-sm">{{ t('lp_stat_sm2') }}</p>
       </div>
       <div class="reveal text-center">
         <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-emerald-500 to-cyan-500 bg-clip-text text-transparent mb-2">AI</div>
-        <p class="text-gray-600 text-sm">генерация из текста, темы, PDF</p>
+        <p class="text-gray-600 text-sm">{{ t('lp_stat_ai') }}</p>
       </div>
       <div class="reveal text-center">
         <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-orange-500 to-pink-500 bg-clip-text text-transparent mb-2">3</div>
-        <p class="text-gray-600 text-sm">языка интерфейса (RU · EN · UZ)</p>
+        <p class="text-gray-600 text-sm">{{ t('lp_stat_3l') }}</p>
       </div>
       <div class="reveal text-center">
         <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">∞</div>
-        <p class="text-gray-600 text-sm">студентов в одной организации</p>
+        <p class="text-gray-600 text-sm">{{ t('lp_stat_inf') }}</p>
       </div>
     </div>
   </div>
@@ -794,19 +734,19 @@
 <section class="section" x-data="{ open: 0 }">
   <div class="section-inner max-w-3xl">
     <div class="text-center mb-12">
-      <p class="reveal section-label">Часто задают</p>
-      <h2 class="reveal section-title">Вопросы и ответы</h2>
-      <p class="reveal text-slate-600">Всё что нужно знать перед стартом.</p>
+      <p class="reveal section-label">{{ t('lp_faq_label') }}</p>
+      <h2 class="reveal section-title">{{ t('lp_faq_title') }}</h2>
+      <p class="reveal text-slate-600">{{ t('lp_faq_sub') }}</p>
     </div>
 
     {% set faqs = [
-      ('Это бесплатно?', 'Да. Регистрация и базовое использование бесплатны. AI-генерация, импорт PDF, неограниченные колоды — всё доступно сразу. Платных тарифов пока нет.'),
-      ('Как работает AI-генерация карточек?', 'Вставь текст лекции, статью или загрузи PDF/DOCX. AI прочитает материал и создаст вопрос-ответ карточки за 15 секунд. Включи режим Quality Mode чтобы AI прошёл по карточкам дважды и улучшил их.'),
-      ('Что такое SM-2 алгоритм?', 'Это научно-доказанный метод повторения с интервалами (с 1985 года, основа Anki). Карточки появляются ровно тогда, когда ты начинаешь забывать. Знаешь — следующее повторение через дни/недели. Не знаешь — через минуты.'),
-      ('На каких языках работает?', 'Интерфейс на 3 языках: Русский, English, Oʻzbek. Контент карточек — на любом языке. AI понимает все мировые языки.'),
-      ('Подходит для учебных центров?', 'Да. Преподаватель создаёт колоды, добавляет студентов в группы, видит прогресс каждого. Дуэли и Live tests превращают учёбу в игру. Уже используют учебные центры в Узбекистане.'),
-      ('Какие форматы импорта поддерживаются?', '.txt, .csv, .docx, .pdf — любой формат с любой нумерацией. Парсер понимает разные стили оформления вопросов и ответов.'),
-      ('Мои данные в безопасности?', 'Да. Колоды по умолчанию приватные — видны только тебе. Чтобы поделиться, нужно нажать «Опубликовать». Пароли хранятся захешированными. База на защищённом сервере.'),
+      (t('lp_faq_q1'), t('lp_faq_a1')),
+      (t('lp_faq_q2'), t('lp_faq_a2')),
+      (t('lp_faq_q3'), t('lp_faq_a3')),
+      (t('lp_faq_q4'), t('lp_faq_a4')),
+      (t('lp_faq_q5'), t('lp_faq_a5')),
+      (t('lp_faq_q6'), t('lp_faq_a6')),
+      (t('lp_faq_q7'), t('lp_faq_a7')),
     ] %}
 
     <div class="space-y-3">
@@ -818,9 +758,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-        <div class="faq-a" x-show="open === {{ loop.index0 }}" x-transition x-cloak>
-          {{ a }}
-        </div>
+        <div class="faq-a" x-show="open === {{ loop.index0 }}" x-transition x-cloak>{{ a }}</div>
       </div>
       {% endfor %}
     </div>
@@ -829,38 +767,37 @@
 
 <!-- ============== CTA ============== -->
 <section class="section relative overflow-hidden">
-  <div class="absolute inset-0 -z-10">
-    <div class="blob b1" style="opacity:0.4; left:50%; top:50%; transform:translate(-50%,-50%);"></div>
-  </div>
   <div class="section-inner max-w-3xl text-center">
-    <h2 class="reveal section-title">Запусти своё обучение<br>сегодня.</h2>
-    <p class="reveal text-xl text-gray-600 mb-10">Бесплатно. Без карты.</p>
+    <h2 class="reveal section-title">{{ t('lp_cta_title_1') }}<br>{{ t('lp_cta_title_2') }}</h2>
+    <p class="reveal text-xl text-gray-600 mb-10">{{ t('lp_cta_sub') }}</p>
     <div class="reveal flex gap-3 justify-center flex-wrap">
-      <a href="/register" class="btn-hero btn-hero-primary">Начать →</a>
-      <a href="/login" class="btn-hero btn-hero-ghost">Войти</a>
+      <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_cta_btn_start') }}</a>
+      <a href="/login" class="btn-hero btn-hero-ghost">{{ t('lp_cta_btn_login') }}</a>
     </div>
   </div>
 </section>
 
 <footer class="border-t border-black/5 py-10 text-center text-sm text-gray-500">
-  © 2026 QuizPro · Сделано в Узбекистане 🇺🇿
+  {{ t('lp_footer') }}
 </footer>
 
 <script>
-  // Alpine demo flashcard
+  // Demo cards data — server provides translated text per language
+  const DEMO_CARDS = [
+    { cat: {{ t('lp_demo_c1_cat')|tojson }}, q: {{ t('lp_demo_c1_q')|tojson }}, a: {{ t('lp_demo_c1_a')|tojson }} },
+    { cat: {{ t('lp_demo_c2_cat')|tojson }}, q: {{ t('lp_demo_c2_q')|tojson }}, a: {{ t('lp_demo_c2_a')|tojson }} },
+    { cat: {{ t('lp_demo_c3_cat')|tojson }}, q: {{ t('lp_demo_c3_q')|tojson }}, a: {{ t('lp_demo_c3_a')|tojson }} },
+    { cat: {{ t('lp_demo_c4_cat')|tojson }}, q: {{ t('lp_demo_c4_q')|tojson }}, a: {{ t('lp_demo_c4_a')|tojson }} },
+    { cat: {{ t('lp_demo_c5_cat')|tojson }}, q: {{ t('lp_demo_c5_q')|tojson }}, a: {{ t('lp_demo_c5_a')|tojson }} },
+  ];
+
   function flashDemo() {
     return {
       idx: 0,
       flipped: false,
       correct: 0,
       wrong: 0,
-      cards: [
-        { cat: 'English', q: 'What is Past Perfect tense used for?', a: 'For an action that happened before another past action. Example: "I had eaten before he arrived."' },
-        { cat: 'География', q: 'Какая столица Узбекистана?', a: 'Ташкент — крупнейший город Центральной Азии, население около 3 млн.' },
-        { cat: 'Биология', q: 'Сколько костей в теле взрослого человека?', a: '206 костей. У новорождённого их около 270, многие срастаются с возрастом.' },
-        { cat: 'Programming', q: 'What does REST stand for?', a: 'Representational State Transfer — an architectural style for designing networked APIs using HTTP.' },
-        { cat: 'Математика', q: 'Реши: x² + 5x + 6 = 0', a: 'x = -2 или x = -3. Раскладываем: (x+2)(x+3) = 0.' },
-      ],
+      cards: DEMO_CARDS,
       flip() { this.flipped = !this.flipped; },
       next() { this.flipped = false; setTimeout(() => { this.idx = (this.idx + 1) % this.cards.length; }, 200); },
       prev() { this.flipped = false; setTimeout(() => { this.idx = (this.idx - 1 + this.cards.length) % this.cards.length; }, 200); },
