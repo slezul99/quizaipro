@@ -5589,6 +5589,101 @@ def superadmin_dashboard():
     )
 
 
+@app.route("/superadmin/db_upload", methods=["GET", "POST"])
+@super_admin_required
+def superadmin_db_upload():
+    """Vremennyy zagruzhik BD: zamenyaet /data/quizpro.db na uploadovannyy fayl.
+    Pered zamenoy delaet bekap tekushchey BD."""
+    if request.method == "GET":
+        # Forma zagruzki
+        info = ""
+        try:
+            conn = db.get_conn()
+            uc = conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]
+            dc = conn.execute("SELECT COUNT(*) AS c FROM decks").fetchone()["c"]
+            cc = conn.execute("SELECT COUNT(*) AS c FROM cards").fetchone()["c"]
+            conn.close()
+            info = f"Сейчас в БД: {uc} юзеров · {dc} колод · {cc} карт"
+        except Exception as e:
+            info = f"Error: {e}"
+        return f"""
+        <html><body style="font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px;">
+        <h1>📦 Загрузить БД</h1>
+        <p style="color:#666;">{info}</p>
+        <p style="background:#fef3c7; padding:12px; border-radius:8px; color:#92400e;">
+            ⚠️ Текущая БД на сервере будет переименована в backup. Юзеры/колоды на сервере исчезнут — будут только из загруженного файла.
+        </p>
+        <form method="POST" enctype="multipart/form-data" style="margin-top:20px;">
+            <input type="hidden" name="_csrf" value="{csrf_token()}">
+            <input type="file" name="dbfile" accept=".db,.sqlite" required style="margin-bottom:12px;">
+            <br>
+            <label style="display:block; margin:12px 0;">
+                <input type="checkbox" name="confirm" value="yes" required>
+                Я понимаю что текущая БД будет заменена
+            </label>
+            <button type="submit" style="background:#ef4444; color:white; padding:10px 20px; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
+                🔄 Заменить БД
+            </button>
+        </form>
+        <p style="margin-top:20px;"><a href="/superadmin">← Назад</a></p>
+        </body></html>
+        """
+
+    # POST: zagruzhat fayl
+    f = request.files.get("dbfile")
+    if not f or not f.filename:
+        return "Файл не выбран", 400
+    if not request.form.get("confirm"):
+        return "Подтверждение не отмечено", 400
+
+    # Bekap tekushchey BD
+    import shutil
+    from datetime import datetime as _dt
+    stamp = _dt.utcnow().strftime("%Y%m%d_%H%M%S")
+    backup_path = db.DB_PATH.with_name(f"quizpro_backup_{stamp}.db")
+    if db.DB_PATH.exists():
+        shutil.copy2(str(db.DB_PATH), str(backup_path))
+
+    # Sokhranyaem novuyu BD vo vremennoye mesto, potom zameni
+    tmp_path = db.DB_PATH.with_name("quizpro_uploaded.db.tmp")
+    f.save(str(tmp_path))
+
+    # Proveryaem chto eto sqlite
+    try:
+        import sqlite3
+        test = sqlite3.connect(str(tmp_path))
+        test.execute("SELECT COUNT(*) FROM users").fetchone()
+        test.close()
+    except Exception as e:
+        tmp_path.unlink(missing_ok=True)
+        return f"Файл не похож на валидную БД QuizPro: {e}", 400
+
+    # Zamenyaem
+    shutil.move(str(tmp_path), str(db.DB_PATH))
+
+    # Zapuskayem migracii (na sluchay esli zagruzhennaya BD bolee staraya po skheme)
+    try:
+        db.init_db()
+        billing.init_billing_tables()
+    except Exception as e:
+        return f"DB заменена, но миграция упала: {e}", 500
+
+    # Statistika novoy BD
+    conn = db.get_conn()
+    uc = conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]
+    dc = conn.execute("SELECT COUNT(*) AS c FROM decks").fetchone()["c"]
+    cc = conn.execute("SELECT COUNT(*) AS c FROM cards").fetchone()["c"]
+    conn.close()
+    return f"""
+    <html><body style="font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px;">
+    <h1>✅ БД заменена</h1>
+    <p>Бэкап старой БД сохранён: <code>{backup_path.name}</code></p>
+    <p>Сейчас в БД: <b>{uc}</b> юзеров · <b>{dc}</b> колод · <b>{cc}</b> карт</p>
+    <p><a href="/dashboard">→ Dashboard</a></p>
+    </body></html>
+    """
+
+
 @app.route("/superadmin/user/<int:user_id>")
 @super_admin_required
 def superadmin_user_detail(user_id):
