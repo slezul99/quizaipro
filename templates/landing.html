@@ -287,6 +287,160 @@
     .brain-orb::after { font-size: 56px; }
     .stage-3d { height: 360px; }
   }
+
+  /* === Interactive Flashcard Demo === */
+  .demo-card {
+    perspective: 1500px;
+    width: 100%;
+    aspect-ratio: 4/3;
+    cursor: pointer;
+  }
+  .demo-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .demo-card.flipped .demo-card-inner { transform: rotateY(180deg); }
+  .demo-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 0 25px 60px -15px rgba(99,102,241,0.35);
+  }
+  .demo-front {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    color: #0f172a;
+  }
+  .demo-back {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    transform: rotateY(180deg);
+  }
+  .demo-cat {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+  .demo-front .demo-cat { background: #f1f5f9; color: #475569; }
+  .demo-back .demo-cat { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.95); }
+  .demo-q {
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 1.5rem;
+  }
+  .demo-hint {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-top: auto;
+  }
+  .demo-btn {
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .demo-btn-correct {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 8px 20px -5px rgba(16,185,129,0.5);
+  }
+  .demo-btn-correct:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -5px rgba(16,185,129,0.7); }
+  .demo-btn-wrong {
+    background: white;
+    color: #dc2626;
+    border-color: #fecaca;
+  }
+  .demo-btn-wrong:hover { background: #fef2f2; transform: translateY(-2px); }
+  .demo-btn-nav {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(99,102,241,0.15);
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .demo-btn-nav:hover { background: white; transform: scale(1.08); box-shadow: 0 8px 20px -5px rgba(99,102,241,0.3); }
+
+  .demo-stat {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .demo-progress {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .demo-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #10b981);
+    transition: width 0.4s ease;
+  }
+
+  /* === FAQ accordion === */
+  .faq-item {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .faq-item:hover { border-color: rgba(99,102,241,0.25); }
+  .faq-item.open { background: rgba(255,255,255,0.95); box-shadow: 0 20px 40px -15px rgba(99,102,241,0.2); }
+  .faq-q {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 16px;
+  }
+  .faq-chev { transition: transform 0.3s; flex-shrink: 0; color: #6366f1; }
+  .faq-item.open .faq-chev { transform: rotate(180deg); }
+  .faq-a {
+    padding: 0 1.5rem 1.5rem;
+    color: #475569;
+    line-height: 1.6;
+    font-size: 15px;
+  }
 </style>
 {% endblock %}
 
@@ -329,7 +483,7 @@
     </p>
     <div class="reveal flex gap-3 justify-center flex-wrap">
       <a href="/register" class="btn-hero btn-hero-primary">Начать бесплатно →</a>
-      <a href="/login" class="btn-hero btn-hero-ghost">Войти</a>
+      <a href="#try-it" class="btn-hero btn-hero-ghost">Попробовать карточку</a>
     </div>
   </div>
 
@@ -493,6 +647,91 @@
   </div>
 </section>
 
+<!-- ============== INTERACTIVE DEMO — try a flashcard now! ============== -->
+<section class="section" x-data="flashDemo()" id="try-it">
+  <div class="section-inner max-w-6xl">
+    <div class="text-center mb-12">
+      <p class="reveal section-label">Попробуй прямо сейчас</p>
+      <h2 class="reveal section-title">Это работает.<br>Убедись сам.</h2>
+      <p class="reveal text-lg text-slate-600 max-w-2xl mx-auto">Кликни на карточку чтобы увидеть ответ. Оцени знание. Так ты учишься в QuizPro каждый день.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <!-- Card -->
+      <div class="reveal">
+        <div class="demo-card" :class="{ 'flipped': flipped }" @click="flip()">
+          <div class="demo-card-inner">
+            <div class="demo-face demo-front">
+              <span class="demo-cat" x-text="cards[idx].cat"></span>
+              <div class="demo-q" x-text="cards[idx].q"></div>
+              <div class="demo-hint">👆 Кликни чтобы увидеть ответ</div>
+            </div>
+            <div class="demo-face demo-back">
+              <span class="demo-cat" x-text="cards[idx].cat"></span>
+              <div class="demo-q" x-text="cards[idx].a"></div>
+              <div class="demo-hint">Знал? Оцени себя ↓</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- nav -->
+        <div class="mt-6 flex items-center justify-center gap-3">
+          <button class="demo-btn-nav" @click.stop="prev()" title="Предыдущая">‹</button>
+          <button class="demo-btn-nav" @click.stop="reset()" title="Сбросить">↻</button>
+          <button class="demo-btn-nav" @click.stop="next()" title="Следующая">›</button>
+        </div>
+
+        <!-- answer buttons -->
+        <div class="mt-5 flex items-center justify-center gap-3" x-show="flipped" x-transition>
+          <button class="demo-btn demo-btn-wrong" @click.stop="answer(false)">
+            ✗ Не знал
+          </button>
+          <button class="demo-btn demo-btn-correct" @click.stop="answer(true)">
+            ✓ Знал!
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats panel -->
+      <div class="reveal space-y-4">
+        <div class="demo-stat" style="text-align:left; padding:1.5rem;">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">Прогресс сессии</h3>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="rounded-xl p-4" style="background:rgba(16,185,129,0.1);">
+              <div class="text-3xl font-black" style="color:#059669;" x-text="correct"></div>
+              <div class="text-xs text-slate-600 mt-1">Знал</div>
+            </div>
+            <div class="rounded-xl p-4" style="background:rgba(239,68,68,0.1);">
+              <div class="text-3xl font-black" style="color:#dc2626;" x-text="wrong"></div>
+              <div class="text-xs text-slate-600 mt-1">Не знал</div>
+            </div>
+          </div>
+          <div class="demo-progress">
+            <div class="demo-progress-bar" :style="`width: ${pct()}%`"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2" x-text="(correct+wrong) > 0 ? `Точность: ${pct()}%` : 'Ответь чтобы увидеть точность'"></p>
+        </div>
+
+        <div class="demo-stat" style="text-align:left; padding:1.5rem; background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08)); border-color: rgba(99,102,241,0.2);">
+          <h3 class="text-lg font-bold text-slate-900 mb-2">🧠 Что делает SM-2</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Знал — карточка вернётся через 1, 6, 14 дней. Не знал — через 10 минут. Алгоритм подстраивается под твою память: легкие отдалит, сложные приблизит.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 text-sm text-slate-500">
+          <span class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full" style="background:#6366f1;"></span>
+            Карта <span x-text="idx+1"></span> из <span x-text="cards.length"></span>
+          </span>
+          <span>·</span>
+          <a href="/register" class="text-indigo-600 font-semibold hover:underline">Создай свою колоду →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============== HOW IT WORKS ============== -->
 <section class="section" style="background:linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.04) 50%, transparent 100%);">
   <div class="section-inner max-w-4xl">
@@ -551,6 +790,43 @@
   </div>
 </section>
 
+<!-- ============== FAQ ============== -->
+<section class="section" x-data="{ open: 0 }">
+  <div class="section-inner max-w-3xl">
+    <div class="text-center mb-12">
+      <p class="reveal section-label">Часто задают</p>
+      <h2 class="reveal section-title">Вопросы и ответы</h2>
+      <p class="reveal text-slate-600">Всё что нужно знать перед стартом.</p>
+    </div>
+
+    {% set faqs = [
+      ('Это бесплатно?', 'Да. Регистрация и базовое использование бесплатны. AI-генерация, импорт PDF, неограниченные колоды — всё доступно сразу. Платных тарифов пока нет.'),
+      ('Как работает AI-генерация карточек?', 'Вставь текст лекции, статью или загрузи PDF/DOCX. AI прочитает материал и создаст вопрос-ответ карточки за 15 секунд. Включи режим Quality Mode чтобы AI прошёл по карточкам дважды и улучшил их.'),
+      ('Что такое SM-2 алгоритм?', 'Это научно-доказанный метод повторения с интервалами (с 1985 года, основа Anki). Карточки появляются ровно тогда, когда ты начинаешь забывать. Знаешь — следующее повторение через дни/недели. Не знаешь — через минуты.'),
+      ('На каких языках работает?', 'Интерфейс на 3 языках: Русский, English, Oʻzbek. Контент карточек — на любом языке. AI понимает все мировые языки.'),
+      ('Подходит для учебных центров?', 'Да. Преподаватель создаёт колоды, добавляет студентов в группы, видит прогресс каждого. Дуэли и Live tests превращают учёбу в игру. Уже используют учебные центры в Узбекистане.'),
+      ('Какие форматы импорта поддерживаются?', '.txt, .csv, .docx, .pdf — любой формат с любой нумерацией. Парсер понимает разные стили оформления вопросов и ответов.'),
+      ('Мои данные в безопасности?', 'Да. Колоды по умолчанию приватные — видны только тебе. Чтобы поделиться, нужно нажать «Опубликовать». Пароли хранятся захешированными. База на защищённом сервере.'),
+    ] %}
+
+    <div class="space-y-3">
+      {% for q, a in faqs %}
+      <div class="reveal faq-item" :class="{ 'open': open === {{ loop.index0 }} }">
+        <button class="faq-q" @click="open = open === {{ loop.index0 }} ? -1 : {{ loop.index0 }}">
+          <span>{{ q }}</span>
+          <svg class="faq-chev w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div class="faq-a" x-show="open === {{ loop.index0 }}" x-transition x-cloak>
+          {{ a }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
 <!-- ============== CTA ============== -->
 <section class="section relative overflow-hidden">
   <div class="absolute inset-0 -z-10">
@@ -571,6 +847,35 @@
 </footer>
 
 <script>
+  // Alpine demo flashcard
+  function flashDemo() {
+    return {
+      idx: 0,
+      flipped: false,
+      correct: 0,
+      wrong: 0,
+      cards: [
+        { cat: 'English', q: 'What is Past Perfect tense used for?', a: 'For an action that happened before another past action. Example: "I had eaten before he arrived."' },
+        { cat: 'География', q: 'Какая столица Узбекистана?', a: 'Ташкент — крупнейший город Центральной Азии, население около 3 млн.' },
+        { cat: 'Биология', q: 'Сколько костей в теле взрослого человека?', a: '206 костей. У новорождённого их около 270, многие срастаются с возрастом.' },
+        { cat: 'Programming', q: 'What does REST stand for?', a: 'Representational State Transfer — an architectural style for designing networked APIs using HTTP.' },
+        { cat: 'Математика', q: 'Реши: x² + 5x + 6 = 0', a: 'x = -2 или x = -3. Раскладываем: (x+2)(x+3) = 0.' },
+      ],
+      flip() { this.flipped = !this.flipped; },
+      next() { this.flipped = false; setTimeout(() => { this.idx = (this.idx + 1) % this.cards.length; }, 200); },
+      prev() { this.flipped = false; setTimeout(() => { this.idx = (this.idx - 1 + this.cards.length) % this.cards.length; }, 200); },
+      answer(ok) {
+        if (ok) this.correct++; else this.wrong++;
+        this.next();
+      },
+      reset() { this.idx = 0; this.flipped = false; this.correct = 0; this.wrong = 0; },
+      pct() {
+        const tot = this.correct + this.wrong;
+        return tot === 0 ? 0 : Math.round((this.correct / tot) * 100);
+      },
+    };
+  }
+
   // Reveal on scroll
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
