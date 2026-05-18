@@ -44,7 +44,7 @@ def is_org_admin(user):
 
 # Spisok super-admin username'ov — vladeltsy sayta.
 # Tol'ko oni vidyat /superadmin analitiku.
-SUPER_ADMINS = {"slezul99@gmail.com"}
+SUPER_ADMINS = {"slezul99", "Saidxon", "saidxon"}
 
 
 def is_super_admin(user):
