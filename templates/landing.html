@@ -225,21 +225,109 @@
 
   .section { padding: 6rem 1.5rem; position: relative; }
   .section-inner { max-width: 1200px; margin: 0 auto; }
+
+  /* Section label — animated gradient badge */
   .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 999px;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #6366f1;
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 1rem;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.12), rgba(236,72,153,0.10));
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #4f46e5;
+    box-shadow: 0 8px 24px -8px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.5);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
   }
+  .section-label::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.6) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shine 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes shine {
+    0% { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+  }
+  .section-label .lbl-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    box-shadow: 0 0 10px rgba(139,92,246,0.7);
+    animation: pulse-dot 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+  }
+
+  /* Section title — gradient + decorative underline */
   .section-title {
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
+    font-size: clamp(2.2rem, 4.5vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
     margin-bottom: 1.25rem;
-    color: #0f172a;
+    background: linear-gradient(135deg, #0f172a 0%, #312e81 40%, #6366f1 70%, #8b5cf6 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: title-shift 8s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+  }
+  @keyframes title-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  /* Highlighted accent word inside title */
+  .section-title .accent {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  /* Decorative dual-line divider */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  .section-divider .line {
+    height: 2px;
+    width: 48px;
+    background: linear-gradient(90deg, transparent, #6366f1, transparent);
+    border-radius: 2px;
+  }
+  .section-divider .star {
+    color: #8b5cf6;
+    font-size: 12px;
+    animation: star-spin 6s linear infinite;
+  }
+  @keyframes star-spin { to { transform: rotate(360deg); } }
+
+  .section-sub {
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    color: #475569;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.6;
   }
 
   .feature {
@@ -559,8 +647,17 @@
 <section class="section">
   <div class="section-inner">
     <div class="text-center mb-16">
-      <p class="reveal section-label">{{ t('lp_f_label') }}</p>
-      <h2 class="reveal section-title">{{ t('lp_f_title_1') }}<br>{{ t('lp_f_title_2') }}</h2>
+      <span class="reveal section-label">
+        <span class="lbl-dot"></span>
+        ✨ {{ t('lp_f_label') }}
+      </span>
+      <div class="reveal section-divider">
+        <span class="line"></span><span class="star">✦</span><span class="line"></span>
+      </div>
+      <h2 class="reveal section-title">
+        {{ t('lp_f_title_1') }}<br>
+        <span class="accent">{{ t('lp_f_title_2') }}</span>
+      </h2>
     </div>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div class="reveal feature">
@@ -601,9 +698,18 @@
 <section class="section" x-data="flashDemo()" id="try-it">
   <div class="section-inner max-w-6xl">
     <div class="text-center mb-12">
-      <p class="reveal section-label">{{ t('lp_demo_label') }}</p>
-      <h2 class="reveal section-title">{{ t('lp_demo_title_1') }}<br>{{ t('lp_demo_title_2') }}</h2>
-      <p class="reveal text-lg text-slate-600 max-w-2xl mx-auto">{{ t('lp_demo_sub') }}</p>
+      <span class="reveal section-label">
+        <span class="lbl-dot"></span>
+        🎮 {{ t('lp_demo_label') }}
+      </span>
+      <div class="reveal section-divider">
+        <span class="line"></span><span class="star">✦</span><span class="line"></span>
+      </div>
+      <h2 class="reveal section-title">
+        {{ t('lp_demo_title_1') }}<br>
+        <span class="accent">{{ t('lp_demo_title_2') }}</span>
+      </h2>
+      <p class="reveal section-sub mt-4">{{ t('lp_demo_sub') }}</p>
     </div>
 
     <!-- IN-PROGRESS -->
@@ -704,8 +810,17 @@
 <section class="section" style="background:linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.04) 50%, transparent 100%);">
   <div class="section-inner max-w-4xl">
     <div class="text-center mb-16">
-      <p class="reveal section-label">{{ t('lp_how_label') }}</p>
-      <h2 class="reveal section-title">{{ t('lp_how_title_1') }}<br>{{ t('lp_how_title_2') }}</h2>
+      <span class="reveal section-label">
+        <span class="lbl-dot"></span>
+        🚀 {{ t('lp_how_label') }}
+      </span>
+      <div class="reveal section-divider">
+        <span class="line"></span><span class="star">✦</span><span class="line"></span>
+      </div>
+      <h2 class="reveal section-title">
+        {{ t('lp_how_title_1') }}<br>
+        <span class="accent">{{ t('lp_how_title_2') }}</span>
+      </h2>
     </div>
 
     {% set steps = [
@@ -734,8 +849,17 @@
 <section class="section" style="background:radial-gradient(ellipse 60% 50% at 50% 50%, rgba(168,85,247,0.06), transparent 70%);">
   <div class="section-inner">
     <div class="text-center mb-12">
-      <p class="reveal section-label">{{ t('lp_stats_label') }}</p>
-      <h2 class="reveal section-title">{{ t('lp_stats_title_1') }}<br>{{ t('lp_stats_title_2') }}</h2>
+      <span class="reveal section-label">
+        <span class="lbl-dot"></span>
+        🔬 {{ t('lp_stats_label') }}
+      </span>
+      <div class="reveal section-divider">
+        <span class="line"></span><span class="star">✦</span><span class="line"></span>
+      </div>
+      <h2 class="reveal section-title">
+        {{ t('lp_stats_title_1') }}<br>
+        <span class="accent">{{ t('lp_stats_title_2') }}</span>
+      </h2>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
       <div class="reveal text-center">
@@ -762,9 +886,17 @@
 <section class="section" x-data="{ open: 0 }">
   <div class="section-inner max-w-3xl">
     <div class="text-center mb-12">
-      <p class="reveal section-label">{{ t('lp_faq_label') }}</p>
-      <h2 class="reveal section-title">{{ t('lp_faq_title') }}</h2>
-      <p class="reveal text-slate-600">{{ t('lp_faq_sub') }}</p>
+      <span class="reveal section-label">
+        <span class="lbl-dot"></span>
+        💬 {{ t('lp_faq_label') }}
+      </span>
+      <div class="reveal section-divider">
+        <span class="line"></span><span class="star">✦</span><span class="line"></span>
+      </div>
+      <h2 class="reveal section-title">
+        <span class="accent">{{ t('lp_faq_title') }}</span>
+      </h2>
+      <p class="reveal section-sub mt-4">{{ t('lp_faq_sub') }}</p>
     </div>
 
     {% set faqs = [
@@ -796,8 +928,14 @@
 <!-- ============== CTA ============== -->
 <section class="section relative overflow-hidden">
   <div class="section-inner max-w-3xl text-center">
-    <h2 class="reveal section-title">{{ t('lp_cta_title_1') }}<br>{{ t('lp_cta_title_2') }}</h2>
-    <p class="reveal text-xl text-gray-600 mb-10">{{ t('lp_cta_sub') }}</p>
+    <div class="reveal section-divider">
+      <span class="line"></span><span class="star">✦</span><span class="line"></span>
+    </div>
+    <h2 class="reveal section-title">
+      {{ t('lp_cta_title_1') }}<br>
+      <span class="accent">{{ t('lp_cta_title_2') }}</span>
+    </h2>
+    <p class="reveal text-xl text-gray-600 mb-10 mt-4">{{ t('lp_cta_sub') }}</p>
     <div class="reveal flex gap-3 justify-center flex-wrap">
       <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_cta_btn_start') }}</a>
       <a href="/login" class="btn-hero btn-hero-ghost">{{ t('lp_cta_btn_login') }}</a>
