@@ -20,6 +20,7 @@ import billing
 import ai_gen
 import achievements as ach_mod
 import goals as goals_mod
+import help_content
 from auth import current_user, login_required, role_required, can_manage_content, super_admin_required, is_super_admin
 
 BASE = Path(__file__).resolve().parent
@@ -533,7 +534,8 @@ def auth_google_callback():
 @login_required
 def help_page():
     """Stranitsa pomoshchi — kak polzovatsya saytom."""
-    return render_template("help.html")
+    lang = session.get("lang", "ru")
+    return render_template("help.html", help_data=help_content.get(lang))
 
 
 @app.route("/api/welcome/dismiss", methods=["POST"])

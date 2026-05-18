@@ -1,351 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 py-8" x-data="{ active: 'start' }">
+<div class="max-w-4xl mx-auto px-6 py-8" x-data="{ active: '{{ help_data.sections[0].id }}' }">
 
   <!-- Hero -->
   <div class="text-center mb-8">
     <div class="text-6xl mb-3">📖</div>
-    <h1 class="h-display text-4xl text-slate-900 mb-2">{{ t('help_title') if t('help_title') != 'help_title' else 'Как пользоваться QuizPro' }}</h1>
-    <p class="text-slate-600">{{ t('help_subtitle') if t('help_subtitle') != 'help_subtitle' else 'Шаг за шагом — от первой колоды до экзамена' }}</p>
+    <h1 class="h-display text-4xl text-slate-900 mb-2">{{ help_data.page_title }}</h1>
+    <p class="text-slate-600">{{ help_data.page_subtitle }}</p>
   </div>
 
   <!-- TOC + content -->
   <div class="grid md:grid-cols-[220px_1fr] gap-5">
     <!-- Sidebar TOC -->
     <aside class="md:sticky md:top-20 md:self-start glass rounded-2xl p-4 text-sm">
-      <a href="#start" @click="active='start'" :class="active==='start' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">🚀 С чего начать</a>
-      <a href="#decks" @click="active='decks'" :class="active==='decks' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">📚 Колоды и карты</a>
-      <a href="#import" @click="active='import'" :class="active==='import' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">📥 Импорт и AI</a>
-      <a href="#flashcards" @click="active='flashcards'" :class="active==='flashcards' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">🃏 Flashcards</a>
-      <a href="#test" @click="active='test'" :class="active==='test' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">📝 Тесты</a>
-      <a href="#match" @click="active='match'" :class="active==='match' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">🎯 Match</a>
-      <a href="#duels" @click="active='duels'" :class="active==='duels' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">⚔️ Дуэли</a>
-      <a href="#live" @click="active='live'" :class="active==='live' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">🎮 Live test</a>
-      <a href="#goals" @click="active='goals'" :class="active==='goals' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">🎯 Цели</a>
-      <a href="#categories" @click="active='categories'" :class="active==='categories' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">📁 Категории</a>
-      <a href="#social" @click="active='social'" :class="active==='social' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">💬 Соц. функции</a>
-      <a href="#xp" @click="active='xp'" :class="active==='xp' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition mb-1">⭐ XP и достижения</a>
-      <a href="#faq" @click="active='faq'" :class="active==='faq' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'" class="block px-3 py-2 rounded-lg transition">❓ Частые вопросы</a>
+      <div class="text-xs uppercase tracking-wider font-bold text-slate-500 px-2 mb-2">{{ help_data.toc_label }}</div>
+      {% for s in help_data.sections %}
+      <a href="#{{ s.id }}" @click="active='{{ s.id }}'"
+        :class="active==='{{ s.id }}' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'"
+        class="block px-3 py-2 rounded-lg transition mb-1">
+        {{ s.icon }} {{ s.nav }}
+      </a>
+      {% endfor %}
     </aside>
 
     <!-- Content -->
     <div class="space-y-6">
-
-      <!-- 1. С чего начать -->
-      <section id="start" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">🚀 С чего начать (3 минуты)</h2>
-        <p class="text-slate-700 mb-4">Если вы только что зарегистрировались — пройдите эти 4 шага и сразу получите ценность.</p>
-
-        <div class="space-y-3">
-          <div class="flex gap-3 p-3 rounded-xl bg-indigo-50">
-            <span class="text-2xl flex-shrink-0">1️⃣</span>
-            <div>
-              <div class="font-bold">Создайте первую колоду</div>
-              <p class="text-sm text-slate-600">Перейдите на <a href="/dashboard" class="text-indigo-600 hover:underline">Dashboard</a> → нажмите <b>+ Новая колода</b>. Назовите её, например, «Английский — базовые слова». Колода — это набор карточек по одной теме.</p>
-            </div>
-          </div>
-          <div class="flex gap-3 p-3 rounded-xl bg-emerald-50">
-            <span class="text-2xl flex-shrink-0">2️⃣</span>
-            <div>
-              <div class="font-bold">Добавьте карты — 3 способа</div>
-              <ul class="text-sm text-slate-600 list-disc pl-4 mt-1 space-y-1">
-                <li><b>Вручную:</b> в колоде → + Карта → введите вопрос и ответ</li>
-                <li><b>Импорт:</b> загрузите .pdf/.docx/.txt или вставьте текст</li>
-                <li><b>AI:</b> на /ai введите тему — AI создаст 10-30 вопросов за 20 секунд</li>
-              </ul>
-            </div>
-          </div>
-          <div class="flex gap-3 p-3 rounded-xl bg-purple-50">
-            <span class="text-2xl flex-shrink-0">3️⃣</span>
-            <div>
-              <div class="font-bold">Учитесь через Flashcards</div>
-              <p class="text-sm text-slate-600">В колоде нажмите 🃏 <b>Flashcards</b>. Карточка переворачивается — оцените «Сложно/Хорошо/Легко». Алгоритм SM-2 покажет каждую карту в момент когда вы начинаете забывать — это в 2-3 раза эффективнее обычной зубрёжки.</p>
-            </div>
-          </div>
-          <div class="flex gap-3 p-3 rounded-xl bg-amber-50">
-            <span class="text-2xl flex-shrink-0">4️⃣</span>
-            <div>
-              <div class="font-bold">Поставьте цель</div>
-              <p class="text-sm text-slate-600">На <a href="/goals" class="text-indigo-600 hover:underline">Цели</a> → + Новая цель. Выберите колоду, срок, уровень. Система сама посчитает сколько карт делать в день и будет напоминать. Если отстаёте — поддержит, можно продлить срок.</p>
-            </div>
-          </div>
-        </div>
+      {% for s in help_data.sections %}
+      <section id="{{ s.id }}" class="glass rounded-3xl p-6">
+        <h2 class="h-display text-2xl mb-3">{{ s.title }}</h2>
+        {{ s.body|safe }}
       </section>
-
-      <!-- 2. Колоды и карты -->
-      <section id="decks" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">📚 Колоды и карты</h2>
-        <p class="text-slate-700 mb-4"><b>Колода</b> — это набор карточек на одну тему. Например: «Английский — Beginner» или «Биология — Клетка».</p>
-
-        <h3 class="font-bold text-lg mt-4 mb-2">Структура карты</h3>
-        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
-          <li><b>Вопрос (front)</b> — то что показывается первым</li>
-          <li><b>Ответ (back)</b> — правильный ответ</li>
-          <li><b>Объяснение (note)</b> — для тестов с вариантами: A) ... B) ... C) ...</li>
-          <li><b>Изображение</b> — можно прикрепить картинку к вопросу</li>
-        </ul>
-
-        <h3 class="font-bold text-lg mt-4 mb-2">Типы колод</h3>
-        <div class="grid md:grid-cols-2 gap-3 mt-2">
-          <div class="bg-blue-50 rounded-xl p-3">
-            <div class="font-bold">📝 MCQ (тест с вариантами)</div>
-            <p class="text-xs text-slate-600 mt-1">Вопрос + 4 варианта (A/B/C/D), один правильный. Подходит для экзаменов, тестов знаний.</p>
-          </div>
-          <div class="bg-purple-50 rounded-xl p-3">
-            <div class="font-bold">🃏 Terms (термины/словари/правила)</div>
-            <p class="text-xs text-slate-600 mt-1">Вопрос + один ответ без вариантов. Подходит для слов, определений, формул.</p>
-          </div>
-        </div>
-
-        <h3 class="font-bold text-lg mt-4 mb-2">Кнопки в колоде</h3>
-        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
-          <li><b>📝 Тест</b> — пройти тест с вариантами ответов</li>
-          <li><b>🃏 Flashcards</b> — учить карточки с переворотом</li>
-          <li><b>🎯 Match</b> — игра на скорость (соединить пары)</li>
-          <li><b>🎮 Live test</b> — групповой тест в реальном времени (для учителей)</li>
-          <li><b>📊 Excel</b> — скачать журнал/прогресс</li>
-          <li><b>📄 PDF</b> — распечатать тест на бумаге</li>
-          <li><b>💾 JSON</b> — резервная копия колоды</li>
-          <li><b>📋 Дубль</b> — копия колоды (например для редактирования)</li>
-          <li><b>🌐 Опубликовать</b> — выложить в маркетплейс — другие смогут скопировать</li>
-        </ul>
-      </section>
-
-      <!-- 3. Импорт и AI -->
-      <section id="import" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">📥 Импорт и AI</h2>
-
-        <h3 class="font-bold text-lg mb-2">Импорт из файла</h3>
-        <p class="text-slate-700 text-sm mb-2">Поддерживаются: <code>.txt</code>, <code>.csv</code>, <code>.docx</code>, <code>.pdf</code>.</p>
-
-        <div class="bg-slate-50 rounded-xl p-4 text-sm font-mono mb-3 whitespace-pre-line">
-1. Что такое HTML?
-A) Язык программирования
-B) Язык разметки ✓
-C) База данных
-
-2. Сколько планет в Солнечной системе?
-A) 7
-B) 8 ✓
-C) 9
-D) 10
-        </div>
-        <p class="text-xs text-slate-500 mb-4">Знак <code>✓</code> отмечает правильный ответ. Нумерация (1., 1), 1-) — игнорируется.</p>
-
-        <p class="text-sm text-slate-700">Также можно простой формат: <code>Вопрос | Ответ | Объяснение</code> на каждой строке.</p>
-
-        <h3 class="font-bold text-lg mt-5 mb-2">🤖 AI генерация</h3>
-        <p class="text-slate-700 text-sm mb-3">На странице <a href="/ai" class="text-indigo-600 hover:underline">AI</a> можно:</p>
-        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
-          <li><b>По теме:</b> «Английская грамматика — Past Simple» → AI создаст 15 вопросов</li>
-          <li><b>По тексту:</b> вставьте лекцию — AI выделит ключевые понятия и сделает тесты</li>
-          <li><b>По PDF:</b> загрузите PDF учебника — AI прочитает и сгенерирует вопросы</li>
-        </ul>
-        <p class="text-xs text-slate-500 mt-2">⏱ Генерация занимает 10-30 секунд. Качество AI хорошее, но всегда проверяйте — AI может ошибиться.</p>
-      </section>
-
-      <!-- 4. Flashcards -->
-      <section id="flashcards" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">🃏 Flashcards (главный режим обучения)</h2>
-        <p class="text-slate-700 mb-3">Это сердце QuizPro. Карточки появляются ровно когда вы начинаете забывать — это <b>SM-2 алгоритм</b>, доказанный наукой с 1985 года.</p>
-
-        <h3 class="font-bold text-lg mt-3 mb-2">Как работает</h3>
-        <ol class="text-sm text-slate-700 list-decimal pl-5 space-y-1">
-          <li>Открываете карту → видите вопрос</li>
-          <li>Думаете → нажимаете «Перевернуть» (или <code>Space</code>)</li>
-          <li>Видите ответ → оцениваете честно:</li>
-        </ol>
-        <div class="grid grid-cols-3 gap-2 mt-3">
-          <div class="bg-orange-50 rounded-xl p-3 text-center text-sm">
-            <div class="font-bold">😣 Сложно</div>
-            <div class="text-xs text-slate-600">Покажу через 1 день</div>
-          </div>
-          <div class="bg-emerald-50 rounded-xl p-3 text-center text-sm">
-            <div class="font-bold">👍 Хорошо</div>
-            <div class="text-xs text-slate-600">Через 3 дня</div>
-          </div>
-          <div class="bg-blue-50 rounded-xl p-3 text-center text-sm">
-            <div class="font-bold">⭐ Легко</div>
-            <div class="text-xs text-slate-600">Через неделю</div>
-          </div>
-        </div>
-
-        <h3 class="font-bold text-lg mt-4 mb-2">Хоткеи</h3>
-        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
-          <li><code>Space</code> — перевернуть</li>
-          <li><code>←</code> / <code>→</code> — пред / след</li>
-          <li><code>F</code> — добавить в избранное ⭐</li>
-          <li><code>D</code> — пометить как трудную 🔥</li>
-          <li><code>1 / 2 / 3</code> — оценить (Сложно / Хорошо / Легко)</li>
-        </ul>
-
-        <h3 class="font-bold text-lg mt-4 mb-2">Совет</h3>
-        <p class="text-sm text-slate-700">Будьте честны при оценке. Если правильно вспомнили без усилий — Легко. С трудом — Хорошо. Не вспомнили — Сложно. Алгоритм работает только на честных оценках.</p>
-      </section>
-
-      <!-- 5. Тесты -->
-      <section id="test" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">📝 Тесты с вариантами</h2>
-        <p class="text-slate-700 mb-3">Подходит для проверки знаний — отвечаете на вопросы с 4 вариантами, в конце получаете разбор всех ошибок.</p>
-
-        <h3 class="font-bold text-lg mt-3 mb-2">Возможности</h3>
-        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
-          <li>Выбираете количество вопросов (5/10/25/50/100/все)</li>
-          <li>Случайный порядок (включается галочкой)</li>
-          <li>«Только трудные» — берутся карты где вы чаще всего ошибались</li>
-          <li>Варианты ответов перемешиваются на каждом тесте — нельзя запомнить «правильный всегда A»</li>
-          <li>В конце — детальный разбор всех ошибок</li>
-        </ul>
-      </section>
-
-      <!-- 6. Match -->
-      <section id="match" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">🎯 Match — игра на скорость</h2>
-        <p class="text-slate-700 mb-3">Соедините термин с определением быстрее всех. Доступно для колод-словарей.</p>
-        <p class="text-sm text-slate-700">Слева — вопросы, справа — ответы (перемешаны). Кликните на пару — если правильно, исчезнут. Цель — пройти за минимальное время. Лучшее время сохраняется в статистике.</p>
-      </section>
-
-      <!-- 7. Дуэли -->
-      <section id="duels" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">⚔️ Дуэли (1 на 1)</h2>
-        <p class="text-slate-700 mb-3">Сразитесь с другом по выбранной колоде или категории. Кто быстрее и точнее — побеждает.</p>
-
-        <h3 class="font-bold text-lg mt-3 mb-2">Как вызвать на дуэль</h3>
-        <ol class="text-sm text-slate-700 list-decimal pl-5 space-y-1">
-          <li>Откройте профиль друга или зайдите в <a href="/leaderboard" class="text-indigo-600 hover:underline">Лидерборд</a></li>
-          <li>Нажмите ⚔️ Вызвать → выберите колоду</li>
-          <li>Друг получит уведомление и присоединится</li>
-          <li>5 вопросов на скорость, оба видят результаты в реальном времени</li>
-        </ol>
-        <p class="text-xs text-slate-500 mt-2">Победитель получает +50 XP бонус. Серия побед даёт достижения.</p>
-      </section>
-
-      <!-- 8. Live test -->
-      <section id="live" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">🎮 Live test (групповой)</h2>
-        <p class="text-slate-700 mb-3">Это как Kahoot — учитель запускает тест, студенты входят по коду или ссылке, отвечают одновременно, видят таблицу лидеров в реальном времени.</p>
-
-        <h3 class="font-bold text-lg mt-3 mb-2">Как использовать</h3>
-        <ol class="text-sm text-slate-700 list-decimal pl-5 space-y-1">
-          <li>Игры → 🎮 Live test (создать) → выберите колоду или категорию</li>
-          <li>Получаете 6-значный код (например <code>TASG9J</code>) и пригласительную ссылку</li>
-          <li>Студенты заходят на <code>/live/join</code> и вводят код, или просто переходят по ссылке</li>
-          <li>Когда все собрались — Старт</li>
-          <li>За скорость и правильность — больше очков</li>
-        </ol>
-        <p class="text-sm text-slate-700 mt-3">После теста — детальный разбор кто что отвечал, и матрица ответов.</p>
-      </section>
-
-      <!-- 9. Цели -->
-      <section id="goals" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">🎯 Цели — для серьёзного обучения</h2>
-        <p class="text-slate-700 mb-3">Вы говорите «Хочу пройти эту колоду за 30 дней» — система сама делит работу на дни и напоминает.</p>
-
-        <h3 class="font-bold text-lg mt-3 mb-2">Уровни нагрузки</h3>
-        <div class="grid md:grid-cols-3 gap-2">
-          <div class="bg-green-50 rounded-xl p-3 text-sm">
-            <div class="font-bold">😌 Легко</div>
-            <div class="text-xs text-slate-600">×1 повтор каждой карты — просто увидеть</div>
-          </div>
-          <div class="bg-amber-50 rounded-xl p-3 text-sm">
-            <div class="font-bold">💪 Норма</div>
-            <div class="text-xs text-slate-600">×2 повтора — нормальное запоминание</div>
-          </div>
-          <div class="bg-red-50 rounded-xl p-3 text-sm">
-            <div class="font-bold">🔥 Сложно</div>
-            <div class="text-xs text-slate-600">×3 повтора — для уверенного знания</div>
-          </div>
-        </div>
-
-        <h3 class="font-bold text-lg mt-4 mb-2">Что делает система</h3>
-        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
-          <li>Считает сколько карт надо в день</li>
-          <li>Показывает план: сколько Flashcards, тестов, дуэлей</li>
-          <li>Напоминает каждый день (можно «Не сегодня»)</li>
-          <li>Если отстаёте — предупреждает с поддержкой, можно продлить срок</li>
-          <li>В конце — финальный экзамен на 60% (вопросы из тех где чаще ошибались)</li>
-          <li>Сдали экзамен → +500 XP + цель завершена ✅</li>
-        </ul>
-
-        <p class="text-sm text-slate-700 mt-3">Можно режим <b>«Соло»</b> — тогда дуэли и live не предлагаются, только flashcards и тесты.</p>
-      </section>
-
-      <!-- 10. Категории -->
-      <section id="categories" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">📁 Категории</h2>
-        <p class="text-slate-700 mb-3">Группируйте колоды по предметам/уровням.</p>
-        <p class="text-sm text-slate-700">Пример: создаёте корневую категорию «Английский» → внутри подкатегории «Beginner / Elementary / Intermediate». Каждая колода привязывается к одной категории.</p>
-        <p class="text-sm text-slate-700 mt-2">На странице категории нажмите 🎮 <b>Играть</b> — можно учить ВСЕ колоды категории одновременно.</p>
-      </section>
-
-      <!-- 11. Соц функции -->
-      <section id="social" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">💬 Соц. функции</h2>
-        <ul class="text-sm text-slate-700 space-y-2">
-          <li><b>👥 Друзья</b> — добавляйте, видите их прогресс, вызывайте на дуэли</li>
-          <li><b>💬 Чаты</b> — личные сообщения с друзьями</li>
-          <li><b>📡 Каналы</b> — групповые чаты и объявления</li>
-          <li><b>🎓 Учебные группы</b> — общие колоды + общая статистика + групповой чат</li>
-          <li><b>🌐 Маркет</b> — публичные колоды от других пользователей, можно копировать</li>
-          <li><b>🏆 Топ</b> — лидерборд по XP среди всех пользователей</li>
-        </ul>
-      </section>
-
-      <!-- 12. XP / Achievements -->
-      <section id="xp" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">⭐ XP, streak и достижения</h2>
-        <ul class="text-sm text-slate-700 space-y-2">
-          <li><b>⭐ XP</b> — очки опыта. +3 за правильный ответ, +5 за «Легко» в Flashcards, +50 за победу в дуэли, +500 за сдачу экзамена цели.</li>
-          <li><b>🔥 Streak</b> — дни подряд когда вы занимались. Пропустили день → сбрасывается. Мотивирует учиться каждый день.</li>
-          <li><b>🏆 Достижения</b> — открываются автоматически. Например «10 карт изучено», «5 побед в дуэли», «Месяц без пропусков». На странице <a href="/achievements" class="text-indigo-600 hover:underline">Достижения</a>.</li>
-          <li><b>🎯 Дневная цель</b> — настраивается в Настройках. По умолчанию 20 карт в день.</li>
-        </ul>
-      </section>
-
-      <!-- 13. FAQ -->
-      <section id="faq" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">❓ Частые вопросы</h2>
-        <div class="space-y-3" x-data="{ open: null }">
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Я учитель в учебном центре. С чего начать?</summary>
-            <p class="text-sm text-slate-700 mt-2">Зарегистрируйтесь в режиме «🏢 Учебный центр» → создайте колоды → перейдите в Управление пользователями → создайте логины студентам → раздайте им. У вас будет дашборд с прогрессом всех учеников.</p>
-          </details>
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Что делать если забыл пароль?</summary>
-            <p class="text-sm text-slate-700 mt-2">Если вы в учебном центре — обратитесь к админу/преподавателю, у них есть кнопка «🔑 Сбросить пароль». Если индивидуальный — напишите нам, мы сбросим вручную.</p>
-          </details>
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Как сделать колоду публичной?</summary>
-            <p class="text-sm text-slate-700 mt-2">В колоде нажмите кнопку 🌐 «Опубликовать». Колода появится в маркетплейсе — другие смогут её скопировать. Вы получите уведомление каждый раз когда кто-то скопировал.</p>
-          </details>
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Можно ли скачать свои данные?</summary>
-            <p class="text-sm text-slate-700 mt-2">Да. В колоде → 💾 JSON — скачается резервная копия. Можно потом импортировать обратно или передать другому юзеру.</p>
-          </details>
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Сайт работает на телефоне?</summary>
-            <p class="text-sm text-slate-700 mt-2">Да, полностью адаптирован. Flashcards поддерживают свайпы (← →). Можно добавить в «На главный экран» в браузере и пользоваться как приложением.</p>
-          </details>
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Что делать если AI не работает?</summary>
-            <p class="text-sm text-slate-700 mt-2">Может быть превышен дневной лимит. Подождите час или попробуйте на следующий день.</p>
-          </details>
-          <details class="bg-white/60 rounded-xl p-3">
-            <summary class="font-bold cursor-pointer">Как удалить аккаунт?</summary>
-            <p class="text-sm text-slate-700 mt-2">Напишите нам — удалим вручную и вышлем все ваши данные.</p>
-          </details>
-        </div>
-      </section>
+      {% endfor %}
 
       <!-- Bottom CTA -->
       <div class="glass rounded-3xl p-6 text-center"
         style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.06));">
         <div class="text-4xl mb-2">💌</div>
-        <h3 class="font-bold text-lg mb-2">Не нашли ответ?</h3>
-        <p class="text-sm text-slate-700 mb-3">Напишите нам, мы реально читаем все сообщения и стараемся помочь быстро.</p>
-        <a href="/notifications" class="btn btn-primary text-sm">Написать в поддержку</a>
+        <h3 class="font-bold text-lg mb-2">{{ help_data.support_title }}</h3>
+        <p class="text-sm text-slate-700 mb-3">{{ help_data.support_text }}</p>
+        <a href="/notifications" class="btn btn-primary text-sm">{{ help_data.support_btn }}</a>
       </div>
-
     </div>
   </div>
 </div>
