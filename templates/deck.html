@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<script>
+function deckEditor() {
+  return {
+    deck: {
+      id: {{ deck['id'] }},
+      icon: {{ deck['icon']|tojson }},
+      name: {{ deck['name']|tojson }},
+      category_id: {{ (deck['category_id'] or "")|tojson }},
+      is_public: {{ (deck['is_public'] == 1)|tojson }},
+    },
+    cards: {{ cards|tojson }},
+    showTest: false,
+    showLive: false,
+    showImageUpload: {},
+    testCount: 25,
+    testShuffle: false,
+    testOnlyHard: false,
+    search: '',
+    page: 1,
+    perPage: 50,
+    diffFilter: 'all',
+    sortBy: 'newest',
+    difficulties: [
+      { key: 'new',      label: 'Новые',     icon: '🌱' },
+      { key: 'learning', label: 'Изучаются', icon: '📖' },
+      { key: 'hard',     label: 'Трудные',   icon: '💪' },
+      { key: 'easy',     label: 'Лёгкие',    icon: '✨' },
+      { key: 'mastered', label: 'Усвоены',   icon: '🎓' },
+    ],
+
+    cardCountByDifficulty(key) {
+      return this.cards.filter(c => c.difficulty?.key === key).length;
+    },
+
+    parseOptions(card) {
+      let source = card.note && card.note.trim() ? card.note : card.back;
+      if (!source) return [];
+      const opts = [];
+      const lines = source.split('\n');
+      for (const line of lines) {
+        const m = line.trim().match(/^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$/);
+        if (m) opts.push({ letter: m[1].toUpperCase(), text: m[2].trim() });
+      }
+      if (opts.length === 0 && card.back) {
+        for (const line of card.back.split('\n')) {
+          const m = line.trim().match(/^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$/);
+          if (m) opts.push({ letter: m[1].toUpperCase(), text: m[2].trim() });
+        }
+      }
+      return opts;
+    },
+
+    getCurrentCorrect(card) {
+      if (!card.back) return null;
+      const m = card.back.trim().split('\n')[0].match(/^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]/);
+      if (m) {
+        const letter = m[1].toUpperCase();
+        if (this.parseOptions(card).some(o => o.letter === letter)) return letter;
+      }
+      return null;
+    },
+
+    isCorrect(card, letter) {
+      return this.getCurrentCorrect(card) === letter;
+    },
+
+    setCorrect(card, letter) {
+      const opts = this.parseOptions(card);
+      if (!opts.length) return;
+      card.note = opts.map(o => `${o.letter}) ${o.text}`).join('\n');
+      const target = opts.find(o => o.letter === letter);
+      if (target) card.back = `${target.letter}) ${target.text}`;
+      this.saveCard(card);
+    },
+
+    get filteredCards() {
+      let arr = [...this.cards];
+      if (this.diffFilter !== 'all') {
+        arr = arr.filter(c => c.difficulty?.key === this.diffFilter);
+      }
+      if (this.search.trim()) {
+        const q = this.search.toLowerCase();
+        arr = arr.filter(c =>
+          (c.front || '').toLowerCase().includes(q) ||
+          (c.back || '').toLowerCase().includes(q) ||
+          (c.note || '').toLowerCase().includes(q)
+        );
+      }
+      const diffOrder = { hard: 0, learning: 1, new: 2, easy: 3, mastered: 4 };
+      switch (this.sortBy) {
+        case 'oldest': arr.sort((a, b) => a.id - b.id); break;
+        case 'alpha': arr.sort((a, b) => (a.front || '').localeCompare(b.front || '')); break;
+        case 'hardest': arr.sort((a, b) => (diffOrder[a.difficulty?.key] ?? 99) - (diffOrder[b.difficulty?.key] ?? 99)); break;
+        case 'easiest': arr.sort((a, b) => (diffOrder[b.difficulty?.key] ?? 99) - (diffOrder[a.difficulty?.key] ?? 99)); break;
+        case 'most_attempts': arr.sort((a, b) => (b.reviews || 0) - (a.reviews || 0)); break;
+        case 'newest':
+        default: arr.sort((a, b) => b.id - a.id);
+      }
+      return arr;
+    },
+
+    get pagedCards() {
+      const start = (this.page - 1) * this.perPage;
+      return this.filteredCards.slice(start, start + this.perPage);
+    },
+
+    get totalPages() {
+      return Math.max(1, Math.ceil(this.filteredCards.length / this.perPage));
+    },
+
+    globalIdx(localIdx) {
+      return (this.page - 1) * this.perPage + localIdx + 1;
+    },
+
+    get pageNumbers() {
+      const total = this.totalPages;
+      const cur = this.page;
+      if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+      const arr = [1];
+      if (cur > 3) arr.push('...');
+      for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) arr.push(i);
+      if (cur < total - 2) arr.push('...');
+      arr.push(total);
+      return arr;
+    },
+
+    async saveDeck() {
+      const fd = new FormData();
+      fd.append('name', this.deck.name);
+      fd.append('icon', this.deck.icon);
+      fd.append('category_id', this.deck.category_id || '');
+      await fetch(`/deck/${this.deck.id}/edit`, { method: 'POST', body: fd });
+    },
+    async saveCard(card) {
+      const fd = new FormData();
+      fd.append('front', card.front);
+      fd.append('back', card.back);
+      fd.append('note', card.note || '');
+      await fetch(`/card/${card.id}/edit`, { method: 'POST', body: fd });
+    },
+    async addCard() {
+      const fd = new FormData();
+      fd.append('front', 'Новый вопрос');
+      fd.append('back', 'Ответ');
+      const r = await fetch(`/deck/${this.deck.id}/card/new`, { method: 'POST', body: fd });
+      const data = await r.json();
+      if (data.ok) {
+        this.cards.unshift({
+          id: data.id, front: 'Новый вопрос', back: 'Ответ',
+          note: '', reviews: 0, level: 'new'
+        });
+      }
+    },
+    async deleteCard(card) {
+      if (!confirm('Удалить карту?')) return;
+      await fetch(`/card/${card.id}/delete`, { method: 'POST' });
+      this.cards = this.cards.filter(c => c.id !== card.id);
+    },
+
+    speak(text) {
+      if (!text) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = /[а-яА-Я]/.test(text) ? 'ru-RU' : 'en-US';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    },
+
+    async uploadImage(card, event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('Размер файла больше 5 MB'); return; }
+      const fd = new FormData();
+      fd.append('image', file);
+      const r = await fetch(`/card/${card.id}/upload-image`, { method: 'POST', body: fd });
+      const data = await r.json();
+      if (data.ok) card.image_url = data.url;
+      else alert('Ошибка загрузки: ' + (data.error || 'unknown'));
+      event.target.value = '';
+    },
+
+    async removeImage(card) {
+      if (!confirm('Удалить изображение?')) return;
+      const fd = new FormData();
+      fd.append('front', card.front || '');
+      fd.append('back', card.back || '');
+      fd.append('note', card.note || '');
+      fd.append('image_url', '');
+      await fetch(`/card/${card.id}/edit`, { method: 'POST', body: fd });
+      card.image_url = '';
+    },
+
+    async cloneDeck() {
+      const newName = prompt('Название копии:', this.deck.name + ' (копия)');
+      if (!newName) return;
+      const fd = new FormData();
+      fd.append('new_name', newName);
+      const r = await fetch(`/deck/${this.deck.id}/clone`, { method: 'POST', body: fd });
+      window.location = r.url;
+    },
+
+    async togglePublic() {
+      const fd = new FormData();
+      const r = await fetch(`/deck/${this.deck.id}/toggle-public`, { method: 'POST', body: fd });
+      const data = await r.json();
+      if (data.ok) {
+        this.deck.is_public = !!data.is_public;
+        if (this.deck.is_public) {
+          alert('Колода опубликована! Другие пользователи увидят её в маркетплейсе.');
+        }
+      }
+    }
+  };
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8" x-data="deckEditor()">
+  <a href="/dashboard" class="text-indigo-600 text-sm hover:underline">← {{ t('decks') }}</a>
+
+  <div class="glass rounded-3xl p-6 my-6">
+    <div class="flex items-center gap-4 mb-3">
+      <input x-model="deck.icon" @blur="saveDeck()" maxlength="2" class="text-3xl w-14 text-center bg-transparent border-b-2 border-gray-200 focus:outline-none focus:border-indigo-500" value="{{ deck['icon'] }}">
+      <input x-model="deck.name" @blur="saveDeck()" class="text-2xl font-bold flex-1 bg-transparent border-b-2 border-gray-200 focus:outline-none focus:border-indigo-500 h-display" value="{{ deck['name'] }}">
+    </div>
+
+    {% if can_edit %}
+    <div class="flex items-center gap-2 mb-4">
+      <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">📁 Категория:</span>
+      <select x-model="deck.category_id" @change="saveDeck()" class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white">
+        <option value="">— Без категории —</option>
+        {% set roots = categories | selectattr('parent_id', 'none') | list %}
+        {% for r in roots %}
+        <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>
+        {% for ch in categories if ch['parent_id'] == r['id'] %}
+        <option value="{{ ch['id'] }}">&nbsp;&nbsp;&nbsp;└ {{ ch['icon'] }} {{ ch['name'] }}</option>
+        {% endfor %}
+        {% endfor %}
+      </select>
+      <a href="/categories" class="text-xs text-indigo-600 hover:underline">+ Создать категорию</a>
+    </div>
+    {% endif %}
+
+    <div class="flex items-center gap-3 flex-wrap text-sm">
+      <span class="text-gray-500" x-text="cards.length + ' карт'"></span>
+      {% set _dt = deck.deck_type or 'mcq' %}
+      {% if _dt == 'terms' %}
+      <a href="/deck/{{ deck['id'] }}/flashcards" class="btn text-sm"
+        style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);color:white;"
+        title="Карточки с переворотом — учить термины и определения по SM-2 алгоритму">🃏 Flashcards</a>
+      <a href="/deck/{{ deck['id'] }}/match" class="btn text-sm bg-amber-500 text-white hover:bg-amber-600"
+        title="Игра «Сопоставь пары» — соедини термины с определениями на скорость">🎯 Match</a>
+      {% if can_edit %}
+      <button type="button" @click="showLive = true" class="btn text-sm bg-pink-500 text-white hover:bg-pink-600"
+        title="Запустить групповую игру в реальном времени — студенты входят по коду">🎮 Live test</button>
+      {% endif %}
+      {% else %}
+      <button type="button" @click="showTest = true" class="btn btn-success text-sm"
+        title="Тест с вариантами ответов — отвечай на вопросы и проверяй свои знания">📝 Тест</button>
+      {% if can_edit %}
+      <button type="button" @click="showLive = true" class="btn text-sm bg-pink-500 text-white hover:bg-pink-600"
+        title="Запустить групповую игру в реальном времени — студенты входят по коду">🎮 Live test</button>
+      {% endif %}
+      {% endif %}
+      {% if can_edit %}
+      <a href="/export/deck/{{ deck['id'] }}" class="btn btn-ghost text-sm"
+        title="Скачать Excel-журнал — список карточек со статистикой и прогрессом студентов">📊 Excel</a>
+      <div class="relative" x-data="{ pdfMenu: false }">
+        <button type="button" @click="pdfMenu = !pdfMenu" class="btn btn-ghost text-sm"
+          title="Скачать PDF — для печати и проведения теста на бумаге">📄 PDF ▾</button>
+        <div x-show="pdfMenu" @click.outside="pdfMenu = false" x-transition x-cloak
+          class="absolute right-0 mt-2 w-56 glass-strong rounded-xl shadow-xl overflow-hidden z-20">
+          <a href="/export/deck/{{ deck['id'] }}/pdf" class="block px-4 py-2.5 hover:bg-indigo-50 text-sm"
+            title="Тест без ответов — для печати и раздачи студентам">📝 Тест без ответов</a>
+          <a href="/export/deck/{{ deck['id'] }}/pdf?answers=1" class="block px-4 py-2.5 hover:bg-indigo-50 text-sm border-t border-gray-100"
+            title="Версия с правильными ответами — для проверки">✅ С правильными ответами</a>
+        </div>
+      </div>
+      <button type="button" @click="cloneDeck()" class="btn btn-ghost text-sm"
+        title="Создать копию колоды (со всеми карточками) для редактирования отдельно">📋 Дубль</button>
+      <a href="/deck/{{ deck['id'] }}/export-json" class="btn btn-ghost text-sm"
+        title="Скачать колоду в JSON — резервная копия или передача другому пользователю">💾 JSON</a>
+      <button type="button" @click="togglePublic()" class="btn btn-ghost text-sm"
+        :class="deck.is_public ? 'bg-emerald-100 text-emerald-700' : ''"
+        title="Сделать колоду публичной — она появится в маркетплейсе и любой сможет её скопировать">
+        <span x-show="!deck.is_public">🌐 Опубликовать</span>
+        <span x-show="deck.is_public">✓ Публичная</span>
+      </button>
+      {% endif %}
+      <button @click="addCard()" class="btn btn-ghost text-sm"
+        title="Добавить новую пустую карточку в колоду">+ Карта</button>
+      <a href="/import?deck={{ deck['id'] }}" class="btn btn-ghost text-sm"
+        title="Импортировать карточки из файла (.txt, .pdf, .docx) или вставить текстом">📥 Импорт</a>
+    </div>
+      <span class="ml-auto text-xs text-gray-500">💡 Кликните на вариант чтобы отметить его правильным</span>
+    </div>
+  </div>
+
+  <!-- Search + filters -->
+  <div class="glass rounded-2xl p-4 mb-4 flex items-center gap-3 flex-wrap" x-show="cards.length > 0">
+    <input type="text" x-model="search" placeholder="🔍 Поиск..."
+      class="flex-1 min-w-[200px] px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white text-sm">
+    <div class="flex items-center gap-1.5 text-sm">
+      <span class="text-gray-500">На странице:</span>
+      <template x-for="n in [25, 50, 100]" :key="n">
+        <button @click="perPage = n; page = 1"
+          :class="perPage === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent' : 'bg-white border-gray-200 hover:border-indigo-300'"
+          class="px-3 py-1.5 rounded-lg border-2 font-semibold transition" x-text="n"></button>
+      </template>
+      <input type="number" min="1" :max="cards.length" x-model.number="perPage" @input="page = 1"
+        class="w-20 px-2 py-1.5 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white font-semibold text-center">
+      <button @click="perPage = cards.length; page = 1" class="btn btn-ghost text-xs px-3 py-1.5">Все</button>
+    </div>
+    <span class="text-sm text-gray-500" x-text="`${filteredCards.length} из ${cards.length}`"></span>
+  </div>
+
+  <div class="flex items-center gap-2 mb-4 flex-wrap" x-show="cards.length > 0">
+    <span class="text-xs uppercase tracking-wider font-semibold text-gray-500">Сложность:</span>
+    <button @click="diffFilter = 'all'"
+      :class="diffFilter === 'all' ? 'bg-indigo-500 text-white border-transparent' : 'bg-white border-gray-200'"
+      class="px-3 py-1 rounded-lg border-2 text-xs font-semibold transition">
+      Все (<span x-text="cards.length"></span>)
+    </button>
+    <template x-for="diff in difficulties" :key="diff.key">
+      <button @click="diffFilter = diff.key"
+        :class="diffFilter === diff.key ? 'bg-indigo-500 text-white border-transparent' : 'bg-white border-gray-200'"
+        class="px-3 py-1 rounded-lg border-2 text-xs font-semibold transition"
+        x-show="cardCountByDifficulty(diff.key) > 0">
+        <span x-text="diff.icon + ' ' + diff.label"></span>
+        (<span x-text="cardCountByDifficulty(diff.key)"></span>)
+      </button>
+    </template>
+    <span class="text-xs uppercase tracking-wider font-semibold text-gray-500 ml-4">Сортировка:</span>
+    <select x-model="sortBy" class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white">
+      <option value="newest">Сначала новые</option>
+      <option value="oldest">Сначала старые</option>
+      <option value="alpha">По алфавиту А-Я</option>
+      <option value="hardest">Сначала трудные</option>
+      <option value="easiest">Сначала лёгкие</option>
+      <option value="most_attempts">Больше попыток</option>
+    </select>
+  </div>
+
+  <!-- Cards -->
+  <div class="space-y-4">
+    <template x-for="(card, idx) in pagedCards" :key="card.id">
+      <div class="glass rounded-3xl p-6 group">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="text-xs font-bold text-indigo-500 mt-2 w-12" x-text="(globalIdx(idx)) + '.'"></div>
+          <textarea x-model="card.front" @blur="saveCard(card)" rows="1"
+            class="flex-1 bg-transparent resize-none focus:outline-none scrollbar text-base font-medium leading-relaxed border-b border-transparent focus:border-indigo-200"
+            placeholder="Текст вопроса..."></textarea>
+          <button type="button" @click="speak(card.front)"
+            class="text-gray-400 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition" title="Озвучить">🔊</button>
+        </div>
+
+        <div class="ml-11 mb-3" x-show="card.image_url">
+          <div class="relative inline-block group/img">
+            <img :src="card.image_url" class="max-h-40 rounded-xl border border-gray-200 cursor-pointer" @click="window.open(card.image_url, '_blank')">
+            <button type="button" @click="removeImage(card)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover/img:opacity-100 transition">✕</button>
+          </div>
+        </div>
+        <div class="ml-11 mb-3 flex gap-2 text-xs">
+          <label class="text-indigo-600 hover:underline cursor-pointer flex items-center gap-1">
+            <input type="file" accept="image/*" @change="uploadImage(card, $event)" class="hidden">
+            <span x-show="!card.image_url">📷 Добавить изображение</span>
+            <span x-show="card.image_url">🔄 Заменить</span>
+          </label>
+        </div>
+
+        <template x-if="parseOptions(card).length > 0">
+          <div class="space-y-2 ml-11">
+            <template x-for="opt in parseOptions(card)" :key="opt.letter">
+              <button type="button" @click="setCorrect(card, opt.letter)"
+                :class="isCorrect(card, opt.letter) ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-300' : 'border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/30'"
+                class="w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition">
+                <span :class="isCorrect(card, opt.letter) ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'"
+                  class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition" x-text="opt.letter"></span>
+                <span class="flex-1 text-sm" x-text="opt.text"></span>
+                <span x-show="isCorrect(card, opt.letter)" class="text-emerald-600 text-lg">✓</span>
+              </button>
+            </template>
+          </div>
+        </template>
+
+        <template x-if="parseOptions(card).length === 0">
+          <div class="ml-11">
+            <div class="text-xs text-gray-400 mb-1 uppercase font-semibold tracking-wider">Ответ</div>
+            <textarea x-model="card.back" @blur="saveCard(card)" rows="2"
+              class="w-full bg-transparent resize-none focus:outline-none border border-gray-200 rounded-xl p-3 focus:border-indigo-500"></textarea>
+            <div class="text-xs text-gray-400 mt-3 mb-1 uppercase font-semibold tracking-wider">Объяснение</div>
+            <textarea x-model="card.note" @blur="saveCard(card)" rows="1"
+              class="w-full bg-transparent resize-none text-sm text-gray-600 focus:outline-none border border-gray-200 rounded-xl p-2 focus:border-indigo-500"></textarea>
+          </div>
+        </template>
+
+        <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400 ml-11">
+          <div class="flex gap-3 flex-wrap items-center">
+            <template x-if="card.difficulty">
+              <span class="badge"
+                :class="{
+                  'bg-slate-100 text-slate-600': card.difficulty.color === 'slate',
+                  'bg-amber-100 text-amber-700': card.difficulty.color === 'amber',
+                  'bg-red-100 text-red-700': card.difficulty.color === 'red',
+                  'bg-blue-100 text-blue-700': card.difficulty.color === 'blue',
+                  'bg-emerald-100 text-emerald-700': card.difficulty.color === 'emerald'
+                }">
+                <span x-text="card.difficulty.icon"></span> <span x-text="card.difficulty.label"></span>
+              </span>
+            </template>
+            <span x-text="card.reviews + ' попыток'"></span>
+          </div>
+          <button @click="deleteCard(card)" class="opacity-0 group-hover:opacity-100 text-red-500 hover:underline transition">Удалить</button>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <button @click="addCard()" class="btn btn-ghost w-full mt-4 justify-center">+ Добавить карту</button>
+
+  <!-- Pagination -->
+  <div class="flex items-center justify-center gap-2 mt-8" x-show="totalPages > 1">
+    <button @click="page = 1" :disabled="page === 1"
+      class="btn btn-ghost text-sm disabled:opacity-30">⏮</button>
+    <button @click="page--" :disabled="page === 1"
+      class="btn btn-ghost text-sm disabled:opacity-30">←</button>
+    <div class="flex items-center gap-1 mx-2">
+      <template x-for="p in pageNumbers" :key="p">
+        <button @click="page = p" x-show="p !== '...'"
+          :class="page === p ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' : 'bg-white hover:bg-indigo-50'"
+          class="w-10 h-10 rounded-xl font-semibold transition border border-gray-200" x-text="p"></button>
+        <span x-show="p === '...'" class="px-2 text-gray-400">…</span>
+      </template>
+    </div>
+    <button @click="page++" :disabled="page === totalPages"
+      class="btn btn-ghost text-sm disabled:opacity-30">→</button>
+    <button @click="page = totalPages" :disabled="page === totalPages"
+      class="btn btn-ghost text-sm disabled:opacity-30">⏭</button>
+  </div>
+
+  <!-- Test settings modal -->
+  <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
+    <div class="glass-strong rounded-3xl p-8 max-w-md w-full scale-in">
+      <h2 class="text-2xl font-bold mb-1 h-display">📝 Запустить тест</h2>
+      <p class="text-sm text-gray-500 mb-5">
+        <span x-text="deck.name"></span> · всего <span x-text="cards.length" class="font-semibold"></span> вопросов
+      </p>
+
+      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Сколько вопросов</label>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <template x-for="n in [10, 25, 50, 100]" :key="n">
+          <button type="button" @click="testCount = n"
+            :disabled="n > cards.length"
+            :class="testCount === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent shadow-md' : 'border-gray-200 hover:border-indigo-300'"
+            class="py-3 rounded-xl border-2 font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed" x-text="n"></button>
+        </template>
+      </div>
+
+      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Своё число</label>
+      <div class="flex items-center gap-3 mb-3">
+        <input type="number" x-model.number="testCount" :max="cards.length" min="1"
+          class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white text-lg font-semibold">
+        <button type="button" @click="testCount = cards.length" class="btn btn-ghost text-sm whitespace-nowrap">Все</button>
+      </div>
+
+      <label class="flex items-center gap-3 mb-3 p-3 rounded-xl bg-indigo-50/50 border border-indigo-100 cursor-pointer hover:bg-indigo-50">
+        <input type="checkbox" x-model="testShuffle" class="w-5 h-5 accent-indigo-600">
+        <span class="text-sm">
+          <span class="font-semibold">🔀 Случайный порядок</span>
+          <span class="block text-xs text-gray-500">Перемешать вопросы</span>
+        </span>
+      </label>
+
+      <label class="flex items-center gap-3 mb-5 p-3 rounded-xl bg-red-50/50 border border-red-100 cursor-pointer hover:bg-red-50">
+        <input type="checkbox" x-model="testOnlyHard" class="w-5 h-5 accent-red-600">
+        <span class="text-sm">
+          <span class="font-semibold">💪 Только трудные</span>
+          <span class="block text-xs text-gray-500">Только вопросы с ошибками</span>
+        </span>
+      </label>
+
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="showTest = false" class="btn btn-ghost">Отмена</button>
+        <a :href="`/deck/${deck.id}/test?count=${testCount}&shuffle=${testShuffle ? 1 : 0}&only_hard=${testOnlyHard ? 1 : 0}`"
+          class="btn btn-success">▶ Начать</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live test modal -->
+  <div x-show="showLive" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showLive = false" x-cloak>
+    <form method="POST" action="/deck/{{ deck['id'] }}/live/start" class="glass-strong rounded-3xl p-8 max-w-md w-full scale-in">
+      <h2 class="text-2xl font-bold mb-1 h-display">🎮 Live тест</h2>
+      <p class="text-sm text-gray-500 mb-5">Студенты войдут по коду и увидят вопросы в реальном времени.</p>
+
+      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Сколько вопросов</label>
+      <div class="grid grid-cols-4 gap-2 mb-4">
+        <template x-for="n in [5, 10, 15, 20]" :key="n">
+          <label class="cursor-pointer">
+            <input type="radio" name="count" :value="n" :checked="n === 10" class="hidden peer">
+            <div class="py-2.5 rounded-xl border-2 border-gray-200 peer-checked:border-pink-500 peer-checked:bg-pink-50 text-center font-semibold" x-text="n"></div>
+          </label>
+        </template>
+      </div>
+
+      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Время на вопрос</label>
+      <div class="grid grid-cols-4 gap-2 mb-5">
+        <template x-for="n in [10, 20, 30, 60]" :key="n">
+          <label class="cursor-pointer">
+            <input type="radio" name="time_per_q" :value="n" :checked="n === 20" class="hidden peer">
+            <div class="py-2.5 rounded-xl border-2 border-gray-200 peer-checked:border-pink-500 peer-checked:bg-pink-50 text-center font-semibold" x-text="n+'с'"></div>
+          </label>
+        </template>
+      </div>
+
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="showLive = false" class="btn btn-ghost">Отмена</button>
+        <button type="submit" class="btn text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600">🎮 Создать сессию</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

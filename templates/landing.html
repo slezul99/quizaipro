@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  /* === Anime Sky Hero (Makoto Shinkai vibe) === */
+  .hero-wrap {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    background-image:
+      /* Solnechnyy glow poverh */
+      radial-gradient(circle at 88% 12%, rgba(255, 240, 180, 0.5), transparent 30%),
+      /* God rays */
+      linear-gradient(217deg, rgba(255,248,220,0.15) 0%, transparent 30%),
+      /* Anime nebo: photo Unsplash */
+      url('https://images.unsplash.com/photo-1601297183305-6df142704ea2?w=2400&q=85&fm=jpg');
+    background-size: cover, cover, cover;
+    background-position: center, center, center top;
+    background-repeat: no-repeat;
+  }
+  .hero-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Belyy myagkiy svetovoy overlay svehu chtoby tekst chitalsya */
+    background: radial-gradient(ellipse 80% 50% at 50% 30%, rgba(255,255,255,0.45), transparent 70%);
+    z-index: 1;
+  }
+  /* Mesh grid — otklyuchaem dlya anime fona */
+  .hero-grid {
+    display: none;
+  }
+  /* Noise grain — minimal'no */
+  .hero-noise {
+    position:absolute; inset:0; pointer-events:none; opacity:0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Glowing blobs — otklyuchaem dlya foto-fona */
+  .blob { display: none; }
+
+  /* Hero stage 3D space */
+  .stage {
+    position: relative;
+    perspective: 1400px;
+    perspective-origin: 50% 35%;
+    z-index: 2;
+  }
+
+  /* Center brain orb */
+  .brain-orb {
+    position: relative;
+    width: 280px; height: 280px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, #fff, rgba(168,85,247,0.4) 30%, rgba(59,130,246,0.6) 70%, #1e1b4b 110%);
+    box-shadow:
+      0 0 80px rgba(168,85,247,0.4),
+      0 0 160px rgba(59,130,246,0.3),
+      inset 0 -40px 80px rgba(30,27,75,0.6),
+      inset 0 40px 80px rgba(255,255,255,0.4);
+    transform-style: preserve-3d;
+    animation: orb-pulse 4s ease-in-out infinite;
+  }
+  .brain-orb::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: orb-rotate 8s linear infinite;
+    mix-blend-mode: overlay;
+  }
+  .brain-orb::after {
+    content: '🧠'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+  }
+  @keyframes orb-pulse {
+    0%,100% { transform: scale(1); box-shadow: 0 0 80px rgba(168,85,247,0.4), 0 0 160px rgba(59,130,246,0.3), inset 0 -40px 80px rgba(30,27,75,0.6), inset 0 40px 80px rgba(255,255,255,0.4); }
+    50% { transform: scale(1.04); box-shadow: 0 0 100px rgba(168,85,247,0.55), 0 0 200px rgba(59,130,246,0.4), inset 0 -40px 80px rgba(30,27,75,0.6), inset 0 40px 80px rgba(255,255,255,0.4); }
+  }
+  @keyframes orb-rotate { to { transform: rotate(360deg); } }
+
+  /* Floating glass cards */
+  .float-card {
+    position: absolute;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 16px 20px;
+    box-shadow: 0 20px 50px -15px rgba(99,102,241,0.25), 0 0 0 1px rgba(255,255,255,0.6) inset;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  .float-card .q { font-size: 11px; color:#64748b; font-weight:500; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em; }
+  .float-card .a { font-size: 14px; font-weight:600; color:#0f172a; }
+  .float-card .pill { display:inline-block; font-size:10px; padding:2px 8px; border-radius:6px; margin-top:6px; }
+
+  .fc-1 { top:8%; left:6%; width:200px; transform: translateZ(60px) rotateY(8deg) rotateX(-4deg); animation: fc-float-1 9s ease-in-out infinite; }
+  .fc-2 { top:18%; right:8%; width:220px; transform: translateZ(40px) rotateY(-12deg) rotateX(-2deg); animation: fc-float-2 11s ease-in-out infinite; }
+  .fc-3 { bottom:18%; left:12%; width:210px; transform: translateZ(80px) rotateY(15deg) rotateX(6deg); animation: fc-float-3 8s ease-in-out infinite; }
+  .fc-4 { bottom:10%; right:10%; width:230px; transform: translateZ(50px) rotateY(-10deg) rotateX(4deg); animation: fc-float-4 10s ease-in-out infinite; }
+  .fc-5 { top:48%; left:-4%; width:180px; transform: translateZ(20px) rotateY(20deg) rotateX(0deg); animation: fc-float-5 12s ease-in-out infinite; opacity:0.85; }
+  .fc-6 { top:50%; right:-2%; width:190px; transform: translateZ(30px) rotateY(-18deg) rotateX(2deg); animation: fc-float-6 13s ease-in-out infinite; opacity:0.85; }
+
+  @keyframes fc-float-1 { 0%,100%{transform:translateZ(60px) translateY(0) rotateY(8deg) rotateX(-4deg);} 50%{transform:translateZ(60px) translateY(-18px) rotateY(10deg) rotateX(-6deg);} }
+  @keyframes fc-float-2 { 0%,100%{transform:translateZ(40px) translateY(0) rotateY(-12deg) rotateX(-2deg);} 50%{transform:translateZ(40px) translateY(20px) rotateY(-14deg) rotateX(-4deg);} }
+  @keyframes fc-float-3 { 0%,100%{transform:translateZ(80px) translateY(0) rotateY(15deg) rotateX(6deg);} 50%{transform:translateZ(80px) translateY(-22px) rotateY(13deg) rotateX(8deg);} }
+  @keyframes fc-float-4 { 0%,100%{transform:translateZ(50px) translateY(0) rotateY(-10deg) rotateX(4deg);} 50%{transform:translateZ(50px) translateY(16px) rotateY(-12deg) rotateX(6deg);} }
+  @keyframes fc-float-5 { 0%,100%{transform:translateZ(20px) translateY(0) rotateY(20deg);} 50%{transform:translateZ(20px) translateY(-12px) rotateY(22deg);} }
+  @keyframes fc-float-6 { 0%,100%{transform:translateZ(30px) translateY(0) rotateY(-18deg);} 50%{transform:translateZ(30px) translateY(14px) rotateY(-20deg);} }
+
+  /* Floating geometric particles */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(167,139,250,0.4));
+    box-shadow: 0 0 20px rgba(167,139,250,0.6);
+    pointer-events:none;
+  }
+  .p1 { width:12px; height:12px; top:30%; left:25%; animation: p-float 6s ease-in-out infinite; }
+  .p2 { width:8px; height:8px; top:65%; left:32%; animation: p-float 8s ease-in-out infinite -2s; }
+  .p3 { width:14px; height:14px; top:25%; right:30%; animation: p-float 7s ease-in-out infinite -3s; }
+  .p4 { width:10px; height:10px; top:70%; right:25%; animation: p-float 9s ease-in-out infinite -4s; }
+  .p5 { width:6px; height:6px; top:42%; left:48%; animation: p-float 5s ease-in-out infinite -1s; }
+  @keyframes p-float {
+    0%,100% { transform: translateY(0) translateX(0); opacity:0.8; }
+    50% { transform: translateY(-30px) translateX(10px); opacity:1; }
+  }
+
+  /* Neural connections SVG */
+  .neural-svg {
+    position:absolute; inset:0; width:100%; height:100%;
+    pointer-events:none; z-index:1; opacity:0.5;
+  }
+  .neural-line {
+    stroke: url(#lineGrad);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 4 8;
+    animation: dash 20s linear infinite;
+  }
+  @keyframes dash { to { stroke-dashoffset: -240; } }
+
+  /* Hero text */
+  .hero-text {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    padding: 8rem 1rem 2rem;
+  }
+  .hero-title {
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 60%, #6366f1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    color: #475569;
+    max-width: 640px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.5;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px; color: #475569; font-weight: 500;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.12);
+  }
+  .hero-tag .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s ease-in-out infinite; box-shadow: 0 0 12px rgba(16,185,129,0.6); }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  .btn-hero {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px; border-radius: 999px;
+    font-weight: 600; font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .btn-hero-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    box-shadow: 0 12px 32px rgba(99,102,241,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  }
+  .btn-hero-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 18px 40px rgba(99,102,241,0.55), 0 0 0 1px rgba(255,255,255,0.2) inset;
+  }
+  .btn-hero-ghost {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(99,102,241,0.15);
+    color: #4338ca;
+  }
+  .btn-hero-ghost:hover { background: rgba(255,255,255,0.9); transform: translateY(-2px); }
+
+  /* Stage 3D parallax mouse handler */
+  .stage-3d {
+    position: relative;
+    height: 480px;
+    margin: 2rem auto 0;
+    max-width: 1100px;
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  /* Section spacing */
+  .section { padding: 6rem 1.5rem; position: relative; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-label {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #6366f1;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+    color: #0f172a;
+  }
+
+  /* Feature cards */
+  .feature {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 24px;
+    padding: 2rem;
+    transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .feature:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -20px rgba(99,102,241,0.25);
+    border-color: rgba(99,102,241,0.2);
+  }
+  .feature-icon {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1));
+    margin-bottom: 1rem;
+  }
+
+  /* Reveal animations */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* Marquee logos */
+  .marquee-track {
+    display: flex; gap: 60px;
+    animation: scroll 35s linear infinite;
+    width: max-content;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Mobile fixes */
+  @media (max-width: 768px) {
+    .float-card { transform: translateZ(20px) !important; }
+    .fc-5, .fc-6 { display: none; }
+    .brain-orb { width: 200px; height: 200px; }
+    .brain-orb::after { font-size: 56px; }
+    .stage-3d { height: 360px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ============== HERO ============== -->
+<section class="hero-wrap">
+  <div class="hero-grid"></div>
+  <div class="hero-noise"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <!-- Neural connections background -->
+  <svg class="neural-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#6366f1" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path class="neural-line" d="M100,200 Q400,100 700,300 T1100,250"/>
+    <path class="neural-line" d="M150,500 Q500,400 800,600 T1100,500"/>
+    <path class="neural-line" d="M50,650 Q350,550 600,400 T1150,350"/>
+    <path class="neural-line" d="M200,150 Q500,250 750,150 T1100,200"/>
+  </svg>
+
+  <div class="hero-text">
+    <div class="reveal hero-tag">
+      <span class="dot"></span>
+      AI-powered learning · Запустись за 30 секунд
+    </div>
+    <h1 class="reveal hero-title">
+      Учись<br>как никогда раньше.
+    </h1>
+    <p class="reveal hero-sub">
+      QuizPro строит твою память научно. AI генерирует карточки из любого
+      материала, алгоритм SM-2 показывает их в нужный день.
+      <strong>Запоминай навсегда.</strong>
+    </p>
+    <div class="reveal flex gap-3 justify-center flex-wrap">
+      <a href="/register" class="btn-hero btn-hero-primary">Начать бесплатно →</a>
+      <a href="/login" class="btn-hero btn-hero-ghost">Войти</a>
+    </div>
+  </div>
+
+  <!-- 3D Stage with floating cards -->
+  <div class="stage" id="stage">
+    <div class="stage-3d" id="stage3d">
+
+      <div class="float-card fc-1">
+        <div class="q">English Grammar</div>
+        <div class="a">What is Past Perfect?</div>
+        <span class="pill" style="background:#dbeafe; color:#1e40af;">Tense</span>
+      </div>
+
+      <div class="float-card fc-2">
+        <div class="q">Anatomy</div>
+        <div class="a">How many bones in human body?</div>
+        <span class="pill" style="background:#fce7f3; color:#9f1239;">Medical</span>
+      </div>
+
+      <div class="float-card fc-3">
+        <div class="q">Mathematics</div>
+        <div class="a">Solve: x² + 5x + 6 = 0</div>
+        <span class="pill" style="background:#fef3c7; color:#92400e;">Algebra</span>
+      </div>
+
+      <div class="float-card fc-4">
+        <div class="q">Geography</div>
+        <div class="a">Capital of Uzbekistan?</div>
+        <span class="pill" style="background:#d1fae5; color:#065f46;">Capitals</span>
+      </div>
+
+      <div class="float-card fc-5">
+        <div class="q">Programming</div>
+        <div class="a">What is REST API?</div>
+      </div>
+
+      <div class="float-card fc-6">
+        <div class="q">Physics</div>
+        <div class="a">Speed of light?</div>
+      </div>
+
+      <!-- Particles -->
+      <div class="particle p1"></div>
+      <div class="particle p2"></div>
+      <div class="particle p3"></div>
+      <div class="particle p4"></div>
+      <div class="particle p5"></div>
+
+      <!-- Brain center -->
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+        <div class="brain-orb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TRUSTED BY ============== -->
+<section class="py-16 border-y border-indigo-200 relative overflow-hidden"
+  style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);">
+  <!-- Decorative glow -->
+  <div class="absolute -top-32 left-1/4 w-96 h-96 rounded-full opacity-30" style="background:radial-gradient(circle, #8b5cf6, transparent 70%); filter: blur(80px);"></div>
+  <div class="absolute -bottom-32 right-1/4 w-96 h-96 rounded-full opacity-30" style="background:radial-gradient(circle, #ec4899, transparent 70%); filter: blur(80px);"></div>
+
+  <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
+    <p class="text-xs uppercase tracking-[0.3em] font-black mb-3"
+      style="background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444); -webkit-background-clip: text; background-clip: text; color: transparent;">
+      ⚡ Что внутри
+    </p>
+    <h2 class="text-3xl md:text-5xl font-black text-white mb-8 leading-tight">
+      Всё необходимое<br>
+      <span style="background: linear-gradient(90deg,#a78bfa,#f0abfc,#fb7185); -webkit-background-clip:text; background-clip:text; color:transparent;">
+        в одном продукте
+      </span>
+    </h2>
+    <div class="flex flex-wrap justify-center gap-3 md:gap-4">
+      <span class="pill-feature" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+        🤖 AI-генерация
+      </span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #8b5cf6, #d946ef);">
+        🧠 SM-2 алгоритм
+      </span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">
+        📊 Smart Mix 50/30/20
+      </span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
+        📥 Импорт PDF/DOCX/TXT
+      </span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
+        👥 Группы и роли
+      </span>
+      <span class="pill-feature" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+        🌍 RU / EN / UZ
+      </span>
+    </div>
+  </div>
+
+  <style>
+    .pill-feature {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px -8px rgba(0,0,0,0.3),
+                  0 0 0 1px rgba(255,255,255,0.1) inset,
+                  0 1px 0 rgba(255,255,255,0.2) inset;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default;
+    }
+    .pill-feature:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 20px 40px -8px rgba(0,0,0,0.4),
+                  0 0 0 1px rgba(255,255,255,0.2) inset,
+                  0 1px 0 rgba(255,255,255,0.3) inset;
+    }
+  </style>
+</section>
+
+<!-- ============== FEATURES ============== -->
+<section class="section">
+  <div class="section-inner">
+    <div class="text-center mb-16">
+      <p class="reveal section-label">Возможности</p>
+      <h2 class="reveal section-title">Не просто карточки.<br>Наука о памяти.</h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="reveal feature">
+        <div class="feature-icon">🤖</div>
+        <h3 class="text-xl font-bold mb-2">AI-генерация</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">Вставь лекцию, статью или PDF — AI создаст качественные вопросы для самопроверки за 15 секунд.</p>
+      </div>
+      <div class="reveal feature">
+        <div class="feature-icon">🧠</div>
+        <h3 class="text-xl font-bold mb-2">SM-2 алгоритм</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">Карточки появляются ровно когда вы начинаете забывать. Доказанная наукой методика с 1985 года.</p>
+      </div>
+      <div class="reveal feature">
+        <div class="feature-icon">📊</div>
+        <h3 class="text-xl font-bold mb-2">Smart Mix 50/30/20</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">50% новых, 30% с ошибками, 20% повторение. Слабые места укрепляются автоматически.</p>
+      </div>
+      <div class="reveal feature">
+        <div class="feature-icon">🏢</div>
+        <h3 class="text-xl font-bold mb-2">Для учебных центров</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">Преподаватель создаёт колоды, студенты учат, дашборд показывает прогресс по группам и категориям.</p>
+      </div>
+      <div class="reveal feature">
+        <div class="feature-icon">📥</div>
+        <h3 class="text-xl font-bold mb-2">Импорт всего</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">.txt, .csv, .docx, .pdf — любой формат с любой нумерацией. Парсер всё понимает.</p>
+      </div>
+      <div class="reveal feature">
+        <div class="feature-icon">🌍</div>
+        <h3 class="text-xl font-bold mb-2">3 языка</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">Русский · English · Oʻzbek. Интерфейс адаптируется под учеников, контент — на любом языке.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== HOW IT WORKS ============== -->
+<section class="section" style="background:linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.04) 50%, transparent 100%);">
+  <div class="section-inner max-w-4xl">
+    <div class="text-center mb-16">
+      <p class="reveal section-label">Как это работает</p>
+      <h2 class="reveal section-title">Три шага.<br>Без боли.</h2>
+    </div>
+
+    {% set steps = [
+      ('01', 'Импорт или AI', 'Загружай PDF/Word, или попроси AI создать вопросы по теме за секунды.'),
+      ('02', 'Учись с алгоритмом', 'Карточка → ответ → оценка от 0 до 5. SM-2 решает когда показать снова.'),
+      ('03', 'Преподаватель видит всё', 'Дашборд по группам, категориям, тестам. Кто отстаёт — видно сразу.'),
+    ] %}
+    <div class="space-y-4">
+      {% for n, title, txt in steps %}
+      <div class="reveal feature flex items-center gap-6 flex-col md:flex-row text-center md:text-left">
+        <div class="flex-shrink-0 w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-lg"
+          style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); box-shadow: 0 10px 30px -5px rgba(139,92,246,0.4);">
+          {{ n }}
+        </div>
+        <div>
+          <h3 class="text-xl font-bold mb-1 text-slate-900">{{ title }}</h3>
+          <p class="text-slate-700">{{ txt }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============== STATS ============== -->
+<section class="section" style="background:radial-gradient(ellipse 60% 50% at 50% 50%, rgba(168,85,247,0.06), transparent 70%);">
+  <div class="section-inner">
+    <div class="text-center mb-12">
+      <p class="reveal section-label">Технологии</p>
+      <h2 class="reveal section-title">Не маркетинг.<br>Реальные возможности.</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="reveal text-center">
+        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">SM-2</div>
+        <p class="text-gray-600 text-sm">алгоритм с 1985 года, основа Anki</p>
+      </div>
+      <div class="reveal text-center">
+        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-emerald-500 to-cyan-500 bg-clip-text text-transparent mb-2">AI</div>
+        <p class="text-gray-600 text-sm">генерация из текста, темы, PDF</p>
+      </div>
+      <div class="reveal text-center">
+        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-orange-500 to-pink-500 bg-clip-text text-transparent mb-2">3</div>
+        <p class="text-gray-600 text-sm">языка интерфейса (RU · EN · UZ)</p>
+      </div>
+      <div class="reveal text-center">
+        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">∞</div>
+        <p class="text-gray-600 text-sm">студентов в одной организации</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CTA ============== -->
+<section class="section relative overflow-hidden">
+  <div class="absolute inset-0 -z-10">
+    <div class="blob b1" style="opacity:0.4; left:50%; top:50%; transform:translate(-50%,-50%);"></div>
+  </div>
+  <div class="section-inner max-w-3xl text-center">
+    <h2 class="reveal section-title">Запусти своё обучение<br>сегодня.</h2>
+    <p class="reveal text-xl text-gray-600 mb-10">Бесплатно. Без карты.</p>
+    <div class="reveal flex gap-3 justify-center flex-wrap">
+      <a href="/register" class="btn-hero btn-hero-primary">Начать →</a>
+      <a href="/login" class="btn-hero btn-hero-ghost">Войти</a>
+    </div>
+  </div>
+</section>
+
+<footer class="border-t border-black/5 py-10 text-center text-sm text-gray-500">
+  © 2026 QuizPro · Сделано в Узбекистане 🇺🇿
+</footer>
+
+<script>
+  // Reveal on scroll
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Mouse parallax on 3D stage
+  const stage = document.getElementById('stage3d');
+  if (stage && window.matchMedia('(min-width: 768px)').matches) {
+    const hero = document.querySelector('.hero-wrap');
+    hero.addEventListener('mousemove', e => {
+      const r = hero.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      stage.style.transform = `rotateY(${x * 8}deg) rotateX(${-y * 6}deg)`;
+    });
+    hero.addEventListener('mouseleave', () => {
+      stage.style.transform = 'rotateY(0) rotateX(0)';
+    });
+  }
+</script>
+{% endblock %}

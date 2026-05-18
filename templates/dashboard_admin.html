@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10" x-data="{ tab: 'overview' }">
+
+  <!-- HERO -->
+  <div class="flex justify-between items-end mb-10 flex-wrap gap-4 slide-up">
+    <div>
+      <h1 class="h-display text-5xl mb-2 text-slate-900">
+        <span class="text-gradient">{{ t('control_panel') }}</span>
+      </h1>
+      <p class="text-slate-700 text-lg">{{ n_students }} {{ t('students') }} · {{ total_cards }} {{ t('questions_total') }} · {{ groups|length }} {{ t('groups_count') }}</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <a href="/categories" class="btn btn-ghost">📁 {{ t('categories') }}</a>
+      <a href="/import" class="btn btn-ghost">📥 {{ t('import') }}</a>
+      <a href="/export/students" class="btn btn-ghost">📊 Скачать журнал</a>
+      <a href="/admin/students" class="btn btn-primary">👥 {{ t('users') }}</a>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="glass rounded-2xl p-1.5 mb-8 inline-flex gap-1 slide-up" style="animation-delay:.05s">
+    <button @click="tab = 'overview'" :class="tab === 'overview' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">📊 {{ t('overview') }}</button>
+    <button @click="tab = 'students'" :class="tab === 'students' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">👥 {{ t('students') }}</button>
+    <button @click="tab = 'tests'" :class="tab === 'tests' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">📝 {{ t('tests') }}</button>
+    <button @click="tab = 'categories'" :class="tab === 'categories' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">📁 {{ t('categories') }}</button>
+    <button @click="tab = 'groups'" :class="tab === 'groups' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">🎓 {{ t('groups') }}</button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="glass rounded-2xl p-5 mb-8 slide-up" style="animation-delay:.1s">
+    <form method="GET" class="flex gap-3 flex-wrap items-end">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1.5 font-semibold uppercase tracking-wider">{{ t('group') }}</label>
+        <select name="group_id" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white" onchange="this.form.submit()">
+          <option value="">{{ t('all_groups') }}</option>
+          {% for g in groups %}
+          <option value="{{ g.id }}" {% if f_group == g.id %}selected{% endif %}>{{ g.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-1.5 font-semibold uppercase tracking-wider">{{ t('category') }}</label>
+        <select name="category_id" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white" onchange="this.form.submit()">
+          <option value="">{{ t('all_categories') }}</option>
+          {% for c in categories %}
+          <option value="{{ c.id }}" {% if f_category == c.id %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-1.5 font-semibold uppercase tracking-wider">{{ t('test_filter') }}</label>
+        <select name="deck_id" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white" onchange="this.form.submit()">
+          <option value="">{{ t('all_tests') }}</option>
+          {% for d in decks %}
+          <option value="{{ d.id }}" {% if f_deck == d.id %}selected{% endif %}>{{ d.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if f_group or f_category or f_deck %}
+      <a href="/dashboard" class="btn btn-ghost text-sm">{{ t('reset') }}</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- ============ OVERVIEW ============ -->
+  <div x-show="tab === 'overview'" class="fade-in">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="glass rounded-3xl p-6 card-hover">
+        <div class="icon-bubble bg-gradient-to-br from-indigo-100 to-indigo-200 mb-4">📚</div>
+        <div class="text-4xl font-bold h-display">{{ total_cards }}</div>
+        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('total_questions') }}</div>
+      </div>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <div class="icon-bubble bg-gradient-to-br from-blue-100 to-blue-200 mb-4">📈</div>
+        <div class="text-4xl font-bold h-display text-blue-600">{{ org_progress }}%</div>
+        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('total_progress') }}</div>
+      </div>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <div class="icon-bubble bg-gradient-to-br from-emerald-100 to-emerald-200 mb-4">👥</div>
+        <div class="text-4xl font-bold h-display text-emerald-600">{{ n_students }}</div>
+        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('students') | capitalize }}</div>
+      </div>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <div class="icon-bubble bg-gradient-to-br from-purple-100 to-pink-200 mb-4">🎓</div>
+        <div class="text-4xl font-bold h-display text-purple-600">{{ groups | length }}</div>
+        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('groups') }}</div>
+      </div>
+    </div>
+
+    <!-- TOP WORST -->
+    <div class="grid md:grid-cols-3 gap-5 mb-6">
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-bold mb-4 text-red-600 flex items-center gap-2">⚠️ {{ t('worst_students') }}</h3>
+        <div class="space-y-3">
+          {% for s in student_stats_worst[:5] %}
+          <div class="flex justify-between items-center text-sm">
+            <span class="font-medium">{{ s.full_name or s.username }}</span>
+            <span class="badge bg-red-50 text-red-600">{{ s.progress }}%</span>
+          </div>
+          {% else %}
+          <p class="text-sm text-gray-400 text-center py-4">{{ t('no_data') }}</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-bold mb-4 text-red-600 flex items-center gap-2">⚠️ {{ t('hard_tests') }}</h3>
+        <div class="space-y-3">
+          {% for d in deck_stats_worst[:5] %}
+          <div class="flex justify-between items-center text-sm">
+            <span class="truncate">{{ d.icon }} <span class="font-medium">{{ d.name }}</span></span>
+            <span class="badge bg-red-50 text-red-600">{{ d.success_rate }}%</span>
+          </div>
+          {% else %}
+          <p class="text-sm text-gray-400 text-center py-4">{{ t('no_data') }}</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-bold mb-4 text-red-600 flex items-center gap-2">⚠️ {{ t('hard_categories') }}</h3>
+        <div class="space-y-3">
+          {% for c in cat_stats_worst[:5] %}
+          <div class="flex justify-between items-center text-sm">
+            <span>{{ c.icon }} <span class="font-medium">{{ c.name }}</span></span>
+            <span class="badge bg-red-50 text-red-600">{{ c.success_rate }}%</span>
+          </div>
+          {% else %}
+          <p class="text-sm text-gray-400 text-center py-4">{{ t('no_data') }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP BEST -->
+    <div class="glass rounded-3xl p-6">
+      <h3 class="font-bold mb-4 text-emerald-600 flex items-center gap-2 text-lg">🏆 {{ t('top_students') }}</h3>
+      <div class="overflow-x-auto">
+      <table>
+        <thead><tr><th>#</th><th>{{ t('name') }}</th><th class="text-right">{{ t('progress') }}</th><th class="text-right">XP</th><th class="text-right">🔥</th></tr></thead>
+        <tbody>
+          {% for s in student_stats_top %}
+          <tr>
+            <td>
+              <span class="badge {% if loop.index == 1 %}bg-yellow-100 text-yellow-700{% elif loop.index <= 3 %}bg-orange-50 text-orange-600{% else %}bg-gray-100 text-gray-600{% endif %}">
+                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+              </span>
+            </td>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="avatar" style="width:28px; height:28px; font-size:11px;">{{ (s.full_name or s.username)[0]|upper }}</span>
+                <span class="font-medium">{{ s.full_name or s.username }}</span>
+              </div>
+            </td>
+            <td class="text-right">
+              <div class="inline-flex items-center gap-2">
+                <div class="progress-bar w-24"><div style="width: {{ s.progress }}%"></div></div>
+                <span class="font-semibold">{{ s.progress }}%</span>
+              </div>
+            </td>
+            <td class="text-right text-blue-600 font-semibold">{{ s.xp }}</td>
+            <td class="text-right text-orange-600 font-semibold">{{ s.streak }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center text-gray-400 py-8">{{ t('no_students_data') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STUDENTS ============ -->
+  <div x-show="tab === 'students'" class="fade-in">
+    <div class="glass rounded-3xl p-6">
+      <div class="overflow-x-auto">
+      <table>
+        <thead><tr><th>{{ t('student') }}</th><th class="text-right">{{ t('progress') }}</th><th class="text-right">{{ t('studied') }}</th><th class="text-right">{{ t('attempts_col') }}</th><th class="text-right">XP</th><th class="text-right">🔥</th></tr></thead>
+        <tbody>
+          {% for s in student_stats %}
+          <tr>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="avatar" style="width:28px; height:28px; font-size:11px;">{{ (s.full_name or s.username)[0]|upper }}</span>
+                <span class="font-medium">{{ s.full_name or s.username }}</span>
+              </div>
+            </td>
+            <td class="text-right">
+              <div class="inline-flex items-center gap-2">
+                <div class="progress-bar w-24"><div style="width: {{ s.progress }}%"></div></div>
+                <span class="font-semibold">{{ s.progress }}%</span>
+              </div>
+            </td>
+            <td class="text-right">{{ s.learned }}/{{ s.total }}</td>
+            <td class="text-right">{{ s.reviews }}</td>
+            <td class="text-right text-blue-600 font-semibold">{{ s.xp }}</td>
+            <td class="text-right text-orange-600 font-semibold">{{ s.streak }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center text-gray-400 py-8">{{ t('no_data') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TESTS ============ -->
+  <div x-show="tab === 'tests'" class="fade-in">
+    <div class="glass rounded-3xl p-6">
+      <div class="overflow-x-auto">
+      <table>
+        <thead><tr><th>{{ t('test_name') }}</th><th>{{ t('category') }}</th><th class="text-right">{{ t('cards_col') }}</th><th class="text-right">{{ t('attempts_col') }}</th><th class="text-right">{{ t('success_rate') }}</th></tr></thead>
+        <tbody>
+          {% for d in deck_stats %}
+          <tr>
+            <td class="font-medium">{{ d.icon }} <a href="/deck/{{ d.id }}" class="hover:text-indigo-600">{{ d.name }}</a></td>
+            <td class="text-gray-500">{{ d.category or '—' }}</td>
+            <td class="text-right">{{ d.cards }}</td>
+            <td class="text-right">{{ d.reviews }}</td>
+            <td class="text-right">
+              {% if d.reviews > 0 %}
+              <span class="badge {% if d.success_rate < 50 %}bg-red-50 text-red-600{% elif d.success_rate < 75 %}bg-orange-50 text-orange-600{% else %}bg-emerald-50 text-emerald-600{% endif %}">{{ d.success_rate }}%</span>
+              {% else %}
+              <span class="text-gray-300">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center text-gray-400 py-8">{{ t('no_tests') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CATEGORIES ============ -->
+  <div x-show="tab === 'categories'" class="fade-in">
+    <div class="glass rounded-3xl p-6">
+      <div class="overflow-x-auto">
+      <table>
+        <thead><tr><th>{{ t('category') }}</th><th class="text-right">{{ t('cards_col') }}</th><th class="text-right">{{ t('attempts_col') }}</th><th class="text-right">{{ t('success_rate') }}</th></tr></thead>
+        <tbody>
+          {% for c in cat_stats %}
+          <tr>
+            <td class="font-medium">{{ c.icon }} {{ c.name }}</td>
+            <td class="text-right">{{ c.cards }}</td>
+            <td class="text-right">{{ c.reviews }}</td>
+            <td class="text-right">
+              {% if c.reviews > 0 %}
+              <span class="badge {% if c.success_rate < 50 %}bg-red-50 text-red-600{% elif c.success_rate < 75 %}bg-orange-50 text-orange-600{% else %}bg-emerald-50 text-emerald-600{% endif %}">{{ c.success_rate }}%</span>
+              {% else %}
+              <span class="text-gray-300">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="text-center text-gray-400 py-8">{{ t('no_categories') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ GROUPS ============ -->
+  <div x-show="tab === 'groups'" class="fade-in">
+    <div class="glass rounded-3xl p-6">
+      <div class="overflow-x-auto">
+      <table>
+        <thead><tr><th>{{ t('group') }}</th><th class="text-right">{{ t('students')|capitalize }}</th><th class="text-right">{{ t('progress') }}</th></tr></thead>
+        <tbody>
+          {% for g in group_stats %}
+          <tr>
+            <td class="font-medium">🎓 {{ g.name }}</td>
+            <td class="text-right">{{ g.members }}</td>
+            <td class="text-right">
+              <div class="inline-flex items-center gap-2">
+                <div class="progress-bar w-32"><div style="width: {{ g.progress }}%"></div></div>
+                <span class="font-semibold">{{ g.progress }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-center text-gray-400 py-8">{{ t('no_groups') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

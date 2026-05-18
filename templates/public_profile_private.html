@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto px-6 py-20 text-center">
+  <div class="text-7xl mb-4">🔒</div>
+  <h2 class="h-display text-3xl text-slate-900 mb-2">Профиль скрыт</h2>
+  <p class="text-slate-600 mb-6">
+    @{{ target.username }} не открывает свой профиль публично.
+  </p>
+  {% if target.allow_friend_requests %}
+  <button onclick="sendRequest()" class="btn btn-primary">👋 Отправить запрос в друзья</button>
+  {% endif %}
+  <div class="mt-6">
+    <a href="/leaderboard" class="text-indigo-600 hover:underline text-sm">← К лидерборду</a>
+  </div>
+</div>
+
+{% if target.allow_friend_requests %}
+<script>
+async function sendRequest() {
+  const fd = new FormData();
+  fd.append('_csrf', '{{ csrf_token() }}');
+  const r = await fetch('/friend/{{ target.username }}/request', { method: 'POST', body: fd });
+  const data = await r.json();
+  if (data.ok) {
+    alert('Запрос отправлен. Если @{{ target.username }} примет — сможете видеть его профиль.');
+  } else {
+    alert(data.msg || 'Ошибка');
+  }
+}
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10" x-data="{ showNew: false }">
+  <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
+    <div>
+      <h1 class="h-display text-4xl">{{ t('my_decks') }}</h1>
+      <p class="text-gray-500 mt-1">{{ t('due_today') }}: <span class="font-semibold text-blue-600">{{ due }}</span></p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/import" class="btn btn-ghost">📥 {{ t('import') }}</a>
+      <button @click="showNew = true" class="btn btn-primary">+ {{ t('new_deck') }}</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div class="glass rounded-2xl p-5">
+      <div class="text-3xl font-bold">{{ total }}</div>
+      <div class="text-sm text-gray-500 mt-1">{{ t('total_cards') }}</div>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <div class="text-3xl font-bold text-emerald-600">{{ learned }}</div>
+      <div class="text-sm text-gray-500 mt-1">{{ t('learned') }}</div>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <div class="text-3xl font-bold text-blue-600">{{ due }}</div>
+      <div class="text-sm text-gray-500 mt-1">{{ t('due_today') }}</div>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <div class="text-3xl font-bold text-purple-600">{{ total_reviews }}</div>
+      <div class="text-sm text-gray-500 mt-1">{{ t('your_progress') }}</div>
+    </div>
+  </div>
+
+  <!-- Decks -->
+  {% if decks %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for d in decks %}
+    <div class="glass rounded-2xl p-6 card-hover">
+      <div class="flex items-start justify-between mb-3">
+        <div class="text-3xl">{{ d['icon'] }}</div>
+        <form method="POST" action="/deck/{{ d['id'] }}/delete" onsubmit="return confirm('{{ t('delete_q') }}')">
+          <button class="text-gray-400 hover:text-red-500 text-sm">✕</button>
+        </form>
+      </div>
+      <a href="/deck/{{ d['id'] }}" class="block">
+        <h3 class="text-lg font-semibold mb-1">{{ d['name'] }}</h3>
+        <p class="text-sm text-gray-500 mb-4">{{ d['card_count'] }} {{ t('cards').lower() }}</p>
+      </a>
+      <div class="flex items-center gap-2 text-xs mb-4">
+        <div class="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+          <div class="bg-emerald-500 h-full transition-all" style="width: {{ (d['learned_count'] / d['card_count'] * 100) if d['card_count'] else 0 }}%"></div>
+        </div>
+        <span class="text-gray-500">{{ d['due_count'] }} ↻</span>
+      </div>
+      <div class="flex gap-2">
+        {% if (d['deck_type'] or 'mcq') == 'terms' %}
+        <a href="/deck/{{ d['id'] }}/flashcards" class="flex-1 justify-center text-sm rounded-2xl px-4 py-2 font-bold text-white text-center transition {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}"
+          style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);">🃏 Flashcards</a>
+        {% else %}
+        <a href="/deck/{{ d['id'] }}/test?count=10&shuffle=1" class="btn btn-success flex-1 justify-center text-sm {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}">📝 Тест</a>
+        {% endif %}
+        <a href="/deck/{{ d['id'] }}" class="btn btn-ghost text-sm">⚙</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-20">
+    <div class="text-6xl mb-4">📚</div>
+    <h3 class="text-xl font-semibold mb-2">{{ t('no_decks_title') }}</h3>
+    <p class="text-gray-500 mb-6">{{ t('no_decks_text') }}</p>
+    <div class="flex gap-3 justify-center">
+      <button @click="showNew = true" class="btn btn-primary">+ {{ t('new_deck') }}</button>
+      <a href="/import" class="btn btn-ghost">📥 {{ t('import') }}</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- New deck modal -->
+  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showNew = false" x-cloak>
+    <form method="POST" action="/deck/new" class="bg-white rounded-3xl p-8 max-w-md w-full">
+      <h2 class="text-2xl font-bold mb-4">{{ t('new_deck') }}</h2>
+      <div class="flex gap-3 mb-4">
+        <input name="icon" maxlength="2" value="📚" class="w-16 text-3xl text-center px-2 py-3 rounded-xl border border-gray-200">
+        <input name="name" required placeholder="{{ t('deck_name') }}" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-500">
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary flex-1 justify-center">{{ t('save') }}</button>
+        <button type="button" @click="showNew = false" class="btn btn-ghost">{{ t('cancel') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

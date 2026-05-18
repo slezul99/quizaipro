@@ -1,0 +1,602 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+  /* === Flip card 3D === */
+  .fc-scene {
+    perspective: 1800px;
+  }
+  .fc-card {
+    position: relative;
+    width: 100%;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-style: preserve-3d;
+  }
+  .fc-card.is-flipped {
+    transform: rotateY(180deg);
+  }
+  .fc-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 32px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+  }
+  .fc-front {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5ff 50%, #e9eeff 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25),
+                0 12px 24px -8px rgba(99, 102, 241, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  .fc-back {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    transform: rotateY(180deg);
+    box-shadow: 0 30px 60px -20px rgba(139, 92, 246, 0.5),
+                0 12px 24px -8px rgba(236, 72, 153, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  /* Glow effekt na ugly */
+  .fc-front::before, .fc-back::before {
+    content: "";
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .fc-front::before {
+    top: -60px; right: -60px;
+    background: radial-gradient(circle, rgba(99,102,241,0.4), transparent 70%);
+  }
+  .fc-back::before {
+    bottom: -60px; left: -60px;
+    background: radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%);
+  }
+
+  .fc-label {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    opacity: 0.55;
+  }
+  .fc-text {
+    font-size: clamp(22px, 4vw, 38px);
+    line-height: 1.3;
+    font-weight: 600;
+    max-width: 90%;
+  }
+  .fc-note {
+    margin-top: 18px;
+    font-size: 14px;
+    opacity: 0.85;
+    max-width: 90%;
+    white-space: pre-wrap;
+  }
+
+  /* Knopki nav */
+  .fc-nav-btn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px -10px rgba(99,102,241,0.4),
+                0 4px 12px rgba(0,0,0,0.06);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer; user-select: none;
+    border: 1px solid rgba(99,102,241,0.1);
+  }
+  .fc-nav-btn:hover { transform: scale(1.08); box-shadow: 0 15px 40px -10px rgba(99,102,241,0.5); }
+  .fc-nav-btn:active { transform: scale(0.95); }
+  .fc-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+  /* Pulser na knopku flip */
+  @keyframes fc-tap-hint {
+    0%, 100% { box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25), 0 0 0 0 rgba(99,102,241,0.4); }
+    50% { box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25), 0 0 0 12px rgba(99,102,241,0); }
+  }
+  .fc-card:not(.is-flipped):not(.has-flipped-once) .fc-front {
+    animation: fc-tap-hint 2.4s ease-in-out infinite;
+  }
+
+  /* Mobil'naya verstka — vysota */
+  .fc-stage {
+    height: min(72vh, 580px);
+    min-height: 380px;
+    position: relative;
+  }
+
+  /* Swipe overlay */
+  .fc-swipe-hint {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 5;
+  }
+  .fc-swipe-left { left: 12px; color: #ef4444; }
+  .fc-swipe-right { right: 12px; color: #10b981; }
+
+  /* Dark mode adapt */
+  .dark .fc-front {
+    background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 50%, #312e81 100%);
+    color: #f1f5f9;
+    border-color: rgba(139,92,246,0.3);
+  }
+
+  /* Progress bar premium */
+  .fc-progress-track {
+    height: 6px;
+    background: rgba(99,102,241,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .fc-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+    border-radius: 999px;
+    transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Skip-celebrate pri 100% */
+  @keyframes fc-celebrate {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .fc-celebrate { animation: fc-celebrate 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6 select-none" x-data="flashcards()" x-init="init()"
+  @keydown.window.space.prevent="flip()"
+  @keydown.window.arrow-right.prevent="next()"
+  @keydown.window.arrow-left.prevent="prev()"
+  @keydown.window.f="toggleFavorite()"
+  @keydown.window.d="toggleDifficult()"
+  @keydown.window.1.prevent="if(flipped) grade(3)"
+  @keydown.window.2.prevent="if(flipped) grade(4)"
+  @keydown.window.3.prevent="if(flipped) grade(5)">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <a href="/deck/{{ deck.id }}" class="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 text-sm font-medium transition">
+      <span>←</span> <span class="hidden sm:inline">К колоде</span>
+    </a>
+    <div class="flex items-center gap-2">
+      <button @click="shuffle()" class="px-3 py-1.5 rounded-xl bg-white/70 hover:bg-indigo-50 border border-indigo-100 text-sm font-semibold transition">
+        🔀 <span class="hidden sm:inline">Shuffle</span>
+      </button>
+      <button @click="autoplayOn = !autoplayOn"
+        :class="autoplayOn ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white/70 border-indigo-100'"
+        class="px-3 py-1.5 rounded-xl border text-sm font-semibold transition">
+        <span x-text="autoplayOn ? '⏸ Auto' : '▶ Auto'"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Title + counter -->
+  <div class="flex items-end justify-between mb-3">
+    <div class="min-w-0">
+      <h1 class="h-display text-2xl md:text-3xl text-slate-900 truncate">{{ deck.icon }} {{ deck.name }}</h1>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Пробел = перевернуть · ← → переключать · F избранное · D трудно
+      </p>
+    </div>
+    <div class="text-right flex-shrink-0 ml-3">
+      <div class="text-3xl font-bold text-gradient h-display"
+        x-text="(idx + 1) + ' / ' + cards.length"></div>
+      <div class="text-[10px] uppercase tracking-wider font-bold text-slate-500">карта</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="fc-progress-track mb-5">
+    <div class="fc-progress-fill" :style="`width: ${cards.length ? ((idx + 1) / cards.length * 100) : 0}%`"></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex gap-2 mb-5 text-sm flex-wrap">
+    <a href="/deck/{{ deck.id }}/flashcards"
+      class="px-3 py-1.5 rounded-full border transition
+        {% if not only_fav and not only_hard %}bg-indigo-500 text-white border-indigo-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-indigo-300{% endif %}">
+      Все ({{ cards|length if (only_fav or only_hard) else cards|length }})
+    </a>
+    <a href="/deck/{{ deck.id }}/flashcards?only_fav=1"
+      class="px-3 py-1.5 rounded-full border transition
+        {% if only_fav %}bg-pink-500 text-white border-pink-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-pink-300{% endif %}">
+      ⭐ Избранные
+    </a>
+    <a href="/deck/{{ deck.id }}/flashcards?only_hard=1"
+      class="px-3 py-1.5 rounded-full border transition
+        {% if only_hard %}bg-red-500 text-white border-red-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-red-300{% endif %}">
+      🔥 Трудные
+    </a>
+  </div>
+
+  <!-- STAGE -->
+  {% if cards|length == 0 %}
+  <div class="glass rounded-3xl p-12 text-center">
+    <div class="text-7xl mb-3">🃏</div>
+    <p class="text-slate-700 font-bold text-lg mb-1">Карт нет</p>
+    <p class="text-slate-500 text-sm">
+      {% if only_fav %}Вы ещё не добавили карты в избранное{% elif only_hard %}Нет трудных карт{% else %}Добавьте карты в колоду{% endif %}
+    </p>
+  </div>
+  {% else %}
+  <div class="fc-stage">
+    <!-- Swipe overlays -->
+    <div class="fc-swipe-hint fc-swipe-left text-5xl" :style="`opacity: ${dragX < -30 ? Math.min(1, -dragX/120) : 0}`">←</div>
+    <div class="fc-swipe-hint fc-swipe-right text-5xl" :style="`opacity: ${dragX > 30 ? Math.min(1, dragX/120) : 0}`">→</div>
+
+    <div class="fc-scene h-full">
+      <div class="fc-card h-full"
+        :class="{ 'is-flipped': flipped, 'has-flipped-once': hasFlippedOnce }"
+        :style="`transform: ${flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'} translateX(${dragX}px) rotate(${dragX/40}deg)`"
+        @click="flip()"
+        @touchstart.passive="dragStart($event)"
+        @touchmove.passive="dragMove($event)"
+        @touchend="dragEnd($event)"
+        @mousedown.prevent="dragStart($event)"
+        @mousemove.prevent="dragMove($event)"
+        @mouseup.prevent="dragEnd($event)"
+        @mouseleave.prevent="dragEnd($event)">
+
+        <!-- FRONT -->
+        <div class="fc-face fc-front">
+          <span class="fc-label text-indigo-700">Вопрос</span>
+          <template x-if="current && current.image_url">
+            <img :src="current.image_url" class="max-h-32 rounded-2xl mb-4 shadow-lg">
+          </template>
+          <div class="fc-text text-slate-900" x-text="current ? current.front : ''"></div>
+          <div class="absolute bottom-4 text-xs text-slate-400 font-semibold uppercase tracking-wider">Tap для переворота</div>
+        </div>
+
+        <!-- BACK -->
+        <div class="fc-face fc-back">
+          <span class="fc-label text-white">Ответ</span>
+          <div class="fc-text" x-text="answerText()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action row -->
+    <div class="flex items-center justify-between mt-6 px-2">
+      <button class="fc-nav-btn" @click.stop="prev()" :disabled="idx === 0" title="Предыдущая (←)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <button @click.stop="toggleFavorite()"
+          :class="current && current.is_favorite ? 'bg-pink-500 text-white border-pink-500' : 'bg-white/90 border-pink-200 text-pink-500 hover:bg-pink-50'"
+          class="w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition shadow-md hover:scale-110 active:scale-95"
+          title="Избранное (F)">
+          <span x-text="current && current.is_favorite ? '⭐' : '☆'"></span>
+        </button>
+        <button @click.stop="toggleDifficult()"
+          :class="current && current.is_difficult ? 'bg-red-500 text-white border-red-500' : 'bg-white/90 border-red-200 text-red-500 hover:bg-red-50'"
+          class="w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition shadow-md hover:scale-110 active:scale-95"
+          title="Трудно (D)">
+          <span x-text="current && current.is_difficult ? '🔥' : '💧'"></span>
+        </button>
+        <button @click.stop="speak()"
+          class="w-12 h-12 rounded-full bg-white/90 border-2 border-indigo-200 text-indigo-500 hover:bg-indigo-50 flex items-center justify-center text-xl transition shadow-md hover:scale-110 active:scale-95"
+          title="Озвучить">🔊</button>
+      </div>
+
+      <button class="fc-nav-btn" @click.stop="next()" :disabled="idx === cards.length - 1 && !autoplayOn" title="Следующая (→)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Grade row (tol'ko esli karta perevernuta) -->
+    <div x-show="flipped" x-transition class="grid grid-cols-3 gap-3 mt-5"
+      x-data="{ rating: false }">
+      <button @click.stop="grade(3)" :disabled="grading"
+        class="rounded-2xl py-4 px-2 font-bold text-orange-700 transition shadow hover:shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+        style="background: linear-gradient(135deg, #fff7ed, #ffedd5);">
+        <div class="text-2xl mb-0.5">😣</div>
+        <div class="text-sm">Сложно</div>
+        <div class="text-[10px] opacity-60 mt-0.5">+1 XP · через 1 день</div>
+      </button>
+      <button @click.stop="grade(4)" :disabled="grading"
+        class="rounded-2xl py-4 px-2 font-bold text-emerald-700 transition shadow hover:shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+        style="background: linear-gradient(135deg, #ecfdf5, #d1fae5);">
+        <div class="text-2xl mb-0.5">👍</div>
+        <div class="text-sm">Хорошо</div>
+        <div class="text-[10px] opacity-60 mt-0.5">+3 XP · через 3 дня</div>
+      </button>
+      <button @click.stop="grade(5)" :disabled="grading"
+        class="rounded-2xl py-4 px-2 font-bold text-blue-700 transition shadow hover:shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+        style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
+        <div class="text-2xl mb-0.5">⭐</div>
+        <div class="text-sm">Легко</div>
+        <div class="text-[10px] opacity-60 mt-0.5">+5 XP · через неделю</div>
+      </button>
+    </div>
+    <p x-show="flipped" class="text-center text-[11px] text-slate-500 mt-2">
+      Клавиши: <b>1</b>=Сложно · <b>2</b>=Хорошо · <b>3</b>=Легко
+    </p>
+
+    <!-- Bottom counter dots -->
+    <div class="flex justify-center gap-1.5 mt-5 flex-wrap" x-show="cards.length <= 30">
+      <template x-for="(c, i) in cards" :key="c.id">
+        <div class="w-2 h-2 rounded-full transition cursor-pointer"
+          :class="i === idx ? 'bg-indigo-500 w-8' : (i < idx ? 'bg-indigo-300' : 'bg-slate-200')"
+          @click="goTo(i)"></div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Completion overlay -->
+  <div x-show="completed" x-transition.opacity
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak
+    @click.self="completed = false">
+    <div class="glass-strong rounded-3xl p-10 max-w-md w-full text-center scale-in fc-celebrate">
+      <div class="text-7xl mb-3">🎉</div>
+      <h2 class="h-display text-3xl text-slate-900 mb-2">Готово!</h2>
+      <p class="text-slate-600 mb-1">Вы прошли все <b x-text="cards.length"></b> карточки</p>
+      <p class="text-slate-500 text-sm mb-1">Время: <b x-text="formatTime(elapsed)"></b></p>
+      <p x-show="sessionXp > 0" class="text-amber-600 font-bold mb-6">+<span x-text="sessionXp"></span> XP</p>
+      <p x-show="sessionXp === 0" class="mb-6"></p>
+      <div class="flex gap-3 justify-center flex-wrap">
+        <button @click="restart()" class="btn btn-primary">▶ Ещё раз</button>
+        <a href="/deck/{{ deck.id }}/test?count=10&shuffle=1" class="btn btn-success">📝 Тест</a>
+        <a href="/deck/{{ deck.id }}" class="btn btn-ghost">К колоде</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function flashcards() {
+  return {
+    cards: {{ cards|tojson }},
+    idx: 0,
+    flipped: false,
+    hasFlippedOnce: false,
+    autoplayOn: false,
+    autoplayTimer: null,
+    completed: false,
+    elapsed: 0,
+    timer: null,
+    dragX: 0,
+    isDragging: false,
+    dragStartX: 0,
+    grading: false,
+    sessionXp: 0,
+
+    get current() { return this.cards[this.idx] || null; },
+
+    /** Vyderzhivayem TOL'KO tekst pravil'nogo otveta, bez bukvy i bez variantov A/B/C. */
+    answerText() {
+      if (!this.current) return '';
+      const back = (this.current.back || '').trim();
+      // Beryom pervuyu nepustuyu stroku
+      const firstLine = back.split(/\r?\n/).find(l => l.trim()) || back;
+      // Esli formata "A) tekst" — ubirayem prefix
+      const m = firstLine.match(/^[A-Za-zА-Яа-яЁё0-9]+\s*[\)\.\:\-]\s*(.+)$/);
+      return (m ? m[1] : firstLine).trim();
+    },
+
+    init() {
+      this.timer = setInterval(() => this.elapsed++, 1000);
+      window.addEventListener('beforeunload', () => this.notifyComplete());
+
+      // Autoplay watcher: chrez 4 sek perevorot, escho cherez 4 sek next
+      this.$watch('autoplayOn', (val) => {
+        if (this.autoplayTimer) clearInterval(this.autoplayTimer);
+        if (val) {
+          this.autoplayTimer = setInterval(() => {
+            if (!this.flipped) this.flip();
+            else { this.flipped = false; this.next(); }
+          }, 3500);
+        }
+      });
+    },
+
+    flip() {
+      this.flipped = !this.flipped;
+      this.hasFlippedOnce = true;
+    },
+
+    next() {
+      if (this.idx < this.cards.length - 1) {
+        this.flipped = false;
+        this.idx++;
+      } else {
+        this.completed = true;
+        if (this.autoplayOn) this.toggleAutoplay();
+        clearInterval(this.timer);
+        this.notifyComplete();
+      }
+    },
+
+    prev() {
+      if (this.idx > 0) {
+        this.flipped = false;
+        this.idx--;
+      }
+    },
+
+    goTo(i) {
+      if (i >= 0 && i < this.cards.length) {
+        this.flipped = false;
+        this.idx = i;
+      }
+    },
+
+    shuffle() {
+      const a = [...this.cards];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      this.cards = a;
+      this.idx = 0;
+      this.flipped = false;
+    },
+
+    restart() {
+      this.idx = 0;
+      this.flipped = false;
+      this.completed = false;
+      this.elapsed = 0;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = setInterval(() => this.elapsed++, 1000);
+    },
+
+    speak() {
+      if (!this.current) return;
+      const text = this.flipped ? this.answerText() : this.current.front;
+      if (!text) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = /[а-яА-Я]/.test(text) ? 'ru-RU' : 'en-US';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    },
+
+    async toggleFavorite() {
+      if (!this.current) return;
+      const id = this.current.id;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        const r = await fetch(`/api/card/${id}/favorite`, { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data.ok) {
+          this.cards[this.idx].is_favorite = data.is_favorite;
+        }
+      } catch (e) { console.error(e); }
+    },
+
+    async toggleDifficult() {
+      if (!this.current) return;
+      const id = this.current.id;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        const r = await fetch(`/api/card/${id}/difficult`, { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data.ok) {
+          this.cards[this.idx].is_difficult = data.is_difficult;
+        }
+      } catch (e) { console.error(e); }
+    },
+
+    async grade(g) {
+      if (!this.current || this.grading) return;
+      this.grading = true;
+      const id = this.current.id;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        fd.append('grade', String(g));
+        const r = await fetch(`/api/card/${id}/grade`, { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data && data.ok) {
+          this.sessionXp += data.xp_gain || 0;
+          // Esli est' nove dostizheniya — pokazyvaem
+          if (data.achievements && data.achievements.length && window.showAchievementToasts) {
+            window.showAchievementToasts(data.achievements);
+          }
+          // Pluyushchaya XP-anim
+          this.flashXp(data.xp_gain);
+        }
+      } catch (e) { console.error(e); }
+      this.grading = false;
+      // Avto-perehod k slelduyushchey karte
+      setTimeout(() => this.next(), 220);
+    },
+
+    flashXp(amount) {
+      if (!amount) return;
+      const el = document.createElement('div');
+      el.textContent = '+' + amount + ' XP';
+      el.style.cssText = `
+        position: fixed; left: 50%; top: 30%;
+        transform: translateX(-50%);
+        font-size: 42px; font-weight: 800;
+        color: #f59e0b; text-shadow: 0 4px 16px rgba(245,158,11,0.5);
+        pointer-events: none; z-index: 100;
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+      `;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => {
+        el.style.top = '15%';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-50%) scale(1.5)';
+      });
+      setTimeout(() => el.remove(), 1100);
+    },
+
+    // === Swipe / drag ===
+    dragStart(e) {
+      this.isDragging = true;
+      this.dragStartX = (e.touches ? e.touches[0].clientX : e.clientX);
+      this.dragX = 0;
+    },
+    dragMove(e) {
+      if (!this.isDragging) return;
+      const x = (e.touches ? e.touches[0].clientX : e.clientX);
+      this.dragX = x - this.dragStartX;
+    },
+    dragEnd(e) {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      const threshold = 80;
+      if (this.dragX < -threshold) this.next();
+      else if (this.dragX > threshold) this.prev();
+      this.dragX = 0;
+    },
+
+    formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    },
+
+    async notifyComplete() {
+      if (!this.cards.length) return;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        fd.append('seen', String(this.idx + 1));
+        const r = await fetch('/api/flashcards/complete', { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data && data.achievements && data.achievements.length && window.showAchievementToasts) {
+          window.showAchievementToasts(data.achievements);
+        }
+      } catch (e) {}
+    },
+  };
+}
+
+// === Autoplay ===
+document.addEventListener('alpine:init', () => {
+  // Watcher na autoplayOn
+  document.addEventListener('change', (e) => {});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+  .match-card {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    user-select: none;
+  }
+  .match-card:hover { transform: translateY(-3px); }
+  .match-card.selected {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+    transform: translateY(-3px);
+  }
+  .match-card.matched {
+    background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05));
+    border-color: #10b981;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  .match-card.wrong {
+    animation: shake 0.5s ease;
+    border-color: #ef4444 !important;
+    background: rgba(239,68,68,0.1);
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .pulse-ring {
+    animation: pulseRing 1.5s ease-in-out infinite;
+  }
+  @keyframes pulseRing {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(99,102,241,0); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8" x-data="matchGame()">
+  <a href="/deck/{{ deck.id }}" class="text-indigo-600 text-sm hover:underline">← К колоде</a>
+
+  <div class="my-6 flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="h-display text-3xl text-slate-900">🎯 Сопоставь пары</h1>
+      <p class="text-slate-600 text-sm mt-1">{{ deck.name }} · {{ count }} пар</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-center">
+        <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Время</div>
+        <div class="text-2xl font-bold text-indigo-600 font-mono" x-text="formatTime(elapsed)"></div>
+      </div>
+      <div class="text-center">
+        <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Найдено</div>
+        <div class="text-2xl font-bold text-emerald-600">
+          <span x-text="matched.length / 2"></span> / {{ count }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pole -->
+  <div class="grid grid-cols-2 gap-4 md:gap-6">
+    <!-- Voprosy -->
+    <div class="space-y-3">
+      <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-2">📋 Вопросы</div>
+      <template x-for="item in questions" :key="'q-' + item.id">
+        <div @click="pick('q', item.id)"
+          :class="{
+            'selected': selected === 'q-' + item.id,
+            'matched': matched.includes('q-' + item.id),
+            'wrong': wrongFlash === 'q-' + item.id
+          }"
+          class="match-card glass rounded-2xl p-4 border-2 border-white/80 min-h-[80px] flex items-center">
+          <span class="text-sm md:text-base font-medium text-slate-900" x-text="item.front"></span>
+        </div>
+      </template>
+    </div>
+
+    <!-- Otvety -->
+    <div class="space-y-3">
+      <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-2">✓ Ответы</div>
+      <template x-for="item in answers" :key="'a-' + item.id">
+        <div @click="pick('a', item.id)"
+          :class="{
+            'selected': selected === 'a-' + item.id,
+            'matched': matched.includes('a-' + item.id),
+            'wrong': wrongFlash === 'a-' + item.id
+          }"
+          class="match-card glass rounded-2xl p-4 border-2 border-white/80 min-h-[80px] flex items-center">
+          <span class="text-sm md:text-base font-medium text-slate-900" x-text="item.back"></span>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Itog -->
+  <div x-show="finished" x-transition
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="glass-strong rounded-3xl p-10 max-w-md w-full text-center scale-in">
+      <div class="text-7xl mb-4">🏆</div>
+      <h2 class="h-display text-3xl mb-2">Готово!</h2>
+      <p class="text-slate-600 mb-6">Все пары найдены</p>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-indigo-50 rounded-2xl p-4">
+          <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Время</div>
+          <div class="text-3xl font-bold text-indigo-600 font-mono" x-text="formatTime(elapsed)"></div>
+        </div>
+        <div class="bg-orange-50 rounded-2xl p-4">
+          <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Ошибок</div>
+          <div class="text-3xl font-bold text-orange-600" x-text="errors"></div>
+        </div>
+      </div>
+      <div class="flex gap-3 justify-center">
+        <a href="/deck/{{ deck.id }}/match" class="btn btn-primary">▶ Ещё раз</a>
+        <a href="/deck/{{ deck.id }}" class="btn btn-ghost">К колоде</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function matchGame() {
+  const pairs = {{ pairs|tojson }};
+
+  // Funktsiya peremeshivaniya
+  const shuffle = (arr) => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  return {
+    questions: shuffle(pairs),
+    answers: shuffle(pairs),
+    selected: null,
+    matched: [],
+    wrongFlash: null,
+    errors: 0,
+    elapsed: 0,
+    timer: null,
+    finished: false,
+
+    init() {
+      this.timer = setInterval(() => {
+        if (!this.finished) this.elapsed++;
+      }, 1000);
+    },
+
+    pick(side, id) {
+      const key = (side === 'q' ? 'q-' : 'a-') + id;
+      if (this.matched.includes(key)) return;
+
+      // Pervyy klik
+      if (!this.selected) {
+        this.selected = key;
+        return;
+      }
+
+      // Esli klikayu na tot zhe — sbros
+      if (this.selected === key) {
+        this.selected = null;
+        return;
+      }
+
+      // Esli kliknul na tu zhe storonu — pereklyuchayem
+      const prevSide = this.selected.split('-')[0];
+      if (prevSide === side.charAt(0)) {
+        this.selected = key;
+        return;
+      }
+
+      // Vtoroy klik na druguyu storonu — proverka
+      const prevId = parseInt(this.selected.split('-')[1]);
+      const curId = id;
+
+      if (prevId === curId) {
+        // PRAVIL'NO!
+        this.matched.push(this.selected, key);
+        this.selected = null;
+        if (this.matched.length === pairs.length * 2) {
+          this.finished = true;
+          clearInterval(this.timer);
+          this.notifyComplete();
+        }
+      } else {
+        // OSHIBKA — krasnyy flash
+        this.errors++;
+        this.wrongFlash = key;
+        const prevKey = this.selected;
+        this.selected = null;
+        setTimeout(() => {
+          this.wrongFlash = null;
+        }, 600);
+      }
+    },
+
+    formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    },
+
+    async notifyComplete() {
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        fd.append('pairs', pairs.length);
+        fd.append('time', this.elapsed);
+        const r = await fetch('/api/match/complete', { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data && data.achievements && data.achievements.length) {
+          window.showAchievementToasts(data.achievements);
+        }
+      } catch (e) { console.error(e); }
+    }
+  };
+}
+</script>
+{% endblock %}

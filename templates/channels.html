@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+  <div class="mb-6 flex justify-between items-end flex-wrap gap-3">
+    <h1 class="h-display text-4xl text-slate-900">📡 <span class="text-gradient">Каналы</span></h1>
+    <a href="/chats" class="btn btn-ghost text-sm">← К чатам</a>
+  </div>
+
+  {% if channels %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for c in channels %}
+    <a href="/chat/{{ c.id }}" class="glass rounded-3xl p-5 card-hover">
+      <div class="flex items-start gap-3 mb-3">
+        <span class="text-4xl">{{ c.avatar }}</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-slate-900 truncate">{{ c.name }}</h3>
+          <p class="text-xs text-slate-500">📡 Канал · {{ c.member_count }} подписчиков</p>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-16 glass rounded-3xl">
+    <div class="text-6xl mb-3">📡</div>
+    <p class="text-slate-600">Пока нет публичных каналов</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

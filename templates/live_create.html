@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-8" x-data="liveCreate()">
+
+  <div class="text-center mb-6">
+    <div class="text-5xl mb-2">🎮</div>
+    <h1 class="h-display text-3xl text-slate-900">Создать Live Test</h1>
+    <p class="text-slate-600 text-sm mt-1">
+      Запустите тест в реальном времени —
+      студенты вводят код и отвечают одновременно
+    </p>
+  </div>
+
+  <form method="post" action="/live/create" class="glass rounded-3xl p-6 space-y-6">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="mode" :value="mode">
+
+    <!-- Tumbler: koloda / kategoriya -->
+    <div>
+      <label class="block text-sm font-bold text-slate-700 mb-2">📚 Источник вопросов</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" @click="mode='deck'"
+          :class="mode === 'deck' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-700 border-gray-200'"
+          class="p-3 rounded-xl border-2 font-bold transition">
+          📦 По колоде
+        </button>
+        <button type="button" @click="mode='category'"
+          :class="mode === 'category' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-700 border-gray-200'"
+          class="p-3 rounded-xl border-2 font-bold transition">
+          📁 По категории
+        </button>
+      </div>
+    </div>
+
+    <!-- Vybor kolody (rejim deck) -->
+    <div x-show="mode === 'deck'">
+      <label class="block text-sm font-bold text-slate-700 mb-2">📦 Колода</label>
+      <div class="mb-2">
+        <select x-model="categoryFilter" class="input">
+          <option value="">— Все категории —</option>
+          <template x-for="c in categories" :key="c.id">
+            <option :value="c.id" x-text="(c.parent_name ? c.parent_name + ' / ' : '') + (c.icon || '📁') + ' ' + c.name"></option>
+          </template>
+        </select>
+      </div>
+      <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <template x-for="d in filteredDecks()" :key="d.id">
+          <label class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition"
+            :class="deckId === d.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white/70'">
+            <input type="radio" name="deck_id" :value="d.id" x-model.number="deckId" class="hidden">
+            <span class="text-2xl" x-text="d.icon || '📚'"></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-slate-900 truncate" x-text="d.name"></div>
+              <div class="text-xs text-slate-500" x-text="d.cnt + ' карт'"></div>
+            </div>
+            <span x-show="deckId === d.id" class="text-indigo-600 text-xl">✓</span>
+          </label>
+        </template>
+        <div x-show="filteredDecks().length === 0" class="text-center text-slate-500 italic py-4">
+          Нет колод (минимум 3 карты в колоде)
+        </div>
+      </div>
+    </div>
+
+    <!-- Vybor kategorii (rejim category) -->
+    <div x-show="mode === 'category'">
+      <label class="block text-sm font-bold text-slate-700 mb-2">📁 Категория</label>
+      <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <template x-for="c in categories" :key="c.id">
+          <label class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition"
+            :class="categoryId === c.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white/70'">
+            <input type="radio" name="category_id" :value="c.id" x-model.number="categoryId" class="hidden">
+            <span class="text-2xl" x-text="c.icon || '📁'"></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-slate-900 truncate"
+                x-text="(c.parent_name ? c.parent_name + ' / ' : '') + c.name"></div>
+            </div>
+            <span x-show="categoryId === c.id" class="text-indigo-600 text-xl">✓</span>
+          </label>
+        </template>
+        <div x-show="categories.length === 0" class="text-center text-slate-500 italic py-4">
+          Нет категорий
+        </div>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">
+        Карты пулятся со всех колод этой категории и её подкатегорий случайно.
+      </p>
+    </div>
+
+    <!-- Rol' hosta -->
+    <div>
+      <label class="block text-sm font-bold text-slate-700 mb-2">👤 Ваша роль</label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition"
+          :class="hostRole === 'observer' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300 bg-white/70'">
+          <input type="radio" name="host_role" value="observer" x-model="hostRole" class="hidden">
+          <span class="text-3xl">👁</span>
+          <span class="font-semibold text-slate-900">Наблюдатель</span>
+          <span class="text-xs text-slate-500 text-center">Управляете тестом, не отвечаете</span>
+        </label>
+        <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition"
+          :class="hostRole === 'participant' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-emerald-300 bg-white/70'">
+          <input type="radio" name="host_role" value="participant" x-model="hostRole" class="hidden">
+          <span class="text-3xl">🎮</span>
+          <span class="font-semibold text-slate-900">Участник</span>
+          <span class="text-xs text-slate-500 text-center">Играете вместе со студентами</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Kolichestvo voprosov -->
+    <div>
+      <label class="block text-sm font-bold text-slate-700 mb-2">❓ Количество вопросов</label>
+      <div class="flex gap-2 flex-wrap">
+        <template x-for="n in [5,10,15,20,30]" :key="n">
+          <button type="button" @click="count = n"
+            :class="count === n ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-700 border-gray-200'"
+            class="px-4 py-2 rounded-xl border-2 font-bold transition" x-text="n"></button>
+        </template>
+      </div>
+      <input type="hidden" name="count" :value="count">
+    </div>
+
+    <!-- Vremya na vopros -->
+    <div>
+      <label class="block text-sm font-bold text-slate-700 mb-2">⏱ Время на вопрос (сек)</label>
+      <div class="flex gap-2 flex-wrap">
+        <template x-for="t in [10,20,30,45,60]" :key="t">
+          <button type="button" @click="timePerQ = t"
+            :class="timePerQ === t ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-700 border-gray-200'"
+            class="px-4 py-2 rounded-xl border-2 font-bold transition" x-text="t + 'с'"></button>
+        </template>
+      </div>
+      <input type="hidden" name="time_per_q" :value="timePerQ">
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+      :disabled="(mode === 'deck' && !deckId) || (mode === 'category' && !categoryId)"
+      :class="((mode === 'deck' && !deckId) || (mode === 'category' && !categoryId)) ? 'opacity-40 cursor-not-allowed' : ''"
+      class="btn btn-primary w-full text-lg py-3">
+      🚀 Создать live-тест
+    </button>
+  </form>
+
+  <div class="text-center mt-4">
+    <a href="/live/history" class="text-sm text-indigo-600 hover:underline">📋 История моих live-тестов →</a>
+  </div>
+</div>
+
+<script>
+function liveCreate() {
+  const preselectCat = {{ preselect_category|tojson if preselect_category else 'null' }};
+  return {
+    decks: {{ decks|tojson }},
+    categories: {{ categories|tojson }},
+    mode: preselectCat ? 'category' : 'deck',
+    deckId: null,
+    categoryId: preselectCat,
+    hostRole: 'observer',
+    count: {{ preselect_count|tojson if preselect_count else 10 }},
+    timePerQ: 20,
+    categoryFilter: '',
+    filteredDecks() {
+      if (!this.categoryFilter) return this.decks;
+      return this.decks.filter(d => String(d.category_id) === String(this.categoryFilter));
+    }
+  };
+}
+</script>
+{% endblock %}

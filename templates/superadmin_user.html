@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+  <a href="/superadmin" class="text-indigo-600 text-sm hover:underline">← К аналитике</a>
+
+  <!-- Header -->
+  <div class="glass rounded-3xl p-6 mt-4 mb-6">
+    <div class="flex items-center gap-4 flex-wrap">
+      <span class="avatar" style="width:60px;height:60px;font-size:24px;">
+        {{ (u.full_name or u.username)[0]|upper }}
+      </span>
+      <div class="flex-1 min-w-0">
+        <h1 class="h-display text-2xl text-slate-900">{{ u.full_name or u.username }}</h1>
+        <p class="text-slate-500 text-sm font-mono">@{{ u.username }}{% if u.org_name %} · 🏢 {{ u.org_name }}{% endif %}</p>
+        <p class="text-xs text-slate-500 mt-1">
+          ID {{ u.id }} ·
+          Роль: <b>{{ u.role }}</b> ·
+          Регистрация: {{ u.created_at[:16].replace('T', ' ') }}
+          {% if u.last_study %} · Последний раз: {{ u.last_study[:16].replace('T', ' ') }}{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="glass rounded-2xl p-4 text-center">
+      <div class="text-2xl">⭐</div>
+      <div class="text-2xl font-bold text-amber-600">{{ u.xp or 0 }}</div>
+      <div class="text-xs text-slate-500">XP</div>
+    </div>
+    <div class="glass rounded-2xl p-4 text-center">
+      <div class="text-2xl">🔥</div>
+      <div class="text-2xl font-bold text-orange-600">{{ u.streak or 0 }}</div>
+      <div class="text-xs text-slate-500">streak</div>
+    </div>
+    <div class="glass rounded-2xl p-4 text-center">
+      <div class="text-2xl">⚡</div>
+      <div class="text-2xl font-bold text-indigo-600">{{ u.reviews_total }}</div>
+      <div class="text-xs text-slate-500">ответов</div>
+    </div>
+    <div class="glass rounded-2xl p-4 text-center">
+      <div class="text-2xl">✓</div>
+      <div class="text-2xl font-bold text-emerald-600">{{ u.cards_learned }}</div>
+      <div class="text-xs text-slate-500">из {{ u.cards_attempted }} карт</div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 30d -->
+  {% if activity %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 mb-3">📈 Активность за 30 дней</h2>
+    {% set max_a = (activity | map(attribute='c') | list | max) or 1 %}
+    <div class="flex items-end gap-1 h-32">
+      {% for a in activity %}
+      <div class="flex-1 flex flex-col justify-end h-full" title="{{ a.d }}: {{ a.c }}">
+        <div class="bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t w-full"
+          style="height: {{ (a.c / max_a * 100)|round }}%"></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- GAME STATS -->
+  {% if game_stats %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 mb-3">🎮 Использование функций</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-emerald-50 rounded-xl p-3 text-center">
+        <div class="text-2xl">📝</div>
+        <div class="font-bold text-emerald-700 text-xl">{{ game_stats.tests_played }}</div>
+        <div class="text-xs text-slate-600">тестов пройдено</div>
+      </div>
+      <div class="bg-amber-50 rounded-xl p-3 text-center">
+        <div class="text-2xl">🎯</div>
+        <div class="font-bold text-amber-700 text-xl">{{ game_stats.match_played }}</div>
+        <div class="text-xs text-slate-600">match сыграно</div>
+      </div>
+      <div class="bg-orange-50 rounded-xl p-3 text-center">
+        <div class="text-2xl">⚔️</div>
+        <div class="font-bold text-orange-700 text-xl">{{ game_stats.duels_played }}</div>
+        <div class="text-xs text-slate-600">дуэлей</div>
+        <div class="text-[10px] text-slate-500">🏅{{ game_stats.duels_won }} ✗{{ game_stats.duels_lost }}</div>
+      </div>
+      <div class="bg-pink-50 rounded-xl p-3 text-center">
+        <div class="text-2xl">🎮</div>
+        <div class="font-bold text-pink-700 text-xl">{{ (game_stats.live_played or 0) + (game_stats.live_hosted or 0) }}</div>
+        <div class="text-xs text-slate-600">live test</div>
+        <div class="text-[10px] text-slate-500">🎤{{ game_stats.live_hosted or 0 }} хост</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- DECK USAGE — kakimi kolodami pol'zovalsya -->
+  {% if deck_usage %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 mb-3">📚 Колоды которые он использует</h2>
+    <div class="space-y-1.5">
+      {% for d in deck_usage %}
+      <div class="flex items-center gap-3 p-2 rounded-lg bg-white/60">
+        <span class="text-2xl flex-shrink-0">{{ d.icon or '📚' }}</span>
+        <a href="/deck/{{ d.id }}" class="flex-1 min-w-0 font-medium text-slate-900 truncate hover:text-indigo-600">{{ d.name }}</a>
+        <div class="text-right flex-shrink-0">
+          <div class="font-bold text-indigo-600">{{ d.reviews_count }} ответов</div>
+          <div class="text-[10px] text-slate-500">{{ d.last_used[:16].replace('T', ' ') if d.last_used else '' }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- HIS DECKS — chto sam sozdal -->
+  {% if decks %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 mb-3">📦 Его колоды (создал)</h2>
+    <div class="grid md:grid-cols-2 gap-2">
+      {% for d in decks %}
+      <a href="/deck/{{ d.id }}" class="flex items-center gap-2 p-2 rounded-lg bg-white/60 hover:bg-indigo-50">
+        <span class="text-xl">{{ d.icon }}</span>
+        <span class="flex-1 truncate font-medium text-slate-800">{{ d.name }}</span>
+        <span class="text-xs text-slate-500">{{ d.cards_count }} карт</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- GOALS -->
+  {% if goals_list %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 mb-3">🎯 Цели</h2>
+    <div class="space-y-2">
+      {% for g in goals_list %}
+      <div class="flex items-center gap-3 p-2 rounded-lg bg-white/60">
+        <span class="flex-1 font-medium text-slate-800 truncate">{{ g.title }}</span>
+        <span class="text-xs">
+          {% if g.status == 'active' %}<span class="badge bg-blue-100 text-blue-700">активна</span>
+          {% elif g.status == 'completed' %}<span class="badge bg-emerald-100 text-emerald-700">сдана {% if g.exam_score %}({{ g.exam_score|round }}%){% endif %}</span>
+          {% elif g.status == 'abandoned' %}<span class="badge bg-slate-100 text-slate-600">брошена</span>
+          {% else %}<span class="badge bg-red-100 text-red-700">{{ g.status }}</span>
+          {% endif %}
+        </span>
+        <span class="text-xs text-slate-500">до {{ g.end_date }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

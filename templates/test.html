@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-10" x-data="{
+    chosen: null,
+    submitted: false,
+    correct: '{{ correct_letter or '' }}',
+    soundOn: localStorage.getItem('quiz_sound') !== 'off',
+    speak(text) {
+      if (!text) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = /[а-яА-Я]/.test(text) ? 'ru-RU' : 'en-US';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    },
+    playSound(type) {
+      if (!this.soundOn) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        if (type === 'correct') {
+          // Veseliy 2-note (do-mi)
+          osc.frequency.setValueAtTime(523, ctx.currentTime);
+          osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+          osc.start(); osc.stop(ctx.currentTime + 0.4);
+        } else {
+          // Bzz — oshibka
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(90, ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+          osc.start(); osc.stop(ctx.currentTime + 0.3);
+        }
+      } catch(e) {}
+    },
+    toggleSound() {
+      this.soundOn = !this.soundOn;
+      localStorage.setItem('quiz_sound', this.soundOn ? 'on' : 'off');
+    },
+    pick(letter) {
+      if (this.submitted) return;
+      this.chosen = letter;
+    },
+    submit() {
+      if (!this.chosen || this.submitted) return;
+      this.submitted = true;
+      // Zvuk pravil'no/nepravil'no
+      this.playSound(this.chosen === this.correct ? 'correct' : 'wrong');
+      setTimeout(() => {
+        this.$refs.form.submit();
+      }, 1200);
+    }
+  }"
+  @keydown.window="if (!submitted) {
+    const map = {'1':'A','2':'B','3':'C','4':'D','5':'E','6':'F'};
+    if (map[$event.key]) pick(map[$event.key]);
+    if ($event.key === 'Enter' && chosen) submit();
+  }">
+
+  <a href="/deck/{{ deck_id }}" class="text-blue-600 text-sm">← К колоде</a>
+
+  <div class="my-6">
+    <div class="flex justify-between text-sm text-gray-500 mb-2">
+      <span>{{ idx + 1 }} / {{ total }}</span>
+      <div class="flex gap-3 items-center">
+        <button type="button" @click="toggleSound()" :title="soundOn ? 'Выключить звук' : 'Включить звук'"
+          class="hover:bg-gray-100 rounded-lg p-1 transition">
+          <span x-show="soundOn">🔊</span>
+          <span x-show="!soundOn">🔇</span>
+        </button>
+        <span class="text-emerald-600">✓ {{ stats.correct }}</span>
+        <span class="text-red-600">✗ {{ stats.wrong }}</span>
+      </div>
+    </div>
+    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div class="h-full bg-blue-500 transition-all" style="width: {{ (idx / total * 100) if total else 0 }}%"></div>
+    </div>
+  </div>
+
+  <div class="glass rounded-3xl p-8 md:p-10 shadow-xl">
+    <div class="text-xs uppercase tracking-widest text-gray-400 mb-4 text-center">Вопрос</div>
+    {% if card.image_url %}
+    <div class="text-center mb-5">
+      <img src="{{ card.image_url }}" class="max-h-48 rounded-2xl mx-auto shadow-md">
+    </div>
+    {% endif %}
+    <div class="text-xl md:text-2xl font-medium leading-relaxed text-center mb-3">{{ card.front }}</div>
+    <div class="text-center mb-6">
+      <button type="button" @click="speak('{{ card.front|e }}')"
+        class="text-indigo-500 hover:text-indigo-700 text-xs flex items-center gap-1 mx-auto hover:bg-indigo-50 px-3 py-1 rounded-lg transition">
+        🔊 Озвучить
+      </button>
+    </div>
+
+    <form method="POST" action="/test/answer" x-ref="form" class="space-y-3">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="chosen" :value="chosen">
+      <input type="hidden" name="correct" value="{{ correct_letter or '' }}">
+
+      {% for opt in options %}
+      <button type="button"
+        @click="pick('{{ opt.letter }}')"
+        :class="{
+          'border-blue-500 bg-blue-50 ring-2 ring-blue-500/30': chosen === '{{ opt.letter }}' && !submitted,
+          'border-emerald-500 bg-emerald-50 text-emerald-700': submitted && '{{ opt.letter }}' === correct,
+          'border-red-500 bg-red-50 text-red-700': submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct,
+          'opacity-50': submitted && '{{ opt.letter }}' !== correct && chosen !== '{{ opt.letter }}',
+          'hover:border-blue-300 hover:bg-blue-50/50': !submitted && chosen !== '{{ opt.letter }}'
+        }"
+        class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 text-left transition-all">
+        <span class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600"
+          :class="{
+            'bg-blue-500 text-white': chosen === '{{ opt.letter }}' && !submitted,
+            'bg-emerald-500 text-white': submitted && '{{ opt.letter }}' === correct,
+            'bg-red-500 text-white': submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct
+          }">{{ opt.letter }}</span>
+        <span class="text-base md:text-lg">{{ opt.text }}</span>
+        <span class="ml-auto text-xl" x-show="submitted && '{{ opt.letter }}' === correct">✓</span>
+        <span class="ml-auto text-xl" x-show="submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct">✗</span>
+      </button>
+      {% endfor %}
+    </form>
+
+    <div class="mt-8 flex flex-col items-center gap-3">
+      <button @click="submit()"
+        :disabled="!chosen || submitted"
+        :class="{ 'opacity-40 cursor-not-allowed': !chosen || submitted }"
+        class="btn btn-primary px-12">
+        <span x-show="!submitted">Ответить</span>
+        <span x-show="submitted && chosen === correct" class="text-emerald-600">Правильно! ✓</span>
+        <span x-show="submitted && chosen !== correct" class="text-red-600">Неправильно ✗</span>
+      </button>
+      <div class="text-xs text-gray-400">Клавиши: 1-{{ options|length }} выбор · Enter подтвердить</div>
+    </div>
+
+    {% if not options %}
+    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 text-center">
+      ⚠️ У этого вопроса нет вариантов ответа. Используйте обычный режим изучения.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

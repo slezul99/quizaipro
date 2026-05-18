@@ -1,0 +1,60 @@
+# === SECRETS — NIKOGDA NE KOMMITIM ===
+gemini_key.txt
+google_oauth.txt
+.secret_key
+.env
+*.key
+secrets/
+api_key.txt
+
+# === DB i loadovannye dannye ===
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+quizpro.db
+users_export/
+uploads/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+.pytest_cache/
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+*.log
+logs/
+
+# === Build / dist ===
+build/
+dist/
+*.egg
+
+# === Vremennye fayly ===
+_inspect*.py
+_test_*.py
+_check_*.py
+~$*
+
+# === Statika kotoraya generiruetsya ===
+static/card_images/
+
+# === Razrabotka ===
+*.bak
+*.tmp

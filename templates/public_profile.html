@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+  <a href="/leaderboard" class="text-indigo-600 text-sm hover:underline">← Лидерборд</a>
+
+  <!-- Hero -->
+  <div class="glass rounded-3xl p-8 my-6 slide-up">
+    <div class="flex items-start gap-6 flex-wrap">
+      <div class="w-24 h-24 rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0"
+        style="{% if target.avatar_color %}background: {{ target.avatar_color }}; {% else %}background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);{% endif %} box-shadow: 0 10px 30px -5px rgba(99,102,241,0.4);">
+        {{ (target.full_name or target.username)[0]|upper }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <h1 class="h-display text-4xl text-slate-900">{{ target.full_name or target.username }}</h1>
+          {% if is_me %}<span class="badge bg-indigo-100 text-indigo-700">Это вы</span>{% endif %}
+          {% if rank %}
+          <span class="badge bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-700">
+            {% if rank == 1 %}🥇 #1{% elif rank == 2 %}🥈 #2{% elif rank == 3 %}🥉 #3{% else %}#{{ rank }}{% endif %}
+          </span>
+          {% endif %}
+        </div>
+        {% if target.full_name %}
+        <p class="text-sm text-slate-500 mb-1">@{{ target.username }}</p>
+        {% endif %}
+        {% if target.bio %}
+        <p class="text-slate-700 mb-2 italic">{{ target.bio }}</p>
+        {% endif %}
+        <p class="text-slate-600 text-sm">Учится с {{ (target.created_at or '')[:10] }}</p>
+        {% if not is_me %}
+        <div class="mt-3">
+          {% if friendship_status == 'none' %}
+          <button onclick="sendFriendRequest()" class="btn btn-primary text-sm">👋 Добавить в друзья</button>
+          {% elif friendship_status == 'sent' %}
+          <button onclick="cancelRequest()" class="btn btn-ghost text-sm">⏳ Запрос отправлен</button>
+          {% elif friendship_status == 'pending' %}
+          <button onclick="acceptRequest()" class="btn btn-success text-sm">✓ Принять запрос</button>
+          {% elif friendship_status == 'friends' %}
+          <button onclick="removeFriend()" class="btn btn-ghost text-sm" style="background: rgba(16,185,129,0.15); color: #047857;">🤝 В друзьях</button>
+          {% endif %}
+          <form method="POST" action="/chat/dm/{{ target.username }}" class="inline-block ml-2">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost text-sm">💬 Написать</button>
+          </form>
+          {% if duel_decks %}
+          <button onclick="document.getElementById('duel-modal').classList.remove('hidden')" class="btn text-sm bg-pink-500 text-white hover:bg-pink-600 ml-2">⚔️ На дуэль</button>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="glass rounded-3xl p-6">
+      <div class="icon-bubble bg-gradient-to-br from-indigo-100 to-purple-200 mb-3">⭐</div>
+      <div class="text-3xl font-bold h-display">{{ target.xp or 0 }}</div>
+      <div class="text-sm text-gray-500 mt-1 font-medium">XP</div>
+    </div>
+    <div class="glass rounded-3xl p-6">
+      <div class="icon-bubble bg-gradient-to-br from-orange-100 to-pink-200 mb-3">🔥</div>
+      <div class="text-3xl font-bold h-display text-orange-600">{{ target.streak or 0 }}</div>
+      <div class="text-sm text-gray-500 mt-1 font-medium">Дней подряд</div>
+    </div>
+    <div class="glass rounded-3xl p-6">
+      <div class="icon-bubble bg-gradient-to-br from-emerald-100 to-emerald-200 mb-3">🎓</div>
+      <div class="text-3xl font-bold h-display text-emerald-600">{{ learned }}</div>
+      <div class="text-sm text-gray-500 mt-1 font-medium">Изучено карт</div>
+    </div>
+    <div class="glass rounded-3xl p-6">
+      <div class="icon-bubble bg-gradient-to-br from-blue-100 to-blue-200 mb-3">⚡</div>
+      <div class="text-3xl font-bold h-display text-blue-600">{{ reviews }}</div>
+      <div class="text-sm text-gray-500 mt-1 font-medium">Ответов всего</div>
+    </div>
+  </div>
+
+  <!-- Achievements -->
+  {% if recent_achievements %}
+  <div class="glass rounded-3xl p-6 mb-8">
+    <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+      🏆 Последние достижения <span class="text-sm text-slate-500 font-normal">— {{ ach_count }} всего</span>
+    </h3>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+      {% for a in recent_achievements %}
+      <div class="text-center" title="{{ a.desc }}">
+        <div class="text-4xl mb-1">{{ a.icon }}</div>
+        <div class="text-xs font-medium text-slate-700 truncate">{{ a.name }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Public decks -->
+  {% if decks_public %}
+  <div class="glass rounded-3xl p-6">
+    <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+      🌐 Публичные колоды <span class="text-sm text-slate-500 font-normal">— {{ decks_public|length }}</span>
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for d in decks_public %}
+      <div class="bg-white/60 rounded-2xl p-5 border border-indigo-100 card-hover">
+        <div class="flex items-start justify-between mb-2">
+          <span class="text-3xl">{{ d.icon }}</span>
+          <span class="badge bg-indigo-50 text-indigo-700 text-xs">📥 {{ d.clones_count }}</span>
+        </div>
+        <h4 class="font-bold text-slate-900">{{ d.name }}</h4>
+        {% if not is_me %}
+        <form method="POST" action="/marketplace/clone/{{ d.id }}" class="mt-3">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-primary text-sm w-full justify-center">📥 Добавить себе</button>
+        </form>
+        {% else %}
+        <a href="/deck/{{ d.id }}" class="btn btn-ghost text-sm w-full justify-center mt-3">Открыть</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-12 glass rounded-3xl">
+    <div class="text-5xl mb-3">📚</div>
+    <p class="text-slate-600">{% if is_me %}У вас нет публичных колод{% else %}Этот пользователь пока не сделал ни одной колоды публичной{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+
+{% if duel_decks %}
+<!-- Duel modal -->
+<div id="duel-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onclick="if(event.target===this) this.classList.add('hidden')">
+  <div class="glass-strong rounded-3xl p-7 max-w-md w-full">
+    <h3 class="text-xl font-bold mb-2 h-display">⚔️ Вызвать на дуэль</h3>
+    <p class="text-sm text-slate-500 mb-4">5 случайных вопросов из колоды. Кто правильно и быстрее — тот выиграл (+50 XP).</p>
+    <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Колода для дуэли</label>
+    <select id="duel-deck" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white mb-4">
+      {% set my = duel_decks | selectattr('source', 'equalto', 'my') | list %}
+      {% set theirs = duel_decks | selectattr('source', 'equalto', 'theirs') | list %}
+      {% set market = duel_decks | selectattr('source', 'equalto', 'market') | list %}
+      {% if my %}
+      <optgroup label="📚 Мои колоды">
+        {% for d in my %}<option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.cnt }})</option>{% endfor %}
+      </optgroup>
+      {% endif %}
+      {% if theirs %}
+      <optgroup label="🌐 Публичные @{{ target.username }}">
+        {% for d in theirs %}<option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.cnt }})</option>{% endfor %}
+      </optgroup>
+      {% endif %}
+      {% if market %}
+      <optgroup label="🔥 Из маркета">
+        {% for d in market %}<option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.cnt }})</option>{% endfor %}
+      </optgroup>
+      {% endif %}
+    </select>
+    <p class="text-xs text-slate-400 mb-4">💡 Берётся 5 случайных карт из выбранной колоды</p>
+    <div class="flex gap-2 justify-end">
+      <button onclick="document.getElementById('duel-modal').classList.add('hidden')" class="btn btn-ghost">Отмена</button>
+      <button onclick="sendDuelChallenge()" class="btn text-white bg-gradient-to-r from-pink-500 to-rose-500">⚔️ Вызвать</button>
+    </div>
+  </div>
+</div>
+<script>
+async function sendDuelChallenge() {
+  const deckId = document.getElementById('duel-deck').value;
+  const fd = new FormData();
+  fd.append('deck_id', deckId);
+  fd.append('_csrf', '{{ csrf_token() }}');
+  const r = await fetch('/duel/challenge/{{ target.username }}', { method: 'POST', body: fd });
+  const data = await r.json();
+  if (data.ok) {
+    window.location = '/duel/' + data.duel_id;
+  } else {
+    alert('Ошибка: ' + (data.error || 'unknown'));
+  }
+}
+</script>
+{% endif %}
+
+<script>
+const username = '{{ target.username }}';
+async function sendFriendRequest() {
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch(`/friend/${username}/request`, { method: 'POST', body: fd });
+  location.reload();
+}
+async function cancelRequest() {
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch(`/friend/${username}/remove`, { method: 'POST', body: fd });
+  location.reload();
+}
+async function acceptRequest() {
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch(`/friend/${username}/accept`, { method: 'POST', body: fd });
+  location.reload();
+}
+async function removeFriend() {
+  if (!confirm('Удалить из друзей?')) return;
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch(`/friend/${username}/remove`, { method: 'POST', body: fd });
+  location.reload();
+}
+</script>
+{% endblock %}

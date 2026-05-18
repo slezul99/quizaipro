@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+  .tutor-msg { animation: fadeIn 0.3s ease-out; }
+  .typing-dots span {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: currentColor; margin: 0 1px;
+    animation: typing 1.4s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing {
+    0%, 60%, 100% { transform: scale(1); opacity: 0.5; }
+    30% { transform: scale(1.2); opacity: 1; }
+  }
+  .markdown { white-space: pre-wrap; word-break: break-word; line-height: 1.6; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-6" x-data="tutorApp()" x-init="init()">
+
+  <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+    <div>
+      <h1 class="h-display text-3xl text-slate-900">🤖 <span class="text-gradient">AI Tutor</span></h1>
+      <p class="text-sm text-slate-600">Персональный репетитор · спросите что угодно</p>
+    </div>
+    <button @click="clearHistory()" class="btn btn-ghost text-sm">🗑 Очистить</button>
+  </div>
+
+  <div class="glass rounded-3xl flex flex-col" style="height: calc(100vh - 180px); min-height: 500px;">
+    <div x-ref="msgs" class="flex-1 overflow-y-auto scrollbar p-5 space-y-4">
+      <!-- Welcome -->
+      <div x-show="messages.length === 0" class="text-center py-10">
+        <div class="text-6xl mb-3">🤖</div>
+        <h3 class="font-bold text-slate-900 mb-2">Привет! Я ваш AI-репетитор</h3>
+        <p class="text-slate-600 max-w-md mx-auto text-sm mb-6">
+          Спросите что-то непонятное, попросите примеры, объяснение правила или просто помощь с темой
+        </p>
+        <div class="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
+          <template x-for="s in suggestions" :key="s">
+            <button @click="newMsg = s; send()" class="text-xs bg-white border border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition" x-text="s"></button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <template x-for="(m, i) in messages" :key="i">
+        <div class="tutor-msg flex gap-3" :class="m.role === 'user' ? 'flex-row-reverse' : ''">
+          <div class="flex-shrink-0 text-xl w-9 h-9 rounded-full flex items-center justify-center"
+            :class="m.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-amber-100'">
+            <span x-text="m.role === 'user' ? '👤' : '🤖'"></span>
+          </div>
+          <div class="max-w-[80%]">
+            <div class="rounded-2xl p-4 markdown"
+              :class="m.role === 'user' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' : 'bg-white border border-amber-200'"
+              x-text="m.content"></div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Typing indicator -->
+      <div x-show="loading" class="tutor-msg flex gap-3">
+        <div class="flex-shrink-0 text-xl w-9 h-9 rounded-full flex items-center justify-center bg-amber-100">🤖</div>
+        <div class="bg-white border border-amber-200 rounded-2xl p-4 typing-dots text-amber-600">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <form @submit.prevent="send()" class="border-t border-gray-200 p-3 flex gap-2">
+      <textarea x-model="newMsg" @keydown.enter.prevent="if (!$event.shiftKey) send()"
+        rows="1" :disabled="loading"
+        placeholder="Задайте вопрос... (Enter — отправить, Shift+Enter — новая строка)"
+        class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white resize-none scrollbar disabled:opacity-50"></textarea>
+      <button type="submit" :disabled="!newMsg.trim() || loading"
+        :class="(!newMsg.trim() || loading) ? 'opacity-40 cursor-not-allowed' : ''"
+        class="btn btn-primary">→</button>
+    </form>
+  </div>
+
+  {% if not ai_available %}
+  <div class="mt-4 glass rounded-2xl p-4 text-center text-sm text-amber-700 border border-amber-200 bg-amber-50/60">
+    ⚠️ AI временно недоступен. Попробуйте позже.
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function tutorApp() {
+  return {
+    messages: [],
+    newMsg: '',
+    loading: false,
+    suggestions: [
+      'Объясни Present Perfect простыми словами',
+      'Дай примеры на passive voice',
+      'В чем разница между some и any?',
+      'Помоги составить план изучения английского',
+      'Как лучше запоминать новые слова?',
+    ],
+
+    init() {
+      this.scrollBottom();
+    },
+
+    async send() {
+      if (!this.newMsg.trim() || this.loading) return;
+      const text = this.newMsg.trim();
+      this.messages.push({ role: 'user', content: text });
+      this.newMsg = '';
+      this.loading = true;
+      this.$nextTick(() => this.scrollBottom());
+      try {
+        const fd = new FormData();
+        fd.append('message', text);
+        const r = await fetch('/api/tutor/ask', { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data.ok) {
+          this.messages.push({ role: 'assistant', content: data.answer });
+        } else {
+          this.messages.push({ role: 'assistant', content: '⚠️ ' + (data.msg || 'Ошибка') });
+        }
+      } catch (e) {
+        this.messages.push({ role: 'assistant', content: '⚠️ Ошибка сети' });
+      }
+      this.loading = false;
+      this.$nextTick(() => this.scrollBottom());
+    },
+
+    async clearHistory() {
+      if (!confirm('Очистить весь чат?')) return;
+      const fd = new FormData();
+      await fetch('/api/tutor/clear', { method: 'POST', body: fd });
+      this.messages = [];
+    },
+
+    scrollBottom() {
+      const el = this.$refs.msgs;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+  };
+}
+</script>
+{% endblock %}

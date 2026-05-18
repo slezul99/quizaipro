@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+  <div class="mb-8 slide-up">
+    <h1 class="h-display text-5xl text-slate-900 mb-2">🏆 <span class="text-gradient">Лидерборд</span></h1>
+    <p class="text-slate-700 text-lg">Топ-50 индивидуальных пользователей</p>
+    {% if my_rank %}
+    <p class="text-sm mt-2">Ваше место: <span class="font-bold text-indigo-600 text-lg">#{{ my_rank }}</span></p>
+    {% endif %}
+  </div>
+
+  {% if top_users %}
+  <div class="glass rounded-3xl p-4 md:p-6">
+    <div class="space-y-2">
+      {% for u in top_users %}
+      {% set rank = loop.index %}
+      <a href="/u/{{ u.username }}"
+        class="flex items-center gap-3 p-3 rounded-2xl transition hover:bg-indigo-50/60
+        {% if u.id == current.id %}bg-indigo-50 border-2 border-indigo-300{% else %}border border-transparent{% endif %}">
+        <span class="w-12 text-center text-xl font-bold flex-shrink-0
+          {% if rank == 1 %}text-yellow-500{% elif rank == 2 %}text-gray-400{% elif rank == 3 %}text-orange-500{% else %}text-slate-400{% endif %}">
+          {% if rank == 1 %}🥇{% elif rank == 2 %}🥈{% elif rank == 3 %}🥉{% else %}#{{ rank }}{% endif %}
+        </span>
+        <span class="avatar flex-shrink-0">{{ u.username[0]|upper }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-slate-900 truncate">{{ u.username }}{% if u.id == current.id %} <span class="text-xs text-indigo-600">— Это вы</span>{% endif %}</div>
+          <div class="text-xs text-slate-500 flex gap-3 flex-wrap">
+            <span>📚 {{ u.decks_count }} колод</span>
+            <span>🎓 {{ u.learned_count }} изучено</span>
+            <span>⚡ {{ u.reviews_count }} ответов</span>
+            {% if u.public_decks > 0 %}
+            <span class="text-emerald-600">🌐 {{ u.public_decks }} публичных</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="font-bold text-indigo-600 text-lg">⭐ {{ u.xp }}</div>
+          <div class="text-xs text-orange-600">🔥 {{ u.streak }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-20 glass rounded-3xl">
+    <div class="text-7xl mb-4">📊</div>
+    <h3 class="text-2xl font-bold mb-3 h-display">Лидерборд пока пуст</h3>
+    <p class="text-slate-600">Будьте первым в рейтинге!</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

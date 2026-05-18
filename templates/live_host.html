@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8" x-data="liveHost()" x-init="init()">
+
+  <!-- WAITING -->
+  <div x-show="state.status === 'waiting'" x-transition class="text-center"
+    x-data="{ copiedCode: false, copiedLink: false,
+      get inviteUrl() { return location.origin + '/live/join?code={{ sess.code }}'; },
+      copy(text, type) {
+        navigator.clipboard.writeText(text).then(() => {
+          if (type === 'code') { this.copiedCode = true; setTimeout(() => this.copiedCode = false, 1500); }
+          if (type === 'link') { this.copiedLink = true; setTimeout(() => this.copiedLink = false, 1500); }
+        });
+      }
+    }">
+    <div class="mb-4">
+      <span x-show="state.host_role === 'participant'" class="badge bg-emerald-100 text-emerald-700">🎮 Вы — участник</span>
+      <span x-show="state.host_role !== 'participant'" class="badge bg-blue-100 text-blue-700">👁 Вы — наблюдатель</span>
+    </div>
+
+    <!-- Priglashenie -->
+    <div class="glass rounded-3xl p-6 md:p-8 mb-6 max-w-2xl mx-auto"
+      style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.08));
+             border: 1px solid rgba(99,102,241,0.2);">
+      <p class="text-sm text-slate-600 uppercase tracking-wider font-bold mb-3">🎟 Код для входа</p>
+
+      <!-- Bol'shoy kod, kliknul = skopiroval -->
+      <button type="button" @click="copy('{{ sess.code }}', 'code')"
+        class="block mx-auto group relative cursor-pointer hover:scale-105 transition mb-2"
+        title="Кликните чтобы скопировать">
+        <div class="text-6xl md:text-8xl font-black font-mono tracking-widest text-gradient h-display select-all">
+          {{ sess.code }}
+        </div>
+        <span x-show="copiedCode" x-transition
+          class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold whitespace-nowrap">
+          ✓ Скопировано
+        </span>
+      </button>
+      <p class="text-xs text-slate-500 mb-5">Кликните на код чтобы скопировать</p>
+
+      <!-- Akciya kopirovat link -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-2 max-w-xl mx-auto">
+        <input type="text" readonly :value="inviteUrl"
+          class="flex-1 px-4 py-3 rounded-xl border-2 border-indigo-200 bg-white/80 text-sm font-mono text-slate-700 focus:outline-none focus:border-indigo-500"
+          @click="$event.target.select()">
+        <button type="button" @click="copy(inviteUrl, 'link')"
+          class="px-5 py-3 rounded-xl font-bold text-white whitespace-nowrap transition shadow hover:scale-105 active:scale-95"
+          style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+          <span x-show="!copiedLink">🔗 Скопировать ссылку</span>
+          <span x-show="copiedLink">✓ Скопировано</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500 mt-3">
+        Студенты могут ввести код вручную на
+        <a href="/live/join" class="text-indigo-600 font-semibold hover:underline">/live/join</a>
+        или перейти по ссылке для прямого захода
+      </p>
+
+      <!-- Knopka priglasit' druga -->
+      <button type="button" @click="$dispatch('open-invite-friends')"
+        class="mt-5 inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-white transition shadow hover:scale-105 active:scale-95"
+        style="background: linear-gradient(135deg, #f59e0b, #ec4899);">
+        👥 Пригласить друга
+      </button>
+    </div>
+
+    <div class="glass rounded-3xl p-6 mb-6">
+      <div class="flex justify-between mb-4 flex-wrap gap-3">
+        <h3 class="font-bold text-slate-900 text-lg">👥 Подключились (<span x-text="state.participants.length"></span>)</h3>
+        <button @click="startSession()"
+          :disabled="state.participants.length === 0"
+          :class="state.participants.length === 0 ? 'opacity-40 cursor-not-allowed' : ''"
+          class="btn btn-success">
+          ▶ Старт ({{ sess.question_count }} вопросов)
+        </button>
+      </div>
+      <template x-if="state.participants.length === 0">
+        <p class="text-slate-500 italic py-8">Ждём студентов...</p>
+      </template>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <template x-for="p in state.participants" :key="p.user_id">
+          <div class="bg-white/70 rounded-2xl p-3 flex items-center gap-3 border border-indigo-100">
+            <span class="avatar" style="width:36px;height:36px;font-size:14px;"
+              x-text="(p.full_name || p.username)[0].toUpperCase()"></span>
+            <span class="font-medium text-slate-900 truncate" x-text="p.full_name || p.username"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVITE FRIENDS MODAL -->
+  <div x-data="inviteFriendsModal()" @open-invite-friends.window="open()"
+    x-show="isOpen" x-transition x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+    @click.self="close()">
+    <div class="glass-strong rounded-3xl p-7 max-w-md w-full max-h-[85vh] flex flex-col scale-in">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold h-display">👥 Пригласить друзей</h3>
+        <button @click="close()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+      </div>
+      <p class="text-sm text-slate-600 mb-4">Им придёт уведомление со ссылкой на эту игру.</p>
+
+      <div x-show="loading" class="text-center py-8 text-slate-500">⏳ Загрузка...</div>
+
+      <div x-show="!loading && friends.length === 0" class="text-center py-8">
+        <div class="text-5xl mb-2">😕</div>
+        <p class="text-slate-700 font-semibold mb-1">Друзей пока нет</p>
+        <a href="/leaderboard" class="text-indigo-600 hover:underline text-sm">Найти пользователей →</a>
+      </div>
+
+      <div x-show="!loading && friends.length > 0" class="overflow-y-auto pr-1 -mr-1 flex-1 space-y-2">
+        <template x-for="f in friends" :key="f.id">
+          <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/70 border border-indigo-100">
+            <span class="avatar" style="width:36px;height:36px;font-size:14px;"
+              x-text="(f.full_name || f.username)[0].toUpperCase()"></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-slate-900 truncate" x-text="f.full_name || f.username"></div>
+              <div class="text-xs text-slate-500">⭐ <span x-text="f.xp"></span></div>
+            </div>
+            <template x-if="f.joined">
+              <span class="px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold">✓ В игре</span>
+            </template>
+            <template x-if="!f.joined">
+              <button @click="invite(f.username)"
+                :disabled="invited[f.username] || sending[f.username]"
+                :class="invited[f.username] ? 'bg-emerald-500' : 'bg-indigo-500 hover:bg-indigo-600'"
+                class="px-3 py-1.5 rounded-lg text-white text-xs font-bold transition disabled:opacity-60">
+                <span x-show="!invited[f.username] && !sending[f.username]">📩 Пригласить</span>
+                <span x-show="sending[f.username]">⏳</span>
+                <span x-show="invited[f.username]">✓ Отправлено</span>
+              </button>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between gap-2">
+        <a href="/friends" class="text-sm text-indigo-600 hover:underline self-center">+ Добавить друзей</a>
+        <button @click="close()" class="btn btn-ghost text-sm">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUNNING -->
+  <div x-show="state.status === 'running'" x-transition>
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="badge bg-indigo-100 text-indigo-700">Код: {{ sess.code }}</span>
+        <span class="text-sm text-slate-700">
+          Вопрос <span x-text="state.current_idx + 1"></span> из <span x-text="state.question_count"></span>
+        </span>
+        <span class="px-3 py-1.5 rounded-xl font-bold text-base shadow"
+          :class="timeLeft <= 5 ? 'bg-red-500 text-white animate-pulse' : (timeLeft <= 10 ? 'bg-orange-500 text-white' : 'bg-indigo-600 text-white')">
+          ⏱ <span x-text="timeLeft"></span>с
+        </span>
+      </div>
+      <button @click="nextQuestion()" class="btn btn-primary">
+        <span x-show="state.current_idx + 1 < state.question_count">Следующий →</span>
+        <span x-show="state.current_idx + 1 >= state.question_count">Завершить</span>
+      </button>
+    </div>
+
+    <!-- Timer bar -->
+    <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden mb-4">
+      <div class="h-full transition-all duration-500"
+        :class="timeLeft <= 5 ? 'bg-red-500' : (timeLeft <= 10 ? 'bg-orange-500' : 'bg-indigo-500')"
+        :style="`width: ${state.question?.time_per_q ? (timeLeft / state.question.time_per_q * 100) : 0}%`"></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <!-- Vopros -->
+      <div class="glass rounded-3xl p-6">
+        <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3">Текущий вопрос</div>
+        <div class="text-xl font-bold text-slate-900 mb-5" x-text="state.question?.front"></div>
+
+        <!-- Esli host = uchasnik — knopki otveta -->
+        <template x-if="state.host_role === 'participant' && !state.question?.my_answer">
+          <div class="space-y-2">
+            <template x-for="opt in state.question?.options || []" :key="opt.letter">
+              <button @click="answer(opt.letter)"
+                class="w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition cursor-pointer border-gray-200 hover:border-indigo-300 hover:bg-indigo-50">
+                <span class="bg-gray-100 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" x-text="opt.letter"></span>
+                <span class="flex-1 text-sm" x-text="opt.text"></span>
+              </button>
+            </template>
+          </div>
+        </template>
+
+        <!-- Inache pokazyvaem otvety s podsvetkoy pravil'nogo (host = nablyud, ili host otvetil) -->
+        <template x-if="state.host_role !== 'participant' || state.question?.my_answer">
+          <div class="space-y-2">
+            <template x-for="opt in state.question?.options || []" :key="opt.letter">
+              <div :class="opt.letter === state.question?.correct ? 'border-emerald-400 bg-emerald-50' : (opt.letter === state.question?.my_answer ? 'border-blue-400 bg-blue-50' : 'border-gray-200')"
+                class="flex items-center gap-3 p-3 rounded-xl border-2">
+                <span :class="opt.letter === state.question?.correct ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'"
+                  class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" x-text="opt.letter"></span>
+                <span class="flex-1 text-sm" x-text="opt.text"></span>
+                <span x-show="opt.letter === state.question?.correct" class="text-emerald-600 font-bold">✓</span>
+                <span x-show="opt.letter === state.question?.my_answer && opt.letter !== state.question?.correct" class="text-red-500 font-bold">✗ ваш</span>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-bold text-slate-900 mb-4">🏆 Таблица лидеров</h3>
+        <div class="space-y-2">
+          <template x-for="(p, i) in state.participants" :key="p.user_id">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-gray-100">
+              <span class="w-8 text-center font-bold"
+                :class="i === 0 ? 'text-yellow-500 text-xl' : (i === 1 ? 'text-gray-400 text-lg' : (i === 2 ? 'text-orange-500 text-base' : 'text-gray-400 text-sm'))"
+                x-text="i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : (i+1)+'.'))"></span>
+              <span class="avatar" style="width:30px;height:30px;font-size:12px;"
+                x-text="(p.full_name || p.username)[0].toUpperCase()"></span>
+              <span class="flex-1 font-medium text-slate-900 truncate" x-text="p.full_name || p.username"></span>
+              <span class="font-bold text-indigo-600" x-text="p.score"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINISHED -->
+  <div x-show="state.status === 'finished'" x-transition>
+    <div class="text-center mb-8">
+      <div class="text-7xl mb-4">🏆</div>
+      <h2 class="h-display text-4xl text-slate-900 mb-2">Тест завершён</h2>
+      <p class="text-slate-600">Финальная таблица лидеров</p>
+    </div>
+    <div class="glass rounded-3xl p-6 max-w-2xl mx-auto">
+      <template x-for="(p, i) in state.participants" :key="p.user_id">
+        <div class="flex items-center gap-4 p-4 rounded-2xl mb-2"
+          :class="i === 0 ? 'bg-gradient-to-r from-yellow-100 to-amber-100' : (i === 1 ? 'bg-gradient-to-r from-gray-100 to-slate-100' : (i === 2 ? 'bg-gradient-to-r from-orange-100 to-red-100' : 'bg-white/70'))">
+          <span class="text-3xl"
+            x-text="i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : (i+1)+'.'))"></span>
+          <span class="avatar" style="width:40px;height:40px;font-size:14px;"
+            x-text="(p.full_name || p.username)[0].toUpperCase()"></span>
+          <div class="flex-1">
+            <div class="font-bold text-slate-900" x-text="p.full_name || p.username"></div>
+            <div class="text-xs text-slate-500">
+              <span x-text="p.correct_count"></span> ✓
+              · <span x-text="p.wrong_count"></span> ✗
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-indigo-600" x-text="p.score"></div>
+        </div>
+      </template>
+    </div>
+    <div class="text-center mt-8">
+      <a href="/dashboard" class="btn btn-primary">К дашборду</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function liveHost() {
+  return {
+    state: { status: 'waiting', participants: [], current_idx: 0, question_count: 0, question: null, host_role: 'observer' },
+    pollInterval: null,
+    timeInterval: null,
+    timeLeft: 0,
+
+    init() {
+      this.poll();
+      this.pollInterval = setInterval(() => this.poll(), 1500);
+    },
+
+    async poll() {
+      try {
+        const r = await fetch('/api/live/{{ sess.code }}/state');
+        if (r.ok) {
+          const wasFinished = this.state.status === 'finished';
+          this.state = await r.json();
+          this.updateTimer();
+          if (!wasFinished && this.state.status === 'finished') {
+            this.fetchAchievements();
+          }
+        }
+        if (this.state.status === 'finished' && this.pollInterval) {
+          clearInterval(this.pollInterval);
+          if (this.timeInterval) clearInterval(this.timeInterval);
+        }
+      } catch (e) { console.error(e); }
+    },
+
+    async fetchAchievements() {
+      try {
+        const r = await fetch('/api/my/new_achievements');
+        if (r.ok) {
+          const data = await r.json();
+          if (data.achievements && data.achievements.length && window.showAchievementToasts) {
+            window.showAchievementToasts(data.achievements);
+          }
+        }
+      } catch(e) {}
+    },
+
+    updateTimer() {
+      if (this.state.status !== 'running' || !this.state.question?.started_at) {
+        this.timeLeft = 0;
+        return;
+      }
+      const total = this.state.question.time_per_q;
+      const start = new Date(this.state.question.started_at + 'Z').getTime();
+      const calc = () => {
+        const passed = Math.floor((Date.now() - start) / 1000);
+        this.timeLeft = Math.max(0, total - passed);
+      };
+      calc();
+      if (this.timeInterval) clearInterval(this.timeInterval);
+      this.timeInterval = setInterval(calc, 500);
+    },
+
+    async startSession() {
+      const fd = new FormData();
+      fd.append('_csrf', '{{ csrf_token() }}');
+      await fetch('/api/live/{{ sess.code }}/start', { method: 'POST', body: fd });
+      this.poll();
+    },
+
+    async nextQuestion() {
+      const fd = new FormData();
+      fd.append('_csrf', '{{ csrf_token() }}');
+      await fetch('/api/live/{{ sess.code }}/next', { method: 'POST', body: fd });
+      this.poll();
+    },
+
+    async answer(letter) {
+      if (this.state.question?.my_answer) return;
+      try {
+        const fd = new FormData();
+        fd.append('chosen', letter);
+        fd.append('_csrf', '{{ csrf_token() }}');
+        const r = await fetch('/api/live/{{ sess.code }}/answer', { method: 'POST', body: fd });
+        if (!r.ok) {
+          const data = await r.json();
+          alert('Ошибка: ' + (data.error || r.status));
+        }
+      } catch (e) { console.error(e); }
+      this.poll();
+    },
+  };
+}
+
+function inviteFriendsModal() {
+  return {
+    isOpen: false,
+    loading: false,
+    friends: [],
+    invited: {},
+    sending: {},
+
+    async open() {
+      this.isOpen = true;
+      this.invited = {};
+      await this.fetchFriends();
+    },
+
+    close() { this.isOpen = false; },
+
+    async fetchFriends() {
+      this.loading = true;
+      try {
+        const r = await fetch('/api/live/{{ sess.code }}/friends-to-invite');
+        const data = await r.json();
+        this.friends = data.friends || [];
+      } catch (e) { console.error(e); }
+      this.loading = false;
+    },
+
+    async invite(username) {
+      this.sending[username] = true;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        const r = await fetch(`/api/live/{{ sess.code }}/invite/${encodeURIComponent(username)}`,
+          { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data.ok) {
+          this.invited[username] = true;
+        } else {
+          alert('Ошибка: ' + (data.error || 'не отправлено'));
+        }
+      } catch (e) { alert('Ошибка сети'); }
+      this.sending[username] = false;
+    },
+  };
+}
+</script>
+{% endblock %}

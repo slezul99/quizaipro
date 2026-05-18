@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ t('app_name') }}{% endblock %}</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ BASE ============ */
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    color: #0a1838;
+    background: #87ceeb;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  [x-cloak] { display: none !important; }
+
+  /* === DARK MODE === */
+  html.dark body { color: #e2e8f0; background: #0f1729; }
+  html.dark .gradient-bg {
+    background:
+      radial-gradient(circle at 88% 8%, rgba(255, 200, 100, 0.12), transparent 30%),
+      linear-gradient(180deg, #0f1729 0%, #1a2342 50%, #1e2747 100%);
+  }
+  html.dark .gradient-bg::before { display: none; }
+  html.dark .gradient-bg::after { display: none; }
+  html.dark .orb { opacity: 0.3; }
+  html.dark .glass {
+    background: rgba(30, 41, 75, 0.65);
+    border-color: rgba(99, 102, 241, 0.15);
+    color: #e2e8f0;
+    box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.5);
+  }
+  html.dark .glass-strong {
+    background: rgba(20, 28, 56, 0.95);
+    border-color: rgba(99, 102, 241, 0.2);
+    color: #f1f5f9;
+  }
+  html.dark .nav-blur {
+    background: rgba(15, 23, 41, 0.85);
+    border-bottom-color: rgba(99, 102, 241, 0.2);
+  }
+  html.dark [x-show="mobileMenu"] {
+    background: rgba(15, 23, 41, 0.98) !important;
+  }
+  html.dark .text-slate-900 { color: #f1f5f9 !important; }
+  html.dark .text-slate-700 { color: #cbd5e1 !important; }
+  html.dark .text-slate-600 { color: #94a3b8 !important; }
+  html.dark .text-slate-500 { color: #94a3b8 !important; }
+  html.dark .text-gray-500 { color: #94a3b8 !important; }
+  html.dark .text-gray-400 { color: #64748b !important; }
+  html.dark input, html.dark select, html.dark textarea {
+    background: rgba(15, 23, 41, 0.7) !important;
+    color: #e2e8f0;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+  }
+  html.dark .bg-white, html.dark .bg-white\/70, html.dark .bg-white\/60, html.dark .bg-white\/80 {
+    background: rgba(30, 41, 75, 0.6) !important;
+  }
+  html.dark .bg-slate-100 { background: rgba(15, 23, 41, 0.5) !important; }
+  html.dark .border-gray-200 { border-color: rgba(99, 102, 241, 0.2) !important; }
+  html.dark .border-gray-100 { border-color: rgba(99, 102, 241, 0.15) !important; }
+  html.dark table th { background: rgba(99, 102, 241, 0.15); color: #cbd5e1; }
+  html.dark table td { border-bottom-color: rgba(99, 102, 241, 0.1); }
+  html.dark table tbody tr:hover { background: rgba(99, 102, 241, 0.08); }
+
+  /* ============ ANIME SKY (Makoto Shinkai vibe) ============ */
+  .gradient-bg {
+    min-height: 100vh;
+    background:
+      /* Solntse v verhnem pravom uglu — glow */
+      radial-gradient(circle at 88% 8%, rgba(255, 251, 220, 0.85), rgba(255,240,180,0.4) 8%, transparent 22%),
+      /* Vneshniy glow ot solntsa (god rays effekt) */
+      radial-gradient(circle at 88% 8%, rgba(255, 230, 180, 0.3), transparent 45%),
+      /* Tonkiy oranzh-rozovyy ot zakata na gorizonte */
+      radial-gradient(ellipse 100% 30% at 50% 100%, rgba(255, 200, 220, 0.15), transparent 60%),
+      /* Otrazhennyy svet v sredine */
+      radial-gradient(ellipse 70% 50% at 50% 40%, rgba(255, 255, 255, 0.15), transparent 70%),
+      /* Glubokoye anime-nebo: cyan → glubokiy goluboy */
+      linear-gradient(180deg,
+        #4eb1e8 0%,
+        #6bc4ee 18%,
+        #8fd5f3 38%,
+        #b5e3f7 60%,
+        #d6effa 82%,
+        #f0f7fc 100%);
+    position: relative;
+  }
+
+  /* Mnogosloynye pushistye oblaka */
+  .gradient-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      /* Verkh-levo: bol'shoye pushistoye oblako */
+      radial-gradient(ellipse 380px 110px at 8% 14%, rgba(255,255,255,0.95), transparent 55%),
+      radial-gradient(ellipse 240px 90px at 18% 22%, rgba(255,255,255,0.85), transparent 60%),
+      radial-gradient(ellipse 180px 70px at 3% 8%, rgba(255,255,255,0.75), transparent 60%),
+      radial-gradient(ellipse 220px 75px at 22% 6%, rgba(255,255,255,0.7), transparent 60%),
+      /* Verkh-pravo (vokrug solntsa) */
+      radial-gradient(ellipse 280px 95px at 78% 16%, rgba(255,255,255,0.92), transparent 55%),
+      radial-gradient(ellipse 200px 75px at 95% 22%, rgba(255,253,240,0.85), transparent 60%),
+      /* Sredina-levo */
+      radial-gradient(ellipse 320px 100px at 12% 48%, rgba(255,255,255,0.7), transparent 60%),
+      radial-gradient(ellipse 180px 65px at 25% 52%, rgba(255,255,255,0.6), transparent 65%),
+      /* Sredina-pravo */
+      radial-gradient(ellipse 300px 95px at 88% 45%, rgba(255,255,255,0.75), transparent 60%),
+      radial-gradient(ellipse 200px 70px at 75% 50%, rgba(255,255,255,0.55), transparent 65%),
+      /* Niz: tonkiye dalokiye oblaka u gorizonta */
+      radial-gradient(ellipse 500px 80px at 30% 80%, rgba(255,255,255,0.55), transparent 70%),
+      radial-gradient(ellipse 450px 70px at 70% 78%, rgba(255,255,255,0.6), transparent 70%),
+      radial-gradient(ellipse 350px 60px at 50% 92%, rgba(255,255,255,0.5), transparent 70%);
+    filter: blur(1.5px);
+  }
+
+  /* God rays — solnechnyy lensflare effekt */
+  .gradient-bg::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      /* Diagonal'nyye luchi sveta ot solntsa */
+      linear-gradient(217deg,
+        rgba(255, 248, 220, 0.18) 0%,
+        rgba(255, 248, 220, 0.10) 12%,
+        transparent 30%),
+      linear-gradient(225deg,
+        rgba(255, 248, 220, 0.12) 0%,
+        transparent 25%),
+      linear-gradient(232deg,
+        rgba(255, 248, 220, 0.08) 0%,
+        transparent 22%);
+    mix-blend-mode: overlay;
+  }
+
+  main { position: relative; z-index: 1; }
+
+  /* Plyvushchie oblaka — animatsiya */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.5) 40%, transparent 70%);
+    filter: blur(8px);
+    animation: cloud-drift 50s linear infinite;
+  }
+  .orb-1 { width: 280px; height: 100px; top: 15%; left: -20%; animation-duration: 70s; }
+  .orb-2 { width: 220px; height: 80px; top: 38%; left: -25%; animation-duration: 55s; animation-delay: -15s; }
+  .orb-3 { width: 320px; height: 110px; top: 60%; left: -30%; animation-duration: 80s; animation-delay: -30s; }
+  @keyframes cloud-drift {
+    from { transform: translateX(0); }
+    to   { transform: translateX(140vw); }
+  }
+
+  /* ============ GLASS — svetlee na sinem nebe ============ */
+  .glass {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    color: #0a1838;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 40px -8px rgba(108, 181, 232, 0.3);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    color: #0a1838;
+  }
+  .glass-dark {
+    background: rgba(10, 24, 56, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #f8fafc;
+  }
+
+  /* ============ NAV — svetlyy proztrachnyy ============ */
+  .nav-blur {
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(255, 255, 255, 0.65);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  /* ============ BUTTONS ============ */
+  .btn {
+    padding: 10px 20px;
+    border-radius: 14px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    line-height: 1;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost {
+    background: rgba(255,255,255,0.6);
+    color: #1e293b;
+    border-color: rgba(99,102,241,0.15);
+    backdrop-filter: blur(10px);
+  }
+  .btn-ghost:hover {
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(99,102,241,0.3);
+    transform: translateY(-1px);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 14px -2px rgba(16, 185, 129, 0.4);
+  }
+  .btn-success:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.5); }
+  .btn-danger {
+    background: rgba(254, 226, 226, 0.7);
+    color: #b91c1c;
+    border-color: rgba(220, 38, 38, 0.2);
+  }
+  .btn-danger:hover { background: rgba(254, 226, 226, 1); }
+
+  /* ============ CARDS ============ */
+  .card-hover {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .card-hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.08), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 50px -15px rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+  .card-hover:hover::before { opacity: 1; }
+
+  /* ============ TYPOGRAPHY ============ */
+  .h-display {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ============ FORMS ============ */
+  textarea, input[type=text], input[type=email], input[type=password], input[type=number], select {
+    font-family: inherit;
+    transition: all 0.2s;
+    color: #0a0e27;
+  }
+  textarea:focus, input:focus, select:focus {
+    outline: none;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+  }
+  textarea { resize: vertical; }
+
+  /* ============ SCROLLBAR ============ */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+  ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.6); background-clip: padding-box; border: 2px solid transparent; }
+
+  /* ============ BADGES ============ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* ============ PROGRESS ============ */
+  .progress-bar {
+    height: 8px;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+    border-radius: 9999px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease infinite;
+  }
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ============ ANIMATIONS ============ */
+  .fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  .slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
+  }
+  .scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .pulse-soft { animation: pulseSoft 2s ease-in-out infinite; }
+  @keyframes pulseSoft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ============ TABLES ============ */
+  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  table th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.04);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.08);
+  }
+  table td {
+    padding: 14px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.06);
+  }
+  table tbody tr { transition: background 0.15s; }
+  table tbody tr:hover { background: rgba(99, 102, 241, 0.03); }
+
+  /* ============ AVATAR ============ */
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+  }
+
+  /* ============ STAT CARD ICONS ============ */
+  .icon-bubble {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="gradient-bg">
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+{% if current_user %}
+<header class="sticky top-0 z-40 nav-blur">
+  <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center" x-data="{ mobileMenu: false }">
+    <a href="/dashboard" class="flex items-center gap-2.5 font-bold text-lg group">
+      <span class="text-2xl group-hover:scale-110 transition-transform">🧠</span>
+      <span class="h-display text-gradient">{{ t('app_name') }}</span>
+      {% if current_user.role in ['admin','teacher'] %}
+      <span class="badge bg-indigo-100 text-indigo-700 hidden sm:inline-flex">{{ current_user.role }}</span>
+      {% endif %}
+    </a>
+
+    <!-- Mobile burger -->
+    <button @click="mobileMenu = !mobileMenu" class="md:hidden text-2xl p-2 rounded-lg hover:bg-indigo-50">
+      <span x-show="!mobileMenu">☰</span>
+      <span x-show="mobileMenu" x-cloak>✕</span>
+    </button>
+
+    <!-- Desktop menu -->
+    <div class="hidden md:flex items-center gap-1 text-sm">
+      <a href="/dashboard" class="hover:text-indigo-600 hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition">📊 <span>{{ t('nav_dashboard') }}</span></a>
+      <a href="/search" class="hover:text-indigo-600 flex items-center px-2 py-1.5 rounded-lg hover:bg-indigo-50 transition" title="🔍">🔍</a>
+
+      {% if current_user.role in ['admin','teacher','individual'] %}
+      <!-- Sotsial'noe dropdown -->
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition">
+          💬 <span class="hidden lg:inline">{{ t('nav_social') }}</span> <span class="text-xs">▾</span>
+        </button>
+        <div x-show="open" @click.outside="open = false" x-transition x-cloak
+          class="absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden text-sm z-50">
+          <a href="/chats" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">💬 {{ t('nav_chats') }}</a>
+          <a href="/channels" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">📡 {{ t('nav_channels') }}</a>
+          <a href="/friends" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">👥 {{ t('nav_friends') }}</a>
+          <a href="/study-groups" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">🎓 {{ t('nav_study_groups') }}</a>
+          <a href="/marketplace" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 border-t border-gray-100">🌐 {{ t('nav_marketplace') }}</a>
+          <a href="/leaderboard" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">🏆 {{ t('nav_leaderboard') }}</a>
+        </div>
+      </div>
+
+      <!-- Igry dropdown -->
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-pink-50 transition">
+          🎮 <span class="hidden lg:inline">{{ t('nav_games') }}</span> <span class="text-xs">▾</span>
+        </button>
+        <div x-show="open" @click.outside="open = false" x-transition x-cloak
+          class="absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden text-sm z-50">
+          <a href="/duels" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">⚔️ {{ t('nav_duels') }}</a>
+          <a href="/tournaments" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">🏆 {{ t('nav_tournaments') }}</a>
+          {% if current_user.role in ['admin','teacher','individual'] %}
+          <a href="/live/create" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50 border-t border-gray-100">🎮 {{ t('nav_live_create') }}</a>
+          {% endif %}
+          <a href="/live/join" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">🔑 {{ t('nav_live_join') }}</a>
+          <a href="/live/history" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">📋 {{ t('nav_live_history') }}</a>
+        </div>
+      </div>
+
+      <!-- Uchеba dropdown -->
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 transition">
+          📚 <span class="hidden lg:inline">{{ t('nav_learn') }}</span> <span class="text-xs">▾</span>
+        </button>
+        <div x-show="open" @click.outside="open = false" x-transition x-cloak
+          class="absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden text-sm z-50">
+          <a href="/categories" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">📁 {{ t('nav_categories') }}</a>
+          <a href="/import" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">📥 {{ t('nav_import') }}</a>
+          {% if ai_available %}
+          <a href="/ai" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50 border-t border-gray-100">🤖 {{ t('nav_ai_gen') }}</a>
+          <a href="/tutor" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">💡 {{ t('nav_ai_tutor') }}</a>
+          {% endif %}
+          <a href="/stats" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50 border-t border-gray-100">📈 {{ t('nav_stats') }}</a>
+          <a href="/goals" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">🎯 {{ t('nav_goals') }}</a>
+          <a href="/achievements" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">🏆 {{ t('nav_achievements') }}</a>
+        </div>
+      </div>
+      {% endif %}
+
+      <a href="/notifications" class="relative flex items-center px-2 py-1.5 rounded-lg hover:bg-indigo-50 transition" title="{{ t('nav_notifications') }}">
+        🔔
+        <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">0</span>
+      </a>
+
+      {% if is_super_admin %}
+      <a href="/superadmin" class="hidden md:flex items-center px-2 py-1.5 rounded-lg hover:bg-purple-50 transition" title="Super Admin">
+        🔐
+      </a>
+      {% endif %}
+
+      {% if current_user.role in ['admin','teacher'] %}
+      <a href="/admin/students" class="hover:text-indigo-600 hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition" title="Пользователи">👥</a>
+      {% endif %}
+
+      <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 text-orange-700 text-xs font-semibold">
+        🔥 {{ current_user.streak or 0 }}
+      </div>
+      <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-xs font-semibold">
+        ⭐ {{ current_user.xp or 0 }}
+      </div>
+      <button onclick="toggleDarkMode()" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-indigo-50 transition" title="Тема">
+        <span id="theme-icon">🌙</span>
+      </button>
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="flex items-center gap-2 text-sm hover:bg-indigo-50 px-2 py-1 rounded-xl transition">
+          <span class="avatar">{{ current_user.username[0]|upper }}</span>
+          <span class="hidden md:inline font-medium">{{ current_user.username }}</span>
+          <span class="text-xs text-gray-400">▾</span>
+        </button>
+        <div x-show="open" @click.outside="open = false" x-transition.opacity x-cloak class="absolute right-0 mt-2 w-52 glass-strong rounded-2xl shadow-xl overflow-hidden text-sm">
+          <div class="p-2 border-b border-indigo-100/50">
+            <div class="text-xs text-gray-500 px-2 py-1 font-semibold uppercase tracking-wider">{{ t('language') }}</div>
+            {% for code, name in all_langs %}
+            <a href="/set-lang/{{ code }}" class="block px-3 py-2 rounded-lg hover:bg-indigo-50 transition {% if lang == code %}font-semibold text-indigo-600 bg-indigo-50{% endif %}">{{ name }}</a>
+            {% endfor %}
+          </div>
+          <a href="/settings" class="block px-4 py-3 hover:bg-indigo-50 font-medium border-b border-indigo-100/50">⚙️ {{ t('nav_settings') }}</a>
+          <a href="/logout" class="block px-4 py-3 hover:bg-red-50 text-red-600 font-medium">{{ t('logout') }}</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div x-show="mobileMenu" x-transition x-cloak
+      class="absolute top-full left-0 right-0 md:hidden shadow-2xl"
+      style="background: rgba(255,255,255,0.98); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(99,102,241,0.15);">
+      <div class="max-w-7xl mx-auto px-6 py-4 space-y-1">
+        <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📊 {{ t('nav_dashboard') }}</a>
+        <a href="/stats" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📈 {{ t('nav_stats') }}</a>
+        <a href="/goals" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">🎯 {{ t('nav_goals') }}</a>
+        <a href="/achievements" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">🏆 {{ t('nav_achievements') }}</a>
+        {% if current_user.role in ['admin','teacher','individual'] %}
+        <a href="/live/create" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-pink-50 font-medium">🎮 {{ t('nav_live_create') }}</a>
+        {% endif %}
+        <a href="/live/join" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-pink-50 font-medium">🔑 {{ t('nav_live_join') }}</a>
+        <a href="/live/history" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-pink-50 font-medium">📋 {{ t('nav_live_history') }}</a>
+        {% if current_user.role in ['admin','teacher','individual'] %}
+        <a href="/categories" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📁 {{ t('nav_categories') }}</a>
+        <a href="/import" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📥 {{ t('nav_import') }}</a>
+        {% if ai_available %}
+        <a href="/ai" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">🤖 AI</a>
+        {% endif %}
+        {% endif %}
+        {% if current_user.role in ['admin','teacher'] %}
+        <a href="/admin/students" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">👥 {{ t('users') }}</a>
+        {% endif %}
+        <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 border-t border-indigo-100 mt-2">
+          🔥 {{ current_user.streak or 0 }} дней · ⭐ {{ current_user.xp or 0 }} XP
+        </div>
+        <a href="/logout" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 font-medium">🚪 {{ t('logout') }}</a>
+      </div>
+    </div>
+  </nav>
+</header>
+{% endif %}
+
+{% with msgs = get_flashed_messages(with_categories=true) %}
+{% if msgs %}
+<div class="max-w-7xl mx-auto px-6 mt-4 relative z-10">
+  {% for cat, msg in msgs %}
+  <div class="px-4 py-3 rounded-2xl mb-2 text-sm scale-in glass-strong
+    {% if cat == 'error' %}border-red-200 text-red-700
+    {% elif cat == 'success' %}border-emerald-200 text-emerald-700
+    {% else %}border-blue-200 text-blue-700{% endif %}">
+    {% if cat == 'error' %}❌{% elif cat == 'success' %}✅{% else %}ℹ️{% endif %}
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main class="fade-in">
+{% block content %}{% endblock %}
+</main>
+
+{% if goal_reminder and current_user %}
+<!-- Goals reminder toast -->
+<div x-data="{ open: true }" x-show="open" x-cloak x-transition
+  class="fixed bottom-4 right-4 z-40 max-w-sm">
+  <div class="glass-strong rounded-2xl p-4 shadow-2xl border-2"
+    style="background: linear-gradient(135deg, rgba(255,247,237,0.98), rgba(254,243,199,0.98));
+           border-color: rgba(245,158,11,0.4);">
+    <div class="flex items-start gap-3">
+      <div class="text-3xl flex-shrink-0">🎯</div>
+      <div class="flex-1 min-w-0">
+        {% if goal_reminder.behind %}
+        <div class="font-bold text-orange-900 mb-1">⚠️ Вы отстаёте от цели</div>
+        {% for g in goal_reminder.behind %}
+        <p class="text-xs text-slate-700 mb-1">
+          <b>{{ g.title }}</b> — осталось {{ g.status_info.days_left }} дн.
+        </p>
+        {% endfor %}
+        <p class="text-xs text-orange-800 italic mb-2">Не сдавайтесь, у вас всё получится!</p>
+        {% else %}
+        <div class="font-bold text-amber-900 mb-1">📚 Сегодня в плане</div>
+        {% for g in goal_reminder.pending %}
+        <p class="text-xs text-slate-700 mb-1">
+          <b>{{ g.title }}</b>: {{ g.today.done }} / {{ g.today.total_quota }}
+        </p>
+        {% endfor %}
+        {% endif %}
+
+        <div class="flex gap-2 mt-2">
+          <a href="/goals"
+            class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold">
+            Открыть
+          </a>
+          <button @click="dismissGoalReminder()"
+            class="px-3 py-1.5 rounded-lg bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold border border-amber-200">
+            Не сегодня
+          </button>
+        </div>
+      </div>
+      <button @click="open = false" class="text-slate-400 hover:text-slate-700 text-lg leading-none flex-shrink-0">×</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function dismissGoalReminder() {
+  const fd = new FormData();
+  fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch('/api/goal/dismiss-reminder', { method: 'POST', body: fd });
+  document.querySelectorAll('[x-data*="open: true"]').forEach(el => {
+    if (el.querySelector('.text-amber-900, .text-orange-900')) {
+      el.remove();
+    }
+  });
+}
+</script>
+{% endif %}
+
+{% if new_achievements %}
+<!-- Achievement notification toast -->
+<div id="ach-toast-container" class="fixed top-20 right-4 z-50 space-y-3 max-w-sm">
+  {% for ach in new_achievements %}
+  <div class="ach-toast glass-strong rounded-2xl p-5 shadow-2xl border-2 border-yellow-300"
+    style="background: linear-gradient(135deg, rgba(255,235,180,0.98), rgba(255,250,235,0.98));">
+    <div class="flex items-start gap-4">
+      <div class="text-5xl flex-shrink-0">{{ ach.icon }}</div>
+      <div class="flex-1">
+        <div class="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">🎉 Новое достижение!</div>
+        <div class="font-bold text-slate-900 text-lg">{{ ach.name }}</div>
+        <div class="text-xs text-slate-600 mt-0.5">{{ ach.desc }}</div>
+        <div class="text-xs font-bold text-indigo-600 mt-2">+{{ ach.xp }} XP</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<style>
+  .ach-toast {
+    animation: ach-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1), ach-pulse 2s ease-in-out 0.5s infinite;
+  }
+  @keyframes ach-slide-in {
+    from { opacity: 0; transform: translateX(50px) scale(0.9); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes ach-pulse {
+    0%, 100% { box-shadow: 0 20px 40px -10px rgba(245, 158, 11, 0.4); }
+    50% { box-shadow: 0 20px 50px -5px rgba(245, 158, 11, 0.6); }
+  }
+</style>
+
+<script>
+// Avto-skryt' toast cherez 8 sekund
+setTimeout(() => {
+  document.querySelectorAll('.ach-toast').forEach((el, i) => {
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.5s, transform 0.5s';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(50px)';
+      setTimeout(() => el.remove(), 500);
+    }, i * 200);
+  });
+}, 8000);
+</script>
+{% endif %}
+
+<script>
+// === Avto-CSRF dlya vsekh form ===
+(function() {
+  const csrfToken = "{{ csrf_token() if current_user else '' }}";
+  if (!csrfToken) return;
+  // Pri kazhdoy otpravke formy — proveryaem est' li _csrf, esli net — dobavlyaem
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (!form || form.method.toLowerCase() !== 'post') return;
+    if (!form.querySelector('input[name="_csrf"]')) {
+      const i = document.createElement('input');
+      i.type = 'hidden';
+      i.name = '_csrf';
+      i.value = csrfToken;
+      form.appendChild(i);
+    }
+  }, true);
+})();
+
+// === Dark mode toggle ===
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  const isDark = html.classList.contains('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  const icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+}
+
+// Init theme icon na zagruzke
+document.addEventListener('DOMContentLoaded', () => {
+  const icon = document.getElementById('theme-icon');
+  if (icon && document.documentElement.classList.contains('dark')) {
+    icon.textContent = '☀️';
+  }
+});
+
+// Globalnaya funktsiya pokaza toast-ov dostizhsneiy
+window.showAchievementToasts = function(achievements) {
+  if (!achievements || !achievements.length) return;
+  let container = document.getElementById('ach-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'ach-toast-container';
+    container.className = 'fixed top-20 right-4 z-50 space-y-3 max-w-sm';
+    document.body.appendChild(container);
+  }
+  achievements.forEach((ach, i) => {
+    const el = document.createElement('div');
+    el.className = 'ach-toast glass-strong rounded-2xl p-5 shadow-2xl border-2 border-yellow-300';
+    el.style.cssText = 'background: linear-gradient(135deg, rgba(255,235,180,0.98), rgba(255,250,235,0.98)); animation: ach-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 20px 40px -10px rgba(245, 158, 11, 0.4);';
+    el.innerHTML = `
+      <div class="flex items-start gap-4">
+        <div class="text-5xl flex-shrink-0">${ach.icon}</div>
+        <div class="flex-1">
+          <div class="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">🎉 Новое достижение!</div>
+          <div class="font-bold text-slate-900 text-lg">${ach.name}</div>
+          <div class="text-xs text-slate-600 mt-0.5">${ach.desc}</div>
+          <div class="text-xs font-bold text-indigo-600 mt-2">+${ach.xp} XP</div>
+        </div>
+        <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
+      </div>`;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.5s, transform 0.5s';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(50px)';
+      setTimeout(() => el.remove(), 500);
+    }, 8000 + i * 500);
+  });
+};
+
+// === Notifikatsii badge poll ===
+async function refreshNotifBadge() {
+  try {
+    const r = await fetch('/api/notifications/unread');
+    if (r.ok) {
+      const data = await r.json();
+      const badge = document.getElementById('notif-badge');
+      if (badge) {
+        if (data.count > 0) {
+          badge.textContent = data.count > 99 ? '99+' : data.count;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+  } catch (e) {}
+}
+{% if current_user %}
+refreshNotifBadge();
+setInterval(refreshNotifBadge, 30000);  // kazhduyu polminuty
+{% endif %}
+
+// === Avto CSRF dlya fetch() vyzovov ===
+(function() {
+  const csrfToken = "{{ csrf_token() if current_user else '' }}";
+  if (!csrfToken) return;
+  const origFetch = window.fetch;
+  window.fetch = function(url, opts = {}) {
+    opts.headers = opts.headers || {};
+    // Tol'ko dlya zaprosov k nashemu zhestome (ne vneshnie)
+    if (typeof url === 'string' && (url.startsWith('/') || url.startsWith(window.location.origin))) {
+      opts.headers['X-Requested-With'] = 'XMLHttpRequest';
+      opts.headers['X-CSRF-Token'] = csrfToken;
+    }
+    return origFetch(url, opts);
+  };
+})();
+
+// Mouse tracking dlya kart
+document.addEventListener('mousemove', (e) => {
+  document.querySelectorAll('.card-hover').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--mx', x + '%');
+    card.style.setProperty('--my', y + '%');
+  });
+});
+</script>
+
+</body>
+</html>

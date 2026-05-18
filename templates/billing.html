@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+  <a href="/dashboard" class="text-blue-600 text-sm">← Dashboard</a>
+  <div class="text-center my-10">
+    <h1 class="h-display text-4xl mb-2">Тарифы</h1>
+    <p class="text-gray-500">Текущий: <span class="font-semibold text-blue-600">{{ plans[plan].name }}</span> · AI: {{ used }}/{{ limit }} в месяц</p>
+  </div>
+
+  {% if request.args.get('status') == 'success' %}
+  <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 text-emerald-700 text-sm">
+    ✓ Подписка активирована! Может потребоваться 1-2 минуты для обновления.
+  </div>
+  {% endif %}
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+    {% for plan_id, p in plans.items() %}
+    <div class="glass rounded-2xl p-6 flex flex-col {% if plan == plan_id %}ring-2 ring-blue-500{% endif %}">
+      <h3 class="text-lg font-bold mb-1">{{ p.name }}</h3>
+      <div class="my-4">
+        <span class="text-4xl font-bold">${{ p.price_usd }}</span>
+        <span class="text-gray-500 text-sm">/мес</span>
+      </div>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6 flex-1">
+        <li>✓ {{ p.limits.max_decks }} колод</li>
+        <li>✓ {{ p.limits.max_cards_per_deck }} карт/колода</li>
+        <li>✓ {{ p.limits.ai_generations_per_month }} AI/мес</li>
+        {% if p.limits.max_students > 0 %}
+        <li>✓ До {{ p.limits.max_students }} студентов</li>
+        {% endif %}
+      </ul>
+      {% if plan == plan_id %}
+      <button disabled class="btn btn-ghost justify-center cursor-default">Текущий</button>
+      {% elif plan_id == 'free' %}
+      <button disabled class="btn btn-ghost justify-center cursor-default">—</button>
+      {% else %}
+      {% if has_stripe %}
+      <a href="/billing/checkout/{{ plan_id }}" class="btn btn-primary justify-center">Выбрать</a>
+      {% else %}
+      <button disabled class="btn btn-ghost justify-center cursor-default" title="Stripe не настроен">Скоро</button>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
