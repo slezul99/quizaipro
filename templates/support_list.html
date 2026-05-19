@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "_icons.html" import icon %}
+<div class="relative max-w-4xl mx-auto px-6 py-10" x-data="{ showNew: false }">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
+
+  <div class="relative z-10">
+    <div class="section-header left mb-6">
+      <span class="section-badge"><span class="badge-dot"></span>💬 Поддержка</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">{% if is_admin %}Все обращения{% else %}Связь с поддержкой{% endif %}</h1>
+      <p class="section-sub">
+        {% if is_admin %}
+        Все обращения от пользователей. Только super-admin отвечает.
+        {% else %}
+        Напишите нам — отвечают <b>@Slezul</b> и <b>@Aza_Dev0320</b> (super-админы)
+        {% endif %}
+      </p>
+    </div>
+
+    {% if not is_admin %}
+    <!-- Telegram contacts -->
+    <div class="glass-premium mb-6" style="background: linear-gradient(135deg, rgba(34,158,217,0.12), rgba(99,102,241,0.06)); border-color: rgba(34,158,217,0.4);">
+      <div class="flex items-center gap-4 flex-wrap">
+        <div class="text-5xl">📨</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">Быстрая связь в Telegram</div>
+          <div class="text-sm text-slate-600 dark:text-slate-300">Напишите напрямую — обычно отвечаем за 1-2 часа</div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="https://t.me/Slezul" target="_blank" class="btn-premium" style="font-size: 14px; padding: 10px 18px;">📨 @Slezul</a>
+          <a href="https://t.me/Aza_Dev0320" target="_blank" class="btn-premium-ghost" style="font-size: 14px; padding: 10px 18px;">📨 @Aza_Dev0320</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- New ticket button -->
+    <button @click="showNew = !showNew" class="btn-premium w-full justify-center mb-4" style="font-size: 15px;">
+      <span x-show="!showNew">✏️ Написать в поддержку</span>
+      <span x-show="showNew">↑ Свернуть</span>
+    </button>
+
+    <!-- New ticket form -->
+    <div x-show="showNew" x-transition class="glass-premium mb-6">
+      <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4">✏️ Новое обращение</h3>
+      <form method="POST" action="/support/new" class="space-y-3">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div>
+          <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Тема (необязательно)</label>
+          <input name="subject" maxlength="200" placeholder="Кратко о проблеме" class="input-premium">
+        </div>
+        <div>
+          <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Сообщение</label>
+          <textarea name="text" rows="5" required maxlength="5000" placeholder="Опишите проблему подробно..." class="input-premium" style="resize: vertical;"></textarea>
+        </div>
+        <button type="submit" class="btn-premium">Отправить →</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Tickets list -->
+    {% if tickets %}
+    <div class="space-y-3">
+      {% for t in tickets %}
+      <a href="/support/{{ t.id }}" class="glass-premium block hover:border-indigo-400/60 transition" style="padding: 1.25rem;">
+        <div class="flex items-start gap-3">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md flex-shrink-0"
+               style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+            {{ icon('chat', 22) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-slate-900 dark:text-slate-100">{{ t.subject or 'Без темы' }}</span>
+              {% if is_admin %}<span class="text-xs text-indigo-600 dark:text-indigo-300 font-semibold">@{{ t.user_username }}</span>{% endif %}
+              {% if t.status == 'closed' %}
+              <span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">✓ Закрыто</span>
+              {% else %}
+              <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">● Открыто</span>
+              {% endif %}
+              {% if t.unread and t.unread > 0 %}
+              <span class="badge bg-red-500 text-white">+{{ t.unread }} новых</span>
+              {% endif %}
+            </div>
+            <div class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ t.last_text or '— Нет сообщений —' }}</div>
+            <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ (t.last_activity or t.created_at or '')[:16].replace('T', ' ') }}</div>
+          </div>
+          <span class="text-slate-400 dark:text-slate-500 text-xl">→</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 glass-premium">
+      <div class="text-7xl mb-4">📭</div>
+      <p class="text-slate-600 dark:text-slate-300 mb-2 text-lg">{% if is_admin %}Пока нет обращений{% else %}У вас нет обращений{% endif %}</p>
+      {% if not is_admin %}<p class="text-sm text-slate-500 dark:text-slate-400">Нажмите «✏️ Написать в поддержку» чтобы начать</p>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

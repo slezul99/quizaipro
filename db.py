@@ -401,6 +401,33 @@ def init_db():
         FOREIGN KEY(session_id) REFERENCES live_sessions(id) ON DELETE CASCADE,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    -- Tikety podderzhki (chat polzovatelya s super-adminom)
+    CREATE TABLE IF NOT EXISTS support_tickets (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id       INTEGER NOT NULL,
+        subject       TEXT,
+        status        TEXT DEFAULT 'open',  -- open / closed
+        last_activity TEXT DEFAULT CURRENT_TIMESTAMP,
+        created_at    TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_support_user ON support_tickets(user_id);
+    CREATE INDEX IF NOT EXISTS idx_support_status ON support_tickets(status, last_activity);
+
+    -- Soobshcheniya v podderzhkę
+    CREATE TABLE IF NOT EXISTS support_messages (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticket_id    INTEGER NOT NULL,
+        sender_id    INTEGER NOT NULL,
+        is_admin     INTEGER DEFAULT 0,
+        text         TEXT NOT NULL,
+        is_read      INTEGER DEFAULT 0,
+        created_at   TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE,
+        FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_support_msg_ticket ON support_messages(ticket_id);
     """)
     # Dobavlyaem parent_id v sushchestvuyushchuyu BD esli kolonki net (migratsiya)
     try:

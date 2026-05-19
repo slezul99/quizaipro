@@ -5645,6 +5645,133 @@ def billing_webhook():
     return ("OK", 200) if ok else ("Bad", 400)
 
 
+# ---------------------- SUPPORT CHAT (polzovatel <-> super-admin) -----------
+
+@app.route("/support")
+@login_required
+def support_page():
+    """Spisok ticketov polzovatelya + forma novogo soobshcheniya."""
+    user = current_user()
+    conn = db.get_conn()
+    if is_super_admin(user):
+        # Super-admin vidit vse tikety
+        tickets = conn.execute("""
+            SELECT t.*, u.username AS user_username,
+                (SELECT COUNT(*) FROM support_messages WHERE ticket_id=t.id AND is_admin=0 AND is_read=0) AS unread,
+                (SELECT text FROM support_messages WHERE ticket_id=t.id ORDER BY created_at DESC LIMIT 1) AS last_text
+            FROM support_tickets t
+            JOIN users u ON u.id = t.user_id
+            ORDER BY t.last_activity DESC
+            LIMIT 100
+        """).fetchall()
+    else:
+        tickets = conn.execute("""
+            SELECT t.*,
+                (SELECT COUNT(*) FROM support_messages WHERE ticket_id=t.id AND is_admin=1 AND is_read=0) AS unread,
+                (SELECT text FROM support_messages WHERE ticket_id=t.id ORDER BY created_at DESC LIMIT 1) AS last_text
+            FROM support_tickets t
+            WHERE t.user_id=?
+            ORDER BY t.last_activity DESC
+        """, (user["id"],)).fetchall()
+    conn.close()
+    return render_template("support_list.html", tickets=tickets, is_admin=is_super_admin(user))
+
+
+@app.route("/support/new", methods=["POST"])
+@login_required
+def support_new():
+    """Sozdaet noviy ticket."""
+    user = current_user()
+    subject = (request.form.get("subject") or "").strip()[:200]
+    text = (request.form.get("text") or "").strip()[:5000]
+    if not text:
+        flash("Введите сообщение", "error")
+        return redirect(url_for("support_page"))
+    conn = db.get_conn()
+    cur = conn.execute(
+        "INSERT INTO support_tickets (user_id, subject) VALUES (?, ?)",
+        (user["id"], subject or "Без темы")
+    )
+    ticket_id = cur.lastrowid
+    conn.execute(
+        "INSERT INTO support_messages (ticket_id, sender_id, is_admin, text) VALUES (?, ?, 0, ?)",
+        (ticket_id, user["id"], text)
+    )
+    conn.commit(); conn.close()
+    return redirect(url_for("support_ticket", ticket_id=ticket_id))
+
+
+@app.route("/support/<int:ticket_id>")
+@login_required
+def support_ticket(ticket_id):
+    """Stranitsa odnogo ticketa s perepiskoy."""
+    user = current_user()
+    conn = db.get_conn()
+    ticket = conn.execute("""
+        SELECT t.*, u.username AS user_username
+        FROM support_tickets t JOIN users u ON u.id = t.user_id
+        WHERE t.id=?
+    """, (ticket_id,)).fetchone()
+    if not ticket:
+        conn.close(); abort(404)
+    # Dostup: vladelets ili super-admin
+    if ticket["user_id"] != user["id"] and not is_super_admin(user):
+        conn.close(); abort(403)
+    messages = conn.execute("""
+        SELECT m.*, u.username AS sender_username
+        FROM support_messages m JOIN users u ON u.id = m.sender_id
+        WHERE m.ticket_id=? ORDER BY m.created_at ASC
+    """, (ticket_id,)).fetchall()
+    # Otmetit kak prochitannye chuzhie soobshcheniya
+    if is_super_admin(user):
+        conn.execute("UPDATE support_messages SET is_read=1 WHERE ticket_id=? AND is_admin=0", (ticket_id,))
+    else:
+        conn.execute("UPDATE support_messages SET is_read=1 WHERE ticket_id=? AND is_admin=1", (ticket_id,))
+    conn.commit(); conn.close()
+    return render_template("support_chat.html", ticket=ticket, messages=messages, is_admin=is_super_admin(user))
+
+
+@app.route("/support/<int:ticket_id>/reply", methods=["POST"])
+@login_required
+def support_reply(ticket_id):
+    user = current_user()
+    text = (request.form.get("text") or "").strip()[:5000]
+    if not text:
+        return redirect(url_for("support_ticket", ticket_id=ticket_id))
+    conn = db.get_conn()
+    ticket = conn.execute("SELECT * FROM support_tickets WHERE id=?", (ticket_id,)).fetchone()
+    if not ticket:
+        conn.close(); abort(404)
+    if ticket["user_id"] != user["id"] and not is_super_admin(user):
+        conn.close(); abort(403)
+    is_admin_msg = 1 if is_super_admin(user) else 0
+    conn.execute(
+        "INSERT INTO support_messages (ticket_id, sender_id, is_admin, text) VALUES (?, ?, ?, ?)",
+        (ticket_id, user["id"], is_admin_msg, text)
+    )
+    conn.execute(
+        "UPDATE support_tickets SET last_activity=CURRENT_TIMESTAMP, status='open' WHERE id=?",
+        (ticket_id,)
+    )
+    conn.commit(); conn.close()
+    return redirect(url_for("support_ticket", ticket_id=ticket_id))
+
+
+@app.route("/support/<int:ticket_id>/close", methods=["POST"])
+@login_required
+def support_close(ticket_id):
+    user = current_user()
+    conn = db.get_conn()
+    ticket = conn.execute("SELECT * FROM support_tickets WHERE id=?", (ticket_id,)).fetchone()
+    if not ticket:
+        conn.close(); abort(404)
+    if ticket["user_id"] != user["id"] and not is_super_admin(user):
+        conn.close(); abort(403)
+    conn.execute("UPDATE support_tickets SET status='closed' WHERE id=?", (ticket_id,))
+    conn.commit(); conn.close()
+    return redirect(url_for("support_page"))
+
+
 # ---------------------- SUPER ADMIN — analitika dlya vladel'tsa sayta -------
 
 @app.route("/superadmin/deck-debug/<int:deck_id>")

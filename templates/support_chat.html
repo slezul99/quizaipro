@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "_icons.html" import icon %}
+<div class="relative max-w-3xl mx-auto px-6 py-8">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+
+  <div class="relative z-10">
+    <a href="/support" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+      <span>←</span> К списку обращений
+    </a>
+
+    <!-- Header -->
+    <div class="glass-premium mb-4">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif;">{{ ticket.subject or 'Без темы' }}</h1>
+          <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            {% if is_admin %}От: <b class="text-indigo-600 dark:text-indigo-300">@{{ ticket.user_username }}</b> · {% endif %}
+            {{ (ticket.created_at or '')[:16].replace('T', ' ') }}
+            {% if ticket.status == 'closed' %}
+            <span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300 ml-2">✓ Закрыто</span>
+            {% else %}
+            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 ml-2">● Открыто</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if ticket.status == 'open' %}
+        <form method="POST" action="/support/{{ ticket.id }}/close">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">✓ Закрыть тикет</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="space-y-3 mb-4">
+      {% for m in messages %}
+      <div class="flex gap-3 {% if m.is_admin %}flex-row-reverse{% endif %}">
+        <div class="flex-shrink-0">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+               style="background: {% if m.is_admin %}linear-gradient(135deg, #ec4899, #be185d){% else %}linear-gradient(135deg, #6366f1, #8b5cf6){% endif %};">
+            {% if m.is_admin %}🛡{% else %}{{ m.sender_username[0]|upper }}{% endif %}
+          </div>
+        </div>
+        <div class="max-w-[80%]">
+          <div class="text-xs text-slate-500 dark:text-slate-400 mb-1 {% if m.is_admin %}text-right{% endif %}">
+            {% if m.is_admin %}<b class="text-pink-600 dark:text-pink-300">🛡 Поддержка @{{ m.sender_username }}</b>{% else %}<b>@{{ m.sender_username }}</b>{% endif %}
+            · {{ (m.created_at or '')[:16].replace('T', ' ') }}
+          </div>
+          <div class="rounded-2xl p-4 shadow-sm whitespace-pre-wrap"
+               style="{% if m.is_admin %}background: linear-gradient(135deg, rgba(236,72,153,0.12), rgba(244,114,182,0.06)); border: 1.5px solid rgba(236,72,153,0.3);{% else %}background: rgba(255,255,255,0.85); border: 1.5px solid rgba(99,102,241,0.2);{% endif %}">
+            <div class="text-sm text-slate-800 dark:text-slate-100">{{ m.text }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Reply form -->
+    {% if ticket.status == 'open' %}
+    <div class="glass-premium">
+      <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+        {% if is_admin %}🛡 Ответить{% else %}✏️ Ответить{% endif %}
+      </h3>
+      <form method="POST" action="/support/{{ ticket.id }}/reply">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <textarea name="text" rows="4" required maxlength="5000" placeholder="Ваш ответ..." class="input-premium mb-3" style="resize: vertical;"></textarea>
+        <button type="submit" class="btn-premium" style="background: {% if is_admin %}linear-gradient(135deg, #ec4899, #be185d){% else %}linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899){% endif %};">
+          Отправить →
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="glass-premium text-center" style="padding: 1.5rem;">
+      <p class="text-slate-600 dark:text-slate-300">Тикет закрыт. Если есть новый вопрос — <a href="/support" class="text-indigo-600 dark:text-indigo-300 font-bold hover:underline">создайте новое обращение</a>.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
