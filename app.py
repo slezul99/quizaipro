@@ -5523,6 +5523,34 @@ def billing_webhook():
 
 # ---------------------- SUPER ADMIN — analitika dlya vladel'tsa sayta -------
 
+@app.route("/superadmin/deck-debug/<int:deck_id>")
+@super_admin_required
+def superadmin_deck_debug(deck_id):
+    """Otladka: pokazyvaet skol'ko kart v deke i ih front/back. Tol'ko dlya super-admin."""
+    conn = db.get_conn()
+    deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+    if not deck:
+        conn.close()
+        return jsonify({"error": "deck not found"}), 404
+    cards = conn.execute("SELECT id, front, back, length(note) as note_len FROM cards WHERE deck_id=? LIMIT 5", (deck_id,)).fetchall()
+    cnt = conn.execute("SELECT COUNT(*) c FROM cards WHERE deck_id=?", (deck_id,)).fetchone()
+    # Vladelets
+    owner = None
+    if deck["owner_id"]:
+        u = conn.execute("SELECT id, username FROM users WHERE id=?", (deck["owner_id"],)).fetchone()
+        owner = dict(u) if u else None
+    conn.close()
+    return jsonify({
+        "deck_id": deck["id"],
+        "deck_name": deck["name"],
+        "owner_id": deck["owner_id"],
+        "owner": owner,
+        "org_id": deck["org_id"],
+        "total_cards": cnt["c"],
+        "first_5_cards": [dict(c) for c in cards],
+    })
+
+
 @app.route("/superadmin")
 @super_admin_required
 def superadmin_dashboard():
