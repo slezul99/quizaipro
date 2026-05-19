@@ -303,6 +303,7 @@ T = {
         "lp_cta_btn_start": "Начать →",
         "lp_cta_btn_login": "Войти",
         "lp_footer": "© 2026 QuizPro · Сделано в Узбекистане 🇺🇿",
+        "lp_support": "Поддержка / связь",
         # Demo cards (5 per language)
         "lp_demo_c1_cat": "English",
         "lp_demo_c1_q": "What is Past Perfect tense used for?",
@@ -664,6 +665,7 @@ T = {
         "lp_cta_btn_start": "Start →",
         "lp_cta_btn_login": "Log in",
         "lp_footer": "© 2026 QuizPro · Made in Uzbekistan 🇺🇿",
+        "lp_support": "Support / Contact",
         # Demo cards
         "lp_demo_c1_cat": "English",
         "lp_demo_c1_q": "What is Past Perfect tense used for?",
@@ -1025,6 +1027,7 @@ T = {
         "lp_cta_btn_start": "Boshlash →",
         "lp_cta_btn_login": "Kirish",
         "lp_footer": "© 2026 QuizPro · Oʻzbekistonda yaratilgan 🇺🇿",
+        "lp_support": "Yordam / Aloqa",
         # Demo cards
         "lp_demo_c1_cat": "English",
         "lp_demo_c1_q": "What is Past Perfect tense used for?",

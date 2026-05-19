@@ -950,9 +950,64 @@
   </div>
 </section>
 
-<footer class="border-t border-black/5 py-10 text-center text-sm text-gray-500">
-  {{ t('lp_footer') }}
+<footer class="border-t border-black/5 py-10">
+  <div class="max-w-4xl mx-auto px-6 text-center">
+    <!-- Поддержка / контакты -->
+    <div class="mb-6">
+      <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4"
+           style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08)); border: 1.5px solid rgba(99,102,241,0.25);">
+        <span class="text-lg">📞</span>
+        <span class="text-xs uppercase tracking-widest font-bold text-indigo-700">{{ t('lp_support') }}</span>
+      </div>
+      <div class="flex flex-wrap gap-3 justify-center">
+        <a href="tel:+998998018184" class="footer-phone">
+          <span class="text-base">📱</span>
+          <span>+998 99 801-81-84</span>
+        </a>
+        <a href="tel:+998998129499" class="footer-phone">
+          <span class="text-base">📱</span>
+          <span>+998 99 812-94-99</span>
+        </a>
+      </div>
+    </div>
+    <div class="text-center text-sm text-gray-500">
+      {{ t('lp_footer') }}
+    </div>
+  </div>
 </footer>
+<style>
+  .footer-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(99,102,241,0.2);
+    color: #312e81;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    backdrop-filter: blur(10px);
+    text-decoration: none;
+  }
+  .footer-phone:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(99,102,241,0.45);
+  }
+  html.dark .footer-phone {
+    background: rgba(30,41,75,0.7);
+    color: #c4b5fd;
+    border-color: rgba(99,102,241,0.4);
+  }
+  html.dark .footer-phone:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+  }
+</style>
 
 <script>
   // Demo cards data — server provides translated text per language (10 cards)
