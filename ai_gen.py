@@ -47,20 +47,50 @@ def _call_gemini(prompt: str, max_tokens: int = 4000) -> str | None:
             "responseMimeType": "application/json",
         },
     }
-    url = f"{API_URL}?key={key}"
     data = json.dumps(body).encode("utf-8")
-    req = urlreq.Request(url, data=data, method="POST",
-                         headers={"Content-Type": "application/json"})
-    try:
-        with urlreq.urlopen(req, timeout=60) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-        return payload["candidates"][0]["content"]["parts"][0]["text"]
-    except urlerr.HTTPError as e:
-        print(f"[AI] HTTP {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}")
-        return None
-    except Exception as e:
-        print(f"[AI] {type(e).__name__}: {e}")
-        return None
+
+    # Probuyem snachala osnovnuyu model', potom fallback
+    last_error = None
+    for url_template in [API_URL, API_URL_FALLBACK]:
+        url = f"{url_template}?key={key}"
+        req = urlreq.Request(url, data=data, method="POST",
+                             headers={"Content-Type": "application/json"})
+        try:
+            with urlreq.urlopen(req, timeout=90) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            # Proverka chto otvet validnyy
+            try:
+                text = payload["candidates"][0]["content"]["parts"][0]["text"]
+                if text and text.strip():
+                    return text
+            except (KeyError, IndexError, TypeError) as e:
+                # Mozhet byt' "finishReason": "SAFETY" ili pustoy otvet
+                last_error = f"Empty response: {payload}"
+                print(f"[AI] {last_error[:300]}")
+                continue
+        except urlerr.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")[:300]
+            except Exception:
+                pass
+            last_error = f"HTTP {e.code} ({url_template.split('/')[-1].split(':')[0]}): {err_body}"
+            print(f"[AI] {last_error}")
+            # Esli 429 (rate limit) ili 503 (overload) — probuyem fallback
+            if e.code in (429, 503, 500, 502, 504):
+                continue
+            # Drugie oshibki — vykhodim
+            return None
+        except Exception as e:
+            last_error = f"{type(e).__name__}: {e}"
+            print(f"[AI] {last_error}")
+            continue
+
+    # Vse modeli zafailili
+    if last_error:
+        # Probrasyvayem oshibku v vyzyvayushchiy kod chtoby flash pokazal pol'zovatelyu
+        raise RuntimeError(f"Gemini API недоступен: {last_error[:200]}")
+    return None
 
 
 def _parse_cards_json(text: str) -> list[dict]:

@@ -5530,7 +5530,7 @@ def ai_page():
     user = current_user()
     if not can_manage_content(user): abort(403)
     if not ai_gen.is_available():
-        flash("AI ne nastroen (net Gemini klyucha)", "error")
+        flash("AI не настроен (отсутствует ключ Gemini)", "error")
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
@@ -5546,7 +5546,7 @@ def ai_page():
         # Limit check
         ok, used, limit = billing.check_ai_limit(user)
         if not ok:
-            flash(f"Limit AI dostiгnut: {used}/{limit} v mesyats. Apgreyd plana.", "error")
+            flash(f"Лимит AI достигнут: {used}/{limit} в месяц. Обновите план.", "error")
             return redirect(url_for("ai_page"))
 
         cards = []
@@ -5554,20 +5554,20 @@ def ai_page():
             if kind == "text":
                 text = request.form.get("text", "").strip()
                 if len(text) < 50:
-                    flash("Tekst slishkom korotkiy (min 50 simvolov)", "error")
+                    flash("Текст слишком короткий (минимум 50 символов)", "error")
                     return redirect(url_for("ai_page"))
                 cards = ai_gen.generate_from_text(text, count, lang, quality=quality)
             elif kind == "topic":
                 topic = request.form.get("topic", "").strip()
                 difficulty = request.form.get("difficulty", "medium")
                 if len(topic) < 3:
-                    flash("Tema slishkom korotkaya", "error")
+                    flash("Тема слишком короткая (минимум 3 символа)", "error")
                     return redirect(url_for("ai_page"))
                 cards = ai_gen.generate_from_topic(topic, count, lang, difficulty, quality=quality)
             elif kind == "pdf":
                 file = request.files.get("file")
                 if not file or not file.filename:
-                    flash("Zagruzite PDF", "error")
+                    flash("Загрузите PDF файл", "error")
                     return redirect(url_for("ai_page"))
                 fname = secure_filename(file.filename)
                 fpath = UPLOAD / fname
@@ -5575,11 +5575,11 @@ def ai_page():
                 cards = ai_gen.generate_from_pdf(fpath, count, lang, quality=quality)
                 fpath.unlink(missing_ok=True)
         except Exception as e:
-            flash(f"AI oshibka: {e}", "error")
+            flash(f"Ошибка AI: {str(e)[:200]}", "error")
             return redirect(url_for("ai_page"))
 
         if not cards:
-            flash("AI ne smog sgenerirovat' karty. Probuy drugoy vhod.", "error")
+            flash("AI не смог сгенерировать карточки. Возможные причины: слишком общий запрос, перегрузка серверов Google. Попробуйте конкретнее или повторите через минуту.", "error")
             return redirect(url_for("ai_page"))
 
         # Sokhranyaem
