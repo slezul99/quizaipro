@@ -1009,12 +1009,12 @@
     transform: translateY(-1px);
   }
   .brand-logo-icon {
-    width: 36px; height: 36px;
-    border-radius: 10px;
+    width: 38px; height: 38px;
+    border-radius: 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    color: white;
     background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
     box-shadow: 0 6px 16px -4px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
     transition: transform 0.25s;
@@ -1031,6 +1031,65 @@
     background-size: 200% 200%;
     animation: gradient-shift 8s ease infinite;
   }
+
+  /* === DROPDOWN ITEMS === */
+  .dd-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: #334155;
+    font-weight: 600;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .dd-item svg { flex-shrink: 0; opacity: 0.85; }
+  .dd-item:hover { background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+  .dd-item:hover svg { opacity: 1; }
+  .dd-item.indigo:hover { background: rgba(99, 102, 241, 0.12); color: #4f46e5; }
+  .dd-item.pink:hover { background: rgba(236, 72, 153, 0.1); color: #be185d; }
+  .dd-item.emerald:hover { background: rgba(16, 185, 129, 0.1); color: #047857; }
+  .dd-item.red { color: #dc2626; }
+  .dd-item.red:hover { background: rgba(239, 68, 68, 0.1); color: #b91c1c; }
+  .dd-divider { border-top: 1px solid rgba(99, 102, 241, 0.12); }
+  html.dark .dd-item { color: #cbd5e1; }
+  html.dark .dd-item.indigo:hover { background: rgba(139, 92, 246, 0.18); color: #c4b5fd; }
+  html.dark .dd-item.pink:hover { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; }
+  html.dark .dd-item.emerald:hover { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+  html.dark .dd-item.red { color: #fca5a5; }
+  html.dark .dd-item.red:hover { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
+  html.dark .dd-divider { border-top-color: rgba(99, 102, 241, 0.25); }
+
+  /* === MOBILE NAV LINKS === */
+  .mob-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .mob-link svg { flex-shrink: 0; opacity: 0.85; }
+  .mob-link.indigo:hover { background: rgba(99, 102, 241, 0.12); color: #4f46e5; }
+  .mob-link.pink:hover { background: rgba(236, 72, 153, 0.1); color: #be185d; }
+  .mob-link.emerald:hover { background: rgba(16, 185, 129, 0.1); color: #047857; }
+  .mob-link.red { color: #dc2626; }
+  .mob-link.red:hover { background: rgba(239, 68, 68, 0.1); color: #b91c1c; }
+  html.dark .mob-link { color: #e2e8f0; }
+  html.dark .mob-link.indigo:hover { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+  html.dark .mob-link.pink:hover { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; }
+  html.dark .mob-link.emerald:hover { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+  html.dark .mob-link.red { color: #fca5a5; }
+  html.dark .mob-link.red:hover { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
+  html.dark [x-show="mobileMenu"] {
+    background: rgba(15, 23, 41, 0.98) !important;
+    border-top-color: rgba(99,102,241,0.3) !important;
+  }
 </style>
 {% block extra_head %}{% endblock %}
 </head>
@@ -1041,10 +1100,11 @@
 <div class="orb orb-3"></div>
 
 {% if current_user %}
+{% from "_icons.html" import icon %}
 <header class="sticky top-0 z-40 nav-blur">
   <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center" x-data="{ mobileMenu: false }">
     <a href="/dashboard" class="brand-logo">
-      <span class="brand-logo-icon">🧠</span>
+      <span class="brand-logo-icon">{{ icon('brain', 22) }}</span>
       <span class="brand-logo-text">{{ t('app_name') }}</span>
       {% if current_user.role in ['admin','teacher'] %}
       <span class="badge bg-indigo-100 text-indigo-700 hidden sm:inline-flex ml-1">{{ current_user.role }}</span>
@@ -1053,116 +1113,117 @@
 
     <!-- Mobile burger -->
     <button @click="mobileMenu = !mobileMenu" class="md:hidden nav-icon-btn">
-      <span x-show="!mobileMenu">☰</span>
-      <span x-show="mobileMenu" x-cloak>✕</span>
+      <span x-show="!mobileMenu">{{ icon('menu', 22) }}</span>
+      <span x-show="mobileMenu" x-cloak>{{ icon('x', 22) }}</span>
     </button>
 
     <!-- Desktop menu -->
     <div class="hidden md:flex items-center gap-1.5">
       <a href="/dashboard" class="nav-link hidden lg:flex">
-        <span class="nav-link-emoji">📊</span><span>{{ t('nav_dashboard') }}</span>
+        {{ icon('dashboard', 18) }}<span>{{ t('nav_dashboard') }}</span>
       </a>
-      <a href="/search" class="nav-icon-btn" title="{{ t('search') if t('search') != 'search' else 'Поиск' }}">🔍</a>
+      <a href="/search" class="nav-icon-btn" title="{{ t('search') if t('search') != 'search' else 'Поиск' }}">{{ icon('search', 19) }}</a>
 
       {% if current_user.role in ['admin','teacher','individual'] %}
       <!-- Sotsial'noe dropdown -->
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="nav-link">
-          <span class="nav-link-emoji">💬</span>
+          {{ icon('chat', 18) }}
           <span class="hidden lg:inline">{{ t('nav_social') }}</span>
-          <span class="text-xs opacity-60">▾</span>
+          {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
           class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-indigo-200/40">
-          <a href="/chats" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">💬</span> {{ t('nav_chats') }}</a>
-          <a href="/channels" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">📡</span> {{ t('nav_channels') }}</a>
-          <a href="/friends" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">👥</span> {{ t('nav_friends') }}</a>
-          <a href="/study-groups" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">🎓</span> {{ t('nav_study_groups') }}</a>
-          <a href="/marketplace" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">🌐</span> {{ t('nav_marketplace') }}</a>
-          <a href="/leaderboard" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">🏆</span> {{ t('nav_leaderboard') }}</a>
+          <a href="/chats" class="dd-item indigo">{{ icon('chat', 17) }} <span>{{ t('nav_chats') }}</span></a>
+          <a href="/channels" class="dd-item indigo">{{ icon('channel', 17) }} <span>{{ t('nav_channels') }}</span></a>
+          <a href="/friends" class="dd-item indigo">{{ icon('users', 17) }} <span>{{ t('nav_friends') }}</span></a>
+          <a href="/study-groups" class="dd-item indigo">{{ icon('graduation', 17) }} <span>{{ t('nav_study_groups') }}</span></a>
+          <a href="/marketplace" class="dd-item indigo dd-divider">{{ icon('globe', 17) }} <span>{{ t('nav_marketplace') }}</span></a>
+          <a href="/leaderboard" class="dd-item indigo">{{ icon('trophy', 17) }} <span>{{ t('nav_leaderboard') }}</span></a>
         </div>
       </div>
 
       <!-- Igry dropdown -->
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="nav-link">
-          <span class="nav-link-emoji">🎮</span>
+          {{ icon('gamepad', 18) }}
           <span class="hidden lg:inline">{{ t('nav_games') }}</span>
-          <span class="text-xs opacity-60">▾</span>
+          {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
           class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-pink-200/40">
-          <a href="/duels" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">⚔️</span> {{ t('nav_duels') }}</a>
-          <a href="/tournaments" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">🏆</span> {{ t('nav_tournaments') }}</a>
+          <a href="/duels" class="dd-item pink">{{ icon('sword', 17) }} <span>{{ t('nav_duels') }}</span></a>
+          <a href="/tournaments" class="dd-item pink">{{ icon('trophy', 17) }} <span>{{ t('nav_tournaments') }}</span></a>
           {% if current_user.role in ['admin','teacher','individual'] %}
-          <a href="/live/create" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">🎮</span> {{ t('nav_live_create') }}</a>
+          <a href="/live/create" class="dd-item pink dd-divider">{{ icon('gamepad', 17) }} <span>{{ t('nav_live_create') }}</span></a>
           {% endif %}
-          <a href="/live/join" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">🔑</span> {{ t('nav_live_join') }}</a>
-          <a href="/live/history" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">📋</span> {{ t('nav_live_history') }}</a>
+          <a href="/live/join" class="dd-item pink">{{ icon('key', 17) }} <span>{{ t('nav_live_join') }}</span></a>
+          <a href="/live/history" class="dd-item pink">{{ icon('list', 17) }} <span>{{ t('nav_live_history') }}</span></a>
         </div>
       </div>
 
       <!-- Uchеba dropdown -->
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="nav-link">
-          <span class="nav-link-emoji">📚</span>
+          {{ icon('book', 18) }}
           <span class="hidden lg:inline">{{ t('nav_learn') }}</span>
-          <span class="text-xs opacity-60">▾</span>
+          {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
           class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-emerald-200/40">
-          <a href="/categories" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">📁</span> {{ t('nav_categories') }}</a>
-          <a href="/import" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">📥</span> {{ t('nav_import') }}</a>
+          <a href="/categories" class="dd-item emerald">{{ icon('folder', 17) }} <span>{{ t('nav_categories') }}</span></a>
+          <a href="/import" class="dd-item emerald">{{ icon('upload', 17) }} <span>{{ t('nav_import') }}</span></a>
           {% if ai_available %}
-          <a href="/ai" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">🤖</span> {{ t('nav_ai_gen') }}</a>
-          <a href="/tutor" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">💡</span> {{ t('nav_ai_tutor') }}</a>
+          <a href="/ai" class="dd-item emerald dd-divider">{{ icon('sparkles', 17) }} <span>{{ t('nav_ai_gen') }}</span></a>
+          <a href="/tutor" class="dd-item emerald">{{ icon('lightbulb', 17) }} <span>{{ t('nav_ai_tutor') }}</span></a>
           {% endif %}
-          <a href="/stats" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">📈</span> {{ t('nav_stats') }}</a>
-          <a href="/goals" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">🎯</span> {{ t('nav_goals') }}</a>
-          <a href="/achievements" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">🏆</span> {{ t('nav_achievements') }}</a>
+          <a href="/stats" class="dd-item emerald dd-divider">{{ icon('chart', 17) }} <span>{{ t('nav_stats') }}</span></a>
+          <a href="/goals" class="dd-item emerald">{{ icon('target', 17) }} <span>{{ t('nav_goals') }}</span></a>
+          <a href="/achievements" class="dd-item emerald">{{ icon('trophy', 17) }} <span>{{ t('nav_achievements') }}</span></a>
         </div>
       </div>
       {% endif %}
 
       <a href="/notifications" class="nav-icon-btn relative" title="{{ t('nav_notifications') }}">
-        🔔
+        {{ icon('bell', 19) }}
         <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md">0</span>
       </a>
 
-      <a href="/help" class="nav-icon-btn" title="{{ t('nav_help') }}">❓</a>
+      <a href="/help" class="nav-icon-btn" title="{{ t('nav_help') }}">{{ icon('help', 19) }}</a>
 
       {% if is_super_admin %}
-      <a href="/superadmin" class="nav-icon-btn hidden md:flex" title="Super Admin">🔐</a>
+      <a href="/superadmin" class="nav-icon-btn hidden md:flex" title="Super Admin">{{ icon('shield', 19) }}</a>
       {% endif %}
 
       {% if current_user.role in ['admin','teacher'] %}
-      <a href="/admin/students" class="nav-icon-btn hidden xl:flex" title="Пользователи">👥</a>
+      <a href="/admin/students" class="nav-icon-btn hidden xl:flex" title="Пользователи">{{ icon('users', 19) }}</a>
       {% endif %}
 
-      <div class="nav-stat-pill streak hidden xl:flex" title="{{ t('streak_title') if t('streak_title') != 'streak_title' else 'Дней подряд' }}">
-        🔥 {{ current_user.streak or 0 }}
+      <div class="nav-stat-pill streak hidden xl:flex" title="Дней подряд">
+        {{ icon('flame', 14) }} {{ current_user.streak or 0 }}
       </div>
       <div class="nav-stat-pill xp hidden xl:flex" title="XP">
-        ⭐ {{ current_user.xp or 0 }}
+        {{ icon('star', 14) }} {{ current_user.xp or 0 }}
       </div>
       <button onclick="toggleDarkMode()" class="nav-icon-btn" title="Тема">
-        <span id="theme-icon">🌙</span>
+        <span id="theme-icon-light">{{ icon('moon', 19) }}</span>
+        <span id="theme-icon-dark" style="display:none">{{ icon('sun', 19) }}</span>
       </button>
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="nav-link" style="padding: 6px 10px;">
           <span class="avatar">{{ current_user.username[0]|upper }}</span>
           <span class="hidden md:inline font-bold">{{ current_user.username }}</span>
-          <span class="text-xs opacity-60">▾</span>
+          {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition.opacity x-cloak class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm border border-indigo-200/40">
           <div class="p-2 border-b border-indigo-100/50 dark:border-indigo-700/40">
             <div class="text-xs text-slate-500 dark:text-slate-400 px-2 py-1 font-bold uppercase tracking-wider">{{ t('language') }}</div>
             {% for code, name in all_langs %}
-            <a href="/set-lang/{{ code }}" class="block px-3 py-2 rounded-lg hover:bg-indigo-50 transition {% if lang == code %}font-semibold text-indigo-600 bg-indigo-50{% endif %}">{{ name }}</a>
+            <a href="/set-lang/{{ code }}" class="block px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition font-medium {% if lang == code %}font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30{% endif %}">{{ name }}</a>
             {% endfor %}
           </div>
-          <a href="/settings" class="block px-4 py-3 hover:bg-indigo-50 font-medium border-b border-indigo-100/50">⚙️ {{ t('nav_settings') }}</a>
-          <a href="/logout" class="block px-4 py-3 hover:bg-red-50 text-red-600 font-medium">{{ t('logout') }}</a>
+          <a href="/settings" class="dd-item indigo">{{ icon('settings', 17) }} <span>{{ t('nav_settings') }}</span></a>
+          <a href="/logout" class="dd-item red">{{ icon('logout', 17) }} <span>{{ t('logout') }}</span></a>
         </div>
       </div>
     </div>
@@ -1172,29 +1233,29 @@
       class="absolute top-full left-0 right-0 md:hidden shadow-2xl"
       style="background: rgba(255,255,255,0.98); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(99,102,241,0.15);">
       <div class="max-w-7xl mx-auto px-6 py-4 space-y-1">
-        <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📊 {{ t('nav_dashboard') }}</a>
-        <a href="/stats" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📈 {{ t('nav_stats') }}</a>
-        <a href="/goals" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">🎯 {{ t('nav_goals') }}</a>
-        <a href="/achievements" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">🏆 {{ t('nav_achievements') }}</a>
+        <a href="/dashboard" class="mob-link indigo">{{ icon('dashboard', 19) }} <span>{{ t('nav_dashboard') }}</span></a>
+        <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
+        <a href="/goals" class="mob-link indigo">{{ icon('target', 19) }} <span>{{ t('nav_goals') }}</span></a>
+        <a href="/achievements" class="mob-link indigo">{{ icon('trophy', 19) }} <span>{{ t('nav_achievements') }}</span></a>
         {% if current_user.role in ['admin','teacher','individual'] %}
-        <a href="/live/create" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-pink-50 font-medium">🎮 {{ t('nav_live_create') }}</a>
+        <a href="/live/create" class="mob-link pink">{{ icon('gamepad', 19) }} <span>{{ t('nav_live_create') }}</span></a>
         {% endif %}
-        <a href="/live/join" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-pink-50 font-medium">🔑 {{ t('nav_live_join') }}</a>
-        <a href="/live/history" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-pink-50 font-medium">📋 {{ t('nav_live_history') }}</a>
+        <a href="/live/join" class="mob-link pink">{{ icon('key', 19) }} <span>{{ t('nav_live_join') }}</span></a>
+        <a href="/live/history" class="mob-link pink">{{ icon('list', 19) }} <span>{{ t('nav_live_history') }}</span></a>
         {% if current_user.role in ['admin','teacher','individual'] %}
-        <a href="/categories" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📁 {{ t('nav_categories') }}</a>
-        <a href="/import" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">📥 {{ t('nav_import') }}</a>
+        <a href="/categories" class="mob-link emerald">{{ icon('folder', 19) }} <span>{{ t('nav_categories') }}</span></a>
+        <a href="/import" class="mob-link emerald">{{ icon('upload', 19) }} <span>{{ t('nav_import') }}</span></a>
         {% if ai_available %}
-        <a href="/ai" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">🤖 AI</a>
+        <a href="/ai" class="mob-link emerald">{{ icon('sparkles', 19) }} <span>AI</span></a>
         {% endif %}
         {% endif %}
         {% if current_user.role in ['admin','teacher'] %}
-        <a href="/admin/students" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium">👥 {{ t('users') }}</a>
+        <a href="/admin/students" class="mob-link indigo">{{ icon('users', 19) }} <span>{{ t('users') }}</span></a>
         {% endif %}
-        <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 border-t border-indigo-100 mt-2">
-          🔥 {{ current_user.streak or 0 }} дней · ⭐ {{ current_user.xp or 0 }} XP
+        <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 border-t border-indigo-100 dark:border-indigo-700/40 mt-2">
+          {{ icon('flame', 16) }} {{ current_user.streak or 0 }} дней · {{ icon('star', 16) }} {{ current_user.xp or 0 }} XP
         </div>
-        <a href="/logout" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 font-medium">🚪 {{ t('logout') }}</a>
+        <a href="/logout" class="mob-link red">{{ icon('logout', 19) }} <span>{{ t('logout') }}</span></a>
       </div>
     </div>
   </nav>
@@ -1447,16 +1508,20 @@ function toggleDarkMode() {
   // Sinkhroniziruem html.style.background — chtoby ne bylo flash pri navigatsii
   html.style.background = isDark ? '#0f1729' : '#87ceeb';
   html.style.colorScheme = isDark ? 'dark' : 'light';
-  const icon = document.getElementById('theme-icon');
-  if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+  // Pereklyuchaem ikonki luna/solntse
+  const lightIcon = document.getElementById('theme-icon-light');
+  const darkIcon = document.getElementById('theme-icon-dark');
+  if (lightIcon) lightIcon.style.display = isDark ? 'none' : '';
+  if (darkIcon) darkIcon.style.display = isDark ? '' : 'none';
 }
 
 // Init theme icon na zagruzke
 document.addEventListener('DOMContentLoaded', () => {
-  const icon = document.getElementById('theme-icon');
-  if (icon && document.documentElement.classList.contains('dark')) {
-    icon.textContent = '☀️';
-  }
+  const isDark = document.documentElement.classList.contains('dark');
+  const lightIcon = document.getElementById('theme-icon-light');
+  const darkIcon = document.getElementById('theme-icon-dark');
+  if (lightIcon) lightIcon.style.display = isDark ? 'none' : '';
+  if (darkIcon) darkIcon.style.display = isDark ? '' : 'none';
 });
 
 // Globalnaya funktsiya pokaza toast-ov dostizhsneiy
