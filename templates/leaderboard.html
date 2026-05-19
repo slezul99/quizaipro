@@ -1,24 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-10">
-  <div class="mb-8 slide-up">
-    <h1 class="h-display text-5xl text-slate-900 mb-2">🏆 <span class="text-gradient">Лидерборд</span></h1>
-    <p class="text-slate-700 text-lg">Топ-50 индивидуальных пользователей</p>
-    {% if my_rank %}
-    <p class="text-sm mt-2">Ваше место: <span class="font-bold text-indigo-600 text-lg">#{{ my_rank }}</span></p>
-    {% endif %}
-  </div>
+<div class="relative max-w-5xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
+
+  <div class="relative z-10">
+    <div class="section-header left mb-8">
+      <span class="section-badge"><span class="badge-dot"></span>🏆 Топ</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">Лидерборд</h1>
+      <p class="section-sub">Топ-50 индивидуальных пользователей</p>
+      {% if my_rank %}
+      <p class="text-sm mt-3 text-slate-700 dark:text-slate-300">Ваше место: <span class="font-bold text-indigo-600 dark:text-indigo-300 text-xl">#{{ my_rank }}</span></p>
+      {% endif %}
+    </div>
 
   {% if top_users %}
-  <div class="glass rounded-3xl p-4 md:p-6">
+  <div class="glass-premium" style="padding: 1rem;">
     <div class="space-y-2">
       {% for u in top_users %}
       {% set rank = loop.index %}
       <a href="/u/{{ u.username }}"
-        class="flex items-center gap-3 p-3 rounded-2xl transition hover:bg-indigo-50/60
-        {% if u.id == current.id %}bg-indigo-50 border-2 border-indigo-300{% else %}border border-transparent{% endif %}">
+        class="flex items-center gap-3 p-3 rounded-2xl transition hover:bg-indigo-50/60 dark:hover:bg-indigo-900/30
+        {% if u.id == current.id %}bg-indigo-50 dark:bg-indigo-900/40 border-2 border-indigo-300 dark:border-indigo-600{% else %}border border-transparent{% endif %}">
         <span class="w-12 text-center text-xl font-bold flex-shrink-0
-          {% if rank == 1 %}text-yellow-500{% elif rank == 2 %}text-gray-400{% elif rank == 3 %}text-orange-500{% else %}text-slate-400{% endif %}">
+          {% if rank == 1 %}text-yellow-500{% elif rank == 2 %}text-gray-400{% elif rank == 3 %}text-orange-500{% else %}text-slate-400 dark:text-slate-500{% endif %}">
           {% if rank == 1 %}🥇{% elif rank == 2 %}🥈{% elif rank == 3 %}🥉{% else %}#{{ rank }}{% endif %}
         </span>
         <span class="avatar flex-shrink-0">{{ u.username[0]|upper }}</span>
@@ -48,5 +54,6 @@
     <p class="text-slate-600">Будьте первым в рейтинге!</p>
   </div>
   {% endif %}
+  </div>
 </div>
 {% endblock %}

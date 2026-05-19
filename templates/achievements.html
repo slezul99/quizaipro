@@ -1,30 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-10">
-  <div class="mb-8 slide-up">
-    <h1 class="h-display text-5xl text-slate-900 mb-2">🏆 <span class="text-gradient">Достижения</span></h1>
-    <p class="text-slate-700 text-lg">
-      Получено: <span class="font-bold text-indigo-600">{{ unlocked_count }}</span> из {{ total_count }}
-    </p>
-    <div class="progress-bar h-3 mt-3 max-w-md"><div style="width: {{ (unlocked_count / total_count * 100) if total_count else 0 }}%"></div></div>
-  </div>
+<div class="relative max-w-5xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
 
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    {% for item in items %}
-    <div class="glass rounded-3xl p-5 card-hover {% if not item.unlocked %}opacity-50{% endif %}">
-      <div class="text-5xl mb-3 {% if not item.unlocked %}grayscale{% endif %}">{{ item.icon }}</div>
-      <h3 class="font-bold text-slate-900 mb-1">{{ item.name }}</h3>
-      <p class="text-xs text-slate-500 mb-3">{{ item.desc }}</p>
-      <div class="flex items-center justify-between">
-        {% if item.unlocked %}
-        <span class="badge bg-emerald-100 text-emerald-700">✓ Получено</span>
-        {% else %}
-        <span class="badge bg-slate-100 text-slate-500">🔒 Заблокировано</span>
-        {% endif %}
-        <span class="text-xs font-semibold text-indigo-600">+{{ item.xp }} XP</span>
-      </div>
+  <div class="relative z-10">
+    <div class="section-header left mb-8">
+      <span class="section-badge"><span class="badge-dot"></span>🏆 Достижения</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">Ваши успехи</h1>
+      <p class="section-sub">Получено: <b class="text-indigo-600 dark:text-indigo-300">{{ unlocked_count }}</b> из {{ total_count }}</p>
+      <div class="progress-bar h-3 mt-4 max-w-md"><div style="width: {{ (unlocked_count / total_count * 100) if total_count else 0 }}%"></div></div>
     </div>
-    {% endfor %}
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {% for item in items %}
+      <div class="glass-premium {% if not item.unlocked %}opacity-60{% endif %}" style="padding: 1.25rem;">
+        <div class="text-5xl mb-3 {% if not item.unlocked %}grayscale{% endif %}">{{ item.icon }}</div>
+        <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">{{ item.name }}</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">{{ item.desc }}</p>
+        <div class="flex items-center justify-between">
+          {% if item.unlocked %}
+          <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">✓ Получено</span>
+          {% else %}
+          <span class="badge bg-slate-100 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">🔒 Заблок.</span>
+          {% endif %}
+          <span class="text-xs font-bold text-indigo-600 dark:text-indigo-300">+{{ item.xp }} XP</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </div>
 {% endblock %}

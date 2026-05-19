@@ -11,151 +11,12 @@ function deckEditor() {
       is_public: {{ (deck['is_public'] == 1)|tojson }},
     },
     cards: {{ cards|tojson }},
-    filteredCards: [],
-    pagedCards: [],
-    totalPages: 1,
-    pageNumbers: [1],
     showTest: false,
     showLive: false,
-    showImageUpload: {},
     testCount: 25,
     testShuffle: false,
     testOnlyHard: false,
-    search: '',
-    page: 1,
-    perPage: 50,
-    diffFilter: 'all',
-    sortBy: 'newest',
-    difficulties: [
-      { key: 'new',      label: 'Новые',     icon: '🌱' },
-      { key: 'learning', label: 'Изучаются', icon: '📖' },
-      { key: 'hard',     label: 'Трудные',   icon: '💪' },
-      { key: 'easy',     label: 'Лёгкие',    icon: '✨' },
-      { key: 'mastered', label: 'Усвоены',   icon: '🎓' },
-    ],
-
-    init() {
-      // Garantiruem perPage
-      if (typeof this.perPage !== 'number' || this.perPage < 1) {
-        this.perPage = 50;
-      }
-      // Pervichnyy raschet
-      this.recompute();
-      // Watchers — pereraschityvayut pri lyubom izmenenii zavisimostey
-      this.$watch('cards', () => this.recompute());
-      this.$watch('search', () => { this.page = 1; this.recompute(); });
-      this.$watch('diffFilter', () => { this.page = 1; this.recompute(); });
-      this.$watch('sortBy', () => this.recompute());
-      this.$watch('perPage', () => this.recompute());
-      this.$watch('page', () => this.recompute());
-    },
-
-    recompute() {
-      // === filteredCards ===
-      let arr = [...(this.cards || [])];
-      if (this.diffFilter !== 'all') {
-        arr = arr.filter(c => c.difficulty && c.difficulty.key === this.diffFilter);
-      }
-      if (this.search && this.search.trim()) {
-        const q = this.search.toLowerCase();
-        arr = arr.filter(c =>
-          (c.front || '').toLowerCase().includes(q) ||
-          (c.back || '').toLowerCase().includes(q) ||
-          (c.note || '').toLowerCase().includes(q)
-        );
-      }
-      const diffOrder = { hard: 0, learning: 1, new: 2, easy: 3, mastered: 4 };
-      switch (this.sortBy) {
-        case 'oldest': arr.sort((a, b) => a.id - b.id); break;
-        case 'alpha': arr.sort((a, b) => (a.front || '').localeCompare(b.front || '')); break;
-        case 'hardest': arr.sort((a, b) => {
-          const ka = a.difficulty && a.difficulty.key, kb = b.difficulty && b.difficulty.key;
-          return (diffOrder[ka] != null ? diffOrder[ka] : 99) - (diffOrder[kb] != null ? diffOrder[kb] : 99);
-        }); break;
-        case 'easiest': arr.sort((a, b) => {
-          const ka = a.difficulty && a.difficulty.key, kb = b.difficulty && b.difficulty.key;
-          return (diffOrder[kb] != null ? diffOrder[kb] : 99) - (diffOrder[ka] != null ? diffOrder[ka] : 99);
-        }); break;
-        case 'most_attempts': arr.sort((a, b) => (b.reviews || 0) - (a.reviews || 0)); break;
-        case 'newest':
-        default: arr.sort((a, b) => b.id - a.id);
-      }
-      this.filteredCards = arr;
-
-      // === pagedCards ===
-      const pp = (typeof this.perPage === 'number' && this.perPage > 0) ? this.perPage : 50;
-      const start = (this.page - 1) * pp;
-      this.pagedCards = arr.slice(start, start + pp);
-
-      // === totalPages ===
-      this.totalPages = Math.max(1, Math.ceil(arr.length / pp));
-      if (this.page > this.totalPages) this.page = this.totalPages;
-
-      // === pageNumbers ===
-      const total = this.totalPages;
-      const cur = this.page;
-      if (total <= 7) {
-        this.pageNumbers = Array.from({length: total}, (_, i) => i + 1);
-      } else {
-        const pn = [1];
-        if (cur > 3) pn.push('...');
-        for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pn.push(i);
-        if (cur < total - 2) pn.push('...');
-        pn.push(total);
-        this.pageNumbers = pn;
-      }
-    },
-
-    cardCountByDifficulty(key) {
-      return this.cards.filter(c => c.difficulty && c.difficulty.key === key).length;
-    },
-
-    parseOptions(card) {
-      let source = card.note && card.note.trim() ? card.note : card.back;
-      if (!source) return [];
-      const opts = [];
-      const lines = source.split('\n');
-      for (const line of lines) {
-        const m = line.trim().match(/^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$/);
-        if (m) opts.push({ letter: m[1].toUpperCase(), text: m[2].trim() });
-      }
-      if (opts.length === 0 && card.back) {
-        for (const line of card.back.split('\n')) {
-          const m = line.trim().match(/^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$/);
-          if (m) opts.push({ letter: m[1].toUpperCase(), text: m[2].trim() });
-        }
-      }
-      return opts;
-    },
-
-    getCurrentCorrect(card) {
-      if (!card.back) return null;
-      const m = card.back.trim().split('\n')[0].match(/^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]/);
-      if (m) {
-        const letter = m[1].toUpperCase();
-        if (this.parseOptions(card).some(o => o.letter === letter)) return letter;
-      }
-      return null;
-    },
-
-    isCorrect(card, letter) {
-      return this.getCurrentCorrect(card) === letter;
-    },
-
-    setCorrect(card, letter) {
-      const opts = this.parseOptions(card);
-      if (!opts.length) return;
-      card.note = opts.map(o => `${o.letter}) ${o.text}`).join('\n');
-      const target = opts.find(o => o.letter === letter);
-      if (target) card.back = `${target.letter}) ${target.text}`;
-      this.saveCard(card);
-    },
-
-    globalIdx(localIdx) {
-      const pp = (typeof this.perPage === 'number' && this.perPage > 0) ? this.perPage : 50;
-      return (this.page - 1) * pp + localIdx + 1;
-    },
-
+    init() {},
     async saveDeck() {
       const fd = new FormData();
       fd.append('name', this.deck.name);
@@ -163,78 +24,14 @@ function deckEditor() {
       fd.append('category_id', this.deck.category_id || '');
       await fetch(`/deck/${this.deck.id}/edit`, { method: 'POST', body: fd });
     },
-    async saveCard(card) {
-      const fd = new FormData();
-      fd.append('front', card.front);
-      fd.append('back', card.back);
-      fd.append('note', card.note || '');
-      await fetch(`/card/${card.id}/edit`, { method: 'POST', body: fd });
-    },
     async addCard() {
       const fd = new FormData();
       fd.append('front', 'Новый вопрос');
       fd.append('back', 'Ответ');
       const r = await fetch(`/deck/${this.deck.id}/card/new`, { method: 'POST', body: fd });
       const data = await r.json();
-      if (data.ok) {
-        this.cards.unshift({
-          id: data.id, front: 'Новый вопрос', back: 'Ответ',
-          note: '', reviews: 0, level: 'new',
-          difficulty: {key: 'new', label: 'Новая', icon: '🌱', color: 'slate'}
-        });
-        this.recompute();
-      }
+      if (data.ok) location.reload();
     },
-    async deleteCard(card) {
-      if (!confirm('Удалить карту?')) return;
-      await fetch(`/card/${card.id}/delete`, { method: 'POST' });
-      this.cards = this.cards.filter(c => c.id !== card.id);
-      this.recompute();
-    },
-
-    async deleteCardFromDom(el, card) {
-      // Server-rendered: udalyaem napryamuyu iz DOM
-      if (!confirm('Удалить карту?')) return;
-      await fetch(`/card/${card.id}/delete`, { method: 'POST' });
-      // Najti roditelskiy div s glass + udalit'
-      const cardDiv = el.closest('.glass.rounded-3xl');
-      if (cardDiv) cardDiv.remove();
-      this.cards = this.cards.filter(c => c.id !== card.id);
-    },
-
-    speak(text) {
-      if (!text) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = /[а-яА-Я]/.test(text) ? 'ru-RU' : 'en-US';
-      u.rate = 0.95;
-      window.speechSynthesis.speak(u);
-    },
-
-    async uploadImage(card, event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { alert('Размер файла больше 5 MB'); return; }
-      const fd = new FormData();
-      fd.append('image', file);
-      const r = await fetch(`/card/${card.id}/upload-image`, { method: 'POST', body: fd });
-      const data = await r.json();
-      if (data.ok) card.image_url = data.url;
-      else alert('Ошибка загрузки: ' + (data.error || 'unknown'));
-      event.target.value = '';
-    },
-
-    async removeImage(card) {
-      if (!confirm('Удалить изображение?')) return;
-      const fd = new FormData();
-      fd.append('front', card.front || '');
-      fd.append('back', card.back || '');
-      fd.append('note', card.note || '');
-      fd.append('image_url', '');
-      await fetch(`/card/${card.id}/edit`, { method: 'POST', body: fd });
-      card.image_url = '';
-    },
-
     async cloneDeck() {
       const newName = prompt('Название копии:', this.deck.name + ' (копия)');
       if (!newName) return;
@@ -243,333 +40,641 @@ function deckEditor() {
       const r = await fetch(`/deck/${this.deck.id}/clone`, { method: 'POST', body: fd });
       window.location = r.url;
     },
-
     async togglePublic() {
-      const fd = new FormData();
-      const r = await fetch(`/deck/${this.deck.id}/toggle-public`, { method: 'POST', body: fd });
+      const r = await fetch(`/deck/${this.deck.id}/toggle-public`, { method: 'POST', body: new FormData() });
       const data = await r.json();
       if (data.ok) {
         this.deck.is_public = !!data.is_public;
-        if (this.deck.is_public) {
-          alert('Колода опубликована! Другие пользователи увидят её в маркетплейсе.');
-        }
+        if (this.deck.is_public) alert('Колода опубликована! Другие пользователи увидят её в маркетплейсе.');
       }
     }
   };
 }
 </script>
+<style>
+  /* === КАРТА === */
+  .deck-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1.5px solid rgba(99, 102, 241, 0.12);
+    border-radius: 22px;
+    padding: 1.5rem 1.75rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-shadow: 0 4px 20px -4px rgba(108, 181, 232, 0.15);
+  }
+  .deck-card:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 12px 32px -8px rgba(99, 102, 241, 0.2);
+    transform: translateY(-2px);
+  }
+  html.dark .deck-card {
+    background: rgba(30, 41, 75, 0.7);
+    border-color: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4);
+  }
+  html.dark .deck-card:hover {
+    background: rgba(30, 41, 75, 0.9);
+    border-color: rgba(139, 92, 246, 0.45);
+  }
+  .deck-card .card-num {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    font-weight: 800;
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.4);
+  }
+  /* === MCQ OPTION === */
+  .opt-btn {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(99, 102, 241, 0.15);
+    background: rgba(255, 255, 255, 0.6);
+    text-align: left;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+  .opt-btn:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(238, 242, 255, 0.7);
+    transform: translateX(2px);
+  }
+  .opt-btn.is-correct {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.08));
+    box-shadow: 0 4px 16px -4px rgba(16, 185, 129, 0.4);
+  }
+  html.dark .opt-btn {
+    background: rgba(15, 23, 41, 0.5);
+    border-color: rgba(99, 102, 241, 0.25);
+    color: #e2e8f0;
+  }
+  html.dark .opt-btn:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(139, 92, 246, 0.5);
+  }
+  html.dark .opt-btn.is-correct {
+    background: linear-gradient(135deg, rgba(16,185,129,0.25), rgba(52,211,153,0.15));
+    border-color: rgba(16, 185, 129, 0.6);
+  }
+  .opt-letter {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #4f46e5;
+    transition: all 0.2s;
+  }
+  .opt-btn.is-correct .opt-letter {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  }
+  html.dark .opt-letter { background: rgba(99, 102, 241, 0.25); color: #c4b5fd; }
+  .opt-text { flex: 1; font-size: 14px; line-height: 1.5; padding-top: 4px; color: #1e293b; }
+  html.dark .opt-text { color: #e2e8f0; }
+  .opt-check { color: #059669; font-size: 18px; font-weight: 900; }
+  /* === FILTER BUTTON === */
+  .diff-btn {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(99, 102, 241, 0.2);
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    transition: all 0.2s;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .diff-btn:hover { border-color: rgba(99, 102, 241, 0.5); transform: translateY(-1px); }
+  .diff-btn.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 16px -4px rgba(99, 102, 241, 0.5);
+  }
+  html.dark .diff-btn { background: rgba(30, 41, 75, 0.6); color: #cbd5e1; border-color: rgba(99, 102, 241, 0.3); }
+  /* === PP / SORT BUTTON === */
+  .pp-btn {
+    padding: 6px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(99, 102, 241, 0.2);
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .pp-btn:hover { border-color: rgba(99, 102, 241, 0.45); }
+  .pp-btn.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: transparent;
+  }
+  html.dark .pp-btn { background: rgba(30, 41, 75, 0.6); color: #cbd5e1; border-color: rgba(99, 102, 241, 0.3); }
+  /* === DECK EDITABLE INPUTS === */
+  .deck-icon-input {
+    font-size: 2.5rem;
+    width: 70px;
+    text-align: center;
+    background: rgba(255,255,255,0.5);
+    border: 2px dashed rgba(99,102,241,0.3);
+    border-radius: 16px;
+    padding: 4px;
+    transition: all 0.25s;
+  }
+  .deck-icon-input:focus { outline: none; background: rgba(238, 242, 255, 0.8); border-color: #8b5cf6; border-style: solid; }
+  html.dark .deck-icon-input { background: rgba(15, 23, 41, 0.7); border-color: rgba(139, 92, 246, 0.4); color: #f1f5f9; }
+  .deck-name-input {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    flex: 1;
+    background: transparent;
+    border: 2px dashed transparent;
+    border-radius: 12px;
+    padding: 6px 12px;
+    transition: all 0.25s;
+    background: linear-gradient(135deg, #0f172a, #312e81, #6366f1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    -webkit-text-fill-color: initial;
+    color: #1e293b;
+  }
+  .deck-name-input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(238, 242, 255, 0.3);
+    color: #1e293b;
+  }
+  html.dark .deck-name-input { color: #f1f5f9; }
+  html.dark .deck-name-input:focus { background: rgba(99, 102, 241, 0.1); }
+  /* === CARD TEXTAREAS === */
+  .card-textarea {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: all 0.2s;
+    resize: none;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #1e293b;
+    font-family: inherit;
+  }
+  .card-textarea:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.45);
+    background: rgba(238, 242, 255, 0.4);
+  }
+  html.dark .card-textarea { color: #e2e8f0; }
+  html.dark .card-textarea:focus { background: rgba(99, 102, 241, 0.1); border-color: rgba(139, 92, 246, 0.5); }
+  .card-textarea-secondary {
+    background: rgba(255,255,255,0.5);
+    border: 1.5px solid rgba(99, 102, 241, 0.15);
+  }
+  html.dark .card-textarea-secondary {
+    background: rgba(15, 23, 41, 0.5);
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+  /* Pagination */
+  .page-btn {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.2s;
+    border: 1.5px solid rgba(99, 102, 241, 0.2);
+    background: rgba(255, 255, 255, 0.7);
+    color: #475569;
+  }
+  .page-btn:hover { border-color: rgba(99, 102, 241, 0.5); transform: translateY(-1px); }
+  .page-btn.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 16px -4px rgba(99, 102, 241, 0.5);
+  }
+  html.dark .page-btn { background: rgba(30, 41, 75, 0.6); color: #cbd5e1; border-color: rgba(99, 102, 241, 0.3); }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-8" x-data="deckEditor()">
-  <a href="/dashboard" class="text-indigo-600 text-sm hover:underline">← {{ t('decks') }}</a>
+<div class="relative max-w-6xl mx-auto px-6 py-8" x-data="deckEditor()">
+  <!-- Декоративные пятна -->
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
 
-  <div class="glass rounded-3xl p-6 my-6">
-    <div class="flex items-center gap-4 mb-3">
-      <input x-model="deck.icon" @blur="saveDeck()" maxlength="2" class="text-3xl w-14 text-center bg-transparent border-b-2 border-gray-200 focus:outline-none focus:border-indigo-500" value="{{ deck['icon'] }}">
-      <input x-model="deck.name" @blur="saveDeck()" class="text-2xl font-bold flex-1 bg-transparent border-b-2 border-gray-200 focus:outline-none focus:border-indigo-500 h-display" value="{{ deck['name'] }}">
+  <div class="relative z-10">
+    <a href="/dashboard" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+      <span>←</span> {{ t('decks') }}
+    </a>
+
+    <!-- HEADER колоды -->
+    <div class="glass-premium mb-6">
+      <div class="flex items-center gap-4 mb-4 flex-wrap">
+        <input x-model="deck.icon" @blur="saveDeck()" maxlength="2" class="deck-icon-input" value="{{ deck['icon'] }}" {% if not can_edit %}disabled{% endif %}>
+        <input x-model="deck.name" @blur="saveDeck()" class="deck-name-input" value="{{ deck['name'] }}" {% if not can_edit %}disabled{% endif %}>
+        <span class="px-4 py-2 rounded-full text-sm font-bold"
+              style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.3);">
+          <span x-text="cards.length"></span> карт
+        </span>
+      </div>
+
+      {% if can_edit %}
+      <div class="flex items-center gap-2 mb-5 flex-wrap">
+        <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">📁 Категория:</span>
+        <select x-model="deck.category_id" @change="saveDeck()" class="input-premium" style="max-width: 280px; padding: 8px 14px; font-size: 13px;">
+          <option value="">— Без категории —</option>
+          {% set roots = categories | selectattr('parent_id', 'none') | list %}
+          {% for r in roots %}
+          <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>
+          {% for ch in categories if ch['parent_id'] == r['id'] %}
+          <option value="{{ ch['id'] }}">&nbsp;&nbsp;&nbsp;└ {{ ch['icon'] }} {{ ch['name'] }}</option>
+          {% endfor %}
+          {% endfor %}
+        </select>
+        <a href="/categories" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">+ Создать</a>
+      </div>
+      {% endif %}
+
+      <!-- Кнопки действий -->
+      <div class="flex items-center gap-2 flex-wrap">
+        {% set _dt = deck.deck_type or 'mcq' %}
+        {% if _dt == 'terms' %}
+        <a href="/deck/{{ deck['id'] }}/flashcards" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="Карточки с переворотом">🃏 Flashcards</a>
+        <a href="/deck/{{ deck['id'] }}/match" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); color: #b45309; border-color: rgba(245,158,11,0.4);" title="Игра «Сопоставь пары»">🎯 Match</a>
+        {% if can_edit %}
+        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="Live-тест">🎮 Live test</button>
+        {% endif %}
+        {% else %}
+        <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="Запустить тест">📝 Тест</button>
+        {% if can_edit %}
+        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="Live-тест">🎮 Live test</button>
+        {% endif %}
+        {% endif %}
+        {% if can_edit %}
+        <a href="/export/deck/{{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Excel-журнал">📊 Excel</a>
+        <div class="relative" x-data="{ pdfMenu: false }">
+          <button type="button" @click="pdfMenu = !pdfMenu" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="PDF">📄 PDF ▾</button>
+          <div x-show="pdfMenu" @click.outside="pdfMenu = false" x-transition x-cloak class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-xl overflow-hidden z-30">
+            <a href="/export/deck/{{ deck['id'] }}/pdf" class="block px-4 py-3 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-sm font-medium">📝 Без ответов</a>
+            <a href="/export/deck/{{ deck['id'] }}/pdf?answers=1" class="block px-4 py-3 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-sm font-medium border-t border-slate-200/40">✅ С ответами</a>
+          </div>
+        </div>
+        <button type="button" @click="cloneDeck()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Дубль">📋 Дубль</button>
+        <a href="/deck/{{ deck['id'] }}/export-json" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="JSON">💾 JSON</a>
+        <button type="button" @click="togglePublic()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;"
+                :class="deck.is_public ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : ''"
+                title="Опубликовать">
+          <span x-show="!deck.is_public">🌐 Опубликовать</span>
+          <span x-show="deck.is_public">✓ Публичная</span>
+        </button>
+        <button @click="addCard()" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="Добавить карту">+ Карта</button>
+        <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Импорт">📥 Импорт</a>
+        {% endif %}
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">💡 Кликните на вариант ответа чтобы отметить его правильным</p>
     </div>
 
-    {% if can_edit %}
-    <div class="flex items-center gap-2 mb-4">
-      <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">📁 Категория:</span>
-      <select x-model="deck.category_id" @change="saveDeck()" class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white">
-        <option value="">— Без категории —</option>
-        {% set roots = categories | selectattr('parent_id', 'none') | list %}
-        {% for r in roots %}
-        <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>
-        {% for ch in categories if ch['parent_id'] == r['id'] %}
-        <option value="{{ ch['id'] }}">&nbsp;&nbsp;&nbsp;└ {{ ch['icon'] }} {{ ch['name'] }}</option>
+    {% if cards %}
+    <!-- ФИЛЬТРЫ + ПОИСК -->
+    <div class="glass-premium mb-5" style="padding: 1.25rem;">
+      <div class="flex items-center gap-3 flex-wrap mb-3">
+        <input type="text" id="card-search" placeholder="🔍 Поиск по вопросу или ответу..." class="input-premium" style="flex: 1; min-width: 240px; padding: 10px 16px;">
+        <span class="text-sm text-slate-500 dark:text-slate-400 font-semibold" id="filter-count">{{ cards|length }} из {{ cards|length }}</span>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap mb-3">
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Сложность:</span>
+        <button type="button" data-diff="all" class="diff-btn active">Все ({{ cards|length }})</button>
+        {% set diff_counts = {} %}
+        {% for c in cards %}
+          {% if c.difficulty %}{% set _ = diff_counts.update({c.difficulty.key: diff_counts.get(c.difficulty.key, 0) + 1}) %}{% endif %}
         {% endfor %}
+        {% set diff_meta = [
+          ('new', 'Новые', '🌱'), ('learning', 'Изучаются', '📖'),
+          ('hard', 'Трудные', '💪'), ('easy', 'Лёгкие', '✨'),
+          ('mastered', 'Усвоены', '🎓'),
+        ] %}
+        {% for key, label, icon in diff_meta %}
+          {% if diff_counts.get(key, 0) > 0 %}
+          <button type="button" data-diff="{{ key }}" class="diff-btn">{{ icon }} {{ label }} ({{ diff_counts.get(key, 0) }})</button>
+          {% endif %}
         {% endfor %}
-      </select>
-      <a href="/categories" class="text-xs text-indigo-600 hover:underline">+ Создать категорию</a>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Сортировка:</span>
+        <select id="sort-by" class="input-premium" style="width: auto; padding: 6px 14px; font-size: 13px;">
+          <option value="newest">Сначала новые</option>
+          <option value="oldest">Сначала старые</option>
+          <option value="alpha">По алфавиту А-Я</option>
+          <option value="hardest">Сначала трудные</option>
+          <option value="easiest">Сначала лёгкие</option>
+          <option value="most_attempts">Больше попыток</option>
+        </select>
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 ml-2">На странице:</span>
+        {% for n in [25, 50, 100] %}
+        <button type="button" data-pp="{{ n }}" class="pp-btn{% if n == 50 %} active{% endif %}">{{ n }}</button>
+        {% endfor %}
+        <input type="number" min="1" max="{{ cards|length }}" id="pp-input" value="50"
+               class="input-premium" style="width: 80px; padding: 6px; text-align: center; font-size: 13px; font-weight: 700;">
+        <button type="button" data-pp="{{ cards|length or 1 }}" class="pp-btn">Все</button>
+        <button type="button" id="reset-filters" class="btn-premium-danger" style="margin-left: auto; font-size: 11px; padding: 6px 12px;">✕ Сбросить</button>
+      </div>
     </div>
     {% endif %}
 
-    <div class="flex items-center gap-3 flex-wrap text-sm">
-      <span class="text-gray-500" x-text="cards.length + ' карт'"></span>
-      {% set _dt = deck.deck_type or 'mcq' %}
-      {% if _dt == 'terms' %}
-      <a href="/deck/{{ deck['id'] }}/flashcards" class="btn text-sm"
-        style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);color:white;"
-        title="Карточки с переворотом — учить термины и определения по SM-2 алгоритму">🃏 Flashcards</a>
-      <a href="/deck/{{ deck['id'] }}/match" class="btn text-sm bg-amber-500 text-white hover:bg-amber-600"
-        title="Игра «Сопоставь пары» — соедини термины с определениями на скорость">🎯 Match</a>
-      {% if can_edit %}
-      <button type="button" @click="showLive = true" class="btn text-sm bg-pink-500 text-white hover:bg-pink-600"
-        title="Запустить групповую игру в реальном времени — студенты входят по коду">🎮 Live test</button>
-      {% endif %}
-      {% else %}
-      <button type="button" @click="showTest = true" class="btn btn-success text-sm"
-        title="Тест с вариантами ответов — отвечай на вопросы и проверяй свои знания">📝 Тест</button>
-      {% if can_edit %}
-      <button type="button" @click="showLive = true" class="btn text-sm bg-pink-500 text-white hover:bg-pink-600"
-        title="Запустить групповую игру в реальном времени — студенты входят по коду">🎮 Live test</button>
-      {% endif %}
-      {% endif %}
-      {% if can_edit %}
-      <a href="/export/deck/{{ deck['id'] }}" class="btn btn-ghost text-sm"
-        title="Скачать Excel-журнал — список карточек со статистикой и прогрессом студентов">📊 Excel</a>
-      <div class="relative" x-data="{ pdfMenu: false }">
-        <button type="button" @click="pdfMenu = !pdfMenu" class="btn btn-ghost text-sm"
-          title="Скачать PDF — для печати и проведения теста на бумаге">📄 PDF ▾</button>
-        <div x-show="pdfMenu" @click.outside="pdfMenu = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-56 glass-strong rounded-xl shadow-xl overflow-hidden z-20">
-          <a href="/export/deck/{{ deck['id'] }}/pdf" class="block px-4 py-2.5 hover:bg-indigo-50 text-sm"
-            title="Тест без ответов — для печати и раздачи студентам">📝 Тест без ответов</a>
-          <a href="/export/deck/{{ deck['id'] }}/pdf?answers=1" class="block px-4 py-2.5 hover:bg-indigo-50 text-sm border-t border-gray-100"
-            title="Версия с правильными ответами — для проверки">✅ С правильными ответами</a>
+    <!-- КАРТЫ -->
+    <div class="space-y-4" id="cards-container">
+      {% for card in cards %}
+      <div class="deck-card group card-item"
+        data-card-id="{{ card.id }}"
+        data-card-front="{{ card.front|lower }}"
+        data-card-back="{{ card.back|lower }}"
+        data-card-note="{{ (card.note or '')|lower }}"
+        data-diff="{{ card.difficulty.key if card.difficulty else 'new' }}"
+        data-reviews="{{ card.reviews or 0 }}"
+        data-id="{{ card.id }}">
+
+        <div class="flex items-start gap-3 mb-3">
+          <div class="card-num">{{ loop.index }}</div>
+          <textarea data-card-id="{{ card.id }}" data-field="front" rows="1"
+            class="card-textarea card-edit"
+            placeholder="Текст вопроса..."
+            style="flex: 1; font-weight: 600;">{{ card.front }}</textarea>
+          <button type="button" onclick="speakCard(this)" data-text-source="front"
+                  class="text-slate-400 hover:text-indigo-600 p-2 rounded-xl hover:bg-indigo-50/60 dark:hover:bg-indigo-900/30 transition" title="Озвучить">🔊</button>
+        </div>
+
+        {% if card.image_url %}
+        <div class="ml-12 mb-3">
+          <div class="relative inline-block group/img">
+            <img src="{{ card.image_url }}" class="max-h-44 rounded-2xl border-2 border-white shadow-md cursor-pointer" onclick="window.open(this.src, '_blank')">
+            <button type="button" data-card-id="{{ card.id }}" onclick="removeCardImage(this)"
+                    class="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold opacity-0 group-hover/img:opacity-100 transition shadow-lg hover:bg-red-600">✕</button>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="ml-12 mb-3">
+          <label class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline cursor-pointer font-semibold inline-flex items-center gap-1">
+            <input type="file" accept="image/*" onchange="uploadCardImage(this, {{ card.id }})" class="hidden">
+            {% if card.image_url %}🔄 Заменить изображение{% else %}📷 Добавить изображение{% endif %}
+          </label>
+        </div>
+
+        {% if card.options %}
+        <!-- MCQ варианты -->
+        <div class="space-y-2 ml-12">
+          {% for opt in card.options %}
+          {% set is_correct = (card.correct_letter == opt.letter) %}
+          <button type="button" data-card-id="{{ card.id }}" data-letter="{{ opt.letter }}" onclick="setCorrectOption(this)"
+                  class="opt-btn {% if is_correct %}is-correct{% endif %}">
+            <span class="opt-letter">{{ opt.letter }}</span>
+            <span class="opt-text">{{ opt.text }}</span>
+            <span class="opt-check" {% if not is_correct %}style="display:none"{% endif %}>✓</span>
+          </button>
+          {% endfor %}
+        </div>
+        {% else %}
+        <!-- Простой ответ -->
+        <div class="ml-12">
+          <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 uppercase font-bold tracking-wider">Ответ</div>
+          <textarea data-card-id="{{ card.id }}" data-field="back" rows="2"
+            class="card-textarea card-textarea-secondary card-edit"
+            placeholder="Введите ответ...">{{ card.back }}</textarea>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mt-3 mb-1.5 uppercase font-bold tracking-wider">Объяснение</div>
+          <textarea data-card-id="{{ card.id }}" data-field="note" rows="1"
+            class="card-textarea card-textarea-secondary card-edit"
+            style="font-size: 13px;"
+            placeholder="Дополнительная информация (необязательно)...">{{ card.note or "" }}</textarea>
+        </div>
+        {% endif %}
+
+        <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-700/50 ml-12">
+          <div class="flex gap-2 flex-wrap items-center">
+            {% if card.difficulty %}
+            <span class="badge
+              {% if card.difficulty.color == 'slate' %}bg-slate-100 text-slate-600
+              {% elif card.difficulty.color == 'amber' %}bg-amber-100 text-amber-700
+              {% elif card.difficulty.color == 'red' %}bg-red-100 text-red-700
+              {% elif card.difficulty.color == 'blue' %}bg-blue-100 text-blue-700
+              {% elif card.difficulty.color == 'emerald' %}bg-emerald-100 text-emerald-700
+              {% endif %}">
+              {{ card.difficulty.icon }} {{ card.difficulty.label }}
+            </span>
+            {% endif %}
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ card.reviews or 0 }} попыток</span>
+          </div>
+          <button type="button" data-card-id="{{ card.id }}" onclick="deleteCardGlobal(this)"
+                  class="opacity-0 group-hover:opacity-100 btn-premium-danger" style="font-size: 11px; padding: 5px 12px;">✕ Удалить</button>
         </div>
       </div>
-      <button type="button" @click="cloneDeck()" class="btn btn-ghost text-sm"
-        title="Создать копию колоды (со всеми карточками) для редактирования отдельно">📋 Дубль</button>
-      <a href="/deck/{{ deck['id'] }}/export-json" class="btn btn-ghost text-sm"
-        title="Скачать колоду в JSON — резервная копия или передача другому пользователю">💾 JSON</a>
-      <button type="button" @click="togglePublic()" class="btn btn-ghost text-sm"
-        :class="deck.is_public ? 'bg-emerald-100 text-emerald-700' : ''"
-        title="Сделать колоду публичной — она появится в маркетплейсе и любой сможет её скопировать">
-        <span x-show="!deck.is_public">🌐 Опубликовать</span>
-        <span x-show="deck.is_public">✓ Публичная</span>
-      </button>
-      {% endif %}
-      <button @click="addCard()" class="btn btn-ghost text-sm"
-        title="Добавить новую пустую карточку в колоду">+ Карта</button>
-      <a href="/import?deck={{ deck['id'] }}" class="btn btn-ghost text-sm"
-        title="Импортировать карточки из файла (.txt, .pdf, .docx) или вставить текстом">📥 Импорт</a>
-    </div>
-      <span class="ml-auto text-xs text-gray-500">💡 Кликните на вариант чтобы отметить его правильным</span>
-    </div>
-  </div>
-
-  <!-- Search + filters -->
-  <div class="glass rounded-2xl p-4 mb-4 flex items-center gap-3 flex-wrap" id="filters-bar" {% if not cards %}style="display:none"{% endif %}>
-    <input type="text" id="card-search" placeholder="🔍 Поиск..."
-      class="flex-1 min-w-[200px] px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white text-sm">
-    <div class="flex items-center gap-1.5 text-sm">
-      <span class="text-gray-500">На странице:</span>
-      {% for n in [25, 50, 100] %}
-      <button type="button" data-pp="{{ n }}" class="pp-btn px-3 py-1.5 rounded-lg border-2 font-semibold transition bg-white border-gray-200 hover:border-indigo-300">{{ n }}</button>
       {% endfor %}
-      <input type="number" min="1" max="{{ cards|length }}" id="pp-input" value="50"
-        class="w-20 px-2 py-1.5 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white font-semibold text-center">
-      <button type="button" data-pp="{{ cards|length or 1 }}" class="pp-btn btn btn-ghost text-xs px-3 py-1.5">Все</button>
     </div>
-    <span class="text-sm text-gray-500" id="filter-count">{{ cards|length }} из {{ cards|length }}</span>
-  </div>
 
-  {% if cards %}
-  <div class="flex items-center gap-2 mb-4 flex-wrap" id="diff-bar">
-    <span class="text-xs uppercase tracking-wider font-semibold text-gray-500">Сложность:</span>
-    <button type="button" data-diff="all" class="diff-btn px-3 py-1 rounded-lg border-2 text-xs font-semibold transition bg-indigo-500 text-white border-transparent">
-      Все ({{ cards|length }})
+    {% if can_edit %}
+    <button @click="addCard()" class="btn-premium w-full mt-5 justify-center" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border: 1.5px dashed rgba(99,102,241,0.4); box-shadow: none;">
+      <span style="font-size: 18px;">+</span> Добавить карту
     </button>
-    {% set diff_counts = {} %}
-    {% for c in cards %}
-      {% if c.difficulty %}
-        {% set _ = diff_counts.update({c.difficulty.key: diff_counts.get(c.difficulty.key, 0) + 1}) %}
-      {% endif %}
-    {% endfor %}
-    {% set diff_meta = [
-      ('new', 'Новые', '🌱'),
-      ('learning', 'Изучаются', '📖'),
-      ('hard', 'Трудные', '💪'),
-      ('easy', 'Лёгкие', '✨'),
-      ('mastered', 'Усвоены', '🎓'),
-    ] %}
-    {% for key, label, icon in diff_meta %}
-      {% if diff_counts.get(key, 0) > 0 %}
-      <button type="button" data-diff="{{ key }}" class="diff-btn px-3 py-1 rounded-lg border-2 text-xs font-semibold transition bg-white border-gray-200">
-        {{ icon }} {{ label }} ({{ diff_counts.get(key, 0) }})
-      </button>
-      {% endif %}
-    {% endfor %}
-    <span class="text-xs uppercase tracking-wider font-semibold text-gray-500 ml-4">Сортировка:</span>
-    <select id="sort-by" class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white">
-      <option value="newest">Сначала новые</option>
-      <option value="oldest">Сначала старые</option>
-      <option value="alpha">По алфавиту А-Я</option>
-      <option value="hardest">Сначала трудные</option>
-      <option value="easiest">Сначала лёгкие</option>
-      <option value="most_attempts">Больше попыток</option>
-    </select>
+    {% endif %}
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-center gap-2 mt-8" id="pagination-bar" style="display:none">
+      <button type="button" id="page-first" class="page-btn" title="В начало">⏮</button>
+      <button type="button" id="page-prev" class="page-btn" title="Назад">←</button>
+      <div class="flex items-center gap-1.5 mx-2" id="page-numbers"></div>
+      <button type="button" id="page-next" class="page-btn" title="Вперёд">→</button>
+      <button type="button" id="page-last" class="page-btn" title="В конец">⏭</button>
+    </div>
   </div>
-  {% endif %}
 
-  <!-- Cards (server-rendered, Alpine only for interactivity) -->
-  <div class="space-y-4" id="cards-container">
-    {% for card in cards %}
-    <div class="glass rounded-3xl p-6 group card-item"
-      data-card-id="{{ card.id }}"
-      data-card-front="{{ card.front|lower }}"
-      data-card-back="{{ card.back|lower }}"
-      data-card-note="{{ (card.note or '')|lower }}"
-      data-diff="{{ card.difficulty.key if card.difficulty else 'new' }}"
-      data-reviews="{{ card.reviews or 0 }}"
-      data-id="{{ card.id }}"
-      x-data='{
-      card: {
-        id: {{ card.id }},
-        front: {{ card.front|tojson }},
-        back: {{ card.back|tojson }},
-        note: {{ (card.note or "")|tojson }},
-        image_url: {{ (card.image_url or "")|tojson }},
-        reviews: {{ card.reviews or 0 }},
-        difficulty: {{ card.difficulty|tojson }}
-      }
-    }'>
-      <div class="flex items-start gap-3 mb-4">
-        <div class="text-xs font-bold text-indigo-500 mt-2 w-12 card-num">{{ loop.index }}.</div>
-        <textarea x-model="card.front" @blur="saveCard(card)" rows="1"
-          class="flex-1 bg-transparent resize-none focus:outline-none scrollbar text-base font-medium leading-relaxed border-b border-transparent focus:border-indigo-200"
-          placeholder="Текст вопроса...">{{ card.front }}</textarea>
-        <button type="button" @click="speak(card.front)"
-          class="text-gray-400 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition" title="Озвучить">🔊</button>
+  <!-- Test settings modal -->
+  <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
+    <div class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
+      <h2 class="section-h" style="font-size: 1.7rem;">📝 Запустить тест</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
+        <span x-text="deck.name"></span> · всего <span x-text="cards.length" class="font-bold text-indigo-600 dark:text-indigo-300"></span> вопросов
+      </p>
+
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Сколько вопросов</label>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <template x-for="n in [10, 25, 50, 100]" :key="n">
+          <button type="button" @click="testCount = n" :disabled="n > cards.length"
+            :class="testCount === n ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-transparent shadow-md' : 'border-indigo-200 hover:border-indigo-400'"
+            class="py-3 rounded-xl border-2 font-bold transition disabled:opacity-30 disabled:cursor-not-allowed" x-text="n"></button>
+        </template>
       </div>
 
-      <div class="ml-11 mb-3" x-show="card.image_url">
-        <div class="relative inline-block group/img">
-          <img :src="card.image_url" class="max-h-40 rounded-xl border border-gray-200 cursor-pointer" @click="window.open(card.image_url, '_blank')">
-          <button type="button" @click="removeImage(card)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover/img:opacity-100 transition">✕</button>
-        </div>
-      </div>
-      <div class="ml-11 mb-3 flex gap-2 text-xs">
-        <label class="text-indigo-600 hover:underline cursor-pointer flex items-center gap-1">
-          <input type="file" accept="image/*" @change="uploadImage(card, $event)" class="hidden">
-          <span x-show="!card.image_url">📷 Добавить изображение</span>
-          <span x-show="card.image_url">🔄 Заменить</span>
-        </label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Своё число</label>
+      <div class="flex items-center gap-3 mb-4">
+        <input type="number" x-model.number="testCount" :max="cards.length" min="1"
+          class="input-premium" style="flex: 1; font-size: 17px; font-weight: 700; text-align: center;">
+        <button type="button" @click="testCount = cards.length" class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">Все</button>
       </div>
 
-      {% if card.options %}
-      <!-- MCQ options (server-rendered) -->
-      <div class="space-y-2 ml-11">
-        {% for opt in card.options %}
-        {% set is_correct = (card.correct_letter == opt.letter) %}
-        <button type="button"
-          data-card-id="{{ card.id }}" data-letter="{{ opt.letter }}"
-          onclick="setCorrectOption(this)"
-          class="opt-btn w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition
-            {% if is_correct %}border-emerald-400 bg-emerald-50 ring-2 ring-emerald-300{% else %}border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/30{% endif %}">
-          <span class="opt-letter flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition
-            {% if is_correct %}bg-emerald-500 text-white{% else %}bg-gray-100 text-gray-600{% endif %}">{{ opt.letter }}</span>
-          <span class="flex-1 text-sm">{{ opt.text }}</span>
-          <span class="opt-check text-emerald-600 text-lg" {% if not is_correct %}style="display:none"{% endif %}>✓</span>
-        </button>
-        {% endfor %}
-      </div>
-      {% else %}
-      <!-- Plain text answer -->
-      <div class="ml-11">
-        <div class="text-xs text-gray-400 mb-1 uppercase font-semibold tracking-wider">Ответ</div>
-        <textarea x-model="card.back" @blur="saveCard(card)" rows="2"
-          class="w-full bg-transparent resize-none focus:outline-none border border-gray-200 rounded-xl p-3 focus:border-indigo-500">{{ card.back }}</textarea>
-        <div class="text-xs text-gray-400 mt-3 mb-1 uppercase font-semibold tracking-wider">Объяснение</div>
-        <textarea x-model="card.note" @blur="saveCard(card)" rows="1"
-          class="w-full bg-transparent resize-none text-sm text-gray-600 focus:outline-none border border-gray-200 rounded-xl p-2 focus:border-indigo-500">{{ card.note or "" }}</textarea>
-      </div>
-      {% endif %}
+      <label class="flex items-center gap-3 mb-3 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/40 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+        <input type="checkbox" x-model="testShuffle" class="w-5 h-5 accent-indigo-600">
+        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">🎲 Перемешать вопросы</span>
+      </label>
+      <label class="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/40 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/30">
+        <input type="checkbox" x-model="testOnlyHard" class="w-5 h-5 accent-amber-600">
+        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">💪 Только трудные</span>
+      </label>
 
-      <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400 ml-11">
-        <div class="flex gap-3 flex-wrap items-center">
-          {% if card.difficulty %}
-          <span class="badge
-            {% if card.difficulty.color == 'slate' %}bg-slate-100 text-slate-600
-            {% elif card.difficulty.color == 'amber' %}bg-amber-100 text-amber-700
-            {% elif card.difficulty.color == 'red' %}bg-red-100 text-red-700
-            {% elif card.difficulty.color == 'blue' %}bg-blue-100 text-blue-700
-            {% elif card.difficulty.color == 'emerald' %}bg-emerald-100 text-emerald-700
-            {% endif %}">
-            {{ card.difficulty.icon }} {{ card.difficulty.label }}
-          </span>
-          {% endif %}
-          <span>{{ card.reviews or 0 }} попыток</span>
-        </div>
-        <button type="button" data-card-id="{{ card.id }}" onclick="deleteCardGlobal(this)" class="opacity-0 group-hover:opacity-100 text-red-500 hover:underline transition">Удалить</button>
+      <div class="flex gap-2">
+        <button type="button" @click="showTest = false" class="btn-premium-ghost" style="flex: 1; justify-content: center;">Отмена</button>
+        <a :href="`/deck/${deck.id}/test?count=${testCount}&shuffle=${testShuffle ? 1 : 0}&hard_only=${testOnlyHard ? 1 : 0}`" class="btn-premium" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #10b981, #059669);">
+          Начать →
+        </a>
       </div>
     </div>
-    {% endfor %}
   </div>
 
-  <button @click="addCard()" class="btn btn-ghost w-full mt-4 justify-center">+ Добавить карту</button>
-
-  <!-- Pagination -->
-  <div class="flex items-center justify-center gap-2 mt-8" id="pagination-bar" style="display:none">
-    <button type="button" id="page-first" class="btn btn-ghost text-sm">⏮</button>
-    <button type="button" id="page-prev" class="btn btn-ghost text-sm">←</button>
-    <div class="flex items-center gap-1 mx-2" id="page-numbers"></div>
-    <button type="button" id="page-next" class="btn btn-ghost text-sm">→</button>
-    <button type="button" id="page-last" class="btn btn-ghost text-sm">⏭</button>
+  <!-- Live test modal -->
+  <div x-show="showLive" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showLive = false" x-cloak>
+    <div class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
+      <h2 class="section-h" style="font-size: 1.7rem;">🎮 Live test</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Запустить групповую игру в реальном времени</p>
+      <p class="text-sm text-slate-700 dark:text-slate-200 mb-5">
+        Студенты подключаются по уникальному коду и отвечают на вопросы вместе. Победитель — первый набравший макс.очков.
+      </p>
+      <div class="flex gap-2">
+        <button type="button" @click="showLive = false" class="btn-premium-ghost" style="flex: 1; justify-content: center;">Отмена</button>
+        <a href="/live/create?deck_id={{ deck['id'] }}" class="btn-premium" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #ec4899, #be185d);">
+          Создать сессию →
+        </a>
+      </div>
+    </div>
   </div>
+</div>
 
-  <!-- Vanilla JS for filtering / sorting / pagination -->
-  <script>
-  // Delete card (server-rendered, works without Alpine context)
+<script>
+  // === Save card field on blur ===
+  document.querySelectorAll('.card-edit').forEach(el => {
+    el.addEventListener('blur', async (e) => {
+      const cardId = el.dataset.cardId;
+      const cardDiv = el.closest('.card-item');
+      if (!cardId || !cardDiv) return;
+      const front = (cardDiv.querySelector('[data-field="front"]') || {}).value || '';
+      const back = (cardDiv.querySelector('[data-field="back"]') || {}).value || '';
+      const note = (cardDiv.querySelector('[data-field="note"]') || {}).value || '';
+      const fd = new FormData();
+      fd.append('front', front);
+      fd.append('back', back);
+      fd.append('note', note);
+      try {
+        await fetch(`/card/${cardId}/edit`, { method: 'POST', body: fd });
+      } catch(e) {}
+    });
+  });
+
+  // === Speech ===
+  function speakCard(btn) {
+    const cardDiv = btn.closest('.card-item');
+    const ta = cardDiv.querySelector('[data-field="front"]');
+    const text = ta ? ta.value : '';
+    if (!text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = /[а-яА-Я]/.test(text) ? 'ru-RU' : 'en-US';
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+
+  // === Image upload ===
+  async function uploadCardImage(input, cardId) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Размер файла больше 5 MB'); return; }
+    const fd = new FormData();
+    fd.append('image', file);
+    const r = await fetch(`/card/${cardId}/upload-image`, { method: 'POST', body: fd });
+    const data = await r.json();
+    if (data.ok) location.reload();
+    else alert('Ошибка загрузки: ' + (data.error || 'unknown'));
+  }
+  async function removeCardImage(btn) {
+    if (!confirm('Удалить изображение?')) return;
+    const cardId = btn.dataset.cardId;
+    const cardDiv = btn.closest('.card-item');
+    const front = (cardDiv.querySelector('[data-field="front"]') || {}).value || '';
+    const back = (cardDiv.querySelector('[data-field="back"]') || {}).value || '';
+    const note = (cardDiv.querySelector('[data-field="note"]') || {}).value || '';
+    const fd = new FormData();
+    fd.append('front', front); fd.append('back', back); fd.append('note', note); fd.append('image_url', '');
+    await fetch(`/card/${cardId}/edit`, { method: 'POST', body: fd });
+    location.reload();
+  }
+
+  // === Delete card ===
   async function deleteCardGlobal(btn) {
     if (!confirm('Удалить карту?')) return;
     const cardId = btn.dataset.cardId;
-    if (!cardId) return;
     const cardDiv = btn.closest('.card-item');
+    const fd = new FormData();
+    fd.append('_csrf', '{{ csrf_token() }}');
     try {
-      // CSRF auto-injector dobavlyaet headeg pri POST'e cherez form, no fetch nuzhno yavno
-      const fd = new FormData();
-      fd.append('_csrf', '{{ csrf_token() }}');
-      const r = await fetch(`/card/${cardId}/delete`, { method: 'POST', body: fd });
+      await fetch(`/card/${cardId}/delete`, { method: 'POST', body: fd });
       if (cardDiv) cardDiv.remove();
-    } catch(e) {
-      alert('Oshibka: ' + e.message);
-    }
+    } catch(e) { alert('Ошибка: ' + e.message); }
   }
 
-  // Set correct option (server-rendered MCQ)
+  // === Set correct MCQ option ===
   async function setCorrectOption(btn) {
     const cardId = btn.dataset.cardId;
     const letter = btn.dataset.letter;
     const cardDiv = btn.closest('.card-item');
     if (!cardDiv) return;
-    // Sobiraem vse opts iz DOM
     const optBtns = cardDiv.querySelectorAll('.opt-btn');
-    const opts = Array.from(optBtns).map(b => {
-      const l = b.dataset.letter;
-      const text = b.querySelector('.flex-1').textContent.trim();
-      return { letter: l, text };
-    });
-    if (!opts.length) return;
-    // Stroim novyy back i note
+    const opts = Array.from(optBtns).map(b => ({
+      letter: b.dataset.letter,
+      text: (b.querySelector('.opt-text') || {}).textContent.trim()
+    }));
     const target = opts.find(o => o.letter === letter);
     if (!target) return;
     const newBack = `${target.letter}) ${target.text}`;
     const newNote = opts.map(o => `${o.letter}) ${o.text}`).join('\n');
-    // Otpravlyaem na server
+    const frontEl = cardDiv.querySelector('[data-field="front"]');
     const fd = new FormData();
-    const frontEl = cardDiv.querySelector('textarea[x-model="card.front"]');
     fd.append('front', frontEl ? frontEl.value : '');
     fd.append('back', newBack);
     fd.append('note', newNote);
     await fetch(`/card/${cardId}/edit`, { method: 'POST', body: fd });
-    // Vizualno: snimaem highlight so vsek + stavim na vybranny
     optBtns.forEach(b => {
-      b.classList.remove('border-emerald-400', 'bg-emerald-50', 'ring-2', 'ring-emerald-300');
-      b.classList.add('border-gray-200', 'hover:border-indigo-200', 'hover:bg-indigo-50/30');
-      const letterEl = b.querySelector('.opt-letter');
-      if (letterEl) {
-        letterEl.classList.remove('bg-emerald-500', 'text-white');
-        letterEl.classList.add('bg-gray-100', 'text-gray-600');
-      }
-      const checkEl = b.querySelector('.opt-check');
-      if (checkEl) checkEl.style.display = 'none';
+      b.classList.remove('is-correct');
+      const ch = b.querySelector('.opt-check');
+      if (ch) ch.style.display = 'none';
     });
-    btn.classList.remove('border-gray-200', 'hover:border-indigo-200', 'hover:bg-indigo-50/30');
-    btn.classList.add('border-emerald-400', 'bg-emerald-50', 'ring-2', 'ring-emerald-300');
-    const letterEl = btn.querySelector('.opt-letter');
-    if (letterEl) {
-      letterEl.classList.remove('bg-gray-100', 'text-gray-600');
-      letterEl.classList.add('bg-emerald-500', 'text-white');
-    }
-    const checkEl = btn.querySelector('.opt-check');
-    if (checkEl) checkEl.style.display = '';
+    btn.classList.add('is-correct');
+    const ch = btn.querySelector('.opt-check');
+    if (ch) ch.style.display = '';
   }
 
+  // === Filter / sort / pagination ===
   (function() {
     const container = document.getElementById('cards-container');
     if (!container) return;
@@ -580,18 +685,12 @@ function deckEditor() {
     const ppInput = document.getElementById('pp-input');
     const ppButtons = document.querySelectorAll('.pp-btn');
     const diffButtons = document.querySelectorAll('.diff-btn');
+    const resetBtn = document.getElementById('reset-filters');
     const totalCards = allCards.length;
     const pageBar = document.getElementById('pagination-bar');
     const pageNumbers = document.getElementById('page-numbers');
 
-    let state = {
-      search: '',
-      diff: 'all',
-      sort: 'newest',
-      perPage: 50,
-      page: 1,
-    };
-
+    let state = { search: '', diff: 'all', sort: 'newest', perPage: 50, page: 1 };
     const diffOrder = { hard: 0, learning: 1, new: 2, easy: 3, mastered: 4 };
 
     function getFiltered() {
@@ -605,7 +704,6 @@ function deckEditor() {
         return true;
       });
     }
-
     function sortCards(arr) {
       const copy = arr.slice();
       switch (state.sort) {
@@ -619,7 +717,6 @@ function deckEditor() {
       }
       return copy;
     }
-
     function render() {
       const filtered = sortCards(getFiltered());
       const pp = state.perPage > 0 ? state.perPage : 50;
@@ -627,47 +724,27 @@ function deckEditor() {
       if (state.page > totalPages) state.page = totalPages;
       const start = (state.page - 1) * pp;
       const end = start + pp;
-
-      // Reorder DOM + show/hide
       const visibleSet = new Set(filtered.slice(start, end));
-      // Re-append in sorted order so they appear correctly
       filtered.forEach(c => {
-        if (visibleSet.has(c)) {
-          c.style.display = '';
-          container.appendChild(c);
-        }
+        if (visibleSet.has(c)) { c.style.display = ''; container.appendChild(c); }
       });
-      // Hide rest
-      allCards.forEach(c => {
-        if (!visibleSet.has(c)) c.style.display = 'none';
-      });
-
-      // Update card numbers
+      allCards.forEach(c => { if (!visibleSet.has(c)) c.style.display = 'none'; });
       let i = start + 1;
       filtered.slice(start, end).forEach(c => {
         const num = c.querySelector('.card-num');
-        if (num) num.textContent = i + '.';
+        if (num) num.textContent = i;
         i++;
       });
-
-      // Counter
       if (filterCount) filterCount.textContent = `${filtered.length} из ${totalCards}`;
-
-      // Pagination UI
       renderPagination(totalPages);
     }
-
     function renderPagination(totalPages) {
-      if (totalPages <= 1) {
-        pageBar.style.display = 'none';
-        return;
-      }
+      if (totalPages <= 1) { pageBar.style.display = 'none'; return; }
       pageBar.style.display = '';
       const cur = state.page;
       let pages = [];
-      if (totalPages <= 7) {
-        pages = Array.from({length: totalPages}, (_, i) => i + 1);
-      } else {
+      if (totalPages <= 7) pages = Array.from({length: totalPages}, (_, i) => i + 1);
+      else {
         pages = [1];
         if (cur > 3) pages.push('...');
         for (let i = Math.max(2, cur - 1); i <= Math.min(totalPages - 1, cur + 1); i++) pages.push(i);
@@ -675,143 +752,58 @@ function deckEditor() {
         pages.push(totalPages);
       }
       pageNumbers.innerHTML = pages.map(p => {
-        if (p === '...') return '<span class="px-2 text-gray-400">…</span>';
+        if (p === '...') return '<span class="px-2 text-slate-400">…</span>';
         const active = p === cur;
-        const cls = active
-          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-          : 'bg-white hover:bg-indigo-50';
-        return `<button type="button" data-page="${p}" class="page-btn w-10 h-10 rounded-xl font-semibold transition border border-gray-200 ${cls}">${p}</button>`;
+        return `<button type="button" data-page="${p}" class="page-btn ${active ? 'active' : ''}">${p}</button>`;
       }).join('');
       pageNumbers.querySelectorAll('.page-btn').forEach(b => {
-        b.addEventListener('click', () => { state.page = +b.dataset.page; render(); });
+        b.addEventListener('click', () => { state.page = +b.dataset.page; render(); window.scrollTo({top:0,behavior:'smooth'}); });
       });
-      document.getElementById('page-first').disabled = cur === 1;
-      document.getElementById('page-prev').disabled = cur === 1;
-      document.getElementById('page-next').disabled = cur === totalPages;
-      document.getElementById('page-last').disabled = cur === totalPages;
+      ['page-first','page-prev','page-next','page-last'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = (id === 'page-first' || id === 'page-prev') ? cur === 1 : cur === totalPages;
+      });
     }
-
-    // Wire events
     if (searchInput) searchInput.addEventListener('input', e => { state.search = e.target.value; state.page = 1; render(); });
     if (sortSelect) sortSelect.addEventListener('change', e => { state.sort = e.target.value; render(); });
     if (ppInput) ppInput.addEventListener('input', e => {
       let v = parseInt(e.target.value, 10);
       if (!v || v < 1) v = 50;
-      state.perPage = v; state.page = 1; render();
+      state.perPage = v; state.page = 1;
+      ppButtons.forEach(b => b.classList.remove('active'));
+      render();
     });
     ppButtons.forEach(b => b.addEventListener('click', () => {
       state.perPage = +b.dataset.pp || 50;
       state.page = 1;
       if (ppInput) ppInput.value = state.perPage;
-      ppButtons.forEach(x => x.classList.remove('bg-gradient-to-r', 'from-indigo-500', 'to-purple-500', 'text-white', 'border-transparent'));
-      ppButtons.forEach(x => { if (!x.classList.contains('btn-ghost')) x.classList.add('bg-white', 'border-gray-200'); });
-      if (!b.classList.contains('btn-ghost')) {
-        b.classList.remove('bg-white', 'border-gray-200');
-        b.classList.add('bg-gradient-to-r', 'from-indigo-500', 'to-purple-500', 'text-white', 'border-transparent');
-      }
+      ppButtons.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
       render();
     }));
     diffButtons.forEach(b => b.addEventListener('click', () => {
       state.diff = b.dataset.diff;
       state.page = 1;
-      diffButtons.forEach(x => {
-        x.classList.remove('bg-indigo-500', 'text-white', 'border-transparent');
-        x.classList.add('bg-white', 'border-gray-200');
-      });
-      b.classList.remove('bg-white', 'border-gray-200');
-      b.classList.add('bg-indigo-500', 'text-white', 'border-transparent');
+      diffButtons.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
       render();
     }));
-    document.getElementById('page-first').addEventListener('click', () => { state.page = 1; render(); });
-    document.getElementById('page-prev').addEventListener('click', () => { state.page = Math.max(1, state.page - 1); render(); });
-    document.getElementById('page-next').addEventListener('click', () => { state.page = state.page + 1; render(); });
-    document.getElementById('page-last').addEventListener('click', () => { state.page = 9999; render(); });
+    if (resetBtn) resetBtn.addEventListener('click', () => {
+      state = { search: '', diff: 'all', sort: 'newest', perPage: 50, page: 1 };
+      if (searchInput) searchInput.value = '';
+      if (sortSelect) sortSelect.value = 'newest';
+      if (ppInput) ppInput.value = 50;
+      diffButtons.forEach(x => x.classList.toggle('active', x.dataset.diff === 'all'));
+      ppButtons.forEach(x => x.classList.toggle('active', +x.dataset.pp === 50));
+      render();
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+    document.getElementById('page-first')?.addEventListener('click', () => { state.page = 1; render(); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('page-prev')?.addEventListener('click', () => { state.page = Math.max(1, state.page - 1); render(); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('page-next')?.addEventListener('click', () => { state.page = state.page + 1; render(); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('page-last')?.addEventListener('click', () => { state.page = 9999; render(); window.scrollTo({top:0,behavior:'smooth'}); });
 
-    // Initial render
     render();
   })();
-  </script>
-
-  <!-- Test settings modal -->
-  <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
-    <div class="glass-strong rounded-3xl p-8 max-w-md w-full scale-in">
-      <h2 class="text-2xl font-bold mb-1 h-display">📝 Запустить тест</h2>
-      <p class="text-sm text-gray-500 mb-5">
-        <span x-text="deck.name"></span> · всего <span x-text="cards.length" class="font-semibold"></span> вопросов
-      </p>
-
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Сколько вопросов</label>
-      <div class="grid grid-cols-4 gap-2 mb-3">
-        <template x-for="n in [10, 25, 50, 100]" :key="n">
-          <button type="button" @click="testCount = n"
-            :disabled="n > cards.length"
-            :class="testCount === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent shadow-md' : 'border-gray-200 hover:border-indigo-300'"
-            class="py-3 rounded-xl border-2 font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed" x-text="n"></button>
-        </template>
-      </div>
-
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Своё число</label>
-      <div class="flex items-center gap-3 mb-3">
-        <input type="number" x-model.number="testCount" :max="cards.length" min="1"
-          class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white text-lg font-semibold">
-        <button type="button" @click="testCount = cards.length" class="btn btn-ghost text-sm whitespace-nowrap">Все</button>
-      </div>
-
-      <label class="flex items-center gap-3 mb-3 p-3 rounded-xl bg-indigo-50/50 border border-indigo-100 cursor-pointer hover:bg-indigo-50">
-        <input type="checkbox" x-model="testShuffle" class="w-5 h-5 accent-indigo-600">
-        <span class="text-sm">
-          <span class="font-semibold">🔀 Случайный порядок</span>
-          <span class="block text-xs text-gray-500">Перемешать вопросы</span>
-        </span>
-      </label>
-
-      <label class="flex items-center gap-3 mb-5 p-3 rounded-xl bg-red-50/50 border border-red-100 cursor-pointer hover:bg-red-50">
-        <input type="checkbox" x-model="testOnlyHard" class="w-5 h-5 accent-red-600">
-        <span class="text-sm">
-          <span class="font-semibold">💪 Только трудные</span>
-          <span class="block text-xs text-gray-500">Только вопросы с ошибками</span>
-        </span>
-      </label>
-
-      <div class="flex gap-2 justify-end">
-        <button type="button" @click="showTest = false" class="btn btn-ghost">Отмена</button>
-        <a :href="`/deck/${deck.id}/test?count=${testCount}&shuffle=${testShuffle ? 1 : 0}&only_hard=${testOnlyHard ? 1 : 0}`"
-          class="btn btn-success">▶ Начать</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Live test modal -->
-  <div x-show="showLive" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showLive = false" x-cloak>
-    <form method="POST" action="/deck/{{ deck['id'] }}/live/start" class="glass-strong rounded-3xl p-8 max-w-md w-full scale-in">
-      <h2 class="text-2xl font-bold mb-1 h-display">🎮 Live тест</h2>
-      <p class="text-sm text-gray-500 mb-5">Студенты войдут по коду и увидят вопросы в реальном времени.</p>
-
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Сколько вопросов</label>
-      <div class="grid grid-cols-4 gap-2 mb-4">
-        <template x-for="n in [5, 10, 15, 20]" :key="n">
-          <label class="cursor-pointer">
-            <input type="radio" name="count" :value="n" :checked="n === 10" class="hidden peer">
-            <div class="py-2.5 rounded-xl border-2 border-gray-200 peer-checked:border-pink-500 peer-checked:bg-pink-50 text-center font-semibold" x-text="n"></div>
-          </label>
-        </template>
-      </div>
-
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Время на вопрос</label>
-      <div class="grid grid-cols-4 gap-2 mb-5">
-        <template x-for="n in [10, 20, 30, 60]" :key="n">
-          <label class="cursor-pointer">
-            <input type="radio" name="time_per_q" :value="n" :checked="n === 20" class="hidden peer">
-            <div class="py-2.5 rounded-xl border-2 border-gray-200 peer-checked:border-pink-500 peer-checked:bg-pink-50 text-center font-semibold" x-text="n+'с'"></div>
-          </label>
-        </template>
-      </div>
-
-      <div class="flex gap-2 justify-end">
-        <button type="button" @click="showLive = false" class="btn btn-ghost">Отмена</button>
-        <button type="submit" class="btn text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600">🎮 Создать сессию</button>
-      </div>
-    </form>
-  </div>
-</div>
+</script>
 {% endblock %}

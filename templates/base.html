@@ -714,6 +714,154 @@
   .deco-blob-2 { background: radial-gradient(circle, #ec4899, transparent 70%); width: 320px; height: 320px; }
   .deco-blob-3 { background: radial-gradient(circle, #06b6d4, transparent 70%); width: 280px; height: 280px; }
   html.dark .deco-blob { opacity: 0.3; }
+
+  /* ============ PREMIUM INPUT (zamenyaet plain border-gray) ============ */
+  .input-premium {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(99,102,241,0.18);
+    background: rgba(255,255,255,0.85);
+    color: #0a1838;
+    font-size: 15px;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    backdrop-filter: blur(10px);
+  }
+  .input-premium:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: rgba(255,255,255,0.98);
+    box-shadow: 0 0 0 4px rgba(139,92,246,0.15);
+  }
+  html.dark .input-premium {
+    background: rgba(15, 23, 41, 0.7);
+    color: #e2e8f0;
+    border-color: rgba(99,102,241,0.3);
+  }
+  html.dark .input-premium:focus {
+    background: rgba(15, 23, 41, 0.95);
+    border-color: #a78bfa;
+  }
+
+  /* ============ STAT-CARD VARIANTS BACKGROUND TINT (svetlyy & dark) ============ */
+  .stat-card.stat-emerald { background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(255,255,255,0.85)); }
+  .stat-card.stat-blue    { background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(255,255,255,0.85)); }
+  .stat-card.stat-purple  { background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(255,255,255,0.85)); }
+  .stat-card.stat-orange  { background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(255,255,255,0.85)); }
+  html.dark .stat-card.stat-emerald { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(30, 41, 75, 0.7)); }
+  html.dark .stat-card.stat-blue    { background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(30, 41, 75, 0.7)); }
+  html.dark .stat-card.stat-purple  { background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(30, 41, 75, 0.7)); }
+  html.dark .stat-card.stat-orange  { background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(30, 41, 75, 0.7)); }
+
+  /* ============ PREMIUM SECONDARY BUTTON ============ */
+  .btn-premium-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    background: rgba(255,255,255,0.78);
+    border: 1.5px solid rgba(99,102,241,0.25);
+    color: #4f46e5;
+    backdrop-filter: blur(14px);
+    cursor: pointer;
+  }
+  .btn-premium-ghost:hover {
+    background: rgba(255,255,255,0.95);
+    border-color: rgba(99,102,241,0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -6px rgba(99,102,241,0.3);
+  }
+  html.dark .btn-premium-ghost {
+    background: rgba(30, 41, 75, 0.7);
+    color: #c4b5fd;
+    border-color: rgba(139,92,246,0.4);
+  }
+  html.dark .btn-premium-ghost:hover {
+    background: rgba(30, 41, 75, 0.95);
+  }
+
+  /* ============ PREMIUM DANGER BUTTON ============ */
+  .btn-premium-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    background: rgba(254, 226, 226, 0.7);
+    color: #b91c1c;
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .btn-premium-danger:hover {
+    background: rgba(254, 226, 226, 1);
+    border-color: rgba(220, 38, 38, 0.5);
+    transform: translateY(-1px);
+  }
+  html.dark .btn-premium-danger {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+  html.dark .btn-premium-danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  /* ============ DARK MODE: usilennaya kontrastnost ============ */
+  /* Dlya kart i blokov v dark mode */
+  html.dark .card-hover {
+    background: rgba(30, 41, 75, 0.6) !important;
+    border-color: rgba(99, 102, 241, 0.2) !important;
+  }
+  html.dark .card-hover:hover {
+    background: rgba(30, 41, 75, 0.85) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    box-shadow: 0 24px 50px -15px rgba(99, 102, 241, 0.4) !important;
+  }
+  /* Modal/popup overlays v dark mode */
+  html.dark .bg-slate-900\/60 { background: rgba(0, 0, 0, 0.7) !important; }
+  /* Otkazat'sya ot belykh ten v dark mode */
+  html.dark .shadow-xl, html.dark .shadow-2xl { box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), 0 8px 20px -6px rgba(0, 0, 0, 0.3) !important; }
+  /* Text contrast helper - dlya labels, podzagolovkov */
+  html.dark label { color: #cbd5e1; }
+  /* Range/slider visibility */
+  html.dark input[type=range] { background: transparent; }
+  /* Checkbox/radio clearer */
+  html.dark input[type=checkbox], html.dark input[type=radio] { accent-color: #a78bfa; }
+  /* Disable looks decent */
+  html.dark button:disabled, html.dark input:disabled, html.dark select:disabled, html.dark textarea:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  /* Borders for cards via Tailwind */
+  html.dark .border-white { border-color: rgba(99, 102, 241, 0.2) !important; }
+  html.dark .border-slate-200, html.dark .border-slate-100 { border-color: rgba(99, 102, 241, 0.2) !important; }
+  /* Dropdown/select arrows v dark mode */
+  html.dark select { background-color: rgba(15, 23, 41, 0.85) !important; }
+
+  /* "В разработке" badge — dlya korporativnogo rezhima */
+  .dev-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(251,191,36,0.15));
+    border: 1px solid rgba(245,158,11,0.4);
+    color: #b45309;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  html.dark .dev-badge { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.18)); color: #fcd34d; border-color: rgba(245,158,11,0.5); }
 </style>
 {% block extra_head %}{% endblock %}
 </head>

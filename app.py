@@ -358,6 +358,11 @@ def login():
 
         conn = db.get_conn()
         if mode == "corporate":
+            # Корпоративный режим временно отключён (в разработке)
+            conn.close()
+            flash("Режим «Учебный центр» в разработке. Войдите как индивидуальный пользователь.", "error")
+            return render_template("login.html")
+        if mode == "corporate":
             if not org_name:
                 conn.close(); flash("Название организации", "error"); return render_template("login.html")
             org = conn.execute("SELECT * FROM organizations WHERE name=?", (org_name,)).fetchone()
@@ -428,6 +433,11 @@ def register():
             flash("Минимум 6 символов для пароля", "error"); return render_template("register.html")
         conn = db.get_conn()
         try:
+            if mode == "corporate":
+                # Корпоративный режим временно отключён
+                conn.close()
+                flash("Регистрация учебных центров в разработке. Зарегистрируйтесь как индивидуальный пользователь.", "error")
+                return render_template("register.html")
             if mode == "corporate":
                 if len(org_name) < 2:
                     flash("Vvedite nazvanie", "error"); return render_template("register.html")
