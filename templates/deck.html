@@ -343,43 +343,49 @@ function deckEditor() {
   </div>
 
   <!-- Search + filters -->
-  <div class="glass rounded-2xl p-4 mb-4 flex items-center gap-3 flex-wrap" x-show="cards.length > 0">
-    <input type="text" x-model="search" placeholder="🔍 Поиск..."
+  <div class="glass rounded-2xl p-4 mb-4 flex items-center gap-3 flex-wrap" id="filters-bar" {% if not cards %}style="display:none"{% endif %}>
+    <input type="text" id="card-search" placeholder="🔍 Поиск..."
       class="flex-1 min-w-[200px] px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white text-sm">
     <div class="flex items-center gap-1.5 text-sm">
       <span class="text-gray-500">На странице:</span>
-      <template x-for="n in [25, 50, 100]" :key="n">
-        <button @click="perPage = n; page = 1"
-          :class="perPage === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent' : 'bg-white border-gray-200 hover:border-indigo-300'"
-          class="px-3 py-1.5 rounded-lg border-2 font-semibold transition" x-text="n"></button>
-      </template>
-      <input type="number" min="1" :max="cards.length" x-model.number="perPage"
-        @input="if (!perPage || perPage < 1) perPage = 50; page = 1"
-        @blur="if (!perPage || perPage < 1) perPage = 50"
+      {% for n in [25, 50, 100] %}
+      <button type="button" data-pp="{{ n }}" class="pp-btn px-3 py-1.5 rounded-lg border-2 font-semibold transition bg-white border-gray-200 hover:border-indigo-300">{{ n }}</button>
+      {% endfor %}
+      <input type="number" min="1" max="{{ cards|length }}" id="pp-input" value="50"
         class="w-20 px-2 py-1.5 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white font-semibold text-center">
-      <button @click="perPage = cards.length; page = 1" class="btn btn-ghost text-xs px-3 py-1.5">Все</button>
+      <button type="button" data-pp="{{ cards|length or 1 }}" class="pp-btn btn btn-ghost text-xs px-3 py-1.5">Все</button>
     </div>
-    <span class="text-sm text-gray-500" x-text="`${filteredCards.length} из ${cards.length}`"></span>
+    <span class="text-sm text-gray-500" id="filter-count">{{ cards|length }} из {{ cards|length }}</span>
   </div>
 
-  <div class="flex items-center gap-2 mb-4 flex-wrap" x-show="cards.length > 0">
+  {% if cards %}
+  <div class="flex items-center gap-2 mb-4 flex-wrap" id="diff-bar">
     <span class="text-xs uppercase tracking-wider font-semibold text-gray-500">Сложность:</span>
-    <button @click="diffFilter = 'all'"
-      :class="diffFilter === 'all' ? 'bg-indigo-500 text-white border-transparent' : 'bg-white border-gray-200'"
-      class="px-3 py-1 rounded-lg border-2 text-xs font-semibold transition">
-      Все (<span x-text="cards.length"></span>)
+    <button type="button" data-diff="all" class="diff-btn px-3 py-1 rounded-lg border-2 text-xs font-semibold transition bg-indigo-500 text-white border-transparent">
+      Все ({{ cards|length }})
     </button>
-    <template x-for="diff in difficulties" :key="diff.key">
-      <button @click="diffFilter = diff.key"
-        :class="diffFilter === diff.key ? 'bg-indigo-500 text-white border-transparent' : 'bg-white border-gray-200'"
-        class="px-3 py-1 rounded-lg border-2 text-xs font-semibold transition"
-        x-show="cardCountByDifficulty(diff.key) > 0">
-        <span x-text="diff.icon + ' ' + diff.label"></span>
-        (<span x-text="cardCountByDifficulty(diff.key)"></span>)
+    {% set diff_counts = {} %}
+    {% for c in cards %}
+      {% if c.difficulty %}
+        {% set _ = diff_counts.update({c.difficulty.key: diff_counts.get(c.difficulty.key, 0) + 1}) %}
+      {% endif %}
+    {% endfor %}
+    {% set diff_meta = [
+      ('new', 'Новые', '🌱'),
+      ('learning', 'Изучаются', '📖'),
+      ('hard', 'Трудные', '💪'),
+      ('easy', 'Лёгкие', '✨'),
+      ('mastered', 'Усвоены', '🎓'),
+    ] %}
+    {% for key, label, icon in diff_meta %}
+      {% if diff_counts.get(key, 0) > 0 %}
+      <button type="button" data-diff="{{ key }}" class="diff-btn px-3 py-1 rounded-lg border-2 text-xs font-semibold transition bg-white border-gray-200">
+        {{ icon }} {{ label }} ({{ diff_counts.get(key, 0) }})
       </button>
-    </template>
+      {% endif %}
+    {% endfor %}
     <span class="text-xs uppercase tracking-wider font-semibold text-gray-500 ml-4">Сортировка:</span>
-    <select x-model="sortBy" class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white">
+    <select id="sort-by" class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white">
       <option value="newest">Сначала новые</option>
       <option value="oldest">Сначала старые</option>
       <option value="alpha">По алфавиту А-Я</option>
@@ -388,11 +394,20 @@ function deckEditor() {
       <option value="most_attempts">Больше попыток</option>
     </select>
   </div>
+  {% endif %}
 
   <!-- Cards (server-rendered, Alpine only for interactivity) -->
-  <div class="space-y-4">
+  <div class="space-y-4" id="cards-container">
     {% for card in cards %}
-    <div class="glass rounded-3xl p-6 group" x-data='{
+    <div class="glass rounded-3xl p-6 group card-item"
+      data-card-id="{{ card.id }}"
+      data-card-front="{{ card.front|lower }}"
+      data-card-back="{{ card.back|lower }}"
+      data-card-note="{{ (card.note or '')|lower }}"
+      data-diff="{{ card.difficulty.key if card.difficulty else 'new' }}"
+      data-reviews="{{ card.reviews or 0 }}"
+      data-id="{{ card.id }}"
+      x-data='{
       card: {
         id: {{ card.id }},
         front: {{ card.front|tojson }},
@@ -404,7 +419,7 @@ function deckEditor() {
       }
     }'>
       <div class="flex items-start gap-3 mb-4">
-        <div class="text-xs font-bold text-indigo-500 mt-2 w-12">{{ loop.index }}.</div>
+        <div class="text-xs font-bold text-indigo-500 mt-2 w-12 card-num">{{ loop.index }}.</div>
         <textarea x-model="card.front" @blur="saveCard(card)" rows="1"
           class="flex-1 bg-transparent resize-none focus:outline-none scrollbar text-base font-medium leading-relaxed border-b border-transparent focus:border-indigo-200"
           placeholder="Текст вопроса...">{{ card.front }}</textarea>
@@ -476,24 +491,177 @@ function deckEditor() {
   <button @click="addCard()" class="btn btn-ghost w-full mt-4 justify-center">+ Добавить карту</button>
 
   <!-- Pagination -->
-  <div class="flex items-center justify-center gap-2 mt-8" x-show="totalPages > 1">
-    <button @click="page = 1" :disabled="page === 1"
-      class="btn btn-ghost text-sm disabled:opacity-30">⏮</button>
-    <button @click="page--" :disabled="page === 1"
-      class="btn btn-ghost text-sm disabled:opacity-30">←</button>
-    <div class="flex items-center gap-1 mx-2">
-      <template x-for="p in pageNumbers" :key="p">
-        <button @click="page = p" x-show="p !== '...'"
-          :class="page === p ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' : 'bg-white hover:bg-indigo-50'"
-          class="w-10 h-10 rounded-xl font-semibold transition border border-gray-200" x-text="p"></button>
-        <span x-show="p === '...'" class="px-2 text-gray-400">…</span>
-      </template>
-    </div>
-    <button @click="page++" :disabled="page === totalPages"
-      class="btn btn-ghost text-sm disabled:opacity-30">→</button>
-    <button @click="page = totalPages" :disabled="page === totalPages"
-      class="btn btn-ghost text-sm disabled:opacity-30">⏭</button>
+  <div class="flex items-center justify-center gap-2 mt-8" id="pagination-bar" style="display:none">
+    <button type="button" id="page-first" class="btn btn-ghost text-sm">⏮</button>
+    <button type="button" id="page-prev" class="btn btn-ghost text-sm">←</button>
+    <div class="flex items-center gap-1 mx-2" id="page-numbers"></div>
+    <button type="button" id="page-next" class="btn btn-ghost text-sm">→</button>
+    <button type="button" id="page-last" class="btn btn-ghost text-sm">⏭</button>
   </div>
+
+  <!-- Vanilla JS for filtering / sorting / pagination -->
+  <script>
+  (function() {
+    const container = document.getElementById('cards-container');
+    if (!container) return;
+    const allCards = Array.from(container.querySelectorAll('.card-item'));
+    const searchInput = document.getElementById('card-search');
+    const sortSelect = document.getElementById('sort-by');
+    const filterCount = document.getElementById('filter-count');
+    const ppInput = document.getElementById('pp-input');
+    const ppButtons = document.querySelectorAll('.pp-btn');
+    const diffButtons = document.querySelectorAll('.diff-btn');
+    const totalCards = allCards.length;
+    const pageBar = document.getElementById('pagination-bar');
+    const pageNumbers = document.getElementById('page-numbers');
+
+    let state = {
+      search: '',
+      diff: 'all',
+      sort: 'newest',
+      perPage: 50,
+      page: 1,
+    };
+
+    const diffOrder = { hard: 0, learning: 1, new: 2, easy: 3, mastered: 4 };
+
+    function getFiltered() {
+      return allCards.filter(c => {
+        if (state.diff !== 'all' && c.dataset.diff !== state.diff) return false;
+        if (state.search) {
+          const q = state.search.toLowerCase();
+          const haystack = (c.dataset.cardFront || '') + ' ' + (c.dataset.cardBack || '') + ' ' + (c.dataset.cardNote || '');
+          if (!haystack.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function sortCards(arr) {
+      const copy = arr.slice();
+      switch (state.sort) {
+        case 'oldest':       copy.sort((a, b) => +a.dataset.id - +b.dataset.id); break;
+        case 'alpha':        copy.sort((a, b) => (a.dataset.cardFront || '').localeCompare(b.dataset.cardFront || '')); break;
+        case 'hardest':      copy.sort((a, b) => (diffOrder[a.dataset.diff] ?? 99) - (diffOrder[b.dataset.diff] ?? 99)); break;
+        case 'easiest':      copy.sort((a, b) => (diffOrder[b.dataset.diff] ?? 99) - (diffOrder[a.dataset.diff] ?? 99)); break;
+        case 'most_attempts':copy.sort((a, b) => +b.dataset.reviews - +a.dataset.reviews); break;
+        case 'newest':
+        default:             copy.sort((a, b) => +b.dataset.id - +a.dataset.id);
+      }
+      return copy;
+    }
+
+    function render() {
+      const filtered = sortCards(getFiltered());
+      const pp = state.perPage > 0 ? state.perPage : 50;
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pp));
+      if (state.page > totalPages) state.page = totalPages;
+      const start = (state.page - 1) * pp;
+      const end = start + pp;
+
+      // Reorder DOM + show/hide
+      const visibleSet = new Set(filtered.slice(start, end));
+      // Re-append in sorted order so they appear correctly
+      filtered.forEach(c => {
+        if (visibleSet.has(c)) {
+          c.style.display = '';
+          container.appendChild(c);
+        }
+      });
+      // Hide rest
+      allCards.forEach(c => {
+        if (!visibleSet.has(c)) c.style.display = 'none';
+      });
+
+      // Update card numbers
+      let i = start + 1;
+      filtered.slice(start, end).forEach(c => {
+        const num = c.querySelector('.card-num');
+        if (num) num.textContent = i + '.';
+        i++;
+      });
+
+      // Counter
+      if (filterCount) filterCount.textContent = `${filtered.length} из ${totalCards}`;
+
+      // Pagination UI
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) {
+        pageBar.style.display = 'none';
+        return;
+      }
+      pageBar.style.display = '';
+      const cur = state.page;
+      let pages = [];
+      if (totalPages <= 7) {
+        pages = Array.from({length: totalPages}, (_, i) => i + 1);
+      } else {
+        pages = [1];
+        if (cur > 3) pages.push('...');
+        for (let i = Math.max(2, cur - 1); i <= Math.min(totalPages - 1, cur + 1); i++) pages.push(i);
+        if (cur < totalPages - 2) pages.push('...');
+        pages.push(totalPages);
+      }
+      pageNumbers.innerHTML = pages.map(p => {
+        if (p === '...') return '<span class="px-2 text-gray-400">…</span>';
+        const active = p === cur;
+        const cls = active
+          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
+          : 'bg-white hover:bg-indigo-50';
+        return `<button type="button" data-page="${p}" class="page-btn w-10 h-10 rounded-xl font-semibold transition border border-gray-200 ${cls}">${p}</button>`;
+      }).join('');
+      pageNumbers.querySelectorAll('.page-btn').forEach(b => {
+        b.addEventListener('click', () => { state.page = +b.dataset.page; render(); });
+      });
+      document.getElementById('page-first').disabled = cur === 1;
+      document.getElementById('page-prev').disabled = cur === 1;
+      document.getElementById('page-next').disabled = cur === totalPages;
+      document.getElementById('page-last').disabled = cur === totalPages;
+    }
+
+    // Wire events
+    if (searchInput) searchInput.addEventListener('input', e => { state.search = e.target.value; state.page = 1; render(); });
+    if (sortSelect) sortSelect.addEventListener('change', e => { state.sort = e.target.value; render(); });
+    if (ppInput) ppInput.addEventListener('input', e => {
+      let v = parseInt(e.target.value, 10);
+      if (!v || v < 1) v = 50;
+      state.perPage = v; state.page = 1; render();
+    });
+    ppButtons.forEach(b => b.addEventListener('click', () => {
+      state.perPage = +b.dataset.pp || 50;
+      state.page = 1;
+      if (ppInput) ppInput.value = state.perPage;
+      ppButtons.forEach(x => x.classList.remove('bg-gradient-to-r', 'from-indigo-500', 'to-purple-500', 'text-white', 'border-transparent'));
+      ppButtons.forEach(x => { if (!x.classList.contains('btn-ghost')) x.classList.add('bg-white', 'border-gray-200'); });
+      if (!b.classList.contains('btn-ghost')) {
+        b.classList.remove('bg-white', 'border-gray-200');
+        b.classList.add('bg-gradient-to-r', 'from-indigo-500', 'to-purple-500', 'text-white', 'border-transparent');
+      }
+      render();
+    }));
+    diffButtons.forEach(b => b.addEventListener('click', () => {
+      state.diff = b.dataset.diff;
+      state.page = 1;
+      diffButtons.forEach(x => {
+        x.classList.remove('bg-indigo-500', 'text-white', 'border-transparent');
+        x.classList.add('bg-white', 'border-gray-200');
+      });
+      b.classList.remove('bg-white', 'border-gray-200');
+      b.classList.add('bg-indigo-500', 'text-white', 'border-transparent');
+      render();
+    }));
+    document.getElementById('page-first').addEventListener('click', () => { state.page = 1; render(); });
+    document.getElementById('page-prev').addEventListener('click', () => { state.page = Math.max(1, state.page - 1); render(); });
+    document.getElementById('page-next').addEventListener('click', () => { state.page = state.page + 1; render(); });
+    document.getElementById('page-last').addEventListener('click', () => { state.page = 9999; render(); });
+
+    // Initial render
+    render();
+  })();
+  </script>
 
   <!-- Test settings modal -->
   <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
