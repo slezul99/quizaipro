@@ -441,31 +441,34 @@ function deckEditor() {
         </label>
       </div>
 
-      <template x-if="parseOptions(card).length > 0">
-        <div class="space-y-2 ml-11">
-          <template x-for="opt in parseOptions(card)" :key="opt.letter">
-            <button type="button" @click="setCorrect(card, opt.letter)"
-              :class="isCorrect(card, opt.letter) ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-300' : 'border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/30'"
-              class="w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition">
-              <span :class="isCorrect(card, opt.letter) ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'"
-                class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition" x-text="opt.letter"></span>
-              <span class="flex-1 text-sm" x-text="opt.text"></span>
-              <span x-show="isCorrect(card, opt.letter)" class="text-emerald-600 text-lg">✓</span>
-            </button>
-          </template>
-        </div>
-      </template>
-
-      <template x-if="parseOptions(card).length === 0">
-        <div class="ml-11">
-          <div class="text-xs text-gray-400 mb-1 uppercase font-semibold tracking-wider">Ответ</div>
-          <textarea x-model="card.back" @blur="saveCard(card)" rows="2"
-            class="w-full bg-transparent resize-none focus:outline-none border border-gray-200 rounded-xl p-3 focus:border-indigo-500">{{ card.back }}</textarea>
-          <div class="text-xs text-gray-400 mt-3 mb-1 uppercase font-semibold tracking-wider">Объяснение</div>
-          <textarea x-model="card.note" @blur="saveCard(card)" rows="1"
-            class="w-full bg-transparent resize-none text-sm text-gray-600 focus:outline-none border border-gray-200 rounded-xl p-2 focus:border-indigo-500">{{ card.note or "" }}</textarea>
-        </div>
-      </template>
+      {% if card.options %}
+      <!-- MCQ options (server-rendered) -->
+      <div class="space-y-2 ml-11">
+        {% for opt in card.options %}
+        {% set is_correct = (card.correct_letter == opt.letter) %}
+        <button type="button"
+          data-card-id="{{ card.id }}" data-letter="{{ opt.letter }}"
+          onclick="setCorrectOption(this)"
+          class="opt-btn w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition
+            {% if is_correct %}border-emerald-400 bg-emerald-50 ring-2 ring-emerald-300{% else %}border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/30{% endif %}">
+          <span class="opt-letter flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition
+            {% if is_correct %}bg-emerald-500 text-white{% else %}bg-gray-100 text-gray-600{% endif %}">{{ opt.letter }}</span>
+          <span class="flex-1 text-sm">{{ opt.text }}</span>
+          <span class="opt-check text-emerald-600 text-lg" {% if not is_correct %}style="display:none"{% endif %}>✓</span>
+        </button>
+        {% endfor %}
+      </div>
+      {% else %}
+      <!-- Plain text answer -->
+      <div class="ml-11">
+        <div class="text-xs text-gray-400 mb-1 uppercase font-semibold tracking-wider">Ответ</div>
+        <textarea x-model="card.back" @blur="saveCard(card)" rows="2"
+          class="w-full bg-transparent resize-none focus:outline-none border border-gray-200 rounded-xl p-3 focus:border-indigo-500">{{ card.back }}</textarea>
+        <div class="text-xs text-gray-400 mt-3 mb-1 uppercase font-semibold tracking-wider">Объяснение</div>
+        <textarea x-model="card.note" @blur="saveCard(card)" rows="1"
+          class="w-full bg-transparent resize-none text-sm text-gray-600 focus:outline-none border border-gray-200 rounded-xl p-2 focus:border-indigo-500">{{ card.note or "" }}</textarea>
+      </div>
+      {% endif %}
 
       <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400 ml-11">
         <div class="flex gap-3 flex-wrap items-center">
@@ -501,6 +504,55 @@ function deckEditor() {
 
   <!-- Vanilla JS for filtering / sorting / pagination -->
   <script>
+  // Set correct option (server-rendered MCQ)
+  async function setCorrectOption(btn) {
+    const cardId = btn.dataset.cardId;
+    const letter = btn.dataset.letter;
+    const cardDiv = btn.closest('.card-item');
+    if (!cardDiv) return;
+    // Sobiraem vse opts iz DOM
+    const optBtns = cardDiv.querySelectorAll('.opt-btn');
+    const opts = Array.from(optBtns).map(b => {
+      const l = b.dataset.letter;
+      const text = b.querySelector('.flex-1').textContent.trim();
+      return { letter: l, text };
+    });
+    if (!opts.length) return;
+    // Stroim novyy back i note
+    const target = opts.find(o => o.letter === letter);
+    if (!target) return;
+    const newBack = `${target.letter}) ${target.text}`;
+    const newNote = opts.map(o => `${o.letter}) ${o.text}`).join('\n');
+    // Otpravlyaem na server
+    const fd = new FormData();
+    const frontEl = cardDiv.querySelector('textarea[x-model="card.front"]');
+    fd.append('front', frontEl ? frontEl.value : '');
+    fd.append('back', newBack);
+    fd.append('note', newNote);
+    await fetch(`/card/${cardId}/edit`, { method: 'POST', body: fd });
+    // Vizualno: snimaem highlight so vsek + stavim na vybranny
+    optBtns.forEach(b => {
+      b.classList.remove('border-emerald-400', 'bg-emerald-50', 'ring-2', 'ring-emerald-300');
+      b.classList.add('border-gray-200', 'hover:border-indigo-200', 'hover:bg-indigo-50/30');
+      const letterEl = b.querySelector('.opt-letter');
+      if (letterEl) {
+        letterEl.classList.remove('bg-emerald-500', 'text-white');
+        letterEl.classList.add('bg-gray-100', 'text-gray-600');
+      }
+      const checkEl = b.querySelector('.opt-check');
+      if (checkEl) checkEl.style.display = 'none';
+    });
+    btn.classList.remove('border-gray-200', 'hover:border-indigo-200', 'hover:bg-indigo-50/30');
+    btn.classList.add('border-emerald-400', 'bg-emerald-50', 'ring-2', 'ring-emerald-300');
+    const letterEl = btn.querySelector('.opt-letter');
+    if (letterEl) {
+      letterEl.classList.remove('bg-gray-100', 'text-gray-600');
+      letterEl.classList.add('bg-emerald-500', 'text-white');
+    }
+    const checkEl = btn.querySelector('.opt-check');
+    if (checkEl) checkEl.style.display = '';
+  }
+
   (function() {
     const container = document.getElementById('cards-container');
     if (!container) return;

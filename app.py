@@ -1013,9 +1013,33 @@ def deck_view(deck_id):
         FROM cards c LEFT JOIN user_card_progress p ON p.card_id=c.id AND p.user_id=?
         WHERE c.deck_id=? ORDER BY c.id DESC""", (user["id"], deck_id)).fetchall()
     cards = [dict(c) for c in cards_raw]
+    # Regex dlya parsa MCQ-vidov: "A) text" / "А) текст" / "A. text"
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$")
     for c in cards:
         c["level"] = sm2.card_level(c)
         c["difficulty"] = sm2.card_difficulty(c)
+        # === Pre-parse MCQ options on server (zatychay s sloman <template x-for> v Alpine) ===
+        source = (c.get("note") or "").strip() or (c.get("back") or "")
+        opts = []
+        for line in source.split("\n"):
+            m = _opt_re.match(line.strip())
+            if m:
+                opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+        # Fallback: try parsing back if no opts in note
+        if not opts and c.get("back"):
+            for line in c["back"].split("\n"):
+                m = _opt_re.match(line.strip())
+                if m:
+                    opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+        c["options"] = opts
+        # Determine which letter is correct (first letter of "back")
+        c["correct_letter"] = None
+        if c.get("back") and opts:
+            m = _opt_re.match(c["back"].strip().split("\n")[0].strip())
+            if m:
+                letter = m.group(1).upper()
+                if any(o["letter"] == letter for o in opts):
+                    c["correct_letter"] = letter
     if user["org_id"]:
         cats = conn.execute("SELECT * FROM categories WHERE org_id=?", (user["org_id"],)).fetchall()
     else:
