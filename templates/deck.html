@@ -11,6 +11,10 @@ function deckEditor() {
       is_public: {{ (deck['is_public'] == 1)|tojson }},
     },
     cards: {{ cards|tojson }},
+    filteredCards: [],
+    pagedCards: [],
+    totalPages: 1,
+    pageNumbers: [1],
     showTest: false,
     showLive: false,
     showImageUpload: {},
@@ -30,8 +34,80 @@ function deckEditor() {
       { key: 'mastered', label: 'Усвоены',   icon: '🎓' },
     ],
 
+    init() {
+      // Garantiruem perPage
+      if (typeof this.perPage !== 'number' || this.perPage < 1) {
+        this.perPage = 50;
+      }
+      // Pervichnyy raschet
+      this.recompute();
+      // Watchers — pereraschityvayut pri lyubom izmenenii zavisimostey
+      this.$watch('cards', () => this.recompute());
+      this.$watch('search', () => { this.page = 1; this.recompute(); });
+      this.$watch('diffFilter', () => { this.page = 1; this.recompute(); });
+      this.$watch('sortBy', () => this.recompute());
+      this.$watch('perPage', () => this.recompute());
+      this.$watch('page', () => this.recompute());
+    },
+
+    recompute() {
+      // === filteredCards ===
+      let arr = [...(this.cards || [])];
+      if (this.diffFilter !== 'all') {
+        arr = arr.filter(c => c.difficulty && c.difficulty.key === this.diffFilter);
+      }
+      if (this.search && this.search.trim()) {
+        const q = this.search.toLowerCase();
+        arr = arr.filter(c =>
+          (c.front || '').toLowerCase().includes(q) ||
+          (c.back || '').toLowerCase().includes(q) ||
+          (c.note || '').toLowerCase().includes(q)
+        );
+      }
+      const diffOrder = { hard: 0, learning: 1, new: 2, easy: 3, mastered: 4 };
+      switch (this.sortBy) {
+        case 'oldest': arr.sort((a, b) => a.id - b.id); break;
+        case 'alpha': arr.sort((a, b) => (a.front || '').localeCompare(b.front || '')); break;
+        case 'hardest': arr.sort((a, b) => {
+          const ka = a.difficulty && a.difficulty.key, kb = b.difficulty && b.difficulty.key;
+          return (diffOrder[ka] != null ? diffOrder[ka] : 99) - (diffOrder[kb] != null ? diffOrder[kb] : 99);
+        }); break;
+        case 'easiest': arr.sort((a, b) => {
+          const ka = a.difficulty && a.difficulty.key, kb = b.difficulty && b.difficulty.key;
+          return (diffOrder[kb] != null ? diffOrder[kb] : 99) - (diffOrder[ka] != null ? diffOrder[ka] : 99);
+        }); break;
+        case 'most_attempts': arr.sort((a, b) => (b.reviews || 0) - (a.reviews || 0)); break;
+        case 'newest':
+        default: arr.sort((a, b) => b.id - a.id);
+      }
+      this.filteredCards = arr;
+
+      // === pagedCards ===
+      const pp = (typeof this.perPage === 'number' && this.perPage > 0) ? this.perPage : 50;
+      const start = (this.page - 1) * pp;
+      this.pagedCards = arr.slice(start, start + pp);
+
+      // === totalPages ===
+      this.totalPages = Math.max(1, Math.ceil(arr.length / pp));
+      if (this.page > this.totalPages) this.page = this.totalPages;
+
+      // === pageNumbers ===
+      const total = this.totalPages;
+      const cur = this.page;
+      if (total <= 7) {
+        this.pageNumbers = Array.from({length: total}, (_, i) => i + 1);
+      } else {
+        const pn = [1];
+        if (cur > 3) pn.push('...');
+        for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pn.push(i);
+        if (cur < total - 2) pn.push('...');
+        pn.push(total);
+        this.pageNumbers = pn;
+      }
+    },
+
     cardCountByDifficulty(key) {
-      return this.cards.filter(c => c.difficulty?.key === key).length;
+      return this.cards.filter(c => c.difficulty && c.difficulty.key === key).length;
     },
 
     parseOptions(card) {
@@ -75,55 +151,9 @@ function deckEditor() {
       this.saveCard(card);
     },
 
-    get filteredCards() {
-      let arr = [...this.cards];
-      if (this.diffFilter !== 'all') {
-        arr = arr.filter(c => c.difficulty?.key === this.diffFilter);
-      }
-      if (this.search.trim()) {
-        const q = this.search.toLowerCase();
-        arr = arr.filter(c =>
-          (c.front || '').toLowerCase().includes(q) ||
-          (c.back || '').toLowerCase().includes(q) ||
-          (c.note || '').toLowerCase().includes(q)
-        );
-      }
-      const diffOrder = { hard: 0, learning: 1, new: 2, easy: 3, mastered: 4 };
-      switch (this.sortBy) {
-        case 'oldest': arr.sort((a, b) => a.id - b.id); break;
-        case 'alpha': arr.sort((a, b) => (a.front || '').localeCompare(b.front || '')); break;
-        case 'hardest': arr.sort((a, b) => (diffOrder[a.difficulty?.key] ?? 99) - (diffOrder[b.difficulty?.key] ?? 99)); break;
-        case 'easiest': arr.sort((a, b) => (diffOrder[b.difficulty?.key] ?? 99) - (diffOrder[a.difficulty?.key] ?? 99)); break;
-        case 'most_attempts': arr.sort((a, b) => (b.reviews || 0) - (a.reviews || 0)); break;
-        case 'newest':
-        default: arr.sort((a, b) => b.id - a.id);
-      }
-      return arr;
-    },
-
-    get pagedCards() {
-      const start = (this.page - 1) * this.perPage;
-      return this.filteredCards.slice(start, start + this.perPage);
-    },
-
-    get totalPages() {
-      return Math.max(1, Math.ceil(this.filteredCards.length / this.perPage));
-    },
-
     globalIdx(localIdx) {
-      return (this.page - 1) * this.perPage + localIdx + 1;
-    },
-
-    get pageNumbers() {
-      const total = this.totalPages;
-      const cur = this.page;
-      if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
-      const arr = [1];
-      if (cur > 3) arr.push('...');
-      for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) arr.push(i);
-      if (cur < total - 2) arr.push('...');
-      arr.push(total);
-      return arr;
+      const pp = (typeof this.perPage === 'number' && this.perPage > 0) ? this.perPage : 50;
+      return (this.page - 1) * pp + localIdx + 1;
     },
 
     async saveDeck() {
@@ -149,14 +179,17 @@ function deckEditor() {
       if (data.ok) {
         this.cards.unshift({
           id: data.id, front: 'Новый вопрос', back: 'Ответ',
-          note: '', reviews: 0, level: 'new'
+          note: '', reviews: 0, level: 'new',
+          difficulty: {key: 'new', label: 'Новая', icon: '🌱', color: 'slate'}
         });
+        this.recompute();
       }
     },
     async deleteCard(card) {
       if (!confirm('Удалить карту?')) return;
       await fetch(`/card/${card.id}/delete`, { method: 'POST' });
       this.cards = this.cards.filter(c => c.id !== card.id);
+      this.recompute();
     },
 
     speak(text) {
@@ -310,7 +343,9 @@ function deckEditor() {
           :class="perPage === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent' : 'bg-white border-gray-200 hover:border-indigo-300'"
           class="px-3 py-1.5 rounded-lg border-2 font-semibold transition" x-text="n"></button>
       </template>
-      <input type="number" min="1" :max="cards.length" x-model.number="perPage" @input="page = 1"
+      <input type="number" min="1" :max="cards.length" x-model.number="perPage"
+        @input="if (!perPage || perPage < 1) perPage = 50; page = 1"
+        @blur="if (!perPage || perPage < 1) perPage = 50"
         class="w-20 px-2 py-1.5 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white font-semibold text-center">
       <button @click="perPage = cards.length; page = 1" class="btn btn-ghost text-xs px-3 py-1.5">Все</button>
     </div>
@@ -411,7 +446,7 @@ function deckEditor() {
                 <span x-text="card.difficulty.icon"></span> <span x-text="card.difficulty.label"></span>
               </span>
             </template>
-            <span x-text="card.reviews + ' попыток'"></span>
+            <span x-text="(card.reviews || 0) + ' попыток'"></span>
           </div>
           <button @click="deleteCard(card)" class="opacity-0 group-hover:opacity-100 text-red-500 hover:underline transition">Удалить</button>
         </div>
