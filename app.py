@@ -440,10 +440,10 @@ def register():
                 return render_template("register.html")
             if mode == "corporate":
                 if len(org_name) < 2:
-                    flash("Vvedite nazvanie", "error"); return render_template("register.html")
+                    flash("Введите название организации", "error"); return render_template("register.html")
                 exists = conn.execute("SELECT id FROM organizations WHERE name=?", (org_name,)).fetchone()
                 if exists:
-                    flash("Organizatsia uzhe est'", "error"); return render_template("register.html")
+                    flash("Организация уже существует", "error"); return render_template("register.html")
                 cur = conn.execute("INSERT INTO organizations (name, slug) VALUES (?, ?)",
                                    (org_name, slugify(org_name)))
                 org_id = cur.lastrowid
@@ -454,7 +454,7 @@ def register():
                 exists = conn.execute("SELECT id FROM users WHERE org_id IS NULL AND username=?",
                                       (username,)).fetchone()
                 if exists:
-                    flash("Imya zanyato", "error"); return render_template("register.html")
+                    flash("Имя пользователя уже занято", "error"); return render_template("register.html")
                 conn.execute("""INSERT INTO users (org_id, username, password_hash, role, lang)
                                VALUES (NULL, ?, ?, 'individual', 'ru')""",
                             (username, generate_password_hash(password)))
