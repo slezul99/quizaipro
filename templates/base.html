@@ -886,6 +886,151 @@
     text-transform: uppercase;
   }
   html.dark .dev-badge { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.18)); color: #fcd34d; border-color: rgba(245,158,11,0.5); }
+
+  /* ============ PREMIUM NAV ============ */
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #334155;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+  }
+  .nav-link:hover {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.18);
+    color: #4f46e5;
+    transform: translateY(-1px);
+  }
+  html.dark .nav-link {
+    color: #cbd5e1;
+  }
+  html.dark .nav-link:hover {
+    background: rgba(139, 92, 246, 0.18);
+    border-color: rgba(139, 92, 246, 0.35);
+    color: #c4b5fd;
+  }
+  .nav-link-emoji {
+    font-size: 16px;
+    line-height: 1;
+    filter: saturate(1.15) drop-shadow(0 1px 2px rgba(0,0,0,0.08));
+  }
+
+  .nav-icon-btn {
+    position: relative;
+    width: 38px; height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 18px;
+    color: #334155;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    background: transparent;
+  }
+  .nav-icon-btn:hover {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.25);
+    transform: translateY(-1px) scale(1.05);
+  }
+  html.dark .nav-icon-btn {
+    color: #cbd5e1;
+  }
+  html.dark .nav-icon-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+  }
+
+  .nav-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.05));
+    color: #4f46e5;
+    border-color: rgba(99,102,241,0.2);
+    backdrop-filter: blur(8px);
+  }
+  .nav-stat-pill.streak {
+    background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(245,158,11,0.1));
+    color: #c2410c;
+    border-color: rgba(249,115,22,0.3);
+  }
+  .nav-stat-pill.xp {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(99,102,241,0.1));
+    color: #1d4ed8;
+    border-color: rgba(59,130,246,0.3);
+  }
+  html.dark .nav-stat-pill.streak {
+    background: linear-gradient(135deg, rgba(249,115,22,0.25), rgba(245,158,11,0.15));
+    color: #fdba74;
+    border-color: rgba(249,115,22,0.4);
+  }
+  html.dark .nav-stat-pill.xp {
+    background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(99,102,241,0.15));
+    color: #93c5fd;
+    border-color: rgba(59,130,246,0.4);
+  }
+
+  .nav-blur {
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    background: rgba(255, 255, 255, 0.75);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 4px 20px -8px rgba(99,102,241,0.1);
+  }
+
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 8px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 18px;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    border: 1.5px solid transparent;
+  }
+  .brand-logo:hover {
+    background: rgba(99,102,241,0.08);
+    border-color: rgba(99,102,241,0.18);
+    transform: translateY(-1px);
+  }
+  .brand-logo-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    box-shadow: 0 6px 16px -4px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+    transition: transform 0.25s;
+  }
+  .brand-logo:hover .brand-logo-icon { transform: rotate(-8deg) scale(1.05); }
+  .brand-logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
 </style>
 {% block extra_head %}{% endblock %}
 </head>
@@ -898,116 +1043,120 @@
 {% if current_user %}
 <header class="sticky top-0 z-40 nav-blur">
   <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center" x-data="{ mobileMenu: false }">
-    <a href="/dashboard" class="flex items-center gap-2.5 font-bold text-lg group">
-      <span class="text-2xl group-hover:scale-110 transition-transform">🧠</span>
-      <span class="h-display text-gradient">{{ t('app_name') }}</span>
+    <a href="/dashboard" class="brand-logo">
+      <span class="brand-logo-icon">🧠</span>
+      <span class="brand-logo-text">{{ t('app_name') }}</span>
       {% if current_user.role in ['admin','teacher'] %}
-      <span class="badge bg-indigo-100 text-indigo-700 hidden sm:inline-flex">{{ current_user.role }}</span>
+      <span class="badge bg-indigo-100 text-indigo-700 hidden sm:inline-flex ml-1">{{ current_user.role }}</span>
       {% endif %}
     </a>
 
     <!-- Mobile burger -->
-    <button @click="mobileMenu = !mobileMenu" class="md:hidden text-2xl p-2 rounded-lg hover:bg-indigo-50">
+    <button @click="mobileMenu = !mobileMenu" class="md:hidden nav-icon-btn">
       <span x-show="!mobileMenu">☰</span>
       <span x-show="mobileMenu" x-cloak>✕</span>
     </button>
 
     <!-- Desktop menu -->
-    <div class="hidden md:flex items-center gap-1 text-sm">
-      <a href="/dashboard" class="hover:text-indigo-600 hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition">📊 <span>{{ t('nav_dashboard') }}</span></a>
-      <a href="/search" class="hover:text-indigo-600 flex items-center px-2 py-1.5 rounded-lg hover:bg-indigo-50 transition" title="🔍">🔍</a>
+    <div class="hidden md:flex items-center gap-1.5">
+      <a href="/dashboard" class="nav-link hidden lg:flex">
+        <span class="nav-link-emoji">📊</span><span>{{ t('nav_dashboard') }}</span>
+      </a>
+      <a href="/search" class="nav-icon-btn" title="{{ t('search') if t('search') != 'search' else 'Поиск' }}">🔍</a>
 
       {% if current_user.role in ['admin','teacher','individual'] %}
       <!-- Sotsial'noe dropdown -->
       <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition">
-          💬 <span class="hidden lg:inline">{{ t('nav_social') }}</span> <span class="text-xs">▾</span>
+        <button @click="open = !open" class="nav-link">
+          <span class="nav-link-emoji">💬</span>
+          <span class="hidden lg:inline">{{ t('nav_social') }}</span>
+          <span class="text-xs opacity-60">▾</span>
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden text-sm z-50">
-          <a href="/chats" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">💬 {{ t('nav_chats') }}</a>
-          <a href="/channels" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">📡 {{ t('nav_channels') }}</a>
-          <a href="/friends" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">👥 {{ t('nav_friends') }}</a>
-          <a href="/study-groups" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">🎓 {{ t('nav_study_groups') }}</a>
-          <a href="/marketplace" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 border-t border-gray-100">🌐 {{ t('nav_marketplace') }}</a>
-          <a href="/leaderboard" class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50">🏆 {{ t('nav_leaderboard') }}</a>
+          class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-indigo-200/40">
+          <a href="/chats" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">💬</span> {{ t('nav_chats') }}</a>
+          <a href="/channels" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">📡</span> {{ t('nav_channels') }}</a>
+          <a href="/friends" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">👥</span> {{ t('nav_friends') }}</a>
+          <a href="/study-groups" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">🎓</span> {{ t('nav_study_groups') }}</a>
+          <a href="/marketplace" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">🌐</span> {{ t('nav_marketplace') }}</a>
+          <a href="/leaderboard" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"><span class="text-base">🏆</span> {{ t('nav_leaderboard') }}</a>
         </div>
       </div>
 
       <!-- Igry dropdown -->
       <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-pink-50 transition">
-          🎮 <span class="hidden lg:inline">{{ t('nav_games') }}</span> <span class="text-xs">▾</span>
+        <button @click="open = !open" class="nav-link">
+          <span class="nav-link-emoji">🎮</span>
+          <span class="hidden lg:inline">{{ t('nav_games') }}</span>
+          <span class="text-xs opacity-60">▾</span>
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden text-sm z-50">
-          <a href="/duels" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">⚔️ {{ t('nav_duels') }}</a>
-          <a href="/tournaments" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">🏆 {{ t('nav_tournaments') }}</a>
+          class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-pink-200/40">
+          <a href="/duels" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">⚔️</span> {{ t('nav_duels') }}</a>
+          <a href="/tournaments" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">🏆</span> {{ t('nav_tournaments') }}</a>
           {% if current_user.role in ['admin','teacher','individual'] %}
-          <a href="/live/create" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50 border-t border-gray-100">🎮 {{ t('nav_live_create') }}</a>
+          <a href="/live/create" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">🎮</span> {{ t('nav_live_create') }}</a>
           {% endif %}
-          <a href="/live/join" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">🔑 {{ t('nav_live_join') }}</a>
-          <a href="/live/history" class="flex items-center gap-2 px-4 py-2.5 hover:bg-pink-50">📋 {{ t('nav_live_history') }}</a>
+          <a href="/live/join" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">🔑</span> {{ t('nav_live_join') }}</a>
+          <a href="/live/history" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-pink-50 dark:hover:bg-pink-900/30 font-medium"><span class="text-base">📋</span> {{ t('nav_live_history') }}</a>
         </div>
       </div>
 
       <!-- Uchеba dropdown -->
       <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 transition">
-          📚 <span class="hidden lg:inline">{{ t('nav_learn') }}</span> <span class="text-xs">▾</span>
+        <button @click="open = !open" class="nav-link">
+          <span class="nav-link-emoji">📚</span>
+          <span class="hidden lg:inline">{{ t('nav_learn') }}</span>
+          <span class="text-xs opacity-60">▾</span>
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden text-sm z-50">
-          <a href="/categories" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">📁 {{ t('nav_categories') }}</a>
-          <a href="/import" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">📥 {{ t('nav_import') }}</a>
+          class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-emerald-200/40">
+          <a href="/categories" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">📁</span> {{ t('nav_categories') }}</a>
+          <a href="/import" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">📥</span> {{ t('nav_import') }}</a>
           {% if ai_available %}
-          <a href="/ai" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50 border-t border-gray-100">🤖 {{ t('nav_ai_gen') }}</a>
-          <a href="/tutor" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">💡 {{ t('nav_ai_tutor') }}</a>
+          <a href="/ai" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">🤖</span> {{ t('nav_ai_gen') }}</a>
+          <a href="/tutor" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">💡</span> {{ t('nav_ai_tutor') }}</a>
           {% endif %}
-          <a href="/stats" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50 border-t border-gray-100">📈 {{ t('nav_stats') }}</a>
-          <a href="/goals" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">🎯 {{ t('nav_goals') }}</a>
-          <a href="/achievements" class="flex items-center gap-2 px-4 py-2.5 hover:bg-emerald-50">🏆 {{ t('nav_achievements') }}</a>
+          <a href="/stats" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium border-t border-slate-200/40 dark:border-slate-700/40"><span class="text-base">📈</span> {{ t('nav_stats') }}</a>
+          <a href="/goals" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">🎯</span> {{ t('nav_goals') }}</a>
+          <a href="/achievements" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium"><span class="text-base">🏆</span> {{ t('nav_achievements') }}</a>
         </div>
       </div>
       {% endif %}
 
-      <a href="/notifications" class="relative flex items-center px-2 py-1.5 rounded-lg hover:bg-indigo-50 transition" title="{{ t('nav_notifications') }}">
+      <a href="/notifications" class="nav-icon-btn relative" title="{{ t('nav_notifications') }}">
         🔔
-        <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">0</span>
+        <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md">0</span>
       </a>
 
-      <a href="/help" class="flex items-center px-2 py-1.5 rounded-lg hover:bg-amber-50 transition" title="{{ t('nav_help') }}">
-        ❓
-      </a>
+      <a href="/help" class="nav-icon-btn" title="{{ t('nav_help') }}">❓</a>
 
       {% if is_super_admin %}
-      <a href="/superadmin" class="hidden md:flex items-center px-2 py-1.5 rounded-lg hover:bg-purple-50 transition" title="Super Admin">
-        🔐
-      </a>
+      <a href="/superadmin" class="nav-icon-btn hidden md:flex" title="Super Admin">🔐</a>
       {% endif %}
 
       {% if current_user.role in ['admin','teacher'] %}
-      <a href="/admin/students" class="hover:text-indigo-600 hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition" title="Пользователи">👥</a>
+      <a href="/admin/students" class="nav-icon-btn hidden xl:flex" title="Пользователи">👥</a>
       {% endif %}
 
-      <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 text-orange-700 text-xs font-semibold">
+      <div class="nav-stat-pill streak hidden xl:flex" title="{{ t('streak_title') if t('streak_title') != 'streak_title' else 'Дней подряд' }}">
         🔥 {{ current_user.streak or 0 }}
       </div>
-      <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-xs font-semibold">
+      <div class="nav-stat-pill xp hidden xl:flex" title="XP">
         ⭐ {{ current_user.xp or 0 }}
       </div>
-      <button onclick="toggleDarkMode()" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-indigo-50 transition" title="Тема">
+      <button onclick="toggleDarkMode()" class="nav-icon-btn" title="Тема">
         <span id="theme-icon">🌙</span>
       </button>
       <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="flex items-center gap-2 text-sm hover:bg-indigo-50 px-2 py-1 rounded-xl transition">
+        <button @click="open = !open" class="nav-link" style="padding: 6px 10px;">
           <span class="avatar">{{ current_user.username[0]|upper }}</span>
-          <span class="hidden md:inline font-medium">{{ current_user.username }}</span>
-          <span class="text-xs text-gray-400">▾</span>
+          <span class="hidden md:inline font-bold">{{ current_user.username }}</span>
+          <span class="text-xs opacity-60">▾</span>
         </button>
-        <div x-show="open" @click.outside="open = false" x-transition.opacity x-cloak class="absolute right-0 mt-2 w-52 glass-strong rounded-2xl shadow-xl overflow-hidden text-sm">
-          <div class="p-2 border-b border-indigo-100/50">
-            <div class="text-xs text-gray-500 px-2 py-1 font-semibold uppercase tracking-wider">{{ t('language') }}</div>
+        <div x-show="open" @click.outside="open = false" x-transition.opacity x-cloak class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm border border-indigo-200/40">
+          <div class="p-2 border-b border-indigo-100/50 dark:border-indigo-700/40">
+            <div class="text-xs text-slate-500 dark:text-slate-400 px-2 py-1 font-bold uppercase tracking-wider">{{ t('language') }}</div>
             {% for code, name in all_langs %}
             <a href="/set-lang/{{ code }}" class="block px-3 py-2 rounded-lg hover:bg-indigo-50 transition {% if lang == code %}font-semibold text-indigo-600 bg-indigo-50{% endif %}">{{ name }}</a>
             {% endfor %}

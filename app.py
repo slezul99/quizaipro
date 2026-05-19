@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""QuizPro v3 — Multi-tenant + Google OAuth + AI + Stripe."""
+"""QuizAIPro v3 — Multi-tenant + Google OAuth + AI + Stripe."""
 import os
 import re
 import secrets
@@ -214,7 +214,7 @@ def _welcome_steps_json(lang: str) -> str:
     import json as _json
     if lang == "en":
         steps = [
-            {"icon": "👋", "title": "Welcome to QuizPro!",
+            {"icon": "👋", "title": "Welcome to QuizAIPro!",
              "desc": "Smart flashcards with spaced repetition. Let's set you up in 3 minutes."},
             {"icon": "📚", "title": "1. Create your first deck",
              "desc": "A deck = a set of cards (questions/terms). Click + New deck on the dashboard.",
@@ -232,7 +232,7 @@ def _welcome_steps_json(lang: str) -> str:
         ]
     elif lang == "uz":
         steps = [
-            {"icon": "👋", "title": "QuizPro ga xush kelibsiz!",
+            {"icon": "👋", "title": "QuizAIPro ga xush kelibsiz!",
              "desc": "Aqlli kartochkalar va takrorlash algoritmi. 3 daqiqada sozlab beramiz."},
             {"icon": "📚", "title": "1. Birinchi kolodani yarating",
              "desc": "Koloda = savol/javoblar to'plami. Dashboardda + Yangi koloda tugmasini bosing.",
@@ -250,7 +250,7 @@ def _welcome_steps_json(lang: str) -> str:
         ]
     else:  # ru default
         steps = [
-            {"icon": "👋", "title": "Добро пожаловать в QuizPro!",
+            {"icon": "👋", "title": "Добро пожаловать в QuizAIPro!",
              "desc": "Умные карточки с алгоритмом повторений. Давайте настроим всё за 3 минуты."},
             {"icon": "📚", "title": "Шаг 1. Создайте первую колоду",
              "desc": "Колода = набор карточек (вопросы или термины). На дашборде нажмите + Новая колода.",
@@ -5824,7 +5824,7 @@ except Exception as _e:
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("  QuizPro v3 — http://localhost:5000")
+    print("  QuizAIPro v3 — http://localhost:5000")
     print(f"  Google: {'YES' if config.has_google() else 'NO'}")
     print(f"  Stripe: {'YES' if config.has_stripe() else 'NO'}")
     print(f"  AI:     {'YES' if ai_gen.is_available() else 'NO'}")
