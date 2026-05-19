@@ -485,7 +485,7 @@ function deckEditor() {
           {% endif %}
           <span>{{ card.reviews or 0 }} попыток</span>
         </div>
-        <button @click="deleteCardFromDom($el, card)" class="opacity-0 group-hover:opacity-100 text-red-500 hover:underline transition">Удалить</button>
+        <button type="button" data-card-id="{{ card.id }}" onclick="deleteCardGlobal(this)" class="opacity-0 group-hover:opacity-100 text-red-500 hover:underline transition">Удалить</button>
       </div>
     </div>
     {% endfor %}
@@ -504,6 +504,23 @@ function deckEditor() {
 
   <!-- Vanilla JS for filtering / sorting / pagination -->
   <script>
+  // Delete card (server-rendered, works without Alpine context)
+  async function deleteCardGlobal(btn) {
+    if (!confirm('Удалить карту?')) return;
+    const cardId = btn.dataset.cardId;
+    if (!cardId) return;
+    const cardDiv = btn.closest('.card-item');
+    try {
+      // CSRF auto-injector dobavlyaet headeg pri POST'e cherez form, no fetch nuzhno yavno
+      const fd = new FormData();
+      fd.append('_csrf', '{{ csrf_token() }}');
+      const r = await fetch(`/card/${cardId}/delete`, { method: 'POST', body: fd });
+      if (cardDiv) cardDiv.remove();
+    } catch(e) {
+      alert('Oshibka: ' + e.message);
+    }
+  }
+
   // Set correct option (server-rendered MCQ)
   async function setCorrectOption(btn) {
     const cardId = btn.dataset.cardId;
