@@ -563,6 +563,96 @@ def api_welcome_dismiss():
     return jsonify({"ok": True})
 
 
+@app.route("/api/welcome/restart", methods=["POST"])
+@login_required
+def api_welcome_restart():
+    """Zanovo zapustit welcome tour (iz /help knopki 'Pokazat snova')."""
+    user = current_user()
+    conn = db.get_conn()
+    conn.execute("UPDATE users SET welcome_shown=0 WHERE id=?", (user["id"],))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/install-demo-decks", methods=["POST"])
+@login_required
+def api_install_demo_decks():
+    """Sozdaet demo-kolody dlya pol'zovatelya: English Beginner, Matematika, Past Simple."""
+    user = current_user()
+    user_id = user["id"]
+    org_id = user["org_id"]
+
+    DEMO_DECKS = [
+        {
+            "icon": "🇬🇧",
+            "name": "English Beginner — 10 voprosov",
+            "cards": [
+                ("I ___ a student.", "B) am", "A) is\nB) am\nC) are\nD) be"),
+                ("She ___ from Uzbekistan.", "A) is", "A) is\nB) am\nC) are\nD) was"),
+                ("They ___ my friends.", "C) are", "A) is\nB) am\nC) are\nD) be"),
+                ("___ you speak English?", "A) Do", "A) Do\nB) Does\nC) Are\nD) Is"),
+                ("He ___ football every day.", "B) plays", "A) play\nB) plays\nC) playing\nD) played"),
+                ("I have ___ apple.", "A) an", "A) an\nB) a\nC) the\nD) —"),
+                ("There ___ many books on the table.", "C) are", "A) is\nB) was\nC) are\nD) be"),
+                ("My sister ___ a doctor.", "B) is", "A) am\nB) is\nC) are\nD) be"),
+                ("What ___ your name?", "A) is", "A) is\nB) are\nC) am\nD) be"),
+                ("Where ___ you live?", "B) do", "A) does\nB) do\nC) is\nD) are"),
+            ],
+        },
+        {
+            "icon": "🧮",
+            "name": "Matematika 5 klass — 10 voprosov",
+            "cards": [
+                ("Skol'ko budet 7 \u00d7 8?", "B) 56", "A) 54\nB) 56\nC) 58\nD) 64"),
+                ("Naydi periметр kvadrata so storonoy 5 sm.", "C) 20 sm", "A) 10 sm\nB) 15 sm\nC) 20 sm\nD) 25 sm"),
+                ("Reshi: 144 \u00f7 12 = ?", "A) 12", "A) 12\nB) 14\nC) 16\nD) 11"),
+                ("Skol'ko gradusov v pryamom ugle?", "B) 90\u00b0", "A) 60\u00b0\nB) 90\u00b0\nC) 120\u00b0\nD) 180\u00b0"),
+                ("Naydi 25% ot 200.", "C) 50", "A) 25\nB) 40\nC) 50\nD) 75"),
+                ("Treugolnik so vsemi ravnymi storonami nazyvaetsya...", "A) Ravnostoronny", "A) Ravnostoronny\nB) Ravnobedrennyy\nC) Pryamougolnyy\nD) Tupougolnyy"),
+                ("Reshi: (15 + 5) \u00d7 2 = ?", "B) 40", "A) 25\nB) 40\nC) 30\nD) 35"),
+                ("Skol'ko minut v 2 chasakh 30 minutakh?", "C) 150", "A) 130\nB) 140\nC) 150\nD) 160"),
+                ("Ploshchad' pryamoug. so storonami 4 i 6.", "B) 24", "A) 20\nB) 24\nC) 28\nD) 30"),
+                ("Naimen'shee chislo iz: 0.5, 0.45, 0.51, 0.499", "A) 0.45", "A) 0.45\nB) 0.5\nC) 0.499\nD) 0.51"),
+            ],
+        },
+        {
+            "icon": "\ud83d\udcda",
+            "name": "English Grammar \u2014 Past Simple",
+            "cards": [
+                ("Yesterday I ___ to the cinema.", "B) went", "A) go\nB) went\nC) goes\nD) gone"),
+                ("She ___ a beautiful song last night.", "A) sang", "A) sang\nB) sing\nC) sings\nD) sung"),
+                ("They ___ football two days ago.", "C) played", "A) plays\nB) playing\nC) played\nD) play"),
+                ("___ you finish your homework yesterday?", "A) Did", "A) Did\nB) Do\nC) Does\nD) Was"),
+                ("He ___ not come to the party.", "B) did", "A) was\nB) did\nC) is\nD) does"),
+                ("We ___ in London for two weeks.", "A) stayed", "A) stayed\nB) stay\nC) staying\nD) stays"),
+                ("My father ___ a new car last month.", "C) bought", "A) buys\nB) buying\nC) bought\nD) buyed"),
+                ("Where ___ you born?", "A) were", "A) were\nB) was\nC) did\nD) are"),
+                ("She ___ tired after work.", "B) was", "A) were\nB) was\nC) is\nD) are"),
+                ("I ___ this book last summer.", "C) read", "A) reads\nB) reading\nC) read\nD) readed"),
+            ],
+        },
+    ]
+
+    conn = db.get_conn()
+    created_ids = []
+    for deck_data in DEMO_DECKS:
+        cur = conn.execute(
+            """INSERT INTO decks (org_id, owner_id, name, icon, is_public)
+               VALUES (?, ?, ?, ?, 0)""",
+            (org_id, user_id, deck_data["name"], deck_data["icon"])
+        )
+        deck_id = cur.lastrowid
+        created_ids.append(deck_id)
+        for front, back, note in deck_data["cards"]:
+            conn.execute(
+                """INSERT INTO cards (deck_id, front, back, note)
+                   VALUES (?, ?, ?, ?)""",
+                (deck_id, front, back, note)
+            )
+    conn.commit(); conn.close()
+    return jsonify({"ok": True, "deck_ids": created_ids, "count": len(created_ids)})
+
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
