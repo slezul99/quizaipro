@@ -39,22 +39,29 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-6 py-8" x-data="matchGame()">
-  <a href="/deck/{{ deck.id }}" class="text-indigo-600 text-sm hover:underline">← К колоде</a>
+<div class="relative max-w-6xl mx-auto px-6 py-8" x-data="matchGame()">
+  <div class="deco-blob deco-blob-1" style="top:-100px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:0; left:-100px;"></div>
+
+  <div class="relative z-10">
+    <a href="/deck/{{ deck.id }}" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+      <span>←</span> К колоде
+    </a>
 
   <div class="my-6 flex items-center justify-between flex-wrap gap-3">
     <div>
-      <h1 class="h-display text-3xl text-slate-900">🎯 Сопоставь пары</h1>
-      <p class="text-slate-600 text-sm mt-1">{{ deck.name }} · {{ count }} пар</p>
+      <span class="section-badge"><span class="badge-dot"></span>🎯 Match</span>
+      <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.5rem); margin-top: 0.5rem;">Сопоставь пары</h1>
+      <p class="text-slate-600 dark:text-slate-300 text-sm mt-1">{{ deck.name }} · {{ count }} пар</p>
     </div>
     <div class="flex items-center gap-4">
-      <div class="text-center">
-        <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Время</div>
-        <div class="text-2xl font-bold text-indigo-600 font-mono" x-text="formatTime(elapsed)"></div>
+      <div class="stat-card stat-blue" style="padding: 0.75rem 1.25rem; min-width: 110px;">
+        <div class="stat-label" style="margin-top: 0;">Время</div>
+        <div class="stat-value" style="font-size: 1.5rem;" x-text="formatTime(elapsed)"></div>
       </div>
-      <div class="text-center">
-        <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Найдено</div>
-        <div class="text-2xl font-bold text-emerald-600">
+      <div class="stat-card stat-emerald" style="padding: 0.75rem 1.25rem; min-width: 110px;">
+        <div class="stat-label" style="margin-top: 0;">Найдено</div>
+        <div class="stat-value" style="font-size: 1.5rem;">
           <span x-text="matched.length / 2"></span> / {{ count }}
         </div>
       </div>
@@ -98,26 +105,27 @@
 
   <!-- Itog -->
   <div x-show="finished" x-transition
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="glass-strong rounded-3xl p-10 max-w-md w-full text-center scale-in">
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="glass-premium max-w-md w-full text-center scale-in" style="padding: 2.5rem;">
       <div class="text-7xl mb-4">🏆</div>
-      <h2 class="h-display text-3xl mb-2">Готово!</h2>
-      <p class="text-slate-600 mb-6">Все пары найдены</p>
+      <h2 class="section-h" style="font-size: 2rem;">Готово!</h2>
+      <p class="text-slate-600 dark:text-slate-300 mb-6 mt-2">Все пары найдены</p>
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-indigo-50 rounded-2xl p-4">
-          <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Время</div>
-          <div class="text-3xl font-bold text-indigo-600 font-mono" x-text="formatTime(elapsed)"></div>
+        <div class="stat-card stat-blue">
+          <div class="stat-label" style="margin-top: 0;">Время</div>
+          <div class="stat-value" style="font-size: 1.7rem;" x-text="formatTime(elapsed)"></div>
         </div>
-        <div class="bg-orange-50 rounded-2xl p-4">
-          <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Ошибок</div>
-          <div class="text-3xl font-bold text-orange-600" x-text="errors"></div>
+        <div class="stat-card stat-orange">
+          <div class="stat-label" style="margin-top: 0;">Ошибок</div>
+          <div class="stat-value" style="font-size: 1.7rem;" x-text="errors"></div>
         </div>
       </div>
       <div class="flex gap-3 justify-center">
-        <a href="/deck/{{ deck.id }}/match" class="btn btn-primary">▶ Ещё раз</a>
-        <a href="/deck/{{ deck.id }}" class="btn btn-ghost">К колоде</a>
+        <a href="/deck/{{ deck.id }}/match" class="btn-premium">▶ Ещё раз</a>
+        <a href="/deck/{{ deck.id }}" class="btn-premium-ghost">К колоде</a>
       </div>
     </div>
+  </div>
   </div>
 </div>
 

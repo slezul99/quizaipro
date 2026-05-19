@@ -1,53 +1,59 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 py-10">
-  <div class="mb-8 slide-up">
-    <h1 class="h-display text-5xl text-slate-900 mb-2">🌐 <span class="text-gradient">Маркетплейс</span></h1>
-    <p class="text-slate-700 text-lg">Бесплатные колоды от других учебных центров и преподавателей</p>
-  </div>
+<div class="relative max-w-7xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
 
-  <form method="GET" class="glass rounded-2xl p-4 mb-6">
-    <input type="text" name="q" value="{{ search }}" placeholder="🔍 Найти колоду..."
-      class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white">
-  </form>
-
-  {% if decks %}
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-    {% for d in decks %}
-    <div class="glass rounded-3xl p-6 card-hover">
-      <div class="flex items-start justify-between mb-3">
-        <div class="text-4xl">{{ d.icon }}</div>
-        <div class="text-right text-xs text-gray-500">
-          <div class="font-semibold text-indigo-600">📥 {{ d.clones_count }} копий</div>
-          {% if d.author_id %}
-          <a href="/u/{{ d.author }}" class="hover:underline">{{ d.author }}</a>
-          {% else %}
-          <div>{{ d.author }}</div>
-          {% endif %}
-        </div>
-      </div>
-      <h3 class="text-xl font-bold mb-1.5">{{ d.name }}</h3>
-      <p class="text-sm text-gray-500 mb-4">{{ d.card_count }} вопросов</p>
-      {% if d.description %}
-      <p class="text-xs text-slate-600 mb-4 line-clamp-2">{{ d.description }}</p>
-      {% endif %}
-      <form method="POST" action="/marketplace/clone/{{ d.id }}">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-primary w-full justify-center">📥 Добавить себе</button>
-      </form>
+  <div class="relative z-10">
+    <div class="section-header left mb-8">
+      <span class="section-badge"><span class="badge-dot"></span>🌐 Marketplace</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">Маркетплейс</h1>
+      <p class="section-sub">Бесплатные колоды от других учебных центров и преподавателей</p>
     </div>
-    {% endfor %}
+
+    <form method="GET" class="glass-premium mb-6" style="padding: 1.25rem;">
+      <input type="text" name="q" value="{{ search }}" placeholder="🔍 Найти колоду..." class="input-premium">
+    </form>
+
+    {% if decks %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for d in decks %}
+      <div class="glass-premium" style="padding: 1.5rem;">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-4xl">{{ d.icon }}</div>
+          <div class="text-right text-xs text-slate-500 dark:text-slate-400">
+            <div class="font-bold text-indigo-600 dark:text-indigo-300">📥 {{ d.clones_count }} копий</div>
+            {% if d.author_id %}
+            <a href="/u/{{ d.author }}" class="hover:underline font-semibold">{{ d.author }}</a>
+            {% else %}
+            <div class="font-semibold">{{ d.author }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <h3 class="text-xl font-bold mb-1.5 text-slate-900 dark:text-slate-100">{{ d.name }}</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ d.card_count }} вопросов</p>
+        {% if d.description %}
+        <p class="text-xs text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">{{ d.description }}</p>
+        {% endif %}
+        <form method="POST" action="/marketplace/clone/{{ d.id }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-premium w-full justify-center">📥 Добавить себе</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 glass-premium">
+      <div class="text-7xl mb-4">📦</div>
+      <h3 class="section-h" style="font-size: 1.7rem;">
+        {% if search %}Ничего не найдено{% else %}Маркетплейс пока пуст{% endif %}
+      </h3>
+      <p class="text-slate-600 dark:text-slate-300 mt-3">
+        {% if search %}Попробуйте другой запрос{% else %}Сделайте свою колоду публичной — поможете другим преподавателям{% endif %}
+      </p>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="text-center py-20 glass rounded-3xl">
-    <div class="text-7xl mb-4">📦</div>
-    <h3 class="text-2xl font-bold mb-3 h-display">
-      {% if search %}Ничего не найдено{% else %}Маркетплейс пока пуст{% endif %}
-    </h3>
-    <p class="text-slate-600">
-      {% if search %}Попробуйте другой запрос{% else %}Сделайте свою колоду публичной — поможете другим преподавателям{% endif %}
-    </p>
-  </div>
-  {% endif %}
 </div>
 {% endblock %}

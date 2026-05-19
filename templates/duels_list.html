@@ -1,57 +1,64 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 py-10">
-  <div class="mb-6">
-    <h1 class="h-display text-4xl text-slate-900">⚔️ <span class="text-gradient">Дуэли</span></h1>
-    <p class="text-slate-600 mt-1">1 на 1 — кто ответит правильно и быстрее, тот победил</p>
-  </div>
+<div class="relative max-w-4xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
 
-  {% if duels %}
-  <div class="space-y-3">
-    {% for d in duels %}
-    {% set is_p1 = d.player1_id == current_user_id %}
-    {% set me_score = d.p1_score if is_p1 else d.p2_score %}
-    {% set opp_score = d.p2_score if is_p1 else d.p1_score %}
-    {% set opp_username = d.p2_username if is_p1 else d.p1_username %}
-    <a href="/duel/{{ d.id }}" class="glass rounded-3xl p-5 flex items-center gap-4 card-hover">
-      <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0
-        {% if d.status == 'running' %}bg-yellow-100 pulse-soft
-        {% elif d.status == 'finished' %}{% if d.winner_id == current_user_id %}bg-emerald-100{% elif d.winner_id %}bg-red-100{% else %}bg-gray-100{% endif %}
-        {% elif d.status == 'pending' %}bg-blue-100
-        {% else %}bg-gray-100{% endif %}">
-        {% if d.status == 'running' %}⚔️
-        {% elif d.status == 'finished' %}{% if d.winner_id == current_user_id %}🏆{% elif d.winner_id %}😔{% else %}🤝{% endif %}
-        {% elif d.status == 'pending' %}{% if is_p1 %}⏳{% else %}❓{% endif %}
-        {% else %}❌{% endif %}
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="font-semibold text-slate-900">vs @{{ opp_username }}</span>
-          {% if d.status == 'running' %}<span class="badge bg-yellow-100 text-yellow-700">В игре</span>
-          {% elif d.status == 'pending' %}{% if is_p1 %}<span class="badge bg-blue-100 text-blue-700">Ожидает</span>{% else %}<span class="badge bg-pink-100 text-pink-700">⚡ Принять?</span>{% endif %}
-          {% elif d.status == 'finished' %}{% if d.winner_id == current_user_id %}<span class="badge bg-emerald-100 text-emerald-700">Победа</span>{% elif d.winner_id %}<span class="badge bg-red-100 text-red-700">Поражение</span>{% else %}<span class="badge bg-gray-100 text-gray-700">Ничья</span>{% endif %}
-          {% elif d.status == 'declined' %}<span class="badge bg-gray-100 text-gray-700">Отклонено</span>{% endif %}
+  <div class="relative z-10">
+    <div class="section-header left mb-8">
+      <span class="section-badge"><span class="badge-dot"></span>⚔️ Дуэли</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">Дуэли</h1>
+      <p class="section-sub">1 на 1 — кто ответит правильно и быстрее, тот победил</p>
+    </div>
+
+    {% if duels %}
+    <div class="space-y-3">
+      {% for d in duels %}
+      {% set is_p1 = d.player1_id == current_user_id %}
+      {% set me_score = d.p1_score if is_p1 else d.p2_score %}
+      {% set opp_score = d.p2_score if is_p1 else d.p1_score %}
+      {% set opp_username = d.p2_username if is_p1 else d.p1_username %}
+      <a href="/duel/{{ d.id }}" class="glass-premium flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0
+          {% if d.status == 'running' %}bg-yellow-100 dark:bg-yellow-900/40 pulse-soft
+          {% elif d.status == 'finished' %}{% if d.winner_id == current_user_id %}bg-emerald-100 dark:bg-emerald-900/40{% elif d.winner_id %}bg-red-100 dark:bg-red-900/40{% else %}bg-slate-100 dark:bg-slate-800/60{% endif %}
+          {% elif d.status == 'pending' %}bg-blue-100 dark:bg-blue-900/40
+          {% else %}bg-slate-100 dark:bg-slate-800/60{% endif %}">
+          {% if d.status == 'running' %}⚔️
+          {% elif d.status == 'finished' %}{% if d.winner_id == current_user_id %}🏆{% elif d.winner_id %}😔{% else %}🤝{% endif %}
+          {% elif d.status == 'pending' %}{% if is_p1 %}⏳{% else %}❓{% endif %}
+          {% else %}❌{% endif %}
         </div>
-        <div class="text-xs text-slate-500">{{ d.deck_name }} · {{ d.question_count }} вопросов</div>
-      </div>
-      {% if d.status in ['running','finished'] %}
-      <div class="text-right">
-        <div class="text-lg font-bold">
-          <span class="text-indigo-600">{{ me_score }}</span>
-          <span class="text-gray-300">:</span>
-          <span class="text-slate-500">{{ opp_score }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold text-slate-900 dark:text-slate-100">vs @{{ opp_username }}</span>
+            {% if d.status == 'running' %}<span class="badge bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300">В игре</span>
+            {% elif d.status == 'pending' %}{% if is_p1 %}<span class="badge bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">Ожидает</span>{% else %}<span class="badge bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300">⚡ Принять?</span>{% endif %}
+            {% elif d.status == 'finished' %}{% if d.winner_id == current_user_id %}<span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Победа</span>{% elif d.winner_id %}<span class="badge bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">Поражение</span>{% else %}<span class="badge bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300">Ничья</span>{% endif %}
+            {% elif d.status == 'declined' %}<span class="badge bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300">Отклонено</span>{% endif %}
+          </div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ d.deck_name }} · {{ d.question_count }} вопросов</div>
         </div>
-      </div>
-      {% endif %}
-    </a>
-    {% endfor %}
+        {% if d.status in ['running','finished'] %}
+        <div class="text-right">
+          <div class="text-2xl font-black" style="font-family: 'Space Grotesk', sans-serif;">
+            <span class="text-indigo-600 dark:text-indigo-300">{{ me_score }}</span>
+            <span class="text-slate-300 dark:text-slate-600 mx-1">:</span>
+            <span class="text-slate-500 dark:text-slate-400">{{ opp_score }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 glass-premium">
+      <div class="text-7xl mb-4">⚔️</div>
+      <p class="text-slate-600 dark:text-slate-300 mb-3 text-lg">У вас ещё не было дуэлей</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Зайдите на профиль другого пользователя и нажмите «Вызвать на дуэль»</p>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="text-center py-16 glass rounded-3xl">
-    <div class="text-6xl mb-3">⚔️</div>
-    <p class="text-slate-600 mb-4">У вас ещё не было дуэлей</p>
-    <p class="text-sm text-slate-500">Зайдите на профиль другого пользователя и нажмите «Вызвать на дуэль»</p>
-  </div>
-  {% endif %}
 </div>
 {% endblock %}

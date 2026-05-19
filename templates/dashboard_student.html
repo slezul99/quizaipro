@@ -1,213 +1,207 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 py-10" x-data="{ showNew: false, showTest: null }">
+<div class="relative max-w-7xl mx-auto px-6 py-10" x-data="{ showNew: false, showTest: null }">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="top:300px; left:-150px;"></div>
 
-  <!-- HERO -->
-  <div class="mb-10 slide-up">
-    <h1 class="h-display text-5xl md:text-6xl mb-3 text-slate-900">
-      {% if current_user.role == 'individual' %}
-      {{ t('hello') }}, <span class="text-gradient">{{ current_user.username }}</span>
-      {% else %}
-      <span class="text-gradient">{{ t('user_centre') }}</span>
-      {% endif %}
-    </h1>
-    <p class="text-slate-700 text-lg">
-      {% if due > 0 %}
-      {{ t('to_review_today') }}: <span class="font-semibold text-indigo-700">{{ due }} {{ t('questions_today') }}</span> 🔥
-      {% else %}
-      {{ t('all_learned') }}
-      {% endif %}
-    </p>
-  </div>
+  <div class="relative z-10">
+    <!-- HERO -->
+    <div class="section-header left mb-8">
+      <span class="section-badge"><span class="badge-dot"></span>📊 Dashboard</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">
+        {% if current_user.role == 'individual' %}
+        {{ t('hello') }}, {{ current_user.username }}
+        {% else %}
+        {{ t('user_centre') }}
+        {% endif %}
+      </h1>
+      <p class="section-sub">
+        {% if due > 0 %}
+        {{ t('to_review_today') }}: <b class="text-indigo-600 dark:text-indigo-300">{{ due }}</b> {{ t('questions_today') }} 🔥
+        {% else %}
+        {{ t('all_learned') }}
+        {% endif %}
+      </p>
+    </div>
 
-  <!-- STAT CARDS -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-    <div class="glass rounded-3xl p-6 card-hover slide-up" style="animation-delay:.05s">
-      <div class="icon-bubble bg-gradient-to-br from-indigo-100 to-indigo-200 mb-4">📚</div>
-      <div class="text-4xl font-bold h-display">{{ total }}</div>
-      <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('total_questions') }}</div>
-    </div>
-    <div class="glass rounded-3xl p-6 card-hover slide-up" style="animation-delay:.1s">
-      <div class="icon-bubble bg-gradient-to-br from-emerald-100 to-emerald-200 mb-4">✓</div>
-      <div class="text-4xl font-bold h-display text-emerald-600">{{ learned }}</div>
-      <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('studied') }}</div>
-    </div>
-    <div class="glass rounded-3xl p-6 card-hover slide-up" style="animation-delay:.15s">
-      <div class="icon-bubble bg-gradient-to-br from-blue-100 to-blue-200 mb-4">↻</div>
-      <div class="text-4xl font-bold h-display text-blue-600">{{ due }}</div>
-      <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('to_review_short') }}</div>
-    </div>
-    <div class="glass rounded-3xl p-6 card-hover slide-up" style="animation-delay:.2s">
-      <div class="icon-bubble bg-gradient-to-br from-purple-100 to-pink-200 mb-4">⚡</div>
-      <div class="text-4xl font-bold h-display text-purple-600">{{ total_reviews }}</div>
-      <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('all_attempts') }}</div>
-    </div>
-  </div>
-
-  <!-- PROGRESS BAR -->
-  <!-- DAILY GOAL -->
-  <div class="glass rounded-3xl p-6 mb-8 slide-up" style="animation-delay:.22s"
-    x-data="{
-      goal: {{ daily_goal }},
-      done: {{ today_reviews }},
-      editing: false,
-      newGoal: {{ daily_goal }},
-      get pct() { return Math.min(100, Math.round(this.done / this.goal * 100)); },
-      get isDone() { return this.done >= this.goal; },
-      async save() {
-        if (this.newGoal < 1) return;
-        const fd = new FormData();
-        fd.append('goal', this.newGoal);
-        const r = await fetch('/api/daily-goal', { method: 'POST', body: fd });
-        if (r.ok) { this.goal = this.newGoal; this.editing = false; }
-      }
-    }">
-    <div class="flex justify-between items-start mb-3 flex-wrap gap-2">
-      <div>
-        <h3 class="font-bold text-slate-900 flex items-center gap-2">
-          🎯 {{ t('today_goal') }}
-          <span x-show="isDone" class="badge bg-emerald-100 text-emerald-700">{{ t('today_done_label') }}</span>
-        </h3>
-        <p class="text-xs text-slate-500 mt-1">{{ t('today_goal_desc') }}</p>
+    <!-- STAT CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="stat-card stat-blue slide-up" style="animation-delay:.05s">
+        <div class="text-2xl mb-2">📚</div>
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">{{ t('total_questions') }}</div>
       </div>
-      <div class="flex items-center gap-2">
-        <template x-if="!editing">
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-slate-700">
-              <span class="font-bold text-indigo-600" x-text="done"></span> / <span x-text="goal"></span>
-            </span>
-            <button @click="editing = true; newGoal = goal" class="text-xs text-indigo-600 hover:underline">{{ t('today_change') }}</button>
-          </div>
-        </template>
-        <template x-if="editing">
-          <div class="flex items-center gap-2">
-            <input type="number" x-model.number="newGoal" min="1" max="500"
-              class="w-20 px-2 py-1 rounded-lg border border-gray-300 text-sm">
-            <button @click="save()" class="btn btn-primary text-xs px-3 py-1">OK</button>
-            <button @click="editing = false" class="text-xs text-slate-500">×</button>
-          </div>
-        </template>
+      <div class="stat-card stat-emerald slide-up" style="animation-delay:.1s">
+        <div class="text-2xl mb-2">✓</div>
+        <div class="stat-value">{{ learned }}</div>
+        <div class="stat-label">{{ t('studied') }}</div>
+      </div>
+      <div class="stat-card stat-orange slide-up" style="animation-delay:.15s">
+        <div class="text-2xl mb-2">↻</div>
+        <div class="stat-value">{{ due }}</div>
+        <div class="stat-label">{{ t('to_review_short') }}</div>
+      </div>
+      <div class="stat-card stat-purple slide-up" style="animation-delay:.2s">
+        <div class="text-2xl mb-2">⚡</div>
+        <div class="stat-value">{{ total_reviews }}</div>
+        <div class="stat-label">{{ t('all_attempts') }}</div>
       </div>
     </div>
-    <div class="progress-bar h-3"><div :style="`width: ${pct}%`"></div></div>
-    <div class="flex justify-between mt-2 text-xs text-gray-400">
-      <span x-show="!isDone">{{ t('today_remaining') }}: <span class="font-semibold text-orange-600" x-text="goal - done"></span></span>
-      <span x-show="isDone" class="text-emerald-600 font-semibold">{{ t('today_great_job') }}</span>
-      <span x-text="pct + '%'"></span>
-    </div>
-  </div>
 
-  {% if total > 0 %}
-  <div class="glass rounded-3xl p-6 mb-10 slide-up" style="animation-delay:.25s">
-    <div class="flex justify-between mb-3">
-      <span class="font-semibold flex items-center gap-2">📈 {{ t('overall_progress') }}</span>
-      <span class="font-bold text-indigo-600 text-lg">{{ ((learned / total * 100) | round(1)) }}%</span>
+    <!-- DAILY GOAL -->
+    <div class="glass-premium mb-6 slide-up" style="animation-delay:.22s"
+      x-data="{
+        goal: {{ daily_goal }},
+        done: {{ today_reviews }},
+        editing: false,
+        newGoal: {{ daily_goal }},
+        get pct() { return Math.min(100, Math.round(this.done / this.goal * 100)); },
+        get isDone() { return this.done >= this.goal; },
+        async save() {
+          if (this.newGoal < 1) return;
+          const fd = new FormData();
+          fd.append('goal', this.newGoal);
+          const r = await fetch('/api/daily-goal', { method: 'POST', body: fd });
+          if (r.ok) { this.goal = this.newGoal; this.editing = false; }
+        }
+      }">
+      <div class="flex justify-between items-start mb-3 flex-wrap gap-2">
+        <div>
+          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            🎯 {{ t('today_goal') }}
+            <span x-show="isDone" class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t('today_done_label') }}</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('today_goal_desc') }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <template x-if="!editing">
+            <div class="flex items-center gap-2">
+              <span class="text-base text-slate-700 dark:text-slate-200">
+                <span class="font-bold text-indigo-600 dark:text-indigo-300" x-text="done"></span> / <span x-text="goal"></span>
+              </span>
+              <button @click="editing = true; newGoal = goal" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">{{ t('today_change') }}</button>
+            </div>
+          </template>
+          <template x-if="editing">
+            <div class="flex items-center gap-2">
+              <input type="number" x-model.number="newGoal" min="1" max="500" class="input-premium" style="width: 80px; padding: 6px; text-align: center; font-weight: 700;">
+              <button @click="save()" class="btn-premium" style="font-size: 12px; padding: 6px 14px;">OK</button>
+              <button @click="editing = false" class="text-xs text-slate-500 dark:text-slate-400 px-2">×</button>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="progress-bar h-3"><div :style="`width: ${pct}%`"></div></div>
+      <div class="flex justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
+        <span x-show="!isDone">{{ t('today_remaining') }}: <span class="font-bold text-orange-600 dark:text-orange-300" x-text="goal - done"></span></span>
+        <span x-show="isDone" class="text-emerald-600 dark:text-emerald-300 font-bold">{{ t('today_great_job') }}</span>
+        <span x-text="pct + '%'"></span>
+      </div>
     </div>
-    <div class="progress-bar h-3"><div style="width: {{ (learned / total * 100) }}%"></div></div>
-    <div class="flex justify-between mt-2 text-xs text-gray-400">
-      <span>{{ t('start_progress') }}</span>
-      <span>{{ t('full_progress') }}</span>
-    </div>
-  </div>
-  {% endif %}
 
-  <!-- ACTIONS -->
-  {% if current_user.role == 'individual' %}
-  <div class="flex gap-3 mb-8 flex-wrap slide-up" style="animation-delay:.3s">
-    <button @click="showNew = true" class="btn btn-primary">
-      {{ t('new_deck_btn') }}
-    </button>
-    <a href="/import" class="btn btn-ghost">{{ t('import_file') }}</a>
-    {% if ai_available %}
-    <a href="/ai" class="btn btn-ghost">{{ t('ai_generation') }}</a>
+    {% if total > 0 %}
+    <div class="glass-premium mb-8 slide-up" style="animation-delay:.25s">
+      <div class="flex justify-between mb-3">
+        <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">📈 {{ t('overall_progress') }}</span>
+        <span class="font-bold text-indigo-600 dark:text-indigo-300 text-lg">{{ ((learned / total * 100) | round(1)) }}%</span>
+      </div>
+      <div class="progress-bar h-3"><div style="width: {{ (learned / total * 100) }}%"></div></div>
+      <div class="flex justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
+        <span>{{ t('start_progress') }}</span>
+        <span>{{ t('full_progress') }}</span>
+      </div>
+    </div>
     {% endif %}
-  </div>
-  {% endif %}
 
-  <!-- DECKS -->
-  {% if by_category %}
-  {% for cat_name, cat_data in by_category.items() %}
-  <div class="mb-10 slide-up" style="animation-delay:.35s">
-    <h2 class="text-2xl font-bold mb-5 flex items-center gap-3 h-display text-slate-900">
-      <span class="text-3xl">{{ cat_data.icon }}</span>
-      {{ cat_name }}
-      <span class="badge bg-white/70 text-indigo-700 ml-2 border border-indigo-200">{{ cat_data.decks|length }}</span>
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {% for d in cat_data.decks %}
-      {% set pct = (d.learned_count / d.card_count * 100) if d.card_count else 0 %}
-      <div class="glass rounded-3xl p-6 card-hover relative">
-        <div class="flex items-start justify-between mb-4">
-          <div class="text-4xl">{{ d.icon }}</div>
-          {% if current_user.role in ['admin','teacher','individual'] %}
-          <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('{{ t('delete_deck_confirm') }}')">
-            <button class="text-gray-300 hover:text-red-500 text-sm transition" title="{{ t('btn_delete') }}">✕</button>
-          </form>
-          {% endif %}
-        </div>
-        <a href="/deck/{{ d.id }}" class="block">
-          <h3 class="text-xl font-bold mb-1.5">{{ d.name }}</h3>
-          <p class="text-sm text-gray-500 mb-4">{{ d.card_count }} {{ t('test_card_count_word') }} · {{ d.due_count }} {{ t('to_review') }}</p>
-        </a>
-        <div class="mb-5">
-          <div class="flex justify-between mb-1.5 text-xs text-gray-500">
-            <span>{{ t('studied') }}</span>
-            <span class="font-semibold text-gray-700">{{ pct|round(0)|int }}%</span>
-          </div>
-          <div class="progress-bar"><div style="width: {{ pct }}%"></div></div>
-        </div>
-        <div class="flex gap-2">
-          {% if (d.deck_type or 'mcq') == 'terms' %}
-          <a href="/deck/{{ d.id }}/flashcards" class="flex-1 justify-center text-sm rounded-2xl px-4 py-2 font-bold text-white text-center transition {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}"
-            style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);">
-            🃏 Flashcards
-          </a>
-          {% else %}
-          <a href="/deck/{{ d.id }}/test?count=10&shuffle=1" class="btn btn-success flex-1 justify-center text-sm {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}">
-            📝 {{ t('btn_test') }}
-          </a>
-          {% endif %}
-          <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
-            class="btn btn-success text-sm {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}">
-            📝 {{ t('test_mode') }}
-          </button>
-          <a href="/deck/{{ d.id }}" class="btn btn-ghost text-sm" title="{{ t('settings_short') }}">⚙</a>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endfor %}
-  {% else %}
-  <div class="text-center py-20 glass rounded-3xl scale-in">
-    <div class="text-7xl mb-6 pulse-soft">📚</div>
-    <h3 class="text-2xl font-bold mb-3 h-display">{{ t('create_first_deck') }}</h3>
-    <p class="text-gray-500 mb-8 max-w-md mx-auto">{{ t('no_decks_text2') }}</p>
+    <!-- ACTIONS -->
     {% if current_user.role == 'individual' %}
-    <div class="flex gap-3 justify-center flex-wrap">
-      <button @click="showNew = true" class="btn btn-primary">{{ t('new_deck_btn') }}</button>
-      <a href="/import" class="btn btn-ghost">{{ t('import_file') }}</a>
+    <div class="flex gap-3 mb-8 flex-wrap slide-up" style="animation-delay:.3s">
+      <button @click="showNew = true" class="btn-premium">+ {{ t('new_deck_btn') }}</button>
+      <a href="/import" class="btn-premium-ghost">📥 {{ t('import_file') }}</a>
       {% if ai_available %}
-      <a href="/ai" class="btn btn-ghost">{{ t('ai_generation') }}</a>
+      <a href="/ai" class="btn-premium-ghost">🤖 {{ t('ai_generation') }}</a>
       {% endif %}
     </div>
+    {% endif %}
+
+    <!-- DECKS -->
+    {% if by_category %}
+    {% for cat_name, cat_data in by_category.items() %}
+    <div class="mb-10 slide-up" style="animation-delay:.35s">
+      <h2 class="text-2xl font-bold mb-5 flex items-center gap-3 text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
+        <span class="text-3xl">{{ cat_data.icon }}</span>
+        {{ cat_name }}
+        <span class="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 ml-2">{{ cat_data.decks|length }}</span>
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for d in cat_data.decks %}
+        {% set pct = (d.learned_count / d.card_count * 100) if d.card_count else 0 %}
+        <div class="glass-premium relative" style="padding: 1.5rem;">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-4xl">{{ d.icon }}</div>
+            {% if current_user.role in ['admin','teacher','individual'] %}
+            <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('{{ t('delete_deck_confirm') }}')">
+              <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 text-base transition" title="{{ t('btn_delete') }}">✕</button>
+            </form>
+            {% endif %}
+          </div>
+          <a href="/deck/{{ d.id }}" class="block">
+            <h3 class="text-xl font-bold mb-1.5 text-slate-900 dark:text-slate-100">{{ d.name }}</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ d.card_count }} {{ t('test_card_count_word') }} · {{ d.due_count }} {{ t('to_review') }}</p>
+          </a>
+          <div class="mb-4">
+            <div class="flex justify-between mb-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold">{{ t('studied') }}</span>
+              <span class="font-bold text-slate-700 dark:text-slate-200">{{ pct|round(0)|int }}%</span>
+            </div>
+            <div class="progress-bar"><div style="width: {{ pct }}%"></div></div>
+          </div>
+          <div class="flex gap-2">
+            {% if (d.deck_type or 'mcq') == 'terms' %}
+            <a href="/deck/{{ d.id }}/flashcards" class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 13px; padding: 9px 14px;">🃏 Flashcards</a>
+            {% else %}
+            <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
+              class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 13px; padding: 9px 14px; background: linear-gradient(135deg, #10b981, #059669);">📝 {{ t('btn_test') }}</button>
+            {% endif %}
+            <a href="/deck/{{ d.id }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 12px;" title="{{ t('settings_short') }}">⚙</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
     {% else %}
-    <p class="text-sm text-gray-500">{{ t('teacher_no_decks') }}</p>
+    <div class="text-center py-16 glass-premium scale-in">
+      <div class="text-7xl mb-6 pulse-soft">📚</div>
+      <h3 class="section-h" style="font-size: 1.7rem;">{{ t('create_first_deck') }}</h3>
+      <p class="text-slate-600 dark:text-slate-300 mb-8 max-w-md mx-auto mt-3">{{ t('no_decks_text2') }}</p>
+      {% if current_user.role == 'individual' %}
+      <div class="flex gap-3 justify-center flex-wrap">
+        <button @click="showNew = true" class="btn-premium">+ {{ t('new_deck_btn') }}</button>
+        <a href="/import" class="btn-premium-ghost">📥 {{ t('import_file') }}</a>
+        {% if ai_available %}
+        <a href="/ai" class="btn-premium-ghost">🤖 {{ t('ai_generation') }}</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-500 dark:text-slate-400">{{ t('teacher_no_decks') }}</p>
+      {% endif %}
+    </div>
     {% endif %}
   </div>
-  {% endif %}
 
   <!-- New deck modal -->
-  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
-    <form method="POST" action="/deck/new" class="glass-strong rounded-3xl p-8 max-w-md w-full scale-in">
-      <h2 class="text-2xl font-bold mb-1 h-display">{{ t('new_deck') }}</h2>
-      <p class="text-sm text-gray-500 mb-5">{{ t('create_deck_set') }}</p>
+  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
+    <form method="POST" action="/deck/new" class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
+      <h2 class="section-h" style="font-size: 1.7rem;">{{ t('new_deck') }}</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">{{ t('create_deck_set') }}</p>
       <div class="flex gap-3 mb-4">
-        <input name="icon" maxlength="2" value="📚" class="w-16 text-3xl text-center px-2 py-3 rounded-xl border border-gray-200 bg-white">
-        <input name="name" required placeholder="{{ t('deck_name_label') }}" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white">
+        <input name="icon" maxlength="2" value="📚" class="input-premium" style="width: 70px; text-align: center; font-size: 28px; padding: 6px;">
+        <input name="name" required placeholder="{{ t('deck_name_label') }}" class="input-premium" style="flex: 1;">
       </div>
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">📁 {{ t('category_label') }}</label>
-      <select name="category_id" class="w-full px-4 py-3 mb-5 rounded-xl border border-gray-200 bg-white">
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">📁 {{ t('category_label') }}</label>
+      <select name="category_id" class="input-premium mb-5">
         <option value="">{{ t('no_category') }}</option>
         {% set roots = (all_categories or []) | selectattr('parent_id', 'none') | list %}
         {% for r in roots %}
@@ -218,51 +212,47 @@
         {% endfor %}
       </select>
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showNew = false" class="btn btn-ghost">{{ t('cancel') }}</button>
-        <button type="submit" class="btn btn-primary">{{ t('create') }}</button>
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">{{ t('cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('create') }}</button>
       </div>
     </form>
   </div>
 
   <!-- Test settings modal -->
-  <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showTest = null" x-cloak>
-    <div x-show="showTest" class="glass-strong rounded-3xl p-8 max-w-md w-full scale-in" x-data="{ count: 25, shuffle: false }" x-init="count = Math.min(25, showTest?.total || 25)">
-      <h2 class="text-2xl font-bold mb-1 h-display">📝 {{ t('start_test') }}</h2>
-      <p class="text-sm text-gray-500 mb-5">
-        <span x-text="showTest?.name"></span> · {{ t('all_total') }} <span x-text="showTest?.total" class="font-semibold"></span> {{ t('test_card_count_word') }}
+  <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showTest = null" x-cloak>
+    <div x-show="showTest" class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;" x-data="{ count: 25, shuffle: false }" x-init="count = Math.min(25, showTest?.total || 25)">
+      <h2 class="section-h" style="font-size: 1.7rem;">📝 {{ t('start_test') }}</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
+        <span x-text="showTest?.name"></span> · {{ t('all_total') }} <span x-text="showTest?.total" class="font-bold text-indigo-600 dark:text-indigo-300"></span> {{ t('test_card_count_word') }}
       </p>
 
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">{{ t('how_many_questions') }}</label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('how_many_questions') }}</label>
       <div class="grid grid-cols-4 gap-2 mb-3">
         <template x-for="n in [10, 25, 50, 100]" :key="n">
-          <button type="button" @click="count = n"
-            :disabled="n > (showTest?.total || 0)"
-            :class="count === n ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent shadow-md' : 'border-gray-200 hover:border-indigo-300'"
-            class="py-3 rounded-xl border-2 font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed"
-            x-text="n"></button>
+          <button type="button" @click="count = n" :disabled="n > (showTest?.total || 0)"
+            :class="count === n ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-transparent shadow-md' : 'border-indigo-200 hover:border-indigo-400'"
+            class="py-3 rounded-xl border-2 font-bold transition disabled:opacity-30 disabled:cursor-not-allowed" x-text="n"></button>
         </template>
       </div>
 
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">{{ t('custom_number') }}</label>
-      <div class="flex items-center gap-3 mb-5">
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('custom_number') }}</label>
+      <div class="flex items-center gap-3 mb-4">
         <input type="number" x-model.number="count" :max="showTest?.total" min="1"
-          class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-indigo-500 bg-white text-lg font-semibold">
-        <button type="button" @click="count = showTest?.total"
-          class="btn btn-ghost text-sm whitespace-nowrap">{{ t('all_btn') }}</button>
+          class="input-premium" style="flex: 1; font-size: 17px; font-weight: 700; text-align: center;">
+        <button type="button" @click="count = showTest?.total" class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">{{ t('all_btn') }}</button>
       </div>
 
-      <label class="flex items-center gap-3 mb-5 p-3 rounded-xl bg-indigo-50/50 border border-indigo-100 cursor-pointer hover:bg-indigo-50">
+      <label class="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/40 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
         <input type="checkbox" x-model="shuffle" class="w-5 h-5 accent-indigo-600">
         <span class="text-sm">
-          <span class="font-semibold">🔀 {{ t('shuffle') }}</span>
-          <span class="block text-xs text-gray-500">{{ t('shuffle_desc') }}</span>
+          <span class="font-bold text-slate-900 dark:text-slate-100">🔀 {{ t('shuffle') }}</span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400">{{ t('shuffle_desc') }}</span>
         </span>
       </label>
 
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showTest = null" class="btn btn-ghost">{{ t('cancel') }}</button>
-        <a :href="`/deck/${showTest?.id}/test?count=${count}&shuffle=${shuffle ? 1 : 0}`"
-          class="btn btn-success">▶ {{ t('start') }}</a>
+        <button type="button" @click="showTest = null" class="btn-premium-ghost">{{ t('cancel') }}</button>
+        <a :href="`/deck/${showTest?.id}/test?count=${count}&shuffle=${shuffle ? 1 : 0}`" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">▶ {{ t('start') }}</a>
       </div>
     </div>
   </div>

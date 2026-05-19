@@ -1,44 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 py-8" x-data="{ active: '{{ help_data.sections[0].id }}' }">
+<div class="relative max-w-5xl mx-auto px-6 py-8" x-data="{ active: '{{ help_data.sections[0].id }}' }">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:300px; left:-150px;"></div>
 
-  <!-- Hero -->
-  <div class="text-center mb-8">
-    <div class="text-6xl mb-3">📖</div>
-    <h1 class="h-display text-4xl text-slate-900 mb-2">{{ help_data.page_title }}</h1>
-    <p class="text-slate-600">{{ help_data.page_subtitle }}</p>
-  </div>
+  <div class="relative z-10">
+    <!-- Hero -->
+    <div class="section-header mb-8">
+      <span class="section-badge"><span class="badge-dot"></span>📖 Справка</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">{{ help_data.page_title }}</h1>
+      <p class="section-sub">{{ help_data.page_subtitle }}</p>
+    </div>
 
-  <!-- TOC + content -->
-  <div class="grid md:grid-cols-[220px_1fr] gap-5">
-    <!-- Sidebar TOC -->
-    <aside class="md:sticky md:top-20 md:self-start glass rounded-2xl p-4 text-sm">
-      <div class="text-xs uppercase tracking-wider font-bold text-slate-500 px-2 mb-2">{{ help_data.toc_label }}</div>
-      {% for s in help_data.sections %}
-      <a href="#{{ s.id }}" @click="active='{{ s.id }}'"
-        :class="active==='{{ s.id }}' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'hover:bg-indigo-50'"
-        class="block px-3 py-2 rounded-lg transition mb-1">
-        {{ s.icon }} {{ s.nav }}
-      </a>
-      {% endfor %}
-    </aside>
+    <!-- TOC + content -->
+    <div class="grid md:grid-cols-[240px_1fr] gap-5">
+      <!-- Sidebar TOC -->
+      <aside class="md:sticky md:top-20 md:self-start glass-premium" style="padding: 1rem;">
+        <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 px-2 mb-3">{{ help_data.toc_label }}</div>
+        {% for s in help_data.sections %}
+        <a href="#{{ s.id }}" @click="active='{{ s.id }}'"
+          :class="active==='{{ s.id }}' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md font-bold' : 'hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-200'"
+          class="block px-3 py-2.5 rounded-xl transition mb-1 text-sm">
+          {{ s.icon }} {{ s.nav }}
+        </a>
+        {% endfor %}
+      </aside>
 
-    <!-- Content -->
-    <div class="space-y-6">
-      {% for s in help_data.sections %}
-      <section id="{{ s.id }}" class="glass rounded-3xl p-6">
-        <h2 class="h-display text-2xl mb-3">{{ s.title }}</h2>
-        {{ s.body|safe }}
-      </section>
-      {% endfor %}
+      <!-- Content -->
+      <div class="space-y-5">
+        {% for s in help_data.sections %}
+        <section id="{{ s.id }}" class="glass-premium" style="padding: 2rem;">
+          <h2 class="section-h" style="font-size: 1.5rem;">{{ s.title }}</h2>
+          <div class="mt-3 text-slate-700 dark:text-slate-300 prose-sm">{{ s.body|safe }}</div>
+        </section>
+        {% endfor %}
 
-      <!-- Bottom CTA -->
-      <div class="glass rounded-3xl p-6 text-center"
-        style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.06));">
-        <div class="text-4xl mb-2">💌</div>
-        <h3 class="font-bold text-lg mb-2">{{ help_data.support_title }}</h3>
-        <p class="text-sm text-slate-700 mb-3">{{ help_data.support_text }}</p>
-        <a href="/notifications" class="btn btn-primary text-sm">{{ help_data.support_btn }}</a>
+        <!-- Bottom CTA -->
+        <div class="glass-premium text-center" style="padding: 1.75rem; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.08));">
+          <div class="text-5xl mb-3">💌</div>
+          <h3 class="font-bold text-xl mb-2 text-slate-900 dark:text-slate-100">{{ help_data.support_title }}</h3>
+          <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">{{ help_data.support_text }}</p>
+          <a href="/notifications" class="btn-premium">{{ help_data.support_btn }}</a>
+        </div>
       </div>
     </div>
   </div>

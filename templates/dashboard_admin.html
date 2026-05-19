@@ -1,92 +1,95 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 py-10" x-data="{ tab: 'overview' }">
+<div class="relative max-w-7xl mx-auto px-6 py-10" x-data="{ tab: 'overview' }">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="top:300px; left:-150px;"></div>
 
-  <!-- HERO -->
-  <div class="flex justify-between items-end mb-10 flex-wrap gap-4 slide-up">
-    <div>
-      <h1 class="h-display text-5xl mb-2 text-slate-900">
-        <span class="text-gradient">{{ t('control_panel') }}</span>
-      </h1>
-      <p class="text-slate-700 text-lg">{{ n_students }} {{ t('students') }} · {{ total_cards }} {{ t('questions_total') }} · {{ groups|length }} {{ t('groups_count') }}</p>
-    </div>
-    <div class="flex gap-2 flex-wrap">
-      <a href="/categories" class="btn btn-ghost">📁 {{ t('categories') }}</a>
-      <a href="/import" class="btn btn-ghost">📥 {{ t('import') }}</a>
-      <a href="/export/students" class="btn btn-ghost">📊 {{ t('download_journal') }}</a>
-      <a href="/admin/students" class="btn btn-primary">👥 {{ t('users') }}</a>
-    </div>
-  </div>
-
-  <!-- TABS -->
-  <div class="glass rounded-2xl p-1.5 mb-8 inline-flex gap-1 slide-up" style="animation-delay:.05s">
-    <button @click="tab = 'overview'" :class="tab === 'overview' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">📊 {{ t('overview') }}</button>
-    <button @click="tab = 'students'" :class="tab === 'students' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">👥 {{ t('students') }}</button>
-    <button @click="tab = 'tests'" :class="tab === 'tests' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">📝 {{ t('tests') }}</button>
-    <button @click="tab = 'categories'" :class="tab === 'categories' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">📁 {{ t('categories') }}</button>
-    <button @click="tab = 'groups'" :class="tab === 'groups' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'text-gray-600 hover:bg-white'" class="px-5 py-2 rounded-xl font-medium text-sm transition">🎓 {{ t('groups') }}</button>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="glass rounded-2xl p-5 mb-8 slide-up" style="animation-delay:.1s">
-    <form method="GET" class="flex gap-3 flex-wrap items-end">
-      <div>
-        <label class="text-xs text-gray-500 block mb-1.5 font-semibold uppercase tracking-wider">{{ t('group') }}</label>
-        <select name="group_id" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white" onchange="this.form.submit()">
-          <option value="">{{ t('all_groups') }}</option>
-          {% for g in groups %}
-          <option value="{{ g.id }}" {% if f_group == g.id %}selected{% endif %}>{{ g.name }}</option>
-          {% endfor %}
-        </select>
+  <div class="relative z-10">
+    <!-- HERO -->
+    <div class="flex justify-between items-end mb-8 flex-wrap gap-4 slide-up">
+      <div class="section-header left" style="margin-bottom: 0;">
+        <span class="section-badge"><span class="badge-dot"></span>👨‍🏫 Admin</span>
+        <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+        <h1 class="section-h">{{ t('control_panel') }}</h1>
+        <p class="section-sub">{{ n_students }} {{ t('students') }} · {{ total_cards }} {{ t('questions_total') }} · {{ groups|length }} {{ t('groups_count') }}</p>
       </div>
-      <div>
-        <label class="text-xs text-gray-500 block mb-1.5 font-semibold uppercase tracking-wider">{{ t('category') }}</label>
-        <select name="category_id" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white" onchange="this.form.submit()">
-          <option value="">{{ t('all_categories') }}</option>
-          {% for c in categories %}
-          <option value="{{ c.id }}" {% if f_category == c.id %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label class="text-xs text-gray-500 block mb-1.5 font-semibold uppercase tracking-wider">{{ t('test_filter') }}</label>
-        <select name="deck_id" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white" onchange="this.form.submit()">
-          <option value="">{{ t('all_tests') }}</option>
-          {% for d in decks %}
-          <option value="{{ d.id }}" {% if f_deck == d.id %}selected{% endif %}>{{ d.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      {% if f_group or f_category or f_deck %}
-      <a href="/dashboard" class="btn btn-ghost text-sm">{{ t('reset') }}</a>
-      {% endif %}
-    </form>
-  </div>
-
-  <!-- ============ OVERVIEW ============ -->
-  <div x-show="tab === 'overview'" class="fade-in">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="glass rounded-3xl p-6 card-hover">
-        <div class="icon-bubble bg-gradient-to-br from-indigo-100 to-indigo-200 mb-4">📚</div>
-        <div class="text-4xl font-bold h-display">{{ total_cards }}</div>
-        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('total_questions') }}</div>
-      </div>
-      <div class="glass rounded-3xl p-6 card-hover">
-        <div class="icon-bubble bg-gradient-to-br from-blue-100 to-blue-200 mb-4">📈</div>
-        <div class="text-4xl font-bold h-display text-blue-600">{{ org_progress }}%</div>
-        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('total_progress') }}</div>
-      </div>
-      <div class="glass rounded-3xl p-6 card-hover">
-        <div class="icon-bubble bg-gradient-to-br from-emerald-100 to-emerald-200 mb-4">👥</div>
-        <div class="text-4xl font-bold h-display text-emerald-600">{{ n_students }}</div>
-        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('students') | capitalize }}</div>
-      </div>
-      <div class="glass rounded-3xl p-6 card-hover">
-        <div class="icon-bubble bg-gradient-to-br from-purple-100 to-pink-200 mb-4">🎓</div>
-        <div class="text-4xl font-bold h-display text-purple-600">{{ groups | length }}</div>
-        <div class="text-sm text-gray-500 mt-1 font-medium">{{ t('groups') }}</div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="/categories" class="btn-premium-ghost">📁 {{ t('categories') }}</a>
+        <a href="/import" class="btn-premium-ghost">📥 {{ t('import') }}</a>
+        <a href="/export/students" class="btn-premium-ghost">📊 {{ t('download_journal') }}</a>
+        <a href="/admin/students" class="btn-premium">👥 {{ t('users') }}</a>
       </div>
     </div>
+
+    <!-- TABS -->
+    <div class="glass-premium mb-6 inline-flex gap-1 slide-up flex-wrap" style="padding: 6px; animation-delay:.05s">
+      <button @click="tab = 'overview'" :class="tab === 'overview' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30'" class="px-5 py-2 rounded-xl font-semibold text-sm transition">📊 {{ t('overview') }}</button>
+      <button @click="tab = 'students'" :class="tab === 'students' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30'" class="px-5 py-2 rounded-xl font-semibold text-sm transition">👥 {{ t('students') }}</button>
+      <button @click="tab = 'tests'" :class="tab === 'tests' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30'" class="px-5 py-2 rounded-xl font-semibold text-sm transition">📝 {{ t('tests') }}</button>
+      <button @click="tab = 'categories'" :class="tab === 'categories' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30'" class="px-5 py-2 rounded-xl font-semibold text-sm transition">📁 {{ t('categories') }}</button>
+      <button @click="tab = 'groups'" :class="tab === 'groups' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30'" class="px-5 py-2 rounded-xl font-semibold text-sm transition">🎓 {{ t('groups') }}</button>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="glass-premium mb-6 slide-up" style="padding: 1.25rem; animation-delay:.1s">
+      <form method="GET" class="flex gap-3 flex-wrap items-end">
+        <div>
+          <label class="text-xs text-slate-500 dark:text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">{{ t('group') }}</label>
+          <select name="group_id" class="input-premium" style="padding: 8px 14px; font-size: 13px;" onchange="this.form.submit()">
+            <option value="">{{ t('all_groups') }}</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}" {% if f_group == g.id %}selected{% endif %}>{{ g.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 dark:text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">{{ t('category') }}</label>
+          <select name="category_id" class="input-premium" style="padding: 8px 14px; font-size: 13px;" onchange="this.form.submit()">
+            <option value="">{{ t('all_categories') }}</option>
+            {% for c in categories %}
+            <option value="{{ c.id }}" {% if f_category == c.id %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 dark:text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">{{ t('test_filter') }}</label>
+          <select name="deck_id" class="input-premium" style="padding: 8px 14px; font-size: 13px;" onchange="this.form.submit()">
+            <option value="">{{ t('all_tests') }}</option>
+            {% for d in decks %}
+            <option value="{{ d.id }}" {% if f_deck == d.id %}selected{% endif %}>{{ d.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% if f_group or f_category or f_deck %}
+        <a href="/dashboard" class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">✕ {{ t('reset') }}</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- ============ OVERVIEW ============ -->
+    <div x-show="tab === 'overview'" class="fade-in">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="stat-card stat-blue">
+          <div class="text-2xl mb-2">📚</div>
+          <div class="stat-value">{{ total_cards }}</div>
+          <div class="stat-label">{{ t('total_questions') }}</div>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="text-2xl mb-2">📈</div>
+          <div class="stat-value">{{ org_progress }}%</div>
+          <div class="stat-label">{{ t('total_progress') }}</div>
+        </div>
+        <div class="stat-card stat-emerald">
+          <div class="text-2xl mb-2">👥</div>
+          <div class="stat-value">{{ n_students }}</div>
+          <div class="stat-label">{{ t('students') | capitalize }}</div>
+        </div>
+        <div class="stat-card stat-orange">
+          <div class="text-2xl mb-2">🎓</div>
+          <div class="stat-value">{{ groups | length }}</div>
+          <div class="stat-label">{{ t('groups') }}</div>
+        </div>
+      </div>
 
     <!-- TOP WORST -->
     <div class="grid md:grid-cols-3 gap-5 mb-6">
@@ -288,6 +291,7 @@
       </table>
       </div>
     </div>
+  </div>
   </div>
 </div>
 {% endblock %}

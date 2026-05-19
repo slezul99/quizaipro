@@ -8,20 +8,28 @@
   .study-card {
     background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,255,0.95) 100%);
     backdrop-filter: blur(40px);
-    border: 1px solid rgba(255,255,255,0.9);
+    border: 1.5px solid rgba(99,102,241,0.18);
     box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  html.dark .study-card {
+    background: linear-gradient(135deg, rgba(30,41,75,0.92) 0%, rgba(20,28,56,0.92) 100%);
+    border-color: rgba(99,102,241,0.3);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+    color: #e2e8f0;
   }
   .grade-btn {
     border-radius: 18px; padding: 18px 12px;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid transparent;
-    font-weight: 600;
+    border: 1.5px solid transparent;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
   }
-  .grade-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px currentColor; }
+  .grade-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px -8px currentColor; }
+  html.dark .grade-btn { border-color: rgba(99,102,241,0.25); }
 </style>
 {% endblock %}
 {% block content %}
-<div class="max-w-3xl mx-auto px-6 py-8" x-data="{
+<div class="relative max-w-3xl mx-auto px-6 py-8" x-data="{
   flipped: false,
   speak(text) {
     if (!text) return;
@@ -32,7 +40,13 @@
     window.speechSynthesis.speak(u);
   }
 }" @keydown.window.space.prevent="flipped = true" @keydown.window.enter.prevent="flipped = true">
-  <a href="/deck/{{ deck_id }}" class="text-indigo-600 text-sm hover:underline">← К колоде</a>
+  <div class="deco-blob deco-blob-1" style="top:-100px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:0; left:-100px;"></div>
+
+  <div class="relative z-10">
+    <a href="/deck/{{ deck_id }}" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+      <span>←</span> К колоде
+    </a>
 
   <div class="my-6">
     <div class="flex justify-between text-sm mb-2">
@@ -136,6 +150,7 @@
         <div class="font-bold">⭐ Легко</div>
       </button>
     </form>
+  </div>
   </div>
 </div>
 

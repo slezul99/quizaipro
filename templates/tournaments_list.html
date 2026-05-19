@@ -1,97 +1,103 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-10" x-data="{ showNew: false, decks: [] }" x-init="
+<div class="relative max-w-5xl mx-auto px-6 py-10" x-data="{ showNew: false, decks: [] }" x-init="
   fetch('/api/my-decks').then(r => r.ok ? r.json() : {decks:[]}).then(d => decks = d.decks || []);
 ">
-  <div class="flex justify-between items-end mb-6 flex-wrap gap-3">
-    <div>
-      <h1 class="h-display text-4xl text-slate-900 mb-1">🏆 <span class="text-gradient">Турниры</span></h1>
-      <p class="text-slate-600">4-16 игроков · единичный нокаут · победитель +200 XP</p>
-    </div>
-    <button @click="showNew = true" class="btn btn-primary">+ Создать турнир</button>
-  </div>
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
 
-  {% if open_tours %}
-  <div class="mb-8">
-    <h2 class="font-bold text-xl text-slate-900 mb-3">🎯 Открытая регистрация</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {% for t in open_tours %}
-      <a href="/tournament/{{ t.id }}" class="glass rounded-3xl p-5 card-hover">
-        <div class="flex items-start gap-3 mb-2">
-          <span class="text-3xl">{{ t.deck_icon }}</span>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-bold text-slate-900 truncate">{{ t.name }}</h3>
-            <p class="text-xs text-slate-500">@{{ t.creator_username }} · {{ t.deck_name }}</p>
+  <div class="relative z-10">
+    <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
+      <div class="section-header left" style="margin-bottom: 0;">
+        <span class="section-badge"><span class="badge-dot"></span>🏆 Турниры</span>
+        <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+        <h1 class="section-h">Турниры</h1>
+        <p class="section-sub">4-16 игроков · единичный нокаут · победитель +200 XP</p>
+      </div>
+      <button @click="showNew = true" class="btn-premium">+ Создать турнир</button>
+    </div>
+
+    {% if open_tours %}
+    <div class="mb-8">
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">🎯 Открытая регистрация</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for t in open_tours %}
+        <a href="/tournament/{{ t.id }}" class="glass-premium" style="padding: 1.25rem;">
+          <div class="flex items-start gap-3 mb-2">
+            <span class="text-3xl">{{ t.deck_icon }}</span>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ t.name }}</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">@{{ t.creator_username }} · {{ t.deck_name }}</p>
+            </div>
+            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t.players_count }}/{{ t.size }}</span>
           </div>
-          <span class="badge bg-emerald-100 text-emerald-700">{{ t.players_count }}/{{ t.size }}</span>
-        </div>
-        <div class="text-xs text-slate-600 mt-2">⚔️ {{ t.size }} игроков · бракет</div>
-      </a>
-      {% endfor %}
+          <div class="text-xs text-slate-600 dark:text-slate-300 mt-2">⚔️ {{ t.size }} игроков · бракет</div>
+        </a>
+        {% endfor %}
+      </div>
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  {% if my_tours %}
-  <div>
-    <h2 class="font-bold text-xl text-slate-900 mb-3">⚔️ Мои турниры</h2>
-    <div class="space-y-2">
-      {% for t in my_tours %}
-      <a href="/tournament/{{ t.id }}" class="glass rounded-2xl p-4 flex items-center gap-3 card-hover">
-        <span class="text-2xl">{{ t.deck_icon }}</span>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold text-slate-900 truncate">{{ t.name }}</div>
-          <div class="text-xs text-slate-500">{{ t.deck_name }} · {{ t.size }} игроков</div>
-        </div>
-        <span class="badge {% if t.status == 'open' %}bg-blue-100 text-blue-700{% elif t.status == 'running' %}bg-yellow-100 text-yellow-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
-          {% if t.status == 'open' %}Открыт{% elif t.status == 'running' %}Идёт{% else %}Завершён{% endif %}
-        </span>
-      </a>
-      {% endfor %}
+    {% if my_tours %}
+    <div>
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">⚔️ Мои турниры</h2>
+      <div class="space-y-2">
+        {% for t in my_tours %}
+        <a href="/tournament/{{ t.id }}" class="glass-premium flex items-center gap-3" style="padding: 1rem 1.25rem;">
+          <span class="text-2xl">{{ t.deck_icon }}</span>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ t.name }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">{{ t.deck_name }} · {{ t.size }} игроков</div>
+          </div>
+          <span class="badge {% if t.status == 'open' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% elif t.status == 'running' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300{% else %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300{% endif %}">
+            {% if t.status == 'open' %}Открыт{% elif t.status == 'running' %}Идёт{% else %}Завершён{% endif %}
+          </span>
+        </a>
+        {% endfor %}
+      </div>
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  {% if not open_tours and not my_tours %}
-  <div class="text-center py-16 glass rounded-3xl">
-    <div class="text-6xl mb-3">🏆</div>
-    <p class="text-slate-600 mb-4">Пока нет турниров</p>
-    <button @click="showNew = true" class="btn btn-primary">+ Создать первый</button>
+    {% if not open_tours and not my_tours %}
+    <div class="text-center py-16 glass-premium">
+      <div class="text-7xl mb-4">🏆</div>
+      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">Пока нет турниров</p>
+      <button @click="showNew = true" class="btn-premium">+ Создать первый</button>
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 
   <!-- Modal -->
-  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
-    <form method="POST" action="/tournament/new" class="glass-strong rounded-3xl p-7 max-w-md w-full scale-in">
+  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
+    <form method="POST" action="/tournament/new" class="glass-premium max-w-md w-full scale-in" style="padding: 1.75rem;">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="text-xl font-bold mb-1 h-display">🏆 Новый турнир</h3>
-      <p class="text-xs text-slate-500 mb-4">Один-на-один матчи на выбывание. Финалист +200 XP.</p>
+      <h3 class="section-h" style="font-size: 1.5rem;">🏆 Новый турнир</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-2">Один-на-один матчи на выбывание. Финалист +200 XP.</p>
 
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Название</label>
-      <input name="name" required maxlength="60" placeholder="Английский Premier"
-        class="w-full px-4 py-3 mb-4 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white">
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Название</label>
+      <input name="name" required maxlength="60" placeholder="Английский Premier" class="input-premium mb-4">
 
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Колода</label>
-      <select name="deck_id" required class="w-full px-4 py-3 mb-4 rounded-xl border border-gray-200 bg-white">
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Колода</label>
+      <select name="deck_id" required class="input-premium mb-4">
         <option value="">— Выберите колоду —</option>
         <template x-for="d in decks" :key="d.id">
           <option :value="d.id" x-text="d.icon + ' ' + d.name + ' (' + d.cnt + ')'"></option>
         </template>
       </select>
 
-      <label class="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-2">Размер</label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Размер</label>
       <div class="grid grid-cols-3 gap-2 mb-5">
         {% for s in [4, 8, 16] %}
         <label class="cursor-pointer">
           <input type="radio" name="size" value="{{ s }}" {% if loop.first %}checked{% endif %} class="hidden peer">
-          <div class="py-3 rounded-xl border-2 border-gray-200 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 text-center font-semibold">{{ s }} игроков</div>
+          <div class="py-3 rounded-xl border-2 border-indigo-200/50 dark:border-indigo-700/40 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/40 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 text-center font-bold transition">{{ s }} игроков</div>
         </label>
         {% endfor %}
       </div>
 
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showNew = false" class="btn btn-ghost">Отмена</button>
-        <button type="submit" class="btn btn-primary">Создать</button>
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">Отмена</button>
+        <button type="submit" class="btn-premium">Создать</button>
       </div>
     </form>
   </div>

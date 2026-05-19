@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-3xl mx-auto px-6 py-10" x-data="{
+<div class="relative max-w-3xl mx-auto px-6 py-10" x-data="{
     chosen: null,
     submitted: false,
     correct: '{{ correct_letter or '' }}',
@@ -62,37 +62,41 @@
     if ($event.key === 'Enter' && chosen) submit();
   }">
 
-  <a href="/deck/{{ deck_id }}" class="text-blue-600 text-sm">← К колоде</a>
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:0; left:-100px;"></div>
+
+  <div class="relative z-10">
+    <a href="/deck/{{ deck_id }}" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all">
+      <span>←</span> К колоде
+    </a>
 
   <div class="my-6">
-    <div class="flex justify-between text-sm text-gray-500 mb-2">
-      <span>{{ idx + 1 }} / {{ total }}</span>
+    <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300 mb-2">
+      <span class="font-bold">{{ idx + 1 }} / {{ total }}</span>
       <div class="flex gap-3 items-center">
         <button type="button" @click="toggleSound()" :title="soundOn ? 'Выключить звук' : 'Включить звук'"
-          class="hover:bg-gray-100 rounded-lg p-1 transition">
+          class="hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg p-1 transition">
           <span x-show="soundOn">🔊</span>
           <span x-show="!soundOn">🔇</span>
         </button>
-        <span class="text-emerald-600">✓ {{ stats.correct }}</span>
-        <span class="text-red-600">✗ {{ stats.wrong }}</span>
+        <span class="text-emerald-600 dark:text-emerald-300 font-bold">✓ {{ stats.correct }}</span>
+        <span class="text-red-600 dark:text-red-300 font-bold">✗ {{ stats.wrong }}</span>
       </div>
     </div>
-    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-      <div class="h-full bg-blue-500 transition-all" style="width: {{ (idx / total * 100) if total else 0 }}%"></div>
-    </div>
+    <div class="progress-bar h-2"><div style="width: {{ (idx / total * 100) if total else 0 }}%"></div></div>
   </div>
 
-  <div class="glass rounded-3xl p-8 md:p-10 shadow-xl">
-    <div class="text-xs uppercase tracking-widest text-gray-400 mb-4 text-center">Вопрос</div>
+  <div class="glass-premium" style="padding: 2rem;">
+    <div class="text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 text-center font-bold">Вопрос</div>
     {% if card.image_url %}
     <div class="text-center mb-5">
-      <img src="{{ card.image_url }}" class="max-h-48 rounded-2xl mx-auto shadow-md">
+      <img src="{{ card.image_url }}" class="max-h-48 rounded-2xl mx-auto shadow-lg">
     </div>
     {% endif %}
-    <div class="text-xl md:text-2xl font-medium leading-relaxed text-center mb-3">{{ card.front }}</div>
+    <div class="text-xl md:text-2xl font-medium leading-relaxed text-center mb-3 text-slate-900 dark:text-slate-100">{{ card.front }}</div>
     <div class="text-center mb-6">
       <button type="button" @click="speak('{{ card.front|e }}')"
-        class="text-indigo-500 hover:text-indigo-700 text-xs flex items-center gap-1 mx-auto hover:bg-indigo-50 px-3 py-1 rounded-lg transition">
+        class="text-indigo-500 hover:text-indigo-700 text-xs flex items-center gap-1 mx-auto hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-3 py-1.5 rounded-lg transition">
         🔊 Озвучить
       </button>
     </div>
@@ -106,20 +110,20 @@
       <button type="button"
         @click="pick('{{ opt.letter }}')"
         :class="{
-          'border-blue-500 bg-blue-50 ring-2 ring-blue-500/30': chosen === '{{ opt.letter }}' && !submitted,
-          'border-emerald-500 bg-emerald-50 text-emerald-700': submitted && '{{ opt.letter }}' === correct,
-          'border-red-500 bg-red-50 text-red-700': submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct,
-          'opacity-50': submitted && '{{ opt.letter }}' !== correct && chosen !== '{{ opt.letter }}',
-          'hover:border-blue-300 hover:bg-blue-50/50': !submitted && chosen !== '{{ opt.letter }}'
+          'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-300 dark:bg-indigo-900/40': chosen === '{{ opt.letter }}' && !submitted,
+          'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200': submitted && '{{ opt.letter }}' === correct,
+          'border-red-500 bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-200': submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct,
+          'opacity-40': submitted && '{{ opt.letter }}' !== correct && chosen !== '{{ opt.letter }}',
+          'hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30': !submitted && chosen !== '{{ opt.letter }}'
         }"
-        class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 text-left transition-all">
-        <span class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600"
+        class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-indigo-200/50 dark:border-indigo-700/40 bg-white/60 dark:bg-slate-800/40 text-left transition-all">
+        <span class="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center font-bold text-indigo-600 dark:text-indigo-300"
           :class="{
-            'bg-blue-500 text-white': chosen === '{{ opt.letter }}' && !submitted,
+            'bg-indigo-500 text-white': chosen === '{{ opt.letter }}' && !submitted,
             'bg-emerald-500 text-white': submitted && '{{ opt.letter }}' === correct,
             'bg-red-500 text-white': submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct
           }">{{ opt.letter }}</span>
-        <span class="text-base md:text-lg">{{ opt.text }}</span>
+        <span class="text-base md:text-lg text-slate-800 dark:text-slate-100">{{ opt.text }}</span>
         <span class="ml-auto text-xl" x-show="submitted && '{{ opt.letter }}' === correct">✓</span>
         <span class="ml-auto text-xl" x-show="submitted && chosen === '{{ opt.letter }}' && '{{ opt.letter }}' !== correct">✗</span>
       </button>
@@ -130,19 +134,20 @@
       <button @click="submit()"
         :disabled="!chosen || submitted"
         :class="{ 'opacity-40 cursor-not-allowed': !chosen || submitted }"
-        class="btn btn-primary px-12">
+        class="btn-premium px-12">
         <span x-show="!submitted">Ответить</span>
-        <span x-show="submitted && chosen === correct" class="text-emerald-600">Правильно! ✓</span>
-        <span x-show="submitted && chosen !== correct" class="text-red-600">Неправильно ✗</span>
+        <span x-show="submitted && chosen === correct" class="text-white">Правильно! ✓</span>
+        <span x-show="submitted && chosen !== correct" class="text-white">Неправильно ✗</span>
       </button>
-      <div class="text-xs text-gray-400">Клавиши: 1-{{ options|length }} выбор · Enter подтвердить</div>
+      <div class="text-xs text-slate-400 dark:text-slate-500">Клавиши: 1-{{ options|length }} выбор · Enter подтвердить</div>
     </div>
 
     {% if not options %}
-    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 text-center">
+    <div class="mt-6 p-4 rounded-2xl text-sm text-amber-700 dark:text-amber-200 text-center" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); border: 1.5px solid rgba(245,158,11,0.4);">
       ⚠️ У этого вопроса нет вариантов ответа. Используйте обычный режим изучения.
     </div>
     {% endif %}
+  </div>
   </div>
 </div>
 {% endblock %}

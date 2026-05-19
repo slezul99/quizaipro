@@ -1,93 +1,97 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-10">
-  <div class="mb-6">
-    <h1 class="h-display text-4xl text-slate-900 mb-3">🔍 <span class="text-gradient">Поиск</span></h1>
-    <form method="GET" class="glass rounded-2xl p-3">
+<div class="relative max-w-5xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
+
+  <div class="relative z-10">
+    <div class="section-header left mb-6">
+      <span class="section-badge"><span class="badge-dot"></span>🔍 Поиск</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">Поиск</h1>
+    </div>
+
+    <form method="GET" class="glass-premium mb-6" style="padding: 0.75rem;">
       <input type="text" name="q" value="{{ q }}" autofocus minlength="2"
-        placeholder="Найти пользователя, колоду или канал..."
-        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 bg-white">
+        placeholder="🔍 Найти пользователя, колоду или канал..." class="input-premium">
     </form>
-  </div>
 
-  {% if q and q|length < 2 %}
-  <p class="text-slate-500 text-center py-8">Введите минимум 2 символа</p>
-  {% elif q %}
-  <p class="text-slate-600 mb-4">
-    Найдено: {{ results.users|length }} пользователей · {{ results.decks|length }} колод · {{ results.channels|length }} каналов
-  </p>
+    {% if q and q|length < 2 %}
+    <p class="text-slate-500 dark:text-slate-400 text-center py-8">Введите минимум 2 символа</p>
+    {% elif q %}
+    <p class="text-slate-600 dark:text-slate-300 mb-4">
+      Найдено: <b>{{ results.users|length }}</b> пользователей · <b>{{ results.decks|length }}</b> колод · <b>{{ results.channels|length }}</b> каналов
+    </p>
 
-  <!-- Polzovateli -->
-  {% if results.users %}
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">👤 Пользователи</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {% for u in results.users %}
-      <a href="/u/{{ u.username }}" class="glass rounded-2xl p-4 flex items-center gap-3 card-hover">
-        <span class="avatar">{{ (u.full_name or u.username)[0]|upper }}</span>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold text-slate-900 truncate">{{ u.full_name or u.username }}</div>
-          <div class="text-xs text-slate-500">@{{ u.username }} · ⭐ {{ u.xp }} · 🔥 {{ u.streak }}</div>
-        </div>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- Kolody -->
-  {% if results.decks %}
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">📚 Колоды</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      {% for d in results.decks %}
-      <div class="glass rounded-2xl p-5 card-hover">
-        <div class="flex items-start gap-3 mb-2">
-          <span class="text-3xl">{{ d.icon }}</span>
+    {% if results.users %}
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">👤 Пользователи</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {% for u in results.users %}
+        <a href="/u/{{ u.username }}" class="glass-premium flex items-center gap-3" style="padding: 1rem;">
+          <span class="avatar">{{ (u.full_name or u.username)[0]|upper }}</span>
           <div class="flex-1 min-w-0">
-            <h3 class="font-bold text-slate-900 truncate">{{ d.name }}</h3>
-            <p class="text-xs text-slate-500">{{ d.card_count }} карт · 📥 {{ d.clones_count }}</p>
-            {% if d.author_username %}
-            <a href="/u/{{ d.author_username }}" class="text-xs text-indigo-600 hover:underline">@{{ d.author }}</a>
-            {% else %}
-            <span class="text-xs text-slate-400">{{ d.author }}</span>
-            {% endif %}
+            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ u.full_name or u.username }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">@{{ u.username }} · ⭐ {{ u.xp }} · 🔥 {{ u.streak }}</div>
           </div>
-        </div>
-        <form method="POST" action="/marketplace/clone/{{ d.id }}">
-          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-primary text-xs w-full justify-center">📥 Добавить себе</button>
-        </form>
+        </a>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- Kanaly -->
-  {% if results.channels %}
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">📡 Каналы</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      {% for c in results.channels %}
-      <a href="/chat/{{ c.id }}" class="glass rounded-2xl p-4 flex items-center gap-3 card-hover">
-        <span class="text-3xl">{{ c.avatar }}</span>
-        <div class="flex-1">
-          <div class="font-semibold text-slate-900">{{ c.name }}</div>
-          <div class="text-xs text-slate-500">{{ c.member_count }} подписчиков</div>
+    {% if results.decks %}
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">📚 Колоды</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for d in results.decks %}
+        <div class="glass-premium" style="padding: 1.25rem;">
+          <div class="flex items-start gap-3 mb-3">
+            <span class="text-3xl">{{ d.icon }}</span>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ d.name }}</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ d.card_count }} карт · 📥 {{ d.clones_count }}</p>
+              {% if d.author_username %}
+              <a href="/u/{{ d.author_username }}" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">@{{ d.author }}</a>
+              {% else %}
+              <span class="text-xs text-slate-400 dark:text-slate-500">{{ d.author }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <form method="POST" action="/marketplace/clone/{{ d.id }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-premium w-full justify-center" style="font-size: 12px; padding: 8px;">📥 Добавить себе</button>
+          </form>
         </div>
-      </a>
-      {% endfor %}
+        {% endfor %}
+      </div>
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  {% if not results.users and not results.decks and not results.channels %}
-  <div class="text-center py-16 glass rounded-3xl">
-    <div class="text-6xl mb-3">🔍</div>
-    <p class="text-slate-600">По запросу «{{ q }}» ничего не найдено</p>
+    {% if results.channels %}
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">📡 Каналы</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for c in results.channels %}
+        <a href="/chat/{{ c.id }}" class="glass-premium flex items-center gap-3" style="padding: 1rem;">
+          <span class="text-3xl">{{ c.avatar }}</span>
+          <div class="flex-1">
+            <div class="font-bold text-slate-900 dark:text-slate-100">{{ c.name }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">{{ c.member_count }} подписчиков</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not results.users and not results.decks and not results.channels %}
+    <div class="text-center py-16 glass-premium">
+      <div class="text-7xl mb-4">🔍</div>
+      <p class="text-slate-600 dark:text-slate-300">По запросу «<b>{{ q }}</b>» ничего не найдено</p>
+    </div>
+    {% endif %}
+    {% endif %}
   </div>
-  {% endif %}
-  {% endif %}
 </div>
 {% endblock %}

@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-6 py-20 text-center">
-  <div class="text-7xl mb-4">🎉</div>
-  <h2 class="h-display text-4xl mb-2">{{ t('session_done') }}</h2>
-  <p class="text-gray-600 mb-8">{{ total }} {{ t('cards_in_session') }}</p>
-  <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
-    <div class="glass rounded-2xl p-5">
-      <div class="text-2xl font-bold text-emerald-600">{{ stats.good }}</div>
-      <div class="text-xs text-gray-500">{{ t('good') }}</div>
+<div class="relative max-w-2xl mx-auto px-6 py-20 text-center">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-50px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:0; left:-100px;"></div>
+
+  <div class="relative z-10">
+    <div class="text-8xl mb-5">🎉</div>
+    <h2 class="section-h">{{ t('session_done') }}</h2>
+    <p class="text-slate-600 dark:text-slate-300 mb-8 mt-2 text-lg">{{ total }} {{ t('cards_in_session') }}</p>
+    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+      <div class="stat-card stat-emerald">
+        <div class="stat-value">{{ stats.good }}</div>
+        <div class="stat-label">{{ t('good') }}</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-value">{{ stats.again }}</div>
+        <div class="stat-label">{{ t('again') }}</div>
+      </div>
     </div>
-    <div class="glass rounded-2xl p-5">
-      <div class="text-2xl font-bold text-orange-600">{{ stats.again }}</div>
-      <div class="text-xs text-gray-500">{{ t('again') }}</div>
-    </div>
+    <a href="/dashboard" class="btn-premium">{{ t('back_to_decks') }}</a>
   </div>
-  <a href="/dashboard" class="btn btn-primary">{{ t('back_to_decks') }}</a>
 </div>
 {% endblock %}

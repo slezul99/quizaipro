@@ -1,62 +1,68 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-8">
+<div class="relative max-w-5xl mx-auto px-6 py-8">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
 
-  <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-    <div>
-      <h1 class="h-display text-3xl text-slate-900">📋 История Live-тестов</h1>
-      <p class="text-slate-600 text-sm">Завершённые сессии — как ваши, так и где вы участвовали</p>
+  <div class="relative z-10">
+    <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
+      <div class="section-header left" style="margin-bottom: 0;">
+        <span class="section-badge"><span class="badge-dot"></span>📋 Live</span>
+        <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+        <h1 class="section-h">История Live-тестов</h1>
+        <p class="section-sub">Завершённые сессии — как ваши, так и где вы участвовали</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        {% if current_user.role in ['admin','teacher','individual'] %}
+        <a href="/live/create" class="btn-premium">+ Новый live-тест</a>
+        {% endif %}
+        <a href="/live/join" class="btn-premium-ghost">Войти по коду</a>
+      </div>
     </div>
-    {% if current_user.role in ['admin','teacher','individual'] %}
-    <a href="/live/create" class="btn btn-primary">+ Новый live-тест</a>
-    {% endif %}
-    <a href="/live/join" class="btn btn-soft">Войти по коду</a>
-  </div>
 
-  {% if not sessions %}
-  <div class="glass rounded-3xl p-10 text-center">
-    <div class="text-5xl mb-3">📭</div>
-    <p class="text-slate-700 font-semibold mb-2">Пока нет завершённых live-тестов</p>
-    <p class="text-slate-500 text-sm">Создайте новый или присоединитесь по коду</p>
-  </div>
-  {% else %}
-  <div class="space-y-3">
-    {% for s in sessions %}
-    <a href="/live/history/{{ s.code }}"
-      class="glass rounded-2xl p-4 flex items-center gap-4 hover:bg-white/80 transition block">
-      <div class="text-3xl flex-shrink-0">{{ s.deck_icon or '📚' }}</div>
+    {% if not sessions %}
+    <div class="glass-premium text-center" style="padding: 3rem 2rem;">
+      <div class="text-7xl mb-4">📭</div>
+      <p class="text-slate-700 dark:text-slate-200 font-bold text-lg mb-2">Пока нет завершённых live-тестов</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">Создайте новый или присоединитесь по коду</p>
+    </div>
+    {% else %}
+    <div class="space-y-3">
+      {% for s in sessions %}
+      <a href="/live/history/{{ s.code }}" class="glass-premium flex items-center gap-4">
+        <div class="text-3xl flex-shrink-0">{{ s.deck_icon or '📚' }}</div>
 
-      <div class="flex-1 min-w-0">
-        <div class="font-bold text-slate-900 truncate">{{ s.deck_name }}</div>
-        <div class="text-xs text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
-          <span>👤 {{ s.host_username }}</span>
-          <span>·</span>
-          <span>👥 {{ s.player_count }} игроков</span>
-          <span>·</span>
-          <span>{{ s.finished_at[:16].replace('T', ' ') if s.finished_at else '' }}</span>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2 flex-wrap">
-        {% if s.i_was_host %}
-          <span class="badge bg-purple-100 text-purple-700 text-xs">👑 Хост</span>
-        {% endif %}
-        {% if s.i_was_player %}
-          <span class="badge bg-emerald-100 text-emerald-700 text-xs">🎮 Участник</span>
-          <div class="text-right">
-            <div class="font-bold text-indigo-600 text-lg">{{ s.my_score or 0 }}</div>
-            <div class="text-[10px] text-slate-500">{{ s.my_correct or 0 }} ✓</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ s.deck_name }}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+            <span>👤 {{ s.host_username }}</span>
+            <span>·</span>
+            <span>👥 {{ s.player_count }} игроков</span>
+            <span>·</span>
+            <span>{{ s.finished_at[:16].replace('T', ' ') if s.finished_at else '' }}</span>
           </div>
-        {% elif s.i_was_host %}
-          <span class="badge bg-blue-100 text-blue-700 text-xs">👁 Наблюдатель</span>
-        {% endif %}
-      </div>
+        </div>
 
-      <span class="text-slate-400 text-2xl">→</span>
-    </a>
-    {% endfor %}
+        <div class="flex items-center gap-2 flex-wrap">
+          {% if s.i_was_host %}
+            <span class="badge bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 text-xs">👑 Хост</span>
+          {% endif %}
+          {% if s.i_was_player %}
+            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs">🎮 Участник</span>
+            <div class="text-right">
+              <div class="font-black text-indigo-600 dark:text-indigo-300 text-xl" style="font-family: 'Space Grotesk', sans-serif;">{{ s.my_score or 0 }}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{{ s.my_correct or 0 }} ✓</div>
+            </div>
+          {% elif s.i_was_host %}
+            <span class="badge bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 text-xs">👁 Наблюдатель</span>
+          {% endif %}
+        </div>
+
+        <span class="text-slate-400 dark:text-slate-500 text-2xl">→</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
-
 </div>
 {% endblock %}

@@ -1,17 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-3xl mx-auto px-6 py-8" x-data="liveCreate()">
+<div class="relative max-w-3xl mx-auto px-6 py-8" x-data="liveCreate()">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-100px;"></div>
 
-  <div class="text-center mb-6">
-    <div class="text-5xl mb-2">🎮</div>
-    <h1 class="h-display text-3xl text-slate-900">Создать Live Test</h1>
-    <p class="text-slate-600 text-sm mt-1">
-      Запустите тест в реальном времени —
-      студенты вводят код и отвечают одновременно
-    </p>
-  </div>
+  <div class="relative z-10">
+    <div class="text-center mb-6">
+      <span class="section-badge"><span class="badge-dot"></span>🎮 Live</span>
+      <h1 class="section-h" style="font-size: clamp(1.7rem, 3.5vw, 2.5rem); margin-top: 0.5rem;">Создать Live Test</h1>
+      <p class="text-slate-600 dark:text-slate-300 text-sm mt-2">
+        Запустите тест в реальном времени —<br>
+        студенты вводят код и отвечают одновременно
+      </p>
+    </div>
 
-  <form method="post" action="/live/create" class="glass rounded-3xl p-6 space-y-6">
+  <form method="post" action="/live/create" class="glass-premium space-y-5">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
     <input type="hidden" name="mode" :value="mode">
 
@@ -138,13 +141,14 @@
     <button type="submit"
       :disabled="(mode === 'deck' && !deckId) || (mode === 'category' && !categoryId)"
       :class="((mode === 'deck' && !deckId) || (mode === 'category' && !categoryId)) ? 'opacity-40 cursor-not-allowed' : ''"
-      class="btn btn-primary w-full text-lg py-3">
+      class="btn-premium w-full justify-center" style="font-size: 17px; padding: 14px 28px;">
       🚀 Создать live-тест
     </button>
   </form>
 
   <div class="text-center mt-4">
-    <a href="/live/history" class="text-sm text-indigo-600 hover:underline">📋 История моих live-тестов →</a>
+    <a href="/live/history" class="text-sm text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">📋 История моих live-тестов →</a>
+  </div>
   </div>
 </div>
 

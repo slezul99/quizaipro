@@ -1,47 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-10">
-  <a href="/dashboard" class="text-blue-600 text-sm">← Dashboard</a>
-  <div class="text-center my-10">
-    <h1 class="h-display text-4xl mb-2">Тарифы</h1>
-    <p class="text-gray-500">Текущий: <span class="font-semibold text-blue-600">{{ plans[plan].name }}</span> · AI: {{ used }}/{{ limit }} в месяц</p>
-  </div>
+<div class="relative max-w-5xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
 
-  {% if request.args.get('status') == 'success' %}
-  <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 text-emerald-700 text-sm">
-    ✓ Подписка активирована! Может потребоваться 1-2 минуты для обновления.
-  </div>
-  {% endif %}
+  <div class="relative z-10">
+    <a href="/dashboard" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+      <span>←</span> Dashboard
+    </a>
 
-  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-    {% for plan_id, p in plans.items() %}
-    <div class="glass rounded-2xl p-6 flex flex-col {% if plan == plan_id %}ring-2 ring-blue-500{% endif %}">
-      <h3 class="text-lg font-bold mb-1">{{ p.name }}</h3>
-      <div class="my-4">
-        <span class="text-4xl font-bold">${{ p.price_usd }}</span>
-        <span class="text-gray-500 text-sm">/мес</span>
-      </div>
-      <ul class="space-y-2 text-sm text-gray-600 mb-6 flex-1">
-        <li>✓ {{ p.limits.max_decks }} колод</li>
-        <li>✓ {{ p.limits.max_cards_per_deck }} карт/колода</li>
-        <li>✓ {{ p.limits.ai_generations_per_month }} AI/мес</li>
-        {% if p.limits.max_students > 0 %}
-        <li>✓ До {{ p.limits.max_students }} студентов</li>
-        {% endif %}
-      </ul>
-      {% if plan == plan_id %}
-      <button disabled class="btn btn-ghost justify-center cursor-default">Текущий</button>
-      {% elif plan_id == 'free' %}
-      <button disabled class="btn btn-ghost justify-center cursor-default">—</button>
-      {% else %}
-      {% if has_stripe %}
-      <a href="/billing/checkout/{{ plan_id }}" class="btn btn-primary justify-center">Выбрать</a>
-      {% else %}
-      <button disabled class="btn btn-ghost justify-center cursor-default" title="Stripe не настроен">Скоро</button>
-      {% endif %}
-      {% endif %}
+    <div class="section-header mb-10">
+      <span class="section-badge"><span class="badge-dot"></span>💎 Pricing</span>
+      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
+      <h1 class="section-h">Тарифы</h1>
+      <p class="section-sub">Текущий: <b class="text-indigo-600 dark:text-indigo-300">{{ plans[plan].name }}</b> · AI: {{ used }}/{{ limit }} в месяц</p>
     </div>
-    {% endfor %}
+
+    {% if request.args.get('status') == 'success' %}
+    <div class="glass-premium mb-6" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(255,255,255,0.85)); border-color: rgba(16,185,129,0.4);">
+      <p class="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">✓ Подписка активирована! Может потребоваться 1-2 минуты для обновления.</p>
+    </div>
+    {% endif %}
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      {% for plan_id, p in plans.items() %}
+      <div class="glass-premium flex flex-col {% if plan == plan_id %}ring-4 ring-indigo-300 dark:ring-indigo-500{% endif %}">
+        <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-slate-100">{{ p.name }}</h3>
+        <div class="my-4">
+          <span class="text-5xl font-black" style="font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">${{ p.price_usd }}</span>
+          <span class="text-slate-500 dark:text-slate-400 text-sm font-semibold">/мес</span>
+        </div>
+        <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-300 mb-6 flex-1">
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.max_decks }} колод</span></li>
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.max_cards_per_deck }} карт/колода</span></li>
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.ai_generations_per_month }} AI/мес</span></li>
+          {% if p.limits.max_students > 0 %}
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>До {{ p.limits.max_students }} студентов</span></li>
+          {% endif %}
+        </ul>
+        {% if plan == plan_id %}
+        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-70">Текущий</button>
+        {% elif plan_id == 'free' %}
+        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-50">—</button>
+        {% else %}
+        {% if has_stripe %}
+        <a href="/billing/checkout/{{ plan_id }}" class="btn-premium justify-center">Выбрать</a>
+        {% else %}
+        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-60" title="Stripe не настроен">Скоро</button>
+        {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </div>
 {% endblock %}
