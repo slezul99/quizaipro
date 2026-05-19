@@ -30,6 +30,30 @@ function deckEditor() {
       { key: 'mastered', label: 'Усвоены',   icon: '🎓' },
     ],
 
+    init() {
+      // Debug: log card state
+      console.log('[QuizPro] deck initialized', {
+        deckId: this.deck.id,
+        cardsLength: this.cards?.length,
+        perPage: this.perPage,
+        firstCard: this.cards?.[0],
+      });
+      // Garantiruem chto perPage vsegda chislo
+      if (typeof this.perPage !== 'number' || this.perPage < 1) {
+        this.perPage = 50;
+      }
+      // Watch first render
+      setTimeout(() => {
+        console.log('[QuizPro] after init:', {
+          filteredCards: this.filteredCards.length,
+          pagedCards: this.pagedCards.length,
+          totalPages: this.totalPages,
+          page: this.page,
+          perPage: this.perPage,
+        });
+      }, 100);
+    },
+
     cardCountByDifficulty(key) {
       return this.cards.filter(c => c.difficulty?.key === key).length;
     },
