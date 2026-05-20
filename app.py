@@ -5790,6 +5790,18 @@ def vision_debug_api(job_id):
     return jsonify(safe)
 
 
+@app.route("/api/import/vision/recent")
+@login_required
+def vision_recent_jobs_api():
+    """SUPER-ADMIN ONLY: posledniye 50 job'ov (vklyuchaya s diska)."""
+    user = current_user()
+    if not is_super_admin(user):
+        return jsonify({"error": "forbidden"}), 403
+    jobs = vision_jobs.list_recent_jobs_from_disk(limit=50)
+    # Sortiruyem po vremeni
+    return jsonify({"jobs": jobs, "count": len(jobs)})
+
+
 # ---------------------- AI generation ---------------------------------------
 
 @app.route("/ai", methods=["GET", "POST"])

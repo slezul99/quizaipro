@@ -1,47 +1,68 @@
 # -*- coding: utf-8 -*-
 """Background jobs dlya Vision PDF (chtoby polzovatel ne zhdal sinhronno).
 
-Khranim sostoyanie v in-memory dict (rabotaet pri --workers 1 v gunicorn).
-Esli Railway perezapustit kontayner — job propadyot, no eto OK: polzovatel zalivit zanovo.
+Khranim sostoyanie v in-memory dict + persistim na disk (chtoby perezhival restart Railway).
 """
 import threading
 import time
 import uuid
+import json as _json
 from pathlib import Path
 from datetime import datetime, timedelta
 
-# Job: {
-#   "id": "uuid",
-#   "user_id": int,
-#   "fpath": str,
-#   "filename_stem": str,
-#   "deck_id": int|None,           # esli sushchestvuyushchaya
-#   "new_deck_name": str,
-#   "category_id": int|None,
-#   "lang": str,
-#   "status": "pending"|"running"|"done"|"failed",
-#   "progress": 0-100 (%),
-#   "pages_done": int,
-#   "pages_total": int,
-#   "cards_found": int,
-#   "result_cards": list[dict] | None,
-#   "error": str | None,
-#   "created_at": datetime,
-#   "finished_at": datetime | None,
-#   "deck_id_created": int | None,    # ID koldoy gde sokhraneny karty
-# }
+# Disk persistence (chtoby debugit posle restarta containera)
+_BASE = Path(__file__).resolve().parent
+_JOBS_DIR = _BASE / "vision_jobs_data"
+_JOBS_DIR.mkdir(exist_ok=True)
+
+
+def _job_file(jid: str) -> Path:
+    return _JOBS_DIR / f"{jid}.json"
+
+
+def _save_to_disk(jid: str, job: dict):
+    """Sokhranyaem job na disk dlya post-mortem debug."""
+    try:
+        # datetime → string
+        safe = {}
+        for k, v in job.items():
+            if isinstance(v, datetime):
+                safe[k] = v.isoformat()
+            elif k == "result_cards":
+                # Cards mogut byt' bolshie — sokhranyayem tol'ko kolichestvo
+                safe["result_cards_count"] = len(v) if v else 0
+            else:
+                safe[k] = v
+        _job_file(jid).write_text(_json.dumps(safe, ensure_ascii=False, indent=2),
+                                   encoding="utf-8")
+    except Exception as e:
+        print(f"[vision_jobs] disk save err: {e}")
+
+
 _jobs: dict[str, dict] = {}
 _lock = threading.Lock()
 
 
 def _cleanup_old_jobs():
-    """Udalyayem zavershyonnyye/upavshie jobs starshe 1 chasa."""
-    cutoff = datetime.utcnow() - timedelta(hours=1)
+    """Udalyayem zavershyonnyye/upavshie jobs starshe 1 chasa iz pamati.
+    Disk-faily chistim starshe 7 dney (dlya istorii)."""
+    cutoff_mem = datetime.utcnow() - timedelta(hours=1)
+    cutoff_disk = datetime.utcnow() - timedelta(days=7)
     with _lock:
         to_drop = [jid for jid, j in _jobs.items()
-                   if j.get("finished_at") and j["finished_at"] < cutoff]
+                   if j.get("finished_at") and j["finished_at"] < cutoff_mem]
         for jid in to_drop:
             _jobs.pop(jid, None)
+    # Disk cleanup
+    try:
+        for f in _JOBS_DIR.glob("*.json"):
+            try:
+                if f.stat().st_mtime < cutoff_disk.timestamp():
+                    f.unlink()
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 def create_job(user_id: int, fpath: Path, filename_stem: str,
@@ -50,43 +71,64 @@ def create_job(user_id: int, fpath: Path, filename_stem: str,
     """Sozdaem zapis ob job. Vozvrashchaem job_id."""
     _cleanup_old_jobs()
     jid = uuid.uuid4().hex
+    job = {
+        "id": jid,
+        "user_id": user_id,
+        "fpath": str(fpath),
+        "filename_stem": filename_stem,
+        "deck_id": deck_id,
+        "new_deck_name": new_deck_name,
+        "category_id": category_id,
+        "lang": lang,
+        "status": "pending",
+        "progress": 0,
+        "pages_done": 0,
+        "pages_total": 0,
+        "cards_found": 0,
+        "result_cards": None,
+        "error": None,
+        "created_at": datetime.utcnow(),
+        "finished_at": None,
+        "deck_id_created": None,
+    }
     with _lock:
-        _jobs[jid] = {
-            "id": jid,
-            "user_id": user_id,
-            "fpath": str(fpath),
-            "filename_stem": filename_stem,
-            "deck_id": deck_id,
-            "new_deck_name": new_deck_name,
-            "category_id": category_id,
-            "lang": lang,
-            "status": "pending",
-            "progress": 0,
-            "pages_done": 0,
-            "pages_total": 0,
-            "cards_found": 0,
-            "result_cards": None,
-            "error": None,
-            "created_at": datetime.utcnow(),
-            "finished_at": None,
-            "deck_id_created": None,
-        }
+        _jobs[jid] = job
+    _save_to_disk(jid, job)
     return jid
 
 
 def get_job(jid: str) -> dict | None:
+    """Vozvrashchaem job: snachala iz pamati, esli net — iz fayla na diske."""
     with _lock:
         j = _jobs.get(jid)
-        if j is None:
-            return None
-        # Kopiya chtoby ne otdat' ssylku na obshchiy state
-        return dict(j)
+        if j is not None:
+            return dict(j)
+    # Tryem disk (esli container perezapuskalsya)
+    fpath = _job_file(jid)
+    if fpath.exists():
+        try:
+            data = _json.loads(fpath.read_text(encoding="utf-8"))
+            # Konvertiruem datetime obratno
+            for k in ("created_at", "finished_at"):
+                if data.get(k) and isinstance(data[k], str):
+                    try:
+                        data[k] = datetime.fromisoformat(data[k])
+                    except Exception:
+                        pass
+            return data
+        except Exception as e:
+            print(f"[vision_jobs] disk load err for {jid}: {e}")
+    return None
 
 
 def update_job(jid: str, **fields):
     with _lock:
         if jid in _jobs:
             _jobs[jid].update(fields)
+            job_copy = dict(_jobs[jid])
+        else:
+            return
+    _save_to_disk(jid, job_copy)
 
 
 def get_user_jobs(user_id: int) -> list[dict]:
@@ -97,6 +139,23 @@ def get_user_jobs(user_id: int) -> list[dict]:
             key=lambda j: j.get("created_at") or datetime.min,
             reverse=True,
         )[:10]
+
+
+def list_recent_jobs_from_disk(limit: int = 50) -> list[dict]:
+    """Posledniye job'y vklyuchaya s diska (dlya super-admin debug)."""
+    try:
+        files = sorted(_JOBS_DIR.glob("*.json"),
+                       key=lambda f: f.stat().st_mtime, reverse=True)[:limit]
+        out = []
+        for f in files:
+            try:
+                data = _json.loads(f.read_text(encoding="utf-8"))
+                out.append(data)
+            except Exception:
+                continue
+        return out
+    except Exception:
+        return []
 
 
 def run_vision_job(jid: str, save_cards_callback):

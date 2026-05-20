@@ -55,6 +55,9 @@ _check_*.py
 # === Statika kotoraya generiruetsya ===
 static/card_images/
 
+# === Vision jobs data (in-memory, no smysla kommitit) ===
+vision_jobs_data/*.json
+
 # === Razrabotka ===
 *.bak
 *.tmp
