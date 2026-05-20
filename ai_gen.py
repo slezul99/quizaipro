@@ -295,8 +295,9 @@ def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru",
 
 # === VISION: PDF -> kartochki cherez Gemini Vision (dlya skanov i kartinok) ===
 
-def _pdf_to_images(pdf_path: Path, max_pages: int = 30, dpi: int = 150) -> list[bytes]:
+def _pdf_to_images(pdf_path: Path, max_pages: int = 30, dpi: int = 200) -> list[bytes]:
     """Renderim stranitsy PDF v PNG-baytah. PyMuPDF — bez sistemnyh zavisimostey.
+    DPI=200 dlya luchshego raspoznaniya (vyshe = bolshe API tokens, no luchshe OCR).
     Vozvrashchaem spisok PNG bytes."""
     try:
         import pymupdf  # type: ignore
@@ -323,59 +324,87 @@ def _pdf_to_images(pdf_path: Path, max_pages: int = 30, dpi: int = 150) -> list[
     return images
 
 
-# Promt edinyy dlya vsekh chankov — grazneukhostoychivyy
-VISION_EXTRACT_PROMPT = """Ты — экстрактор тестовых вопросов из сканированных страниц.
+# Promt edinyy dlya vsekh chankov — grazneukhostoychivyy, dotoshnyy
+VISION_EXTRACT_PROMPT = """Ты — ЭКСТРАКТОР тестовых вопросов из сканированных страниц.
+Твоя цель: извлечь ВСЕ ДО ЕДИНОГО закрытые тестовые вопросы (с вариантами A/B/C/D).
+Пропустить вопрос — это ПРОВАЛ. Будь дотошным.
 
-ТВОЯ ЗАДАЧА:
-Извлечь МАКСИМАЛЬНО МНОГО вопросов с вариантами ответов A/B/C/D из изображений.
-Это тестовые задания для учеников. Будь жадным — берешь всё что хоть как-то похоже на вопрос с вариантами.
+АЛГОРИТМ (выполняй ВНУТРИ себя, не выводи):
+1. ПОДСЧЁТ. Сначала пройдись по странице сверху вниз и посчитай: сколько вопросов с вариантами видишь? Запомни число N.
+2. ИЗВЛЕЧЕНИЕ. Извлеки каждый из N вопросов в JSON.
+3. ПРОВЕРКА. Перепроверь: твой массив = N? Если меньше — вернись и найди пропущенные.
 
-ЧТО БРАТЬ (закрытые вопросы):
-- Любой вопрос с вариантами A/B/C/D (или 1/2/3/4, или а/б/в/г)
-- Вопросы по тексту/диалогу/картинке выше — БЕРИ их обязательно. Если вопрос требует контекста, включи краткое содержание контекста в сам вопрос. Например:
-  Текст: "Tom went to school yesterday."
-  Вопрос: "When did Tom go to school?" + варианты
-  → Извлекай как: "Tom went to school yesterday. When did Tom go to school?" + варианты
-- Вопросы на грамматику с пропусками: "I ___ to the store. A) go B) goes C) went D) gone" — БЕРИ
-- Вопросы на словарный запас, перевод, синонимы — БЕРИ
-- Reading comprehension вопросы (по тексту) — БЕРИ С КОНТЕКСТОМ
-- Listening вопросы (по аудио описанию) — БЕРИ если можно понять без аудио
+ЧТО БРАТЬ (закрытые вопросы — обязательно):
+✓ Любой вопрос с вариантами A/B/C/D (или 1/2/3/4, или а/б/в/г, или ①②③④, или I/II/III/IV)
+✓ Грамматика с пропусками: "I ___ to school. A) go B) goes C) went D) gone"
+✓ Reading comprehension по тексту — ВКЛЮЧИ контекст в сам вопрос
+   Пример: текст "Tom went to school" + вопрос "When?" → 
+   front: "Tom went to school yesterday. When did Tom go to school?"
+✓ Vocabulary, синонимы, перевод
+✓ Listening вопросы — если ответ можно понять без аудио (по контексту)
+✓ Несколько вопросов к одному тексту = несколько отдельных карточек (с одним и тем же контекстом)
 
 ЧТО НЕ БРАТЬ:
-- Открытые вопросы (без вариантов, требующие развёрнутого ответа, эссе)
-- Заголовки, шапки, водяные знаки, логотипы школ
-- Инструкции типа "Time: 90 minutes", "Read the instructions carefully"
-- Описания заданий типа "Часть А. Грамматика" — это не вопрос
-- Listening заданий БЕЗ возможности ответить без аудио
+✗ Открытые вопросы (write an essay, describe, explain — без вариантов)
+✗ Заголовки, шапки, водяные знаки, логотипы школ
+✗ Инструкции "Time: 90 minutes", "Read carefully"
+✗ Описания заданий "Часть А. Грамматика" — это не вопрос
+✗ Номера страниц, footer/header
 
-ВАЖНО О ФОРМАТЕ:
-- Не выдумывай варианты, не сокращай ответы — копируй с картинки как есть
-- Орфография как на картинке (опечатки сохраняй)
-- Минимум 2 варианта на вопрос (но обычно 4)
-- Если правильный ответ ОТМЕЧЕН на картинке (✓, обведён, выделен жирным/цветом, "Answer: B" внизу) — обязательно укажи correct_letter
-- Если правильный ответ нигде не виден — correct_letter null (учитель проставит вручную)
+ФОРМАТ КАЖДОЙ КАРТОЧКИ:
+- "number": номер вопроса как на картинке ("1", "12", "Q5") — КРИТИЧНО для проверки
+- "question": полный текст вопроса (с контекстом если нужен), без номера задания
+- "options": массив всех вариантов как есть с картинки
+- "correct_letter": "A"/"B"/"C"/"D" если правильный отмечен (✓, обведён, жирный, "Answer: B" внизу), иначе null
+- "is_open": false (для закрытых) или true (для открытых — не извлекаем их)
 
-ЦЕЛЬ: извлечь МАКСИМУМ закрытых вопросов. На странице теста обычно 5-15 вопросов. Не пропусти ничего.
+СОХРАНЯЙ:
+- Орфографию как на картинке (даже опечатки)
+- Полный текст вариантов, не сокращай
+- Минимум 2 варианта на вопрос (обычно 4)
 
-Вывод СТРОГО JSON-массив (если на странице вообще НЕТ закрытых вопросов — `[]`):
+ВЫХОД — СТРОГО JSON-массив. Если на странице 0 закрытых вопросов → `[]`.
+НЕ ПРОПУСТИ НИ ОДНОГО ВОПРОСА.
+
+Пример вывода:
 [
-  {
-    "question": "Полный текст вопроса (с контекстом если требуется), без номера задания",
-    "options": ["A) текст варианта 1", "B) текст варианта 2", "C) текст варианта 3", "D) текст варианта 4"],
-    "correct_letter": "B",
-    "is_open": false
-  }
+  {"number": "1", "question": "Choose the correct option: I ___ tea every morning.", "options": ["A) drink", "B) drinks", "C) drinking", "D) drank"], "correct_letter": "A", "is_open": false},
+  {"number": "2", "question": "...", "options": [...], "correct_letter": null, "is_open": false}
 ]"""
 
 
-def _gemini_vision_call(images: list[bytes], timeout: int = 240) -> str | None:
-    """Otdelnyy zapros k Gemini Vision s nabor kartinokь Vozvrashchaet raw text otveta."""
+# Audit prompt — vtoroy proxod chtoby nayti propushchennye voprosy
+VISION_AUDIT_PROMPT = """Ты — АУДИТОР извлечения тестовых вопросов.
+
+Другой AI уже извлёк часть вопросов с этой страницы. Твоя задача — НАЙТИ ПРОПУЩЕННЫЕ.
+
+УЖЕ ИЗВЛЕЧЕНЫ ВОПРОСЫ С НОМЕРАМИ: {extracted_numbers}
+
+Внимательно посмотри на изображение и:
+1. Найди ВСЕ закрытые вопросы (с вариантами A/B/C/D) на странице
+2. Для каждого вопроса проверь — есть ли его номер в списке уже извлечённых?
+3. Если НЕТ — извлеки его как новую карточку
+
+Те же правила что для основной экстракции:
+- Закрытые вопросы (с вариантами) — ДА
+- Открытые (essay, describe) — НЕТ
+- Reading comprehension — ДА с контекстом
+
+ВЫХОД — JSON-массив с ПРОПУЩЕННЫМИ вопросами в формате:
+[{"number": "...", "question": "...", "options": [...], "correct_letter": "..." or null, "is_open": false}]
+
+Если ничего не пропущено → `[]`. Не возвращай дубликаты тех номеров что уже в списке."""
+
+
+def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = None) -> str | None:
+    """Otdelnyy zapros k Gemini Vision s nabor kartinokь Vozvrashchaet raw text otveta.
+    prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT)."""
     key = _key()
     if not key:
         print("[AI vision] NO KEY — set GEMINI_API_KEY env var")
         return None
     import base64
-    parts = [{"text": VISION_EXTRACT_PROMPT}]
+    parts = [{"text": prompt or VISION_EXTRACT_PROMPT}]
     for png in images:
         parts.append({
             "inline_data": {
@@ -433,7 +462,8 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240) -> str | None:
 
 
 def _parse_vision_response(text: str) -> list[dict]:
-    """Razbiraet otvet Gemini -> spisok kart. Filtruet otkrytye voprosy."""
+    """Razbiraet otvet Gemini -> spisok kart. Filtruet otkrytye voprosy.
+    Sokranyaet pole 'number' dlya audit-passa."""
     if not text:
         return []
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.MULTILINE)
@@ -459,6 +489,7 @@ def _parse_vision_response(text: str) -> list[dict]:
         q = (it.get("question") or it.get("front") or "").strip()
         opts = it.get("options") or []
         correct = (it.get("correct_letter") or "").strip().upper()
+        number = str(it.get("number") or "").strip()
         # Trebuyem minimum 2 varianta
         if not q or not isinstance(opts, list) or len(opts) < 2:
             continue
@@ -484,7 +515,7 @@ def _parse_vision_response(text: str) -> list[dict]:
         if not back:
             back = note
             note = ""
-        cards.append({"front": q, "back": back, "note": note})
+        cards.append({"front": q, "back": back, "note": note, "_number": number})
     return cards
 
 
@@ -504,22 +535,19 @@ def _dedupe_cards(cards: list[dict]) -> list[dict]:
 
 def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
                         max_pages: int = 30,
-                        chunk_size: int = 3,
-                        progress_cb=None) -> list[dict]:
+                        chunk_size: int = 1,
+                        progress_cb=None,
+                        audit: bool = True) -> list[dict]:
     """Skaniruyet stranitsy PDF cherez Gemini Vision i izvlekayet ZAKRYTYE voprosy.
 
-    Strategiya:
-    - Renderim do max_pages stranits
-    - Obrabatyvayem ne vse srazu, a chankami po chunk_size stranits (sekonomim tokeny + nadeyno)
-    - Mezhdu chankami delaem sleep 4 sek (15 RPM limit na free tier)
-    - V kontse — dedupliciruem (chanki mogut peresekatsya)
+    KACHESTVENNAYA strategiya (po default):
+    - DPI=200 (lучше OCR na grязные skanы)
+    - chunk_size=1 — POSTRANICHNAYA obrabotka. AI fokusiruetsya na odnoy stranitse, propuski minimalny.
+    - audit=True — vtoroy proxod po kazhdoy stranitse: AI smotrit kakie nomera vyshli i ishchet propushchennye.
 
-    progress_cb(done, total, found_so_far) — funktsiya kotoruyu zovem posle kazhdogo chanka
-    chtoby pokazat' progress polzovatelyu.
-
+    progress_cb(done, total, found_so_far) — funktsiya kotoruyu zovem posle kazhdoy stranitsy.
     Vozvrashchaet [{front, back, note}].
     Esli VSE chanki upali — kidaet RuntimeError s prichinoy.
-    Esli chanki proshli no 0 zakrytyh voprosov — vozvrashchaet [].
     """
     images = _pdf_to_images(pdf_path, max_pages=max_pages)
     if not images:
@@ -532,23 +560,48 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
     chunk_results = []  # (success: bool, parsed_count: int)
     last_chunk_error = None
 
-    # Razbivayem na chanki
+    import time
+
+    # POSTRANICHNAYA obrabotka (chunk_size=1)
     for i in range(0, total_pages, chunk_size):
         chunk = images[i:i + chunk_size]
-        chunk_num = i // chunk_size + 1
-        total_chunks = (total_pages + chunk_size - 1) // chunk_size
-        print(f"[AI vision] chunk {chunk_num}/{total_chunks} (pages {i+1}-{min(i+chunk_size, total_pages)})")
+        page_num = i + 1
+        print(f"[AI vision] page {page_num}/{total_pages} — extracting...")
 
-        raw = _gemini_vision_call(chunk, timeout=240)
+        # PASS 1: glavnaya extractsia
+        raw = _gemini_vision_call(chunk, timeout=240, prompt=VISION_EXTRACT_PROMPT)
+        page_cards = []
         if raw:
-            chunk_cards = _parse_vision_response(raw)
-            all_cards.extend(chunk_cards)
-            chunk_results.append((True, len(chunk_cards)))
-            print(f"[AI vision]   +{len(chunk_cards)} cards (total: {len(all_cards)})")
+            page_cards = _parse_vision_response(raw)
+            chunk_results.append((True, len(page_cards)))
+            print(f"[AI vision]   pass 1: +{len(page_cards)} cards")
         else:
             chunk_results.append((False, 0))
             last_chunk_error = "Gemini API не ответил (rate limit / перегруз / сетевая ошибка)"
-            print(f"[AI vision]   chunk failed (skipping)")
+            print(f"[AI vision]   pass 1: FAILED")
+
+        # PASS 2: AUDIT — esli vklyuchen i pervyy proxod chto-to nashel
+        if audit and page_cards:
+            time.sleep(3)  # malenkaya pauza chtoby ne udarit v rate limit
+            extracted_numbers = [c.get("_number", "") for c in page_cards if c.get("_number")]
+            if extracted_numbers:
+                audit_prompt = VISION_AUDIT_PROMPT.format(
+                    extracted_numbers=", ".join(extracted_numbers)
+                )
+                print(f"[AI vision]   pass 2 (audit): looking for missing among {extracted_numbers}")
+                audit_raw = _gemini_vision_call(chunk, timeout=180, prompt=audit_prompt)
+                if audit_raw:
+                    missed = _parse_vision_response(audit_raw)
+                    # Filtruem dubli s tem chto uzhe est' v page_cards
+                    existing_nums = set(c.get("_number", "") for c in page_cards)
+                    truly_new = [c for c in missed if c.get("_number", "") not in existing_nums]
+                    if truly_new:
+                        print(f"[AI vision]   pass 2: +{len(truly_new)} MISSED cards recovered")
+                        page_cards.extend(truly_new)
+                    else:
+                        print(f"[AI vision]   pass 2: nothing missed")
+
+        all_cards.extend(page_cards)
 
         # Progress callback
         if progress_cb:
@@ -557,12 +610,11 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
             except Exception:
                 pass
 
-        # Mezhdu chankami — pauza chtoby ne udarit' v rate limit Gemini Free (15 RPM)
+        # Mezhdu stranitsami — pauza chtoby ne udarit v rate limit Gemini Free (15 RPM)
         if i + chunk_size < total_pages:
-            import time
             time.sleep(4)
 
-    # Esli VSE chanki upali — eto problema s API/setu, ne s PDF
+    # Esli VSE stranitsy upali — eto problema s API/setu
     if chunk_results and not any(r[0] for r in chunk_results):
         raise RuntimeError(
             f"Все запросы к Gemini Vision провалились. "
@@ -571,8 +623,15 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
             f"Последняя ошибка: {last_chunk_error}. Попробуйте через 5-10 минут."
         )
 
-    # Dedupe na sluchay esli AI vydal dubli na granitsah
-    return _dedupe_cards(all_cards)
+    # Dedupe — globalniy (mezhdu stranitsami mogut dublirovat'sya esli reading comprehension dlinnyy)
+    deduped = _dedupe_cards(all_cards)
+
+    # Ochishchaem internal'noe pole _number pered vozvratom
+    for c in deduped:
+        c.pop("_number", None)
+
+    print(f"[AI vision] FINAL: {len(deduped)} unique cards from {total_pages} pages")
+    return deduped
 
 
 
