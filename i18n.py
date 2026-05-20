@@ -1364,6 +1364,7 @@ T = {
         "u_format_simple_example": "Вопрос | Ответ | Объяснение (опц.)",
         "u_new_achievement": "🎉 Новое достижение!",
         "u_import_badge": "📥 Импорт",
+        "u_pdf_scan_hint": "Сканированные PDF (без текстового слоя) автоматически распознаются через AI Vision.",
         # superadmin
         "sa_users_total": "👥 Всего юзеров",
         "sa_today": "сегодня",
@@ -2851,6 +2852,7 @@ T = {
         "u_format_simple_example": "Question | Answer | Note (opt.)",
         "u_new_achievement": "🎉 New achievement!",
         "u_import_badge": "📥 Import",
+        "u_pdf_scan_hint": "Scanned PDFs (no text layer) are recognised via AI Vision automatically.",
         # superadmin
         "sa_h": "Super Admin",
         "sa_sub": "Site analytics — visible only to the owner",
@@ -4340,6 +4342,7 @@ T = {
         "u_format_simple_example": "Savol | Javob | Izoh (ixt.)",
         "u_new_achievement": "🎉 Yangi yutuq!",
         "u_import_badge": "📥 Import",
+        "u_pdf_scan_hint": "Skan qilingan PDFlar (matn qatlamisiz) AI Vision orqali avtomatik tanib olinadi.",
         # superadmin
         "sa_h": "Super Admin",
         "sa_sub": "Sayt tahlili — faqat egasi koʻradi",

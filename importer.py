@@ -414,14 +414,27 @@ def parse_pdf_raw(filepath: Path) -> str:
     return "\n".join(p.extract_text() or "" for p in reader.pages)
 
 
+def is_scanned_pdf(filepath: Path) -> bool:
+    """Esli iz PDF udayotsya izvlech' < 100 simvolov teksta — eto skan (kartinki)."""
+    try:
+        text = parse_pdf_raw(filepath)
+        return len(text.strip()) < 100
+    except Exception:
+        return False
+
+
 def parse_pdf(filepath: Path, delimiter: str = "|") -> list[dict]:
-    """Probuyem v poryadke: text-format → MCQ → Q/A blocks."""
+    """Probuyem v poryadke: text-format → MCQ → Q/A blocks → Vision (esli skan)."""
     text = parse_pdf_raw(filepath)
     cards = parse_text(text, delimiter)
     if not cards:
         cards = parse_mcq(text)
     if not cards:
         cards = parse_qa_blocks(text)
+
+    # Esli ni odin parser ne vyshel — proveryaem ne skan li eto.
+    # Esli skan — pust' vyzyvayushchiy kod sam reshayet (ai_gen.vision_pdf_to_cards).
+    # No esli teksta dostatochno a kart net — verno format ploxoy, ne skan.
     return cards
 
 

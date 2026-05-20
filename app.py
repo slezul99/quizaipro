@@ -5503,6 +5503,30 @@ def import_page():
                 print(f"[IMPORT] saved: {fpath} ({fpath.stat().st_size} bytes)")
                 cards = importer.auto_parse(fpath, delimiter)
                 print(f"[IMPORT] parsed {len(cards)} cards from {fname}")
+
+                # FALLBACK dlya skanirovannyh PDF (kartinki bez tekstovogo sloya)
+                # Esli kart 0 i fayl PDF i tekst pochti pustoy — probuyem Gemini Vision
+                if not cards and fpath.suffix.lower() == ".pdf":
+                    if importer.is_scanned_pdf(fpath):
+                        if ai_gen.is_available():
+                            print(f"[IMPORT] PDF appears scanned — trying Gemini Vision")
+                            try:
+                                vision_cards = ai_gen.vision_pdf_to_cards(fpath, lang=session.get("lang", "ru"))
+                                if vision_cards:
+                                    cards = vision_cards
+                                    billing.log_ai_usage(user, "vision_pdf", len(vision_cards))
+                                    print(f"[IMPORT] Vision parsed {len(vision_cards)} cards")
+                                    flash(f"📄 Сканированный PDF распознан через AI (+{len(vision_cards)} карт)", "success")
+                            except Exception as e:
+                                print(f"[IMPORT] Vision failed: {type(e).__name__}: {e}")
+                                flash(f"AI не смог распознать сканированный PDF: {e}", "error")
+                                fpath.unlink(missing_ok=True)
+                                return redirect(url_for("import_page"))
+                        else:
+                            flash("Это сканированный PDF, для распознавания нужен AI. Загрузите PDF с текстовым слоем или используйте текстовый импорт.", "error")
+                            fpath.unlink(missing_ok=True)
+                            return redirect(url_for("import_page"))
+
                 fpath.unlink(missing_ok=True)
             elif text:
                 cards = importer.parse_text(text, delimiter)
