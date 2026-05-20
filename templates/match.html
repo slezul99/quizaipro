@@ -45,22 +45,22 @@
 
   <div class="relative z-10">
     <a href="/deck/{{ deck.id }}" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
-      <span>←</span> К колоде
+      <span>←</span> {{ t('mt_back_deck') }}
     </a>
 
   <div class="my-6 flex items-center justify-between flex-wrap gap-3">
     <div>
       <span class="section-badge"><span class="badge-dot"></span>🎯 Match</span>
-      <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.5rem); margin-top: 0.5rem;">Сопоставь пары</h1>
-      <p class="text-slate-600 dark:text-slate-300 text-sm mt-1">{{ deck.name }} · {{ count }} пар</p>
+      <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.5rem); margin-top: 0.5rem;">{{ t('mt_h') }}</h1>
+      <p class="text-slate-600 dark:text-slate-300 text-sm mt-1">{{ deck.name }} · {{ count }} {{ t('mt_pairs') }}</p>
     </div>
     <div class="flex items-center gap-4">
       <div class="stat-card stat-blue" style="padding: 0.75rem 1.25rem; min-width: 110px;">
-        <div class="stat-label" style="margin-top: 0;">Время</div>
+        <div class="stat-label" style="margin-top: 0;">{{ t('mt_time') }}</div>
         <div class="stat-value" style="font-size: 1.5rem;" x-text="formatTime(elapsed)"></div>
       </div>
       <div class="stat-card stat-emerald" style="padding: 0.75rem 1.25rem; min-width: 110px;">
-        <div class="stat-label" style="margin-top: 0;">Найдено</div>
+        <div class="stat-label" style="margin-top: 0;">{{ t('mt_found') }}</div>
         <div class="stat-value" style="font-size: 1.5rem;">
           <span x-text="matched.length / 2"></span> / {{ count }}
         </div>
@@ -72,7 +72,7 @@
   <div class="grid grid-cols-2 gap-4 md:gap-6">
     <!-- Voprosy -->
     <div class="space-y-3">
-      <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-2">📋 Вопросы</div>
+      <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 font-semibold mb-2 px-2">{{ t('mt_questions') }}</div>
       <template x-for="item in questions" :key="'q-' + item.id">
         <div @click="pick('q', item.id)"
           :class="{
@@ -81,14 +81,14 @@
             'wrong': wrongFlash === 'q-' + item.id
           }"
           class="match-card glass rounded-2xl p-4 border-2 border-white/80 min-h-[80px] flex items-center">
-          <span class="text-sm md:text-base font-medium text-slate-900" x-text="item.front"></span>
+          <span class="text-sm md:text-base font-medium text-slate-900 dark:text-slate-100" x-text="item.front"></span>
         </div>
       </template>
     </div>
 
     <!-- Otvety -->
     <div class="space-y-3">
-      <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-2">✓ Ответы</div>
+      <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 font-semibold mb-2 px-2">{{ t('mt_answers') }}</div>
       <template x-for="item in answers" :key="'a-' + item.id">
         <div @click="pick('a', item.id)"
           :class="{
@@ -97,7 +97,7 @@
             'wrong': wrongFlash === 'a-' + item.id
           }"
           class="match-card glass rounded-2xl p-4 border-2 border-white/80 min-h-[80px] flex items-center">
-          <span class="text-sm md:text-base font-medium text-slate-900" x-text="item.back"></span>
+          <span class="text-sm md:text-base font-medium text-slate-900 dark:text-slate-100" x-text="item.back"></span>
         </div>
       </template>
     </div>
@@ -108,21 +108,21 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
     <div class="glass-premium max-w-md w-full text-center scale-in" style="padding: 2.5rem;">
       <div class="text-7xl mb-4">🏆</div>
-      <h2 class="section-h" style="font-size: 2rem;">Готово!</h2>
-      <p class="text-slate-600 dark:text-slate-300 mb-6 mt-2">Все пары найдены</p>
+      <h2 class="section-h" style="font-size: 2rem;">{{ t('mt_done_h') }}</h2>
+      <p class="text-slate-600 dark:text-slate-300 mb-6 mt-2">{{ t('mt_done_sub') }}</p>
       <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="stat-card stat-blue">
-          <div class="stat-label" style="margin-top: 0;">Время</div>
+          <div class="stat-label" style="margin-top: 0;">{{ t('mt_time') }}</div>
           <div class="stat-value" style="font-size: 1.7rem;" x-text="formatTime(elapsed)"></div>
         </div>
         <div class="stat-card stat-orange">
-          <div class="stat-label" style="margin-top: 0;">Ошибок</div>
+          <div class="stat-label" style="margin-top: 0;">{{ t('mt_errors') }}</div>
           <div class="stat-value" style="font-size: 1.7rem;" x-text="errors"></div>
         </div>
       </div>
       <div class="flex gap-3 justify-center">
-        <a href="/deck/{{ deck.id }}/match" class="btn-premium">▶ Ещё раз</a>
-        <a href="/deck/{{ deck.id }}" class="btn-premium-ghost">К колоде</a>
+        <a href="/deck/{{ deck.id }}/match" class="btn-premium">{{ t('mt_again') }}</a>
+        <a href="/deck/{{ deck.id }}" class="btn-premium-ghost">{{ t('mt_back_deck') }}</a>
       </div>
     </div>
   </div>

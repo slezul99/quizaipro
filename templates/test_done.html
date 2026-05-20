@@ -11,27 +11,27 @@
     <div class="text-7xl mb-4">
       {% if pct >= 90 %}🏆{% elif pct >= 70 %}🎉{% elif pct >= 50 %}👍{% else %}💪{% endif %}
     </div>
-    <h2 class="section-h">Тест завершён</h2>
-    <p class="text-slate-600 dark:text-slate-300 mb-3 mt-2">{{ total }} вопросов</p>
+    <h2 class="section-h">{{ t('td_h') }}</h2>
+    <p class="text-slate-600 dark:text-slate-300 mb-3 mt-2">{{ total }} {{ t('td_questions') }}</p>
     <div class="text-7xl font-black mb-6 {{ 'text-emerald-600 dark:text-emerald-300' if pct >= 70 else ('text-orange-600 dark:text-orange-300' if pct >= 50 else 'text-red-600 dark:text-red-300') }}" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.04em;">
       {{ pct }}%
     </div>
     <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
       <div class="stat-card stat-emerald">
         <div class="stat-value">{{ stats.correct }}</div>
-        <div class="stat-label">Правильно</div>
+        <div class="stat-label">{{ t('td_correct') }}</div>
       </div>
       <div class="stat-card stat-orange" style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(255,255,255,0.85));">
         <div class="stat-value" style="background: linear-gradient(135deg, #dc2626, #ef4444); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">{{ stats.wrong }}</div>
-        <div class="stat-label">Неправильно</div>
+        <div class="stat-label">{{ t('td_wrong') }}</div>
       </div>
     </div>
     <div class="flex gap-3 justify-center flex-wrap">
       {% if deck_id %}
-      <a href="/deck/{{ deck_id }}/test" class="btn-premium">▶ Пройти ещё раз</a>
-      <a href="/deck/{{ deck_id }}" class="btn-premium-ghost">К колоде</a>
+      <a href="/deck/{{ deck_id }}/test" class="btn-premium">{{ t('td_again') }}</a>
+      <a href="/deck/{{ deck_id }}" class="btn-premium-ghost">{{ t('td_to_deck') }}</a>
       {% else %}
-      <a href="/dashboard" class="btn-premium">К дашборду</a>
+      <a href="/dashboard" class="btn-premium">{{ t('td_to_dashboard') }}</a>
       {% endif %}
     </div>
   </div>
@@ -40,17 +40,17 @@
   <!-- Review -->
   <div class="glass-premium" style="padding: 2rem;">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h3 class="section-h" style="font-size: 1.7rem;">📋 Разбор ответов</h3>
+      <h3 class="section-h" style="font-size: 1.7rem;">{{ t('td_review_h') }}</h3>
       <div class="flex gap-1 glass-premium" style="padding: 4px; border-radius: 14px;">
         <button @click="filter = 'wrong'"
           :class="filter === 'wrong' ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-red-50/50'"
           class="px-4 py-1.5 rounded-lg text-sm font-bold transition">
-          ❌ Только ошибки ({{ stats.wrong }})
+          {{ t('td_only_wrong') }} ({{ stats.wrong }})
         </button>
         <button @click="filter = 'all'"
           :class="filter === 'all' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50'"
           class="px-4 py-1.5 rounded-lg text-sm font-bold transition">
-          📋 Все ({{ total }})
+          {{ t('td_all') }} ({{ total }})
         </button>
       </div>
     </div>
@@ -72,16 +72,16 @@
                 this.explanation = data.explanation;
               } else {
                 if (data.error === 'rate_limit') {
-                  this.explanation = '⏱ Слишком много запросов. Подождите минуту.';
+                  this.explanation = {{ t('td_ai_rate_limit')|tojson }};
                 } else if (data.error === 'ai_failed') {
-                  this.explanation = '⚠️ AI временно перегружен. Попробуйте через минуту.';
+                  this.explanation = {{ t('td_ai_overload')|tojson }};
                 } else if (data.error === 'ai_unavailable') {
-                  this.explanation = '⚠️ AI временно недоступен.';
+                  this.explanation = {{ t('td_ai_unavail')|tojson }};
                 } else {
-                  this.explanation = data.msg || 'Ошибка. Попробуйте позже.';
+                  this.explanation = data.msg || {{ t('td_ai_error')|tojson }};
                 }
               }
-            } catch(e) { this.explanation = '⚠️ Ошибка сети'; }
+            } catch(e) { this.explanation = {{ t('td_net_error')|tojson }}; }
             this.loading = false;
           }
         }">
@@ -91,8 +91,8 @@
             {% if r.is_correct %}✓{% else %}✗{% endif %}
           </span>
           <div class="flex-1">
-            <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Вопрос {{ loop.index }}</div>
-            <div class="font-medium text-slate-900 leading-relaxed">{{ r.front }}</div>
+            <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">{{ t('td_question_n') }} {{ loop.index }}</div>
+            <div class="font-medium text-slate-900 dark:text-slate-100 leading-relaxed">{{ r.front }}</div>
           </div>
         </div>
 
@@ -107,18 +107,18 @@
               {% else %}bg-gray-200 text-gray-600{% endif %}">{{ opt.letter }}</span>
             <span class="flex-1 text-sm">{{ opt.text }}</span>
             {% if opt.letter == r.correct %}
-              <span class="text-xs font-semibold text-emerald-700">✓ Правильный ответ</span>
+              <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{{ t('td_correct_chip') }}</span>
             {% elif opt.letter == r.chosen and not r.is_correct %}
-              <span class="text-xs font-semibold text-red-700">✗ Ваш ответ</span>
+              <span class="text-xs font-semibold text-red-700 dark:text-red-300">{{ t('td_your_chip') }}</span>
             {% endif %}
           </div>
           {% endfor %}
         </div>
         {% else %}
-        <div class="ml-11 text-sm text-slate-700">
-          <div><strong>Правильный ответ:</strong> {{ r.back }}</div>
+        <div class="ml-11 text-sm text-slate-700 dark:text-slate-200">
+          <div><strong>{{ t('td_correct_answer') }}:</strong> {{ r.back }}</div>
           {% if not r.is_correct and r.chosen %}
-          <div class="text-red-600 mt-1"><strong>Ваш ответ:</strong> {{ r.chosen }}</div>
+          <div class="text-red-600 dark:text-red-400 mt-1"><strong>{{ t('td_your_answer') }}:</strong> {{ r.chosen }}</div>
           {% endif %}
         </div>
         {% endif %}

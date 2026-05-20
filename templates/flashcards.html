@@ -180,16 +180,16 @@
   <!-- Header -->
   <div class="flex items-center justify-between mb-4">
     <a href="/deck/{{ deck.id }}" class="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 text-sm font-medium transition">
-      <span>←</span> <span class="hidden sm:inline">К колоде</span>
+      <span>←</span> <span class="hidden sm:inline">{{ t('fc_back_deck') }}</span>
     </a>
     <div class="flex items-center gap-2">
       <button @click="shuffle()" class="px-3 py-1.5 rounded-xl bg-white/70 hover:bg-indigo-50 border border-indigo-100 text-sm font-semibold transition">
-        🔀 <span class="hidden sm:inline">Shuffle</span>
+        🔀 <span class="hidden sm:inline">{{ t('fc_shuffle') }}</span>
       </button>
       <button @click="autoplayOn = !autoplayOn"
         :class="autoplayOn ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white/70 border-indigo-100'"
         class="px-3 py-1.5 rounded-xl border text-sm font-semibold transition">
-        <span x-text="autoplayOn ? '⏸ Auto' : '▶ Auto'"></span>
+        <span x-text="autoplayOn ? {{ t('fc_auto_on')|tojson }} : {{ t('fc_auto_off')|tojson }}"></span>
       </button>
     </div>
   </div>
@@ -199,13 +199,13 @@
     <div class="min-w-0">
       <h1 class="h-display text-2xl md:text-3xl text-slate-900 truncate">{{ deck.icon }} {{ deck.name }}</h1>
       <p class="text-xs text-slate-500 mt-0.5">
-        Пробел = перевернуть · ← → переключать · F избранное · D трудно
+        {{ t('fc_hint') }}
       </p>
     </div>
     <div class="text-right flex-shrink-0 ml-3">
       <div class="text-3xl font-bold text-gradient h-display"
         x-text="(idx + 1) + ' / ' + cards.length"></div>
-      <div class="text-[10px] uppercase tracking-wider font-bold text-slate-500">карта</div>
+      <div class="text-[10px] uppercase tracking-wider font-bold text-slate-500">{{ t('fc_card') }}</div>
     </div>
   </div>
 
@@ -219,17 +219,17 @@
     <a href="/deck/{{ deck.id }}/flashcards"
       class="px-3 py-1.5 rounded-full border transition
         {% if not only_fav and not only_hard %}bg-indigo-500 text-white border-indigo-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-indigo-300{% endif %}">
-      Все ({{ cards|length if (only_fav or only_hard) else cards|length }})
+      {{ t('fc_filter_all') }} ({{ cards|length if (only_fav or only_hard) else cards|length }})
     </a>
     <a href="/deck/{{ deck.id }}/flashcards?only_fav=1"
       class="px-3 py-1.5 rounded-full border transition
         {% if only_fav %}bg-pink-500 text-white border-pink-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-pink-300{% endif %}">
-      ⭐ Избранные
+      {{ t('fc_filter_fav') }}
     </a>
     <a href="/deck/{{ deck.id }}/flashcards?only_hard=1"
       class="px-3 py-1.5 rounded-full border transition
         {% if only_hard %}bg-red-500 text-white border-red-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-red-300{% endif %}">
-      🔥 Трудные
+      {{ t('fc_filter_hard') }}
     </a>
   </div>
 
@@ -237,9 +237,9 @@
   {% if cards|length == 0 %}
   <div class="glass rounded-3xl p-12 text-center">
     <div class="text-7xl mb-3">🃏</div>
-    <p class="text-slate-700 font-bold text-lg mb-1">Карт нет</p>
+    <p class="text-slate-700 font-bold text-lg mb-1">{{ t('fc_empty_h') }}</p>
     <p class="text-slate-500 text-sm">
-      {% if only_fav %}Вы ещё не добавили карты в избранное{% elif only_hard %}Нет трудных карт{% else %}Добавьте карты в колоду{% endif %}
+      {% if only_fav %}{{ t('fc_empty_fav') }}{% elif only_hard %}{{ t('fc_empty_hard') }}{% else %}{{ t('fc_empty_default') }}{% endif %}
     </p>
   </div>
   {% else %}
@@ -263,17 +263,17 @@
 
         <!-- FRONT -->
         <div class="fc-face fc-front">
-          <span class="fc-label text-indigo-700">Вопрос</span>
+          <span class="fc-label text-indigo-700">{{ t('fc_question') }}</span>
           <template x-if="current && current.image_url">
             <img :src="current.image_url" class="max-h-32 rounded-2xl mb-4 shadow-lg">
           </template>
           <div class="fc-text text-slate-900" x-text="current ? current.front : ''"></div>
-          <div class="absolute bottom-4 text-xs text-slate-400 font-semibold uppercase tracking-wider">Tap для переворота</div>
+          <div class="absolute bottom-4 text-xs text-slate-400 font-semibold uppercase tracking-wider">{{ t('fc_tap_flip') }}</div>
         </div>
 
         <!-- BACK -->
         <div class="fc-face fc-back">
-          <span class="fc-label text-white">Ответ</span>
+          <span class="fc-label text-white">{{ t('fc_answer') }}</span>
           <div class="fc-text" x-text="answerText()"></div>
         </div>
       </div>
@@ -281,7 +281,7 @@
 
     <!-- Action row -->
     <div class="flex items-center justify-between mt-6 px-2">
-      <button class="fc-nav-btn" @click.stop="prev()" :disabled="idx === 0" title="Предыдущая (←)">
+      <button class="fc-nav-btn" @click.stop="prev()" :disabled="idx === 0" title="{{ t('fc_prev_title') }}">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
 
@@ -289,52 +289,52 @@
         <button @click.stop="toggleFavorite()"
           :class="current && current.is_favorite ? 'bg-pink-500 text-white border-pink-500' : 'bg-white/90 border-pink-200 text-pink-500 hover:bg-pink-50'"
           class="w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition shadow-md hover:scale-110 active:scale-95"
-          title="Избранное (F)">
+          title="{{ t('fc_fav_title') }}">
           <span x-text="current && current.is_favorite ? '⭐' : '☆'"></span>
         </button>
         <button @click.stop="toggleDifficult()"
           :class="current && current.is_difficult ? 'bg-red-500 text-white border-red-500' : 'bg-white/90 border-red-200 text-red-500 hover:bg-red-50'"
           class="w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition shadow-md hover:scale-110 active:scale-95"
-          title="Трудно (D)">
+          title="{{ t('fc_hard_title') }}">
           <span x-text="current && current.is_difficult ? '🔥' : '💧'"></span>
         </button>
         <button @click.stop="speak()"
           class="w-12 h-12 rounded-full bg-white/90 border-2 border-indigo-200 text-indigo-500 hover:bg-indigo-50 flex items-center justify-center text-xl transition shadow-md hover:scale-110 active:scale-95"
-          title="Озвучить">🔊</button>
+          title="{{ t('fc_speak_title') }}">🔊</button>
       </div>
 
-      <button class="fc-nav-btn" @click.stop="next()" :disabled="idx === cards.length - 1 && !autoplayOn" title="Следующая (→)">
+      <button class="fc-nav-btn" @click.stop="next()" :disabled="idx === cards.length - 1 && !autoplayOn" title="{{ t('fc_next_title') }}">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
 
-    <!-- Grade row (tol'ko esli karta perevernuta) -->
+    <!-- Grade row -->
     <div x-show="flipped" x-transition class="grid grid-cols-3 gap-3 mt-5"
       x-data="{ rating: false }">
       <button @click.stop="grade(3)" :disabled="grading"
         class="rounded-2xl py-4 px-2 font-bold text-orange-700 transition shadow hover:shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
         style="background: linear-gradient(135deg, #fff7ed, #ffedd5);">
         <div class="text-2xl mb-0.5">😣</div>
-        <div class="text-sm">Сложно</div>
-        <div class="text-[10px] opacity-60 mt-0.5">+1 XP · через 1 день</div>
+        <div class="text-sm">{{ t('fc_grade_hard') }}</div>
+        <div class="text-[10px] opacity-60 mt-0.5">{{ t('fc_grade_hard_sub') }}</div>
       </button>
       <button @click.stop="grade(4)" :disabled="grading"
         class="rounded-2xl py-4 px-2 font-bold text-emerald-700 transition shadow hover:shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
         style="background: linear-gradient(135deg, #ecfdf5, #d1fae5);">
         <div class="text-2xl mb-0.5">👍</div>
-        <div class="text-sm">Хорошо</div>
-        <div class="text-[10px] opacity-60 mt-0.5">+3 XP · через 3 дня</div>
+        <div class="text-sm">{{ t('fc_grade_good') }}</div>
+        <div class="text-[10px] opacity-60 mt-0.5">{{ t('fc_grade_good_sub') }}</div>
       </button>
       <button @click.stop="grade(5)" :disabled="grading"
         class="rounded-2xl py-4 px-2 font-bold text-blue-700 transition shadow hover:shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
         style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
         <div class="text-2xl mb-0.5">⭐</div>
-        <div class="text-sm">Легко</div>
-        <div class="text-[10px] opacity-60 mt-0.5">+5 XP · через неделю</div>
+        <div class="text-sm">{{ t('fc_grade_easy') }}</div>
+        <div class="text-[10px] opacity-60 mt-0.5">{{ t('fc_grade_easy_sub') }}</div>
       </button>
     </div>
     <p x-show="flipped" class="text-center text-[11px] text-slate-500 mt-2">
-      Клавиши: <b>1</b>=Сложно · <b>2</b>=Хорошо · <b>3</b>=Легко
+      {{ t('fc_keys_hint')|safe }}
     </p>
 
     <!-- Bottom counter dots -->
@@ -353,15 +353,15 @@
     @click.self="completed = false">
     <div class="glass-strong rounded-3xl p-10 max-w-md w-full text-center scale-in fc-celebrate">
       <div class="text-7xl mb-3">🎉</div>
-      <h2 class="h-display text-3xl text-slate-900 mb-2">Готово!</h2>
-      <p class="text-slate-600 mb-1">Вы прошли все <b x-text="cards.length"></b> карточки</p>
-      <p class="text-slate-500 text-sm mb-1">Время: <b x-text="formatTime(elapsed)"></b></p>
+      <h2 class="h-display text-3xl text-slate-900 mb-2">{{ t('fc_done_h') }}</h2>
+      <p class="text-slate-600 mb-1">{{ t('fc_done_sub_pre') }} <b x-text="cards.length"></b> {{ t('fc_done_sub_post') }}</p>
+      <p class="text-slate-500 text-sm mb-1">{{ t('fc_time') }}: <b x-text="formatTime(elapsed)"></b></p>
       <p x-show="sessionXp > 0" class="text-amber-600 font-bold mb-6">+<span x-text="sessionXp"></span> XP</p>
       <p x-show="sessionXp === 0" class="mb-6"></p>
       <div class="flex gap-3 justify-center flex-wrap">
-        <button @click="restart()" class="btn btn-primary">▶ Ещё раз</button>
-        <a href="/deck/{{ deck.id }}/test?count=10&shuffle=1" class="btn btn-success">📝 Тест</a>
-        <a href="/deck/{{ deck.id }}" class="btn btn-ghost">К колоде</a>
+        <button @click="restart()" class="btn btn-primary">{{ t('fc_again') }}</button>
+        <a href="/deck/{{ deck.id }}/test?count=10&shuffle=1" class="btn btn-success">{{ t('fc_test') }}</a>
+        <a href="/deck/{{ deck.id }}" class="btn btn-ghost">{{ t('fc_back_deck') }}</a>
       </div>
     </div>
   </div>

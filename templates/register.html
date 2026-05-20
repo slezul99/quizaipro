@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="relative max-w-md mx-auto px-6 py-12" x-data="{ mode: 'individual' }">
-  <!-- Декоративные пятна -->
+  <!-- {{ t('lg_decor_blobs') }} -->
   <div class="deco-blob deco-blob-1" style="top:-100px; right:-120px;"></div>
   <div class="deco-blob deco-blob-3" style="bottom:-80px; left:-100px;"></div>
 
@@ -12,7 +12,7 @@
         <span class="text-5xl">🧠</span>
       </div>
       <h1 class="section-h" style="font-size: clamp(2rem, 4vw, 2.6rem);">{{ t('register') }}</h1>
-      <p class="text-sm text-slate-600 mt-2 dark:text-slate-300">Создайте аккаунт за 30 секунд</p>
+      <p class="text-sm text-slate-600 mt-2 dark:text-slate-300">{{ t('rg_sub') }}</p>
     </div>
 
     <!-- Tabs -->
@@ -20,50 +20,46 @@
       <button @click="mode = 'individual'" type="button"
               :class="mode === 'individual' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50'"
               class="rounded-xl py-2.5 font-semibold text-sm transition-all">
-        👤 Индивидуальный
+        {{ t('lg_tab_indiv') }}
       </button>
       <button @click="mode = 'corporate'" type="button"
               :class="mode === 'corporate' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-amber-50/50'"
               class="rounded-xl py-2.5 font-semibold text-sm transition-all">
-        🏢 Учебный центр
+        {{ t('lg_tab_corp') }}
       </button>
     </div>
 
-    <!-- Заглушка для корпоративного режима -->
+    <!-- Corporate stub -->
     <div x-show="mode === 'corporate'" x-transition x-cloak class="glass-premium" style="padding: 1.75rem; text-align: center;">
       <div class="text-6xl mb-3">🚧</div>
-      <span class="dev-badge mb-3">⚙️ В разработке</span>
-      <h3 class="text-xl font-bold mt-3 mb-2 text-slate-900 dark:text-slate-100">Скоро запустим</h3>
-      <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">
-        Регистрация учебных центров и организаций пока недоступна. Мы готовим мощный инструмент для:
-      </p>
+      <span class="dev-badge mb-3">{{ t('lg_dev_badge') }}</span>
+      <h3 class="text-xl font-bold mt-3 mb-2 text-slate-900 dark:text-slate-100">{{ t('lg_corp_h') }}</h3>
+      <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">{{ t('rg_corp_sub') }}</p>
       <div class="text-left text-sm space-y-2 max-w-xs mx-auto mb-5">
         <div class="flex items-start gap-2">
           <span class="text-emerald-500 mt-0.5">✓</span>
-          <span class="text-slate-700 dark:text-slate-200">Школ и учебных центров</span>
+          <span class="text-slate-700 dark:text-slate-200">{{ t('rg_corp_f1') }}</span>
         </div>
         <div class="flex items-start gap-2">
           <span class="text-emerald-500 mt-0.5">✓</span>
-          <span class="text-slate-700 dark:text-slate-200">Корпоративного обучения</span>
+          <span class="text-slate-700 dark:text-slate-200">{{ t('rg_corp_f2') }}</span>
         </div>
         <div class="flex items-start gap-2">
           <span class="text-emerald-500 mt-0.5">✓</span>
-          <span class="text-slate-700 dark:text-slate-200">Преподавателей с группами</span>
+          <span class="text-slate-700 dark:text-slate-200">{{ t('rg_corp_f3') }}</span>
         </div>
         <div class="flex items-start gap-2">
           <span class="text-emerald-500 mt-0.5">✓</span>
-          <span class="text-slate-700 dark:text-slate-200">Совместных проектов</span>
+          <span class="text-slate-700 dark:text-slate-200">{{ t('rg_corp_f4') }}</span>
         </div>
       </div>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
-        Зарегистрируйтесь как индивидуальный пользователь — мы уведомим вас о запуске.
-      </p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">{{ t('rg_corp_notify') }}</p>
       <button @click="mode = 'individual'" type="button" class="btn-premium-ghost">
-        ← Зарегистрироваться индивидуально
+        {{ t('lg_corp_back_reg') }}
       </button>
     </div>
 
-    <!-- Форма для индивидуального режима -->
+    <!-- Individual form -->
     <form x-show="mode === 'individual'" x-transition method="POST" class="glass-premium space-y-4" style="padding: 1.75rem;">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <input type="hidden" name="mode" value="individual">
@@ -72,24 +68,24 @@
         <label class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5 block">{{ t('username') }}</label>
         <input name="username" required minlength="3" maxlength="32"
           pattern="[a-zA-Zа-яА-ЯёЁ0-9._-]{3,32}"
-          title="3-32 символа: буквы (рус/eng), цифры, . _ -"
+          title="{{ t('rg_username_pat_title') }}"
           class="input-premium" placeholder="username">
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Можно русские и английские буквы, цифры, . _ -</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">{{ t('rg_username_help') }}</p>
       </div>
       <div>
         <label class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5 block">{{ t('password') }}</label>
         <input type="password" name="password" required minlength="6"
           class="input-premium" placeholder="••••••••">
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Минимум 6 символов.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">{{ t('rg_pwd_help') }}</p>
       </div>
 
       <button type="submit" class="btn-premium w-full justify-center mt-2">
-        Создать аккаунт
+        {{ t('rg_submit') }}
         <span>→</span>
       </button>
 
       <p class="text-center text-sm text-slate-500 dark:text-slate-400 pt-2">
-        Уже есть аккаунт?
+        {{ t('rg_have_acc_pre') }}
         <a href="/login" class="text-indigo-600 dark:text-indigo-300 font-semibold hover:underline">{{ t('login') }}</a>
       </p>
     </form>

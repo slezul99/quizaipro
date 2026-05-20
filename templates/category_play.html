@@ -6,7 +6,7 @@
 
   <div class="relative z-10">
     <a href="/categories" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
-      <span>←</span> Категории
+      <span>←</span> {{ t('cp_back') }}
     </a>
 
     <!-- Header -->
@@ -16,7 +16,7 @@
         <div class="flex-1">
           <h1 class="section-h" style="font-size: clamp(1.5rem, 3vw, 2.2rem);">{{ category.name }}</h1>
           <p class="text-slate-600 dark:text-slate-300 text-sm mt-1">
-            📚 {{ deck_count }} колод · 🃏 {{ card_count }} карт
+            📚 {{ deck_count }} {{ t('cp_decks_count') }} · 🃏 {{ card_count }} {{ t('cp_cards_count') }}
           </p>
         </div>
       </div>
@@ -25,53 +25,53 @@
     {% if card_count < 3 %}
     <div class="glass-premium text-center" style="padding: 2.5rem 2rem;">
       <div class="text-6xl mb-3">😕</div>
-      <p class="text-slate-700 dark:text-slate-200 font-bold text-lg mb-2">Недостаточно карт для игры</p>
-      <p class="text-slate-500 dark:text-slate-400 text-sm">Нужно минимум 3 карты в категории (или её подкатегориях)</p>
+      <p class="text-slate-700 dark:text-slate-200 font-bold text-lg mb-2">{{ t('cp_not_enough_h') }}</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">{{ t('cp_not_enough_sub') }}</p>
     </div>
     {% else %}
 
-    <!-- Vybor rezhima -->
+    <!-- Mode picker -->
     <div class="glass-premium mb-6">
-      <h2 class="text-sm uppercase tracking-wider font-bold text-slate-700 dark:text-slate-200 mb-3">🎮 Выбор режима</h2>
+      <h2 class="text-sm uppercase tracking-wider font-bold text-slate-700 dark:text-slate-200 mb-3">{{ t('cp_mode_h') }}</h2>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <button type="button" @click="mode='flashcards'"
           :class="mode === 'flashcards' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/40 text-purple-900 dark:text-purple-200' : 'border-indigo-200/40 dark:border-indigo-700/30 bg-white/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200'"
           class="p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2">
           <span class="text-3xl">🃏</span>
-          <span class="text-sm">Flashcards</span>
+          <span class="text-sm">{{ t('cp_mode_flashcards') }}</span>
         </button>
         <button type="button" @click="mode='test'"
           :class="mode === 'test' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200' : 'border-indigo-200/40 dark:border-indigo-700/30 bg-white/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200'"
           class="p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2">
           <span class="text-3xl">📝</span>
-          <span class="text-sm">Тест</span>
+          <span class="text-sm">{{ t('cp_mode_test') }}</span>
         </button>
         <button type="button" @click="mode='match'"
           :class="mode === 'match' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200' : 'border-indigo-200/40 dark:border-indigo-700/30 bg-white/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200'"
           class="p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2">
           <span class="text-3xl">🎯</span>
-          <span class="text-sm">Match</span>
+          <span class="text-sm">{{ t('cp_mode_match') }}</span>
         </button>
         {% if current_user.role in ['admin','teacher','individual'] %}
         <button type="button" @click="mode='live'"
           :class="mode === 'live' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/40 text-pink-900 dark:text-pink-200' : 'border-indigo-200/40 dark:border-indigo-700/30 bg-white/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200'"
           class="p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2">
           <span class="text-3xl">🎮</span>
-          <span class="text-sm">Live test</span>
+          <span class="text-sm">{{ t('cp_mode_live') }}</span>
         </button>
         {% endif %}
         <button type="button" @click="mode='duel'"
           :class="mode === 'duel' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/40 text-orange-900 dark:text-orange-200' : 'border-indigo-200/40 dark:border-indigo-700/30 bg-white/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200'"
           class="p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2">
           <span class="text-3xl">⚔️</span>
-          <span class="text-sm">Дуэль</span>
+          <span class="text-sm">{{ t('cp_mode_duel') }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Vybor kol-va voprosov -->
+    <!-- Number of questions -->
     <div class="glass-premium mb-6" x-show="mode === 'test' || mode === 'live'" x-transition>
-      <h2 class="text-sm uppercase tracking-wider font-bold text-slate-700 dark:text-slate-200 mb-3">❓ Количество вопросов</h2>
+      <h2 class="text-sm uppercase tracking-wider font-bold text-slate-700 dark:text-slate-200 mb-3">{{ t('cp_q_count_h') }}</h2>
       <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
         <template x-for="n in [5, 10, 15, 20, 30, 50]" :key="n">
           <button type="button" @click="count = n"
@@ -84,12 +84,12 @@
             class="px-4 py-3 rounded-xl border-2 font-bold transition" x-text="n"></button>
         </template>
       </div>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Доступно карт: <b>{{ card_count }}</b></p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ t('cp_q_avail') }}: <b>{{ card_count }}</b></p>
     </div>
 
-    <!-- Match: vybor par -->
+    <!-- Match: pair count -->
     <div class="glass-premium mb-6" x-show="mode === 'match'" x-transition>
-      <h2 class="text-sm uppercase tracking-wider font-bold text-slate-700 dark:text-slate-200 mb-3">🎯 Количество пар</h2>
+      <h2 class="text-sm uppercase tracking-wider font-bold text-slate-700 dark:text-slate-200 mb-3">{{ t('cp_pairs_h') }}</h2>
       <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
         <template x-for="n in [4, 6, 8, 10, 12]" :key="n">
           <button type="button" @click="count = n"
@@ -104,24 +104,24 @@
       </div>
     </div>
 
-    <!-- Buttons po rezhimam -->
+    <!-- Action buttons by mode -->
     <div class="space-y-3">
       <a x-show="mode === 'flashcards'" :href="`/category/{{ category.id }}/flashcards`" class="btn-premium w-full justify-center" style="font-size: 16px; padding: 14px;">
-        🃏 Открыть Flashcards
+        {{ t('cp_open_flashcards') }}
       </a>
       <a x-show="mode === 'test'" :href="`/category/{{ category.id }}/test?count=${count}`" class="btn-premium w-full justify-center" style="font-size: 16px; padding: 14px;">
-        🚀 Начать тест (<span x-text="count"></span> вопр.)
+        {{ t('cp_start_test_pre') }}<span x-text="count"></span> {{ t('cp_start_test_post') }}
       </a>
       <a x-show="mode === 'match'" :href="`/category/{{ category.id }}/match?count=${count}`" class="btn-premium w-full justify-center" style="font-size: 16px; padding: 14px; background: linear-gradient(135deg, #10b981, #059669);">
-        🎯 Начать Match (<span x-text="count"></span> пар)
+        {{ t('cp_start_match_pre') }}<span x-text="count"></span> {{ t('cp_start_match_post') }}
       </a>
       {% if current_user.role in ['admin','teacher','individual'] %}
       <a x-show="mode === 'live'" :href="`/live/create?category_id={{ category.id }}&count=${count}`" class="btn-premium w-full justify-center" style="font-size: 16px; padding: 14px; background: linear-gradient(135deg, #ec4899, #be185d);">
-        🎮 Создать Live test (<span x-text="count"></span>)
+        {{ t('cp_create_live_pre') }}<span x-text="count"></span>{{ t('cp_create_live_post') }}
       </a>
       {% endif %}
       <a x-show="mode === 'duel'" href="/friends?duel_category={{ category.id }}" class="btn-premium w-full justify-center" style="font-size: 16px; padding: 14px; background: linear-gradient(135deg, #f97316, #ea580c);">
-        ⚔️ Выбрать соперника
+        {{ t('cp_pick_opponent') }}
       </a>
     </div>
 

@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% block extra_head %}
 <script>
+const DK_T = {
+  new_question: {{ t('dk_js_new_question')|tojson }},
+  answer: {{ t('dk_js_answer')|tojson }},
+  clone_prompt: {{ t('dk_js_clone_prompt')|tojson }},
+  clone_suffix: {{ t('dk_js_clone_suffix')|tojson }},
+  published_alert: {{ t('dk_js_published_alert')|tojson }},
+  filesize: {{ t('dk_js_filesize')|tojson }},
+  upload_err: {{ t('dk_js_upload_err')|tojson }},
+  remove_image: {{ t('dk_js_remove_image')|tojson }},
+  delete_card: {{ t('dk_js_delete_card')|tojson }},
+  error: {{ t('dk_js_error')|tojson }},
+};
 function deckEditor() {
   return {
     deck: {
@@ -26,14 +38,14 @@ function deckEditor() {
     },
     async addCard() {
       const fd = new FormData();
-      fd.append('front', 'Новый вопрос');
-      fd.append('back', 'Ответ');
+      fd.append('front', DK_T.new_question);
+      fd.append('back', DK_T.answer);
       const r = await fetch(`/deck/${this.deck.id}/card/new`, { method: 'POST', body: fd });
       const data = await r.json();
       if (data.ok) location.reload();
     },
     async cloneDeck() {
-      const newName = prompt('Название копии:', this.deck.name + ' (копия)');
+      const newName = prompt(DK_T.clone_prompt, this.deck.name + ' ' + DK_T.clone_suffix);
       if (!newName) return;
       const fd = new FormData();
       fd.append('new_name', newName);
@@ -45,7 +57,7 @@ function deckEditor() {
       const data = await r.json();
       if (data.ok) {
         this.deck.is_public = !!data.is_public;
-        if (this.deck.is_public) alert('Колода опубликована! Другие пользователи увидят её в маркетплейсе.');
+        if (this.deck.is_public) alert(DK_T.published_alert);
       }
     }
   };
@@ -282,7 +294,7 @@ function deckEditor() {
 
 {% block content %}
 <div class="relative max-w-6xl mx-auto px-6 py-8" x-data="deckEditor()">
-  <!-- Декоративные пятна -->
+  <!-- {{ t('dk_decor_blobs') }} -->
   <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
   <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
 
@@ -298,15 +310,15 @@ function deckEditor() {
         <input x-model="deck.name" @blur="saveDeck()" class="deck-name-input" value="{{ deck['name'] }}" {% if not can_edit %}disabled{% endif %}>
         <span class="px-4 py-2 rounded-full text-sm font-bold"
               style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.3);">
-          <span x-text="cards.length"></span> карт
+          <span x-text="cards.length"></span> {{ t('dk_cards_count') }}
         </span>
       </div>
 
       {% if can_edit %}
       <div class="flex items-center gap-2 mb-5 flex-wrap">
-        <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">📁 Категория:</span>
+        <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">{{ t('dk_cat_label') }}</span>
         <select x-model="deck.category_id" @change="saveDeck()" class="input-premium" style="max-width: 280px; padding: 8px 14px; font-size: 13px;">
-          <option value="">— Без категории —</option>
+          <option value="">{{ t('dk_no_cat') }}</option>
           {% set roots = categories | selectattr('parent_id', 'none') | list %}
           {% for r in roots %}
           <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>
@@ -315,51 +327,51 @@ function deckEditor() {
           {% endfor %}
           {% endfor %}
         </select>
-        <a href="/categories" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">+ Создать</a>
+        <a href="/categories" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">{{ t('dk_create_cat') }}</a>
       </div>
       {% endif %}
 
-      <!-- Кнопки действий -->
+      <!-- Action buttons -->
       <div class="flex items-center gap-2 flex-wrap">
         {% set _dt = deck.deck_type or 'mcq' %}
         {% if _dt == 'terms' %}
-        <a href="/deck/{{ deck['id'] }}/flashcards" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="Карточки с переворотом">🃏 Flashcards</a>
-        <a href="/deck/{{ deck['id'] }}/match" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); color: #b45309; border-color: rgba(245,158,11,0.4);" title="Игра «Сопоставь пары»">🎯 Match</a>
+        <a href="/deck/{{ deck['id'] }}/flashcards" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="{{ t('dk_btn_flashcards_title') }}">{{ t('dk_btn_flashcards') }}</a>
+        <a href="/deck/{{ deck['id'] }}/match" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); color: #b45309; border-color: rgba(245,158,11,0.4);" title="{{ t('dk_btn_match_title') }}">{{ t('dk_btn_match') }}</a>
         {% if can_edit %}
-        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="Live-тест">🎮 Live test</button>
+        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
         {% endif %}
         {% else %}
-        <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="Запустить тест">📝 Тест</button>
+        <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}">{{ t('dk_btn_test') }}</button>
         {% if can_edit %}
-        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="Live-тест">🎮 Live test</button>
+        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
         {% endif %}
         {% endif %}
         {% if can_edit %}
-        <a href="/export/deck/{{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Excel-журнал">📊 Excel</a>
+        <a href="/export/deck/{{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_excel_title') }}">{{ t('dk_btn_excel') }}</a>
         <div class="relative" x-data="{ pdfMenu: false }">
-          <button type="button" @click="pdfMenu = !pdfMenu" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="PDF">📄 PDF ▾</button>
+          <button type="button" @click="pdfMenu = !pdfMenu" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_pdf_title') }}">{{ t('dk_btn_pdf') }}</button>
           <div x-show="pdfMenu" @click.outside="pdfMenu = false" x-transition x-cloak class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-xl overflow-hidden z-30">
-            <a href="/export/deck/{{ deck['id'] }}/pdf" class="block px-4 py-3 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-sm font-medium">📝 Без ответов</a>
-            <a href="/export/deck/{{ deck['id'] }}/pdf?answers=1" class="block px-4 py-3 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-sm font-medium border-t border-slate-200/40">✅ С ответами</a>
+            <a href="/export/deck/{{ deck['id'] }}/pdf" class="block px-4 py-3 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-sm font-medium">{{ t('dk_pdf_no_ans') }}</a>
+            <a href="/export/deck/{{ deck['id'] }}/pdf?answers=1" class="block px-4 py-3 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-sm font-medium border-t border-slate-200/40">{{ t('dk_pdf_with_ans') }}</a>
           </div>
         </div>
-        <button type="button" @click="cloneDeck()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Дубль">📋 Дубль</button>
-        <a href="/deck/{{ deck['id'] }}/export-json" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="JSON">💾 JSON</a>
+        <button type="button" @click="cloneDeck()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_clone_title') }}">{{ t('dk_btn_clone') }}</button>
+        <a href="/deck/{{ deck['id'] }}/export-json" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="JSON">{{ t('dk_btn_json') }}</a>
         <button type="button" @click="togglePublic()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;"
                 :class="deck.is_public ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : ''"
-                title="Опубликовать">
-          <span x-show="!deck.is_public">🌐 Опубликовать</span>
-          <span x-show="deck.is_public">✓ Публичная</span>
+                title="{{ t('dk_btn_publish_title') }}">
+          <span x-show="!deck.is_public">{{ t('dk_btn_publish') }}</span>
+          <span x-show="deck.is_public">{{ t('dk_btn_published') }}</span>
         </button>
-        <button @click="addCard()" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="Добавить карту">+ Карта</button>
-        <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Импорт">📥 Импорт</a>
+        <button @click="addCard()" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="{{ t('dk_btn_addcard_title') }}">{{ t('dk_btn_addcard') }}</button>
+        <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_import_title') }}">{{ t('dk_btn_import') }}</a>
         {% endif %}
       </div>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">{{ t('u_click_to_mark_correct') }}</p>
     </div>
 
     {% if cards %}
-    <!-- ФИЛЬТРЫ + ПОИСК -->
+    <!-- FILTERS + SEARCH -->
     <div class="glass-premium mb-5" style="padding: 1.25rem;">
       <div class="flex items-center gap-3 flex-wrap mb-3">
         <input type="text" id="card-search" placeholder="🔍 {{ t('u_search_ph') }}" class="input-premium" style="flex: 1; min-width: 240px; padding: 10px 16px;">
@@ -374,9 +386,9 @@ function deckEditor() {
           {% if c.difficulty %}{% set _ = diff_counts.update({c.difficulty.key: diff_counts.get(c.difficulty.key, 0) + 1}) %}{% endif %}
         {% endfor %}
         {% set diff_meta = [
-          ('new', 'Новые', '🌱'), ('learning', 'Изучаются', '📖'),
-          ('hard', 'Трудные', '💪'), ('easy', 'Лёгкие', '✨'),
-          ('mastered', 'Усвоены', '🎓'),
+          ('new', t('dk_diff_new'), '🌱'), ('learning', t('dk_diff_learning'), '📖'),
+          ('hard', t('dk_diff_hard'), '💪'), ('easy', t('dk_diff_easy'), '✨'),
+          ('mastered', t('dk_diff_mastered'), '🎓'),
         ] %}
         {% for key, label, icon in diff_meta %}
           {% if diff_counts.get(key, 0) > 0 %}
@@ -388,12 +400,12 @@ function deckEditor() {
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">{{ t('u_sort_label') }}</span>
         <select id="sort-by" class="input-premium" style="width: auto; padding: 6px 14px; font-size: 13px;">
-          <option value="newest">Сначала новые</option>
-          <option value="oldest">Сначала старые</option>
-          <option value="alpha">По алфавиту А-Я</option>
-          <option value="hardest">Сначала трудные</option>
-          <option value="easiest">Сначала лёгкие</option>
-          <option value="most_attempts">Больше попыток</option>
+          <option value="newest">{{ t('dk_sort_newest') }}</option>
+          <option value="oldest">{{ t('dk_sort_oldest') }}</option>
+          <option value="alpha">{{ t('dk_sort_alpha') }}</option>
+          <option value="hardest">{{ t('dk_sort_hardest') }}</option>
+          <option value="easiest">{{ t('dk_sort_easiest') }}</option>
+          <option value="most_attempts">{{ t('dk_sort_attempts') }}</option>
         </select>
         <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 ml-2">{{ t('u_per_page') }}</span>
         {% for n in [25, 50, 100] %}
@@ -442,7 +454,7 @@ function deckEditor() {
         <div class="ml-12 mb-3">
           <label class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline cursor-pointer font-semibold inline-flex items-center gap-1">
             <input type="file" accept="image/*" onchange="uploadCardImage(this, {{ card.id }})" class="hidden">
-            {% if card.image_url %}🔄 Заменить изображение{% else %}📷 Добавить изображение{% endif %}
+            {% if card.image_url %}{{ t('dk_replace_image') }}{% else %}{{ t('dk_add_image') }}{% endif %}
           </label>
         </div>
 
@@ -498,29 +510,29 @@ function deckEditor() {
 
     {% if can_edit %}
     <button @click="addCard()" class="btn-premium w-full mt-5 justify-center" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border: 1.5px dashed rgba(99,102,241,0.4); box-shadow: none;">
-      <span style="font-size: 18px;">+</span> Добавить карту
+      <span style="font-size: 18px;">+</span> {{ t('dk_btn_addcard_big') }}
     </button>
     {% endif %}
 
     <!-- Pagination -->
     <div class="flex items-center justify-center gap-2 mt-8" id="pagination-bar" style="display:none">
-      <button type="button" id="page-first" class="page-btn" title="В начало">⏮</button>
-      <button type="button" id="page-prev" class="page-btn" title="Назад">←</button>
+      <button type="button" id="page-first" class="page-btn" title="{{ t('dk_page_first') }}">⏮</button>
+      <button type="button" id="page-prev" class="page-btn" title="{{ t('dk_page_prev') }}">←</button>
       <div class="flex items-center gap-1.5 mx-2" id="page-numbers"></div>
-      <button type="button" id="page-next" class="page-btn" title="Вперёд">→</button>
-      <button type="button" id="page-last" class="page-btn" title="В конец">⏭</button>
+      <button type="button" id="page-next" class="page-btn" title="{{ t('dk_page_next') }}">→</button>
+      <button type="button" id="page-last" class="page-btn" title="{{ t('dk_page_last') }}">⏭</button>
     </div>
   </div>
 
   <!-- Test settings modal -->
   <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
     <div class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
-      <h2 class="section-h" style="font-size: 1.7rem;">📝 Запустить тест</h2>
+      <h2 class="section-h" style="font-size: 1.7rem;">{{ t('dk_test_h') }}</h2>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
-        <span x-text="deck.name"></span> · всего <span x-text="cards.length" class="font-bold text-indigo-600 dark:text-indigo-300"></span> вопросов
+        <span x-text="deck.name"></span> · {{ t('dk_test_total_pre') }} <span x-text="cards.length" class="font-bold text-indigo-600 dark:text-indigo-300"></span> {{ t('dk_test_total_post') }}
       </p>
 
-      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Сколько вопросов</label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('dk_test_count_lbl') }}</label>
       <div class="grid grid-cols-4 gap-2 mb-3">
         <template x-for="n in [10, 25, 50, 100]" :key="n">
           <button type="button" @click="testCount = n" :disabled="n > cards.length"
@@ -529,26 +541,26 @@ function deckEditor() {
         </template>
       </div>
 
-      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Своё число</label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('dk_test_custom_lbl') }}</label>
       <div class="flex items-center gap-3 mb-4">
         <input type="number" x-model.number="testCount" :max="cards.length" min="1"
           class="input-premium" style="flex: 1; font-size: 17px; font-weight: 700; text-align: center;">
-        <button type="button" @click="testCount = cards.length" class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">Все</button>
+        <button type="button" @click="testCount = cards.length" class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">{{ t('dk_test_all') }}</button>
       </div>
 
       <label class="flex items-center gap-3 mb-3 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/40 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
         <input type="checkbox" x-model="testShuffle" class="w-5 h-5 accent-indigo-600">
-        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">🎲 Перемешать вопросы</span>
+        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ t('dk_test_shuffle') }}</span>
       </label>
       <label class="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/40 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/30">
         <input type="checkbox" x-model="testOnlyHard" class="w-5 h-5 accent-amber-600">
-        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">💪 Только трудные</span>
+        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ t('dk_test_only_hard') }}</span>
       </label>
 
       <div class="flex gap-2">
-        <button type="button" @click="showTest = false" class="btn-premium-ghost" style="flex: 1; justify-content: center;">Отмена</button>
+        <button type="button" @click="showTest = false" class="btn-premium-ghost" style="flex: 1; justify-content: center;">{{ t('dk_test_cancel') }}</button>
         <a :href="`/deck/${deck.id}/test?count=${testCount}&shuffle=${testShuffle ? 1 : 0}&hard_only=${testOnlyHard ? 1 : 0}`" class="btn-premium" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #10b981, #059669);">
-          Начать →
+          {{ t('dk_test_start') }}
         </a>
       </div>
     </div>
@@ -557,15 +569,15 @@ function deckEditor() {
   <!-- Live test modal -->
   <div x-show="showLive" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showLive = false" x-cloak>
     <div class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
-      <h2 class="section-h" style="font-size: 1.7rem;">🎮 Live test</h2>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Запустить групповую игру в реальном времени</p>
+      <h2 class="section-h" style="font-size: 1.7rem;">{{ t('dk_live_h') }}</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">{{ t('dk_live_sub') }}</p>
       <p class="text-sm text-slate-700 dark:text-slate-200 mb-5">
-        Студенты подключаются по уникальному коду и отвечают на вопросы вместе. Победитель — первый набравший макс.очков.
+        {{ t('dk_live_desc') }}
       </p>
       <div class="flex gap-2">
-        <button type="button" @click="showLive = false" class="btn-premium-ghost" style="flex: 1; justify-content: center;">Отмена</button>
+        <button type="button" @click="showLive = false" class="btn-premium-ghost" style="flex: 1; justify-content: center;">{{ t('dk_test_cancel') }}</button>
         <a href="/live/create?deck_id={{ deck['id'] }}" class="btn-premium" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #ec4899, #be185d);">
-          Создать сессию →
+          {{ t('dk_live_create') }}
         </a>
       </div>
     </div>
@@ -609,16 +621,16 @@ function deckEditor() {
   async function uploadCardImage(input, cardId) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert('Размер файла больше 5 MB'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert(DK_T.filesize); return; }
     const fd = new FormData();
     fd.append('image', file);
     const r = await fetch(`/card/${cardId}/upload-image`, { method: 'POST', body: fd });
     const data = await r.json();
     if (data.ok) location.reload();
-    else alert('Ошибка загрузки: ' + (data.error || 'unknown'));
+    else alert(DK_T.upload_err + ' ' + (data.error || 'unknown'));
   }
   async function removeCardImage(btn) {
-    if (!confirm('Удалить изображение?')) return;
+    if (!confirm(DK_T.remove_image)) return;
     const cardId = btn.dataset.cardId;
     const cardDiv = btn.closest('.card-item');
     const front = (cardDiv.querySelector('[data-field="front"]') || {}).value || '';
@@ -632,7 +644,7 @@ function deckEditor() {
 
   // === Delete card ===
   async function deleteCardGlobal(btn) {
-    if (!confirm('Удалить карту?')) return;
+    if (!confirm(DK_T.delete_card)) return;
     const cardId = btn.dataset.cardId;
     const cardDiv = btn.closest('.card-item');
     const fd = new FormData();
@@ -640,7 +652,7 @@ function deckEditor() {
     try {
       await fetch(`/card/${cardId}/delete`, { method: 'POST', body: fd });
       if (cardDiv) cardDiv.remove();
-    } catch(e) { alert('Ошибка: ' + e.message); }
+    } catch(e) { alert(DK_T.error + ' ' + e.message); }
   }
 
   // === Set correct MCQ option ===
@@ -735,7 +747,7 @@ function deckEditor() {
         if (num) num.textContent = i;
         i++;
       });
-      if (filterCount) filterCount.textContent = `${filtered.length} из ${totalCards}`;
+      if (filterCount) filterCount.textContent = `${filtered.length} {{ t('dk_filter_count_pre') }} ${totalCards}`;
       renderPagination(totalPages);
     }
     function renderPagination(totalPages) {
