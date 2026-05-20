@@ -176,8 +176,12 @@ def run_vision_job(jid: str, save_cards_callback):
     except Exception as e:
         tb = traceback.format_exc()
         print(f"[vision_jobs] vision_pdf_to_cards err:\n{tb}")
+        err_msg = f"AI vision ошибка: {type(e).__name__}: {e}".strip()
+        # Garantiya chto error nikogda ne pustoy
+        if not err_msg or err_msg.endswith(": "):
+            err_msg = f"AI vision упал без сообщения. Тип: {type(e).__name__}. Stack trace в логах сервера."
         update_job(jid, status="failed",
-                   error=f"AI vision ошибка: {type(e).__name__}: {e}",
+                   error=err_msg,
                    finished_at=datetime.utcnow())
         try: fpath.unlink(missing_ok=True)
         except Exception: pass

@@ -5749,7 +5749,7 @@ def vision_progress(job_id):
     if not job or job["user_id"] != user["id"]:
         flash("Задача не найдена или принадлежит другому пользователю", "error")
         return redirect(url_for("import_page"))
-    return render_template("vision_progress.html", job=job)
+    return render_template("vision_progress.html", job=job, is_super_admin=is_super_admin(user))
 
 
 @app.route("/api/import/vision/<job_id>/status")
@@ -5771,6 +5771,23 @@ def vision_status_api(job_id):
         "error": job.get("error"),
         "deck_id_created": job.get("deck_id_created"),
     })
+
+
+@app.route("/api/import/vision/<job_id>/debug")
+@login_required
+def vision_debug_api(job_id):
+    """SUPER-ADMIN ONLY: full job state dlya otladki."""
+    user = current_user()
+    if not is_super_admin(user):
+        return jsonify({"error": "forbidden"}), 403
+    job = vision_jobs.get_job(job_id)
+    if not job:
+        return jsonify({"error": "not_found"}), 404
+    # Polnoye sostoyaniye job (krome rezultatov karts — slishkom mnogo)
+    safe = {k: (str(v) if not isinstance(v, (str, int, float, bool, type(None), list, dict)) else v)
+            for k, v in job.items() if k != "result_cards"}
+    safe["result_cards_count"] = len(job.get("result_cards") or [])
+    return jsonify(safe)
 
 
 # ---------------------- AI generation ---------------------------------------

@@ -106,8 +106,21 @@
       <div class="text-8xl mb-4">😔</div>
       <h1 class="section-h" style="color: #dc2626;">{{ t('vp_failed_h') }}</h1>
       <div class="glass-premium mt-5 mb-6" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(255,255,255,0.6)); border-color: rgba(239,68,68,0.3);">
-        <p class="text-sm font-mono text-slate-700 dark:text-slate-200 break-words text-left" x-text="(state.error && state.error.length > 0) ? state.error : {{ t('vp_unknown_error')|tojson }}"></p>
-        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-left">Job ID: {{ job.id }}</p>
+        <!-- Server-side fallback (rabotaet dazhe esli Alpine ne zagruzilsya) -->
+        <p class="text-sm font-mono text-slate-800 dark:text-slate-100 break-words text-left whitespace-pre-wrap"
+           x-text="(state.error && state.error.length > 0) ? state.error : {{ t('vp_unknown_error')|tojson }}">{{ job.error if job.error else t('vp_unknown_error') }}</p>
+        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-left font-mono">Job ID: {{ job.id }}</p>
+        {% if is_super_admin %}
+          <details class="mt-3 text-left">
+            <summary class="text-xs text-slate-500 cursor-pointer">🛠️ Debug (super-admin)</summary>
+            <pre class="text-[10px] mt-2 p-2 bg-slate-900/40 rounded overflow-x-auto text-slate-300">status: {{ job.status }}
+pages_done: {{ job.pages_done }}/{{ job.pages_total }}
+cards_found: {{ job.cards_found }}
+created_at: {{ job.created_at }}
+finished_at: {{ job.finished_at }}
+error: {{ job.error }}</pre>
+          </details>
+        {% endif %}
       </div>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">{{ t('vp_failed_hint') }}</p>
       <div class="flex gap-3 justify-center flex-wrap">
