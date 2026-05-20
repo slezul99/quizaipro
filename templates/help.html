@@ -127,11 +127,11 @@
       </div>
       <div class="flex gap-2 flex-wrap">
         <button @click="installDemo()" :disabled="installing" class="btn-premium" style="font-size: 14px;">
-          <span x-show="!installing && !installed" x-text="L.install_demo"></span>
-          <span x-show="installing" x-text="L.installing"></span>
-          <span x-show="installed" x-text="L.installed"></span>
+          <span x-show="!installing && !installed">{{ t('hp_install_demo') }}</span>
+          <span x-show="installing">{{ t('hp_installing') }}</span>
+          <span x-show="installed">{{ t('hp_installed') }}</span>
         </button>
-        <button @click="restartTour()" class="btn-premium-ghost" style="font-size: 14px;" x-text="L.restart_tour"></button>
+        <button @click="restartTour()" class="btn-premium-ghost" style="font-size: 14px;">{{ t('hp_restart_tour') }}</button>
       </div>
     </div>
 
@@ -160,7 +160,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="text-xs uppercase tracking-widest font-bold text-indigo-500 dark:text-indigo-300 mb-1">
-              <span x-text="L.step_n"></span> <span x-text="i + 1"></span> <span x-text="L.step_of"></span> <span x-text="steps.length"></span>
+              {{ t('hp_step_n') }} <span x-text="i + 1"></span> {{ t('hp_step_of') }} <span x-text="steps.length"></span>
             </div>
             <h2 class="section-h" style="font-size: 1.7rem; margin-bottom: 0.5rem;" x-text="s.title"></h2>
             <p class="text-slate-600 dark:text-slate-300" x-text="s.desc"></p>
@@ -185,7 +185,7 @@
           <div class="p-4 rounded-2xl mb-5 flex gap-3" style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.06)); border: 1.5px solid rgba(245,158,11,0.3);">
             <div class="text-2xl flex-shrink-0">💡</div>
             <div>
-              <div class="text-xs uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 mb-1" x-text="L.useful"></div>
+              <div class="text-xs uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 mb-1">{{ t('hp_useful') }}</div>
               <div class="text-sm text-slate-700 dark:text-slate-200" x-html="s.tip"></div>
             </div>
           </div>
@@ -197,7 +197,7 @@
             <div class="flex items-start gap-3 mb-3">
               <div class="text-2xl flex-shrink-0">🎯</div>
               <div>
-                <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300 mb-1" x-text="L.try_now"></div>
+                <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300 mb-1">{{ t('hp_try_now') }}</div>
                 <div class="text-sm text-slate-700 dark:text-slate-200" x-html="s.tryIt.text"></div>
               </div>
             </div>
@@ -213,9 +213,9 @@
         <div class="flex justify-between gap-2 pt-4 border-t border-slate-200/40 dark:border-slate-700/40">
           <button @click="active = Math.max(0, active - 1)" :disabled="active === 0"
             :class="active === 0 ? 'opacity-30 cursor-not-allowed' : ''"
-            class="btn-premium-ghost" x-text="L.back"></button>
-          <button x-show="active < steps.length - 1" @click="active++" class="btn-premium" x-text="L.next"></button>
-          <a x-show="active === steps.length - 1" href="/dashboard" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);" x-text="L.done"></a>
+            class="btn-premium-ghost">{{ t('hp_back') }}</button>
+          <button x-show="active < steps.length - 1" @click="active++" class="btn-premium">{{ t('hp_next') }}</button>
+          <a x-show="active === steps.length - 1" href="/dashboard" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">{{ t('hp_done') }}</a>
         </div>
       </div>
     </template>
