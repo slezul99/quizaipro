@@ -355,20 +355,20 @@ function deckEditor() {
         <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="Импорт">📥 Импорт</a>
         {% endif %}
       </div>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">💡 Кликните на вариант ответа чтобы отметить его правильным</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">{{ t('u_click_to_mark_correct') }}</p>
     </div>
 
     {% if cards %}
     <!-- ФИЛЬТРЫ + ПОИСК -->
     <div class="glass-premium mb-5" style="padding: 1.25rem;">
       <div class="flex items-center gap-3 flex-wrap mb-3">
-        <input type="text" id="card-search" placeholder="🔍 Поиск по вопросу или ответу..." class="input-premium" style="flex: 1; min-width: 240px; padding: 10px 16px;">
-        <span class="text-sm text-slate-500 dark:text-slate-400 font-semibold" id="filter-count">{{ cards|length }} из {{ cards|length }}</span>
+        <input type="text" id="card-search" placeholder="🔍 {{ t('u_search_ph') }}" class="input-premium" style="flex: 1; min-width: 240px; padding: 10px 16px;">
+        <span class="text-sm text-slate-500 dark:text-slate-400 font-semibold" id="filter-count">{{ cards|length }} {{ t('u_of') }} {{ cards|length }}</span>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap mb-3">
-        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Сложность:</span>
-        <button type="button" data-diff="all" class="diff-btn active">Все ({{ cards|length }})</button>
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">{{ t('u_difficulty_label') }}</span>
+        <button type="button" data-diff="all" class="diff-btn active">{{ t('u_all_btn') }} ({{ cards|length }})</button>
         {% set diff_counts = {} %}
         {% for c in cards %}
           {% if c.difficulty %}{% set _ = diff_counts.update({c.difficulty.key: diff_counts.get(c.difficulty.key, 0) + 1}) %}{% endif %}
@@ -386,7 +386,7 @@ function deckEditor() {
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Сортировка:</span>
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">{{ t('u_sort_label') }}</span>
         <select id="sort-by" class="input-premium" style="width: auto; padding: 6px 14px; font-size: 13px;">
           <option value="newest">Сначала новые</option>
           <option value="oldest">Сначала старые</option>
@@ -395,14 +395,14 @@ function deckEditor() {
           <option value="easiest">Сначала лёгкие</option>
           <option value="most_attempts">Больше попыток</option>
         </select>
-        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 ml-2">На странице:</span>
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 ml-2">{{ t('u_per_page') }}</span>
         {% for n in [25, 50, 100] %}
         <button type="button" data-pp="{{ n }}" class="pp-btn{% if n == 50 %} active{% endif %}">{{ n }}</button>
         {% endfor %}
         <input type="number" min="1" max="{{ cards|length }}" id="pp-input" value="50"
                class="input-premium" style="width: 80px; padding: 6px; text-align: center; font-size: 13px; font-weight: 700;">
-        <button type="button" data-pp="{{ cards|length or 1 }}" class="pp-btn">Все</button>
-        <button type="button" id="reset-filters" class="btn-premium-danger" style="margin-left: auto; font-size: 11px; padding: 6px 12px;">✕ Сбросить</button>
+        <button type="button" data-pp="{{ cards|length or 1 }}" class="pp-btn">{{ t('u_all_btn') }}</button>
+        <button type="button" id="reset-filters" class="btn-premium-danger" style="margin-left: auto; font-size: 11px; padding: 6px 12px;">{{ t('u_reset_filters') }}</button>
       </div>
     </div>
     {% endif %}
@@ -423,10 +423,10 @@ function deckEditor() {
           <div class="card-num">{{ loop.index }}</div>
           <textarea data-card-id="{{ card.id }}" data-field="front" rows="1"
             class="card-textarea card-edit"
-            placeholder="Текст вопроса..."
+            placeholder="{{ t('u_quest_text_ph') }}"
             style="flex: 1; font-weight: 600;">{{ card.front }}</textarea>
           <button type="button" onclick="speakCard(this)" data-text-source="front"
-                  class="text-slate-400 hover:text-indigo-600 p-2 rounded-xl hover:bg-indigo-50/60 dark:hover:bg-indigo-900/30 transition" title="Озвучить">🔊</button>
+                  class="text-slate-400 hover:text-indigo-600 p-2 rounded-xl hover:bg-indigo-50/60 dark:hover:bg-indigo-900/30 transition" title="{{ t('u_speak') }}">🔊</button>
         </div>
 
         {% if card.image_url %}
@@ -462,15 +462,15 @@ function deckEditor() {
         {% else %}
         <!-- Простой ответ -->
         <div class="ml-12">
-          <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 uppercase font-bold tracking-wider">Ответ</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 uppercase font-bold tracking-wider">{{ t('u_answer') }}</div>
           <textarea data-card-id="{{ card.id }}" data-field="back" rows="2"
             class="card-textarea card-textarea-secondary card-edit"
-            placeholder="Введите ответ...">{{ card.back }}</textarea>
-          <div class="text-xs text-slate-500 dark:text-slate-400 mt-3 mb-1.5 uppercase font-bold tracking-wider">Объяснение</div>
+            placeholder="{{ t('u_answer_ph') }}">{{ card.back }}</textarea>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mt-3 mb-1.5 uppercase font-bold tracking-wider">{{ t('u_explanation') }}</div>
           <textarea data-card-id="{{ card.id }}" data-field="note" rows="1"
             class="card-textarea card-textarea-secondary card-edit"
             style="font-size: 13px;"
-            placeholder="Дополнительная информация (необязательно)...">{{ card.note or "" }}</textarea>
+            placeholder="{{ t('u_extra_info_ph') }}">{{ card.note or "" }}</textarea>
         </div>
         {% endif %}
 
@@ -487,10 +487,10 @@ function deckEditor() {
               {{ card.difficulty.icon }} {{ card.difficulty.label }}
             </span>
             {% endif %}
-            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ card.reviews or 0 }} попыток</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ card.reviews or 0 }} {{ t('u_attempts') }}</span>
           </div>
           <button type="button" data-card-id="{{ card.id }}" onclick="deleteCardGlobal(this)"
-                  class="opacity-0 group-hover:opacity-100 btn-premium-danger" style="font-size: 11px; padding: 5px 12px;">✕ Удалить</button>
+                  class="opacity-0 group-hover:opacity-100 btn-premium-danger" style="font-size: 11px; padding: 5px 12px;">{{ t('u_delete_x') }}</button>
         </div>
       </div>
       {% endfor %}

@@ -13,19 +13,19 @@
       <span class="section-badge"><span class="badge-dot"></span>📥 Импорт</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
       <h1 class="section-h">{{ t('import') }}</h1>
-      <p class="section-sub">Загрузите карточки из файла, JSON-бэкапа или вставьте текст вручную</p>
+      <p class="section-sub">{{ t('u_load_cards_from') }}</p>
     </div>
 
     <!-- JSON import -->
     <div class="glass-premium mb-5" style="border-color: rgba(16,185,129,0.3); border-width: 2px;">
       <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
-        <span class="text-2xl">💾</span> Импорт из JSON-backup
+        <span class="text-2xl">💾</span> {{ t('u_json_backup_title') }}
       </h3>
-      <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">Восстановите колоду из бэкапа или импортируйте от другого пользователя.</p>
+      <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">{{ t('u_json_backup_desc') }}</p>
       <form method="POST" action="/import-json" enctype="multipart/form-data" class="flex gap-3 items-center flex-wrap">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
         <input type="file" name="file" accept=".json" required class="input-premium flex-1" style="padding: 8px 12px; min-width: 200px;">
-        <button type="submit" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Импортировать JSON</button>
+        <button type="submit" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">💾 {{ t('u_import_json_btn') }}</button>
       </form>
     </div>
 
@@ -38,12 +38,12 @@
 
       <div class="flex items-center gap-3 my-2">
         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
-        <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">или</span>
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">{{ t('u_or') }}</span>
         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
       </div>
 
       <div>
-        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">Вставьте текст</label>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('u_paste_text') }}</label>
         <textarea name="text" rows="8" class="input-premium" style="font-family: monospace; resize: vertical;"
           placeholder="Что такое JavaScript? | Язык программирования | Используется в браузере&#10;Сколько планет? | 8 |"></textarea>
       </div>
@@ -61,20 +61,20 @@
       </div>
 
       <div>
-        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">Куда импортировать?</label>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('u_where_to_import') }}</label>
         <select name="deck_id" class="input-premium">
-          <option value="">— Создать новую колоду —</option>
+          <option value="">{{ t('u_create_new_deck') }}</option>
           {% for d in decks %}
           <option value="{{ d['id'] }}">{{ d['icon'] }} {{ d['name'] }}</option>
           {% endfor %}
         </select>
-        <input name="new_deck_name" placeholder="Название новой колоды (если пусто — берётся имя файла)" class="input-premium" style="margin-top: 8px;">
+        <input name="new_deck_name" placeholder="{{ t('u_new_deck_name_ph') }}" class="input-premium" style="margin-top: 8px;">
       </div>
 
       <div>
-        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">📁 Категория (необязательно)</label>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('u_optional_category') }}</label>
         <select name="category_id" class="input-premium">
-          <option value="">— Без категории —</option>
+          <option value="">{{ t('u_no_category') }}</option>
           {% set roots = categories | selectattr('parent_id', 'none') | list %}
           {% for r in roots %}
           <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>
@@ -86,7 +86,7 @@
           <option value="{{ c['id'] }}">{{ c['icon'] }} {{ c['name'] }}</option>
           {% endfor %}
         </select>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Создать категории — <a href="/categories" class="text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">здесь</a></p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">{{ t('u_create_categories_link_pre') }} <a href="/categories" class="text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">{{ t('u_create_categories_link') }}</a></p>
       </div>
 
       <button type="submit" class="btn-premium w-full justify-center">{{ t('import_btn') }}</button>
@@ -94,12 +94,12 @@
 
     <div class="mt-6 glass-premium" style="padding: 1.5rem;">
       <p class="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
-        <span class="text-xl">📋</span> Поддерживаемые форматы
+        <span class="text-xl">📋</span> {{ t('u_supported_formats') }}
       </p>
       <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-        <li><b>Простой:</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">Вопрос | Ответ | Объяснение (опц.)</code></li>
-        <li><b>Q&A:</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">Q: ... A: ... Note: ...</code></li>
-        <li><b>MCQ:</b> правильный отмечается <code class="bg-emerald-100/60 dark:bg-emerald-900/30 px-2 py-0.5 rounded text-xs">✓</code></li>
+        <li><b>{{ t('u_format_simple') }}</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">Вопрос | Ответ | Объяснение (опц.)</code></li>
+        <li><b>{{ t('u_format_qa') }}</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">Q: ... A: ... Note: ...</code></li>
+        <li><b>{{ t('u_format_mcq') }}</b> {{ t('u_format_mcq_hint') }} <code class="bg-emerald-100/60 dark:bg-emerald-900/30 px-2 py-0.5 rounded text-xs">✓</code></li>
       </ul>
       <pre class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl mt-3 text-xs overflow-x-auto text-slate-700 dark:text-slate-300 font-mono">1) Что такое HTML?
 A) Язык программирования

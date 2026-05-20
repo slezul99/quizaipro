@@ -1385,15 +1385,15 @@ function welcomeModal() {
       <div class="text-3xl flex-shrink-0">🎯</div>
       <div class="flex-1 min-w-0">
         {% if goal_reminder.behind %}
-        <div class="font-bold text-orange-900 mb-1">⚠️ Вы отстаёте от цели</div>
+        <div class="font-bold text-orange-900 mb-1">⚠️ {{ t('u_behind_goal') }}</div>
         {% for g in goal_reminder.behind %}
         <p class="text-xs text-slate-700 mb-1">
-          <b>{{ g.title }}</b> — осталось {{ g.status_info.days_left }} дн.
+          <b>{{ g.title }}</b> — {{ t('u_days_left') }} {{ g.status_info.days_left }} {{ t('u_days_short') }}
         </p>
         {% endfor %}
-        <p class="text-xs text-orange-800 italic mb-2">Не сдавайтесь, у вас всё получится!</p>
+        <p class="text-xs text-orange-800 italic mb-2">{{ t('u_keep_going') }}</p>
         {% else %}
-        <div class="font-bold text-amber-900 mb-1">📚 Сегодня в плане</div>
+        <div class="font-bold text-amber-900 mb-1">📚 {{ t('u_today_plan') }}</div>
         {% for g in goal_reminder.pending %}
         <p class="text-xs text-slate-700 mb-1">
           <b>{{ g.title }}</b>: {{ g.today.done }} / {{ g.today.total_quota }}
@@ -1404,11 +1404,11 @@ function welcomeModal() {
         <div class="flex gap-2 mt-2">
           <a href="/goals"
             class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold">
-            Открыть
+            {{ t('u_open') }}
           </a>
           <button @click="dismissGoalReminder()"
             class="px-3 py-1.5 rounded-lg bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold border border-amber-200">
-            Не сегодня
+            {{ t('u_not_today') }}
           </button>
         </div>
       </div>
