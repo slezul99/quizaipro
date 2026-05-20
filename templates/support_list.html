@@ -83,7 +83,7 @@
               {% endif %}
             </div>
             <div class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ tk.last_text or t('sup_no_msgs') }}</div>
-            <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ (tk.last_activity or tk.created_at or '')[:16].replace('T', ' ') }}</div>
+            <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ (tk.last_activity or tk.created_at)|tashkent }}</div>
           </div>
           <span class="text-slate-400 dark:text-slate-500 text-xl">→</span>
         </div>

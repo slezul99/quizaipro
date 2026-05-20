@@ -15,7 +15,7 @@
         <div class="text-sm text-slate-600 dark:text-slate-300 mt-1 flex items-center gap-2 flex-wrap">
           <span>{{ t('lhv_host') }} <b>{{ sess.host_username }}</b></span>
           <span>·</span>
-          <span>📅 {{ sess.finished_at[:16].replace('T', ' ') if sess.finished_at else '' }}</span>
+          <span>📅 {{ sess.finished_at|tashkent if sess.finished_at else '' }}</span>
           <span>·</span>
           <span>❓ {{ sess.question_count }} {{ t('lhv_questions') }}</span>
           <span>·</span>

@@ -15,9 +15,9 @@
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
           ID {{ u.id }} ·
           {{ t('su_role_lbl') }} <b>{{ u.role }}</b> ·
-          {{ t('su_reg') }} {{ u.created_at[:16].replace('T', ' ') }}
-          {% if u.last_seen %} · {{ t('su_last_online') }} <b class="text-emerald-600 dark:text-emerald-300">{{ u.last_seen[:16].replace('T', ' ') }}</b>{% endif %}
-          {% if u.last_study %} · {{ t('su_last_study') }} {{ u.last_study[:16].replace('T', ' ') }}{% endif %}
+          {{ t('su_reg') }} {{ u.created_at|tashkent }}
+          {% if u.last_seen %} · {{ t('su_last_online') }} <b class="text-emerald-600 dark:text-emerald-300">{{ u.last_seen|tashkent }}</b>{% endif %}
+          {% if u.last_study %} · {{ t('su_last_study') }} {{ u.last_study|tashkent }}{% endif %}
         </p>
       </div>
     </div>
@@ -105,7 +105,7 @@
         <a href="/deck/{{ d.id }}" class="flex-1 min-w-0 font-medium text-slate-900 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-300">{{ d.name }}</a>
         <div class="text-right flex-shrink-0">
           <div class="font-bold text-indigo-600 dark:text-indigo-300">{{ d.reviews_count }} {{ t('su_decks_used_unit') }}</div>
-          <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ d.last_used[:16].replace('T', ' ') if d.last_used else '' }}</div>
+          <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ d.last_used|tashkent if d.last_used else '' }}</div>
         </div>
       </div>
       {% endfor %}

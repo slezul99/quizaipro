@@ -39,7 +39,7 @@
             <span>·</span>
             <span>👥 {{ s.player_count }} {{ t('lh_players') }}</span>
             <span>·</span>
-            <span>{{ s.finished_at[:16].replace('T', ' ') if s.finished_at else '' }}</span>
+            <span>{{ s.finished_at|tashkent if s.finished_at else '' }}</span>
           </div>
         </div>
 

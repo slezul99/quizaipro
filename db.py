@@ -539,6 +539,12 @@ def init_db():
         c.execute("ALTER TABLE users ADD COLUMN last_seen TEXT")
     except sqlite3.OperationalError:
         pass
+
+    # MIGRATSIYA: ispravlyaem last_seen format s "T" na " " — strokovoye sravneniye s SQLite datetime
+    try:
+        c.execute("UPDATE users SET last_seen = REPLACE(last_seen, 'T', ' ') WHERE last_seen LIKE '%T%'")
+    except sqlite3.OperationalError:
+        pass
     # Tip kolody: mcq (testy s variantami) ili terms (slovari/terminy/pravila)
     try:
         c.execute("ALTER TABLE decks ADD COLUMN deck_type TEXT DEFAULT 'mcq'")

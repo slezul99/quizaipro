@@ -25,7 +25,7 @@
         <span class="text-2xl flex-shrink-0">{{ icon }}</span>
         <div class="flex-1 min-w-0">
           <div class="text-sm text-slate-900 dark:text-slate-100">{{ n.message }}</div>
-          <div class="text-xs text-slate-400 dark:text-slate-500 mt-1 font-semibold">{{ (n.created_at or '')[:16].replace('T', ' ') }}</div>
+          <div class="text-xs text-slate-400 dark:text-slate-500 mt-1 font-semibold">{{ n.created_at|tashkent }}</div>
         </div>
       </a>
       {% endfor %}

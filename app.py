@@ -171,7 +171,9 @@ def track_last_seen():
         _last_seen_cache[uid] = now
     try:
         conn = db.get_conn()
-        conn.execute("UPDATE users SET last_seen=? WHERE id=?", (now.isoformat(), uid))
+        # Pishem v formate SQLite "YYYY-MM-DD HH:MM:SS" (BEZ "T") — chtoby strokovoye sravneniye s datetime('now') rabotalo pravil'no
+        conn.execute("UPDATE users SET last_seen=? WHERE id=?",
+                     (now.strftime("%Y-%m-%d %H:%M:%S"), uid))
         conn.commit()
         conn.close()
     except Exception:
@@ -182,6 +184,36 @@ def track_last_seen():
 def inject_csrf():
     """Dostupno v shablonakh kak {{ csrf_token() }}."""
     return {"csrf_token": get_csrf_token}
+
+
+# Jinja-fil'tr: UTC datetime/string -> Tashkent (UTC+5)
+@app.template_filter("tashkent")
+def _tashkent_filter(value, fmt: str = "%Y-%m-%d %H:%M"):
+    """Konvertiruem ISO/SQLite-stroku v UTC -> tashkentskoye vremya (+5).
+    Primery vhoda: '2026-05-20T18:54:12.987807', '2026-05-20 18:54:12', None."""
+    if not value:
+        return ""
+    # Esli prishyol uzhe datetime
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        s = str(value).strip()
+        if not s:
+            return ""
+        # Snimaem 'T' i mikrosekundy
+        s = s.replace("T", " ")
+        if "." in s:
+            s = s.split(".")[0]
+        try:
+            dt = datetime.strptime(s[:19], "%Y-%m-%d %H:%M:%S")
+        except Exception:
+            try:
+                dt = datetime.strptime(s[:16], "%Y-%m-%d %H:%M")
+            except Exception:
+                return str(value)[:16]
+    # +5 chasov dlya Tashkenta
+    dt_tash = dt + timedelta(hours=5)
+    return dt_tash.strftime(fmt)
 
 
 # ---------------------- helpers ---------------------------------------------
