@@ -6,8 +6,9 @@
 
   <div class="relative z-10">
 
-    <!-- WORKING STATE -->
-    <div x-show="state.status === 'pending' || state.status === 'running'" class="text-center">
+    {% if job.status == 'pending' or job.status == 'running' %}
+    <!-- WORKING STATE — server-side rendered (Alpine ne mojhet glyuchit) -->
+    <div class="text-center">
       <div class="text-7xl mb-5 inline-block">
         <span class="inline-block animate-bounce">🤖</span>
       </div>
@@ -18,36 +19,36 @@
       <div class="glass-premium mb-5" style="padding: 2rem;">
         <div class="flex justify-between mb-2 text-sm">
           <span class="font-bold text-slate-700 dark:text-slate-200">
-            {{ t('vp_pages') }}: <span x-text="state.pages_done"></span> / <span x-text="state.pages_total || '?'"></span>
+            {{ t('vp_pages') }}: <span x-text="state.pages_done">{{ job.pages_done }}</span> / <span x-text="state.pages_total || '?'">{{ job.pages_total or '?' }}</span>
           </span>
           <span class="font-bold text-indigo-600 dark:text-indigo-300">
-            <span x-text="state.progress"></span>%
+            <span x-text="state.progress">{{ job.progress }}</span>%
           </span>
         </div>
 
         <!-- Bar -->
         <div class="h-4 bg-slate-200/60 dark:bg-slate-700/40 rounded-full overflow-hidden mb-3">
           <div class="h-full transition-all duration-500 rounded-full"
-               :style="`width: ${state.progress}%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);`">
+               :style="`width: ${state.progress}%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);`"
+               style="width: {{ job.progress }}%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);">
           </div>
         </div>
 
         <!-- Counts -->
         <div class="grid grid-cols-2 gap-3 mt-4 text-center">
           <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3">
-            <div class="text-2xl font-black text-indigo-700 dark:text-indigo-300" x-text="state.pages_done"></div>
+            <div class="text-2xl font-black text-indigo-700 dark:text-indigo-300" x-text="state.pages_done">{{ job.pages_done }}</div>
             <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{{ t('vp_pages_processed') }}</div>
           </div>
           <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3">
-            <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300" x-text="state.cards_found"></div>
+            <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300" x-text="state.cards_found">{{ job.cards_found }}</div>
             <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{{ t('vp_cards_found') }}</div>
           </div>
         </div>
 
         <!-- Live stage message -->
-        <div class="mt-4 p-2 bg-slate-100 dark:bg-slate-800/40 rounded-lg text-xs font-mono text-slate-600 dark:text-slate-300 text-center"
-             x-show="state.stage_msg && state.stage_msg.length > 0">
-          ⚡ <span x-text="state.stage_msg"></span>
+        <div class="mt-4 p-2 bg-slate-100 dark:bg-slate-800/40 rounded-lg text-xs font-mono text-slate-600 dark:text-slate-300 text-center">
+          ⚡ <span x-text="state.stage_msg || '{{ job.stage_msg or 'starting...' }}'">{{ job.stage_msg or 'starting...' }}</span>
         </div>
 
         <!-- Stages -->
@@ -57,21 +58,11 @@
             <span class="text-slate-700 dark:text-slate-200">{{ t('vp_stage_uploaded') }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
-                  :class="state.progress > 0 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'">
-              <span x-show="state.progress >= 100">✓</span>
-              <span x-show="state.progress < 100 && state.progress > 0">⋯</span>
-              <span x-show="state.progress === 0">·</span>
-            </span>
+            <span class="w-5 h-5 rounded-full bg-indigo-500 animate-pulse flex items-center justify-center text-white text-xs">⋯</span>
             <span class="text-slate-700 dark:text-slate-200">{{ t('vp_stage_extracting') }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
-                  :class="state.progress >= 100 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'">
-              <span x-show="state.status === 'done'">✓</span>
-              <span x-show="state.progress >= 100 && state.status !== 'done'">⋯</span>
-              <span x-show="state.progress < 100">·</span>
-            </span>
+            <span class="w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-white text-xs">·</span>
             <span class="text-slate-700 dark:text-slate-200">{{ t('vp_stage_saving') }}</span>
           </div>
         </div>
@@ -89,32 +80,44 @@
       </div>
 
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-5">{{ t('vp_filter_note') }}</p>
+
+      {% if is_super_admin %}
+        <details class="mt-4 text-left max-w-md mx-auto">
+          <summary class="text-xs text-slate-500 cursor-pointer">🛠️ Debug (super-admin)</summary>
+          <pre class="text-[10px] mt-2 p-2 bg-slate-900/40 rounded overflow-x-auto text-slate-300">job_id: {{ job.id }}
+status: {{ job.status }}
+pages_done: {{ job.pages_done }}/{{ job.pages_total }}
+cards_found: {{ job.cards_found }}
+stage_msg: {{ job.stage_msg }}
+created_at: {{ job.created_at }}</pre>
+        </details>
+      {% endif %}
     </div>
 
+    {% elif job.status == 'done' %}
     <!-- DONE -->
-    <div x-show="state.status === 'done'" class="text-center">
+    <div class="text-center">
       <div class="text-8xl mb-4">🎉</div>
       <h1 class="section-h">{{ t('vp_done_h') }}</h1>
       <p class="text-slate-700 dark:text-slate-200 mt-3 mb-8 text-lg">
-        {{ t('vp_done_pre') }} <b class="text-emerald-600 dark:text-emerald-300" x-text="state.cards_found"></b> {{ t('vp_done_post') }}
+        {{ t('vp_done_pre') }} <b class="text-emerald-600 dark:text-emerald-300">{{ job.cards_found }}</b> {{ t('vp_done_post') }}
       </p>
 
       <div class="flex gap-3 justify-center flex-wrap">
-        <a :href="`/deck/${state.deck_id_created}`" class="btn-premium" style="font-size: 16px; padding: 14px 28px;">
+        <a href="/deck/{{ job.deck_id_created }}" class="btn-premium" style="font-size: 16px; padding: 14px 28px;">
           {{ t('vp_open_deck') }}
         </a>
         <a href="/import" class="btn-premium-ghost">{{ t('vp_back_import') }}</a>
       </div>
     </div>
 
+    {% else %}
     <!-- FAILED -->
-    <div x-show="state.status === 'failed'" class="text-center">
+    <div class="text-center">
       <div class="text-8xl mb-4">😔</div>
       <h1 class="section-h" style="color: #dc2626;">{{ t('vp_failed_h') }}</h1>
       <div class="glass-premium mt-5 mb-6" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(255,255,255,0.6)); border-color: rgba(239,68,68,0.3);">
-        <!-- Server-side fallback (rabotaet dazhe esli Alpine ne zagruzilsya) -->
-        <p class="text-sm font-mono text-slate-800 dark:text-slate-100 break-words text-left whitespace-pre-wrap"
-           x-text="(state.error && state.error.length > 0) ? state.error : {{ t('vp_unknown_error')|tojson }}">{{ job.error if job.error else t('vp_unknown_error') }}</p>
+        <p class="text-sm font-mono text-slate-800 dark:text-slate-100 break-words text-left whitespace-pre-wrap">{{ job.error if job.error else t('vp_unknown_error') }}</p>
         <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-left font-mono">Job ID: {{ job.id }}</p>
         {% if is_super_admin %}
           <details class="mt-3 text-left">
@@ -122,6 +125,7 @@
             <pre class="text-[10px] mt-2 p-2 bg-slate-900/40 rounded overflow-x-auto text-slate-300">status: {{ job.status }}
 pages_done: {{ job.pages_done }}/{{ job.pages_total }}
 cards_found: {{ job.cards_found }}
+stage_msg: {{ job.stage_msg }}
 created_at: {{ job.created_at }}
 finished_at: {{ job.finished_at }}
 error: {{ job.error }}</pre>
@@ -134,6 +138,7 @@ error: {{ job.error }}</pre>
         <a href="/dashboard" class="btn-premium-ghost">{{ t('lp_to_dashboard') }}</a>
       </div>
     </div>
+    {% endif %}
 
   </div>
 </div>
@@ -153,12 +158,13 @@ function visionProgress() {
       'deck_id_created': job.deck_id_created,
     }|tojson }},
     pollTimer: null,
+    initialStatus: {{ job.status|tojson }},
 
     init() {
-      // Esli uzhe done/failed — ne pollim
+      // Esli uzhe done/failed na server-side — ne pollim, prosto stoim
       if (this.state.status === 'done' || this.state.status === 'failed') return;
       this.poll();
-      this.pollTimer = setInterval(() => this.poll(), 2000);
+      this.pollTimer = setInterval(() => this.poll(), 2500);
 
       // Pause polling kogda vkladka skryta
       document.addEventListener('visibilitychange', () => {
@@ -166,7 +172,7 @@ function visionProgress() {
           if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
         } else if (!this.pollTimer && this.state.status !== 'done' && this.state.status !== 'failed') {
           this.poll();
-          this.pollTimer = setInterval(() => this.poll(), 2000);
+          this.pollTimer = setInterval(() => this.poll(), 2500);
         }
       });
 
@@ -183,10 +189,17 @@ function visionProgress() {
       try {
         const r = await fetch(`/api/import/vision/{{ job.id }}/status`);
         if (!r.ok) return;
-        this.state = await r.json();
-        if (this.state.status === 'done' || this.state.status === 'failed') {
+        const newState = await r.json();
+        // VAJNO: esli status izmenilsya s running na done/failed — relod stranitsy
+        // chtoby Jinja zarendit pravilnyy blok (a ne Alpine x-show kotoryy mojet glyuchit)
+        if ((newState.status === 'done' || newState.status === 'failed') &&
+            this.initialStatus !== newState.status) {
           if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+          window.location.reload();
+          return;
         }
+        // Inache prosto obnovlyaem progress / stage
+        this.state = newState;
       } catch (e) { console.error('[vision] poll err:', e); }
     }
   };

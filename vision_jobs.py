@@ -216,7 +216,7 @@ def run_vision_job(jid: str, save_cards_callback):
         except Exception: pass
         return
 
-    update_job(jid, status="running", pages_total=total)
+    update_job(jid, status="running", pages_total=total, stage_msg="initializing...")
 
     def progress_cb(done, total_pages, found):
         pct = int(done / max(total_pages, 1) * 90)  # 90% — vision, 10% — sohranenie
