@@ -169,7 +169,7 @@ def run_vision_job(jid: str, save_cards_callback):
             fpath,
             lang=job["lang"],
             max_pages=30,
-            chunk_size=5,
+            chunk_size=3,
             progress_cb=progress_cb,
         )
     except Exception as e:
