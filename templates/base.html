@@ -27,7 +27,7 @@
   html.dark { background: #0f1729; }
   html.dark body { background: #0f1729; }
   /* Pri navigatsii — bystro skryvaem belyy fleshk */
-  body { background-color: transparent; }
+  body { background-color: transparent; overflow-x: hidden; }
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
@@ -1089,6 +1089,80 @@
   html.dark [x-show="mobileMenu"] {
     background: rgba(15, 23, 41, 0.98) !important;
     border-top-color: rgba(99,102,241,0.3) !important;
+  }
+
+  /* ============ MOBILE ADAPTATION ============ */
+  /* Modali na malen'kih ekranah — umen'shennyy padding, allow scroll */
+  @media (max-width: 640px) {
+    .glass-premium {
+      padding: 1rem !important;
+      border-radius: 18px;
+    }
+    /* Inline padding override v scriptah modal'noy razmetki */
+    .glass-premium[style*="padding: 2rem"],
+    .glass-premium[style*="padding: 2.5rem"],
+    .glass-premium[style*="padding: 1.75rem"],
+    .glass-premium[style*="padding: 1.5rem"] {
+      padding: 1rem !important;
+    }
+    /* Modali — vsegda mogut skrollit'sya, ne razdvigat'sya za ekran */
+    [x-show*="show"][class*="fixed"][class*="inset-0"] > div,
+    .fixed.inset-0 > .glass-premium,
+    .fixed.inset-0 > .glass-strong {
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 95vw;
+      margin: 0 auto;
+    }
+    /* Bol'shie kuchki podreseyaem na malen'koy shirine */
+    .section-h {
+      font-size: 1.3rem !important;
+    }
+    h1.section-h {
+      font-size: 1.5rem !important;
+    }
+    /* Knopki v modal'kah — ne dolzhny "vyletet'" */
+    .glass-premium .btn-premium,
+    .glass-premium .btn-premium-ghost,
+    .glass-strong .btn-premium,
+    .glass-strong .btn-premium-ghost {
+      font-size: 13px;
+      padding: 10px 14px;
+      min-height: 42px;
+      white-space: nowrap;
+    }
+    /* Tabbing v modali — flex chtoby ne lopalsya */
+    .glass-premium .flex.gap-2,
+    .glass-premium .flex.gap-3 {
+      flex-wrap: wrap;
+    }
+    /* Vhodnye polya — udobnogo razmera dlya pal'tsa */
+    .input-premium {
+      font-size: 16px !important; /* ne men'she 16px chtoby iOS ne zoomit */
+      padding: 10px 12px;
+    }
+    /* Stat cards — uzhe v 2 stolbtsa zhdet, no na ochen' uzkikh — 1 */
+    .stat-card { padding: 0.75rem !important; }
+    .stat-value { font-size: 1.5rem !important; }
+    /* Section header — ne ochen' bol'shoy na mobile */
+    .section-header { margin-bottom: 1rem; }
+    /* Body padding na minimum */
+    .max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .max-w-3xl, .max-w-2xl {
+      padding-left: 0.75rem !important;
+      padding-right: 0.75rem !important;
+    }
+    /* Deck-card menshe na mobile */
+    .deck-card { padding: 1rem 1.1rem !important; }
+    /* Decorativnye blob — pohozhe ne nado na mobile (lagayut perfomans) */
+    .deco-blob { display: none !important; }
+  }
+
+  /* Telefony pomenshe (iPhone SE, malenkie android) */
+  @media (max-width: 380px) {
+    .grid.grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    h1.section-h { font-size: 1.25rem !important; }
   }
 </style>
 {% block extra_head %}{% endblock %}
