@@ -106,7 +106,8 @@
       <div class="text-8xl mb-4">😔</div>
       <h1 class="section-h" style="color: #dc2626;">{{ t('vp_failed_h') }}</h1>
       <div class="glass-premium mt-5 mb-6" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(255,255,255,0.6)); border-color: rgba(239,68,68,0.3);">
-        <p class="text-sm font-mono text-slate-700 dark:text-slate-200 break-words" x-text="state.error || {{ t('vp_unknown_error')|tojson }}"></p>
+        <p class="text-sm font-mono text-slate-700 dark:text-slate-200 break-words text-left" x-text="(state.error && state.error.length > 0) ? state.error : {{ t('vp_unknown_error')|tojson }}"></p>
+        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-3 text-left">Job ID: {{ job.id }}</p>
       </div>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">{{ t('vp_failed_hint') }}</p>
       <div class="flex gap-3 justify-center flex-wrap">

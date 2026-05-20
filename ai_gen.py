@@ -511,22 +511,26 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
     Strategiya:
     - Renderim do max_pages stranits
     - Obrabatyvayem ne vse srazu, a chankami po chunk_size stranits (sekonomim tokeny + nadeyno)
-    - Mezhdu chankami delaem sleep 2 sek (15 RPM limit na free tier)
+    - Mezhdu chankami delaem sleep 4 sek (15 RPM limit na free tier)
     - V kontse — dedupliciruem (chanki mogut peresekatsya)
 
     progress_cb(done, total, found_so_far) — funktsiya kotoruyu zovem posle kazhdogo chanka
     chtoby pokazat' progress polzovatelyu.
 
     Vozvrashchaet [{front, back, note}].
+    Esli VSE chanki upali — kidaet RuntimeError s prichinoy.
+    Esli chanki proshli no 0 zakrytyh voprosov — vozvrashchaet [].
     """
     images = _pdf_to_images(pdf_path, max_pages=max_pages)
     if not images:
-        return []
+        raise RuntimeError("Не удалось отрендерить страницы PDF (PyMuPDF). Возможно, файл повреждён.")
     if not _key():
-        return []
+        raise RuntimeError("Gemini API ключ не настроен на сервере.")
 
     total_pages = len(images)
     all_cards = []
+    chunk_results = []  # (success: bool, parsed_count: int)
+    last_chunk_error = None
 
     # Razbivayem na chanki
     for i in range(0, total_pages, chunk_size):
@@ -539,8 +543,11 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
         if raw:
             chunk_cards = _parse_vision_response(raw)
             all_cards.extend(chunk_cards)
+            chunk_results.append((True, len(chunk_cards)))
             print(f"[AI vision]   +{len(chunk_cards)} cards (total: {len(all_cards)})")
         else:
+            chunk_results.append((False, 0))
+            last_chunk_error = "Gemini API не ответил (rate limit / перегруз / сетевая ошибка)"
             print(f"[AI vision]   chunk failed (skipping)")
 
         # Progress callback
@@ -554,6 +561,15 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
         if i + chunk_size < total_pages:
             import time
             time.sleep(4)
+
+    # Esli VSE chanki upali — eto problema s API/setu, ne s PDF
+    if chunk_results and not any(r[0] for r in chunk_results):
+        raise RuntimeError(
+            f"Все запросы к Gemini Vision провалились. "
+            f"Возможные причины: дневной лимит 1500 запросов исчерпан, "
+            f"перегрузка серверов Google, или сетевая ошибка. "
+            f"Последняя ошибка: {last_chunk_error}. Попробуйте через 5-10 минут."
+        )
 
     # Dedupe na sluchay esli AI vydal dubli na granitsah
     return _dedupe_cards(all_cards)
