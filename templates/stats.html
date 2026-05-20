@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block extra_head %}
 <style>
-  /* GitHub-style heatmap */
   .heat-cell {
     width: 12px; height: 12px;
     border-radius: 3px;
@@ -24,10 +23,7 @@
     padding: 8px 4px;
   }
 
-  /* Bar chart */
-  .bar {
-    transition: height 0.6s cubic-bezier(0.16,1,0.3,1);
-  }
+  .bar { transition: height 0.6s cubic-bezier(0.16,1,0.3,1); }
 </style>
 {% endblock %}
 
@@ -38,10 +34,10 @@
 
   <div class="relative z-10">
     <div class="section-header left mb-8">
-      <span class="section-badge"><span class="badge-dot"></span>📊 Аналитика</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('st_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Моя статистика</h1>
-      <p class="section-sub">Все ваши успехи на одной странице</p>
+      <h1 class="section-h">{{ t('st_h') }}</h1>
+      <p class="section-sub">{{ t('st_sub') }}</p>
     </div>
 
   <!-- Stat cards -->
@@ -49,91 +45,91 @@
     <div class="stat-card stat-blue slide-up" style="animation-delay:.05s">
       <div class="text-2xl mb-2">⚡</div>
       <div class="stat-value">{{ total_reviews }}</div>
-      <div class="stat-label">Всего ответов</div>
+      <div class="stat-label">{{ t('st_total_answers') }}</div>
     </div>
     <div class="stat-card stat-emerald slide-up" style="animation-delay:.1s">
       <div class="text-2xl mb-2">🎯</div>
       <div class="stat-value">{{ total_accuracy }}%</div>
-      <div class="stat-label">Точность</div>
+      <div class="stat-label">{{ t('st_accuracy') }}</div>
     </div>
     <div class="stat-card stat-orange slide-up" style="animation-delay:.15s">
       <div class="text-2xl mb-2">🔥</div>
       <div class="stat-value">{{ user.streak or 0 }}</div>
-      <div class="stat-label">Дней подряд</div>
+      <div class="stat-label">{{ t('st_streak_days') }}</div>
     </div>
     <div class="stat-card stat-purple slide-up" style="animation-delay:.2s">
       <div class="text-2xl mb-2">📅</div>
       <div class="stat-value">{{ active_days }}</div>
-      <div class="stat-label">Активных дней</div>
+      <div class="stat-label">{{ t('st_active_days') }}</div>
     </div>
   </div>
 
-  <!-- Sравnenie 7 dney i 30 dney -->
+  <!-- 7 / 30 days -->
   <div class="grid md:grid-cols-2 gap-5 mb-8">
     <div class="glass rounded-3xl p-6 slide-up" style="animation-delay:.25s">
       <div class="flex justify-between mb-3">
-        <h3 class="font-bold text-slate-900">📈 Последние 7 дней</h3>
-        <span class="badge bg-indigo-50 text-indigo-700">{{ last_7_total }} ответов</span>
+        <h3 class="font-bold text-slate-900 dark:text-slate-100">{{ t('st_last_7') }}</h3>
+        <span class="badge bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">{{ last_7_total }} {{ t('st_answers') }}</span>
       </div>
-      <div class="text-4xl font-bold h-display text-indigo-600 mb-1">{{ last_7_accuracy }}%</div>
-      <div class="text-xs text-gray-500">Точность за неделю</div>
+      <div class="text-4xl font-bold h-display text-indigo-600 dark:text-indigo-300 mb-1">{{ last_7_accuracy }}%</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400">{{ t('st_acc_week') }}</div>
       <div class="progress-bar mt-3"><div style="width: {{ last_7_accuracy }}%"></div></div>
     </div>
     <div class="glass rounded-3xl p-6 slide-up" style="animation-delay:.3s">
       <div class="flex justify-between mb-3">
-        <h3 class="font-bold text-slate-900">📊 Последние 30 дней</h3>
-        <span class="badge bg-purple-50 text-purple-700">{{ last_30_total }} ответов</span>
+        <h3 class="font-bold text-slate-900 dark:text-slate-100">{{ t('st_last_30') }}</h3>
+        <span class="badge bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">{{ last_30_total }} {{ t('st_answers') }}</span>
       </div>
-      <div class="text-4xl font-bold h-display text-purple-600 mb-1">{{ last_30_accuracy }}%</div>
-      <div class="text-xs text-gray-500">Точность за месяц</div>
+      <div class="text-4xl font-bold h-display text-purple-600 dark:text-purple-300 mb-1">{{ last_30_accuracy }}%</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400">{{ t('st_acc_month') }}</div>
       <div class="progress-bar mt-3"><div style="width: {{ last_30_accuracy }}%"></div></div>
     </div>
   </div>
 
-  <!-- Statistika igr -->
+  <!-- Game stats -->
   {% if game_stats %}
   <div class="glass rounded-3xl p-6 mb-8 slide-up" style="animation-delay:.32s">
-    <h3 class="font-bold text-slate-900 mb-4">🎮 Статистика игр</h3>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">{{ t('st_games_h') }}</h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-indigo-50 rounded-2xl p-4 text-center">
+      <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl p-4 text-center">
         <div class="text-3xl mb-1">📝</div>
-        <div class="text-2xl font-bold text-indigo-700">{{ game_stats.tests_played or 0 }}</div>
-        <div class="text-xs text-slate-600 mt-1">Пройдено тестов</div>
+        <div class="text-2xl font-bold text-indigo-700 dark:text-indigo-300">{{ game_stats.tests_played or 0 }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('st_tests_played') }}</div>
       </div>
-      <div class="bg-emerald-50 rounded-2xl p-4 text-center">
+      <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl p-4 text-center">
         <div class="text-3xl mb-1">🎯</div>
-        <div class="text-2xl font-bold text-emerald-700">{{ game_stats.match_played or 0 }}</div>
-        <div class="text-xs text-slate-600 mt-1">Сыграно Match</div>
+        <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ game_stats.match_played or 0 }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('st_match_played') }}</div>
         {% if game_stats.match_best_time %}
-        <div class="text-[10px] text-slate-400 mt-0.5">⚡ лучшее: {{ game_stats.match_best_time }}с</div>
+        <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{{ t('st_match_best') }}: {{ game_stats.match_best_time }}s</div>
         {% endif %}
       </div>
-      <div class="bg-orange-50 rounded-2xl p-4 text-center">
+      <div class="bg-orange-50 dark:bg-orange-900/30 rounded-2xl p-4 text-center">
         <div class="text-3xl mb-1">⚔️</div>
-        <div class="text-2xl font-bold text-orange-700">{{ game_stats.duels_played or 0 }}</div>
-        <div class="text-xs text-slate-600 mt-1">Дуэлей</div>
-        <div class="text-[10px] text-slate-500 mt-0.5">
+        <div class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ game_stats.duels_played or 0 }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('st_duels') }}</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
           🏅 {{ game_stats.duels_won or 0 }} ·
           ✗ {{ game_stats.duels_lost or 0 }}
           {% if game_stats.duels_draw %} · = {{ game_stats.duels_draw }}{% endif %}
         </div>
       </div>
-      <div class="bg-pink-50 rounded-2xl p-4 text-center">
+      <div class="bg-pink-50 dark:bg-pink-900/30 rounded-2xl p-4 text-center">
         <div class="text-3xl mb-1">🎮</div>
-        <div class="text-2xl font-bold text-pink-700">{{ (game_stats.live_played or 0) + (game_stats.live_hosted or 0) }}</div>
-        <div class="text-xs text-slate-600 mt-1">Live test</div>
-        <div class="text-[10px] text-slate-500 mt-0.5">
+        <div class="text-2xl font-bold text-pink-700 dark:text-pink-300">{{ (game_stats.live_played or 0) + (game_stats.live_hosted or 0) }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('st_live_h') }}</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
           🎮 {{ game_stats.live_played or 0 }} ·
-          🎤 {{ game_stats.live_hosted or 0 }} хост
+          🎤 {{ game_stats.live_hosted or 0 }} {{ t('st_host') }}
         </div>
       </div>
     </div>
   </div>
   {% endif %}
 
-  <!-- Bar chart 30 dney -->
+  <!-- Bar chart 30 days -->
   <div class="glass rounded-3xl p-6 mb-8 slide-up" style="animation-delay:.35s">
-    <h3 class="font-bold text-slate-900 mb-5">📅 Активность за 30 дней</h3>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-5">{{ t('st_activity_30') }}</h3>
     {% set max_total = (last_30 | map(attribute='total') | list | max) or 1 %}
     <div class="flex items-end justify-between gap-1 h-48 mb-2">
       {% for d in last_30 %}
@@ -150,16 +146,15 @@
           {% endif %}
         </div>
         {% else %}
-        <div class="bar w-full rounded-t-md bg-slate-100" style="height: 3%;"></div>
+        <div class="bar w-full rounded-t-md bg-slate-100 dark:bg-slate-700/50" style="height: 3%;"></div>
         {% endif %}
-        <!-- Tooltip -->
         <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
           {{ d.label }}: {{ d.total }} ({{ d.good }} ✓ · {{ d.bad }} ✗)
         </div>
       </div>
       {% endfor %}
     </div>
-    <div class="flex justify-between text-xs text-gray-400">
+    <div class="flex justify-between text-xs text-slate-400 dark:text-slate-500">
       <span>{{ last_30[0].label }}</span>
       <span>{{ last_30[14].label }}</span>
       <span>{{ last_30[-1].label }}</span>
@@ -167,49 +162,47 @@
     <div class="flex gap-4 mt-4 text-xs">
       <div class="flex items-center gap-2">
         <div class="w-3 h-3 bg-gradient-to-t from-indigo-500 to-purple-500 rounded"></div>
-        <span class="text-gray-500">Правильно</span>
+        <span class="text-slate-500 dark:text-slate-400">{{ t('st_correct') }}</span>
       </div>
       <div class="flex items-center gap-2">
         <div class="w-3 h-3 bg-red-400 rounded"></div>
-        <span class="text-gray-500">Ошибки</span>
+        <span class="text-slate-500 dark:text-slate-400">{{ t('st_mistakes') }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Heatmap (GitHub style) -->
+  <!-- Heatmap -->
   <div class="glass rounded-3xl p-6 slide-up" style="animation-delay:.4s">
     <div class="flex justify-between items-center mb-5 flex-wrap gap-2">
-      <h3 class="font-bold text-slate-900">🌱 Активность за год</h3>
+      <h3 class="font-bold text-slate-900 dark:text-slate-100">{{ t('st_year_activity') }}</h3>
       {% if best_day and best_day.count > 0 %}
-      <span class="text-xs text-gray-500">Лучший день: <span class="font-semibold text-indigo-600">{{ best_day.date }}</span> — {{ best_day.count }} ответов</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">{{ t('st_best_day') }}: <span class="font-semibold text-indigo-600 dark:text-indigo-300">{{ best_day.date }}</span> — {{ best_day.count }} {{ t('st_answers') }}</span>
       {% endif %}
     </div>
 
     <div class="heat-grid">
-      {% set ns = namespace(prev_weekday=0) %}
       {% for d in heatmap %}
       {% if loop.first %}
-      {# Pad pustymi yacheykami v nachale chtoby pervy den' byl na nuzhnoy strоke #}
       {% for _ in range(d.weekday) %}
       <div></div>
       {% endfor %}
       {% endif %}
-      <div class="heat-cell heat-{{ d.level }}" title="{{ d.date }} — {{ d.count }} ответов"></div>
+      <div class="heat-cell heat-{{ d.level }}" title="{{ d.date }} — {{ d.count }} {{ t('st_answers') }}"></div>
       {% endfor %}
     </div>
 
-    <div class="flex items-center justify-between mt-4 text-xs text-gray-500">
-      <span>365 дней назад</span>
+    <div class="flex items-center justify-between mt-4 text-xs text-slate-500 dark:text-slate-400">
+      <span>{{ t('st_year_ago') }}</span>
       <div class="flex items-center gap-2">
-        <span>Меньше</span>
+        <span>{{ t('st_less') }}</span>
         <div class="heat-cell heat-0" style="cursor:default"></div>
         <div class="heat-cell heat-1" style="cursor:default"></div>
         <div class="heat-cell heat-2" style="cursor:default"></div>
         <div class="heat-cell heat-3" style="cursor:default"></div>
         <div class="heat-cell heat-4" style="cursor:default"></div>
-        <span>Больше</span>
+        <span>{{ t('st_more') }}</span>
       </div>
-      <span>Сегодня</span>
+      <span>{{ t('st_today') }}</span>
     </div>
   </div>
 </div>

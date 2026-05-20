@@ -1,35 +1,137 @@
 {% extends "base.html" %}
 {% block content %}
 {% from "_icons.html" import icon %}
-<div class="relative max-w-5xl mx-auto px-6 py-8" x-data="helpPage()">
+{% set HP = {
+  'install_demo': t('hp_install_demo'),
+  'installing': t('hp_installing'),
+  'installed': t('hp_installed'),
+  'restart_tour': t('hp_restart_tour'),
+  'step_n': t('hp_step_n'),
+  'step_of': t('hp_step_of'),
+  'useful': t('hp_useful'),
+  'try_now': t('hp_try_now'),
+  'back': t('hp_back'),
+  'next': t('hp_next'),
+  'done': t('hp_done'),
+  'error': t('hp_error'),
+  'unknown': t('hp_unknown'),
+  'steps': [
+    {
+      'short': t('hp_s1_short'),
+      'emoji': '📚',
+      'color': 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+      'title': t('hp_s1_title'),
+      'desc': t('hp_s1_desc'),
+      'walkthrough': [
+        {'text': t('hp_s1_w1')},
+        {'text': t('hp_s1_w2')},
+        {'text': t('hp_s1_w3')},
+        {'text': t('hp_s1_w4')},
+      ],
+      'tip': t('hp_s1_tip'),
+      'tryIt': {
+        'text': t('hp_s1_try'),
+        'buttons': [{'url': '/dashboard', 'label': t('hp_s1_try_btn')}]
+      }
+    },
+    {
+      'short': t('hp_s2_short'),
+      'emoji': '✏️',
+      'color': 'linear-gradient(135deg, #10b981, #059669)',
+      'title': t('hp_s2_title'),
+      'desc': t('hp_s2_desc'),
+      'walkthrough': [
+        {'text': t('hp_s2_w1')},
+        {'text': t('hp_s2_w2')},
+        {'text': t('hp_s2_w3')},
+        {'text': t('hp_s2_w4')},
+      ],
+      'tip': t('hp_s2_tip'),
+      'tryIt': {
+        'text': t('hp_s2_try'),
+        'buttons': [
+          {'url': '/import', 'label': t('hp_s2_try_imp')},
+          {'url': '/ai', 'label': t('hp_s2_try_ai')},
+        ]
+      }
+    },
+    {
+      'short': t('hp_s3_short'),
+      'emoji': '🎓',
+      'color': 'linear-gradient(135deg, #f59e0b, #f97316)',
+      'title': t('hp_s3_title'),
+      'desc': t('hp_s3_desc'),
+      'walkthrough': [
+        {'text': t('hp_s3_w1')},
+        {'text': t('hp_s3_w2')},
+        {'text': t('hp_s3_w3')},
+        {'text': t('hp_s3_w4')},
+      ],
+      'tip': t('hp_s3_tip'),
+      'tryIt': {
+        'text': t('hp_s3_try'),
+        'buttons': [{'url': '/dashboard', 'label': t('hp_s3_try_btn')}]
+      }
+    },
+    {
+      'short': t('hp_s4_short'),
+      'emoji': '🔥',
+      'color': 'linear-gradient(135deg, #ec4899, #be185d)',
+      'title': t('hp_s4_title'),
+      'desc': t('hp_s4_desc'),
+      'walkthrough': [
+        {'text': t('hp_s4_w1')},
+        {'text': t('hp_s4_w2')},
+        {'text': t('hp_s4_w3')},
+        {'text': t('hp_s4_w4')},
+        {'text': t('hp_s4_w5')},
+      ],
+      'tip': t('hp_s4_tip'),
+      'tryIt': {
+        'text': t('hp_s4_try'),
+        'buttons': [
+          {'url': '/goals', 'label': t('hp_s4_try_goals')},
+          {'url': '/achievements', 'label': t('hp_s4_try_ach')},
+        ]
+      }
+    },
+  ],
+  'faq': [
+    {'q': t('hp_faq1_q'), 'a': t('hp_faq1_a')},
+    {'q': t('hp_faq2_q'), 'a': t('hp_faq2_a')},
+    {'q': t('hp_faq3_q'), 'a': t('hp_faq3_a')},
+    {'q': t('hp_faq4_q'), 'a': t('hp_faq4_a')},
+    {'q': t('hp_faq5_q'), 'a': t('hp_faq5_a')},
+    {'q': t('hp_faq6_q'), 'a': t('hp_faq6_a')},
+  ]
+} %}
+<div class="relative max-w-5xl mx-auto px-6 py-8" x-data="helpPage({{ HP|tojson }})">
   <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
   <div class="deco-blob deco-blob-2" style="bottom:300px; left:-150px;"></div>
 
   <div class="relative z-10">
     <!-- Hero -->
     <div class="section-header mb-6">
-      <span class="section-badge"><span class="badge-dot"></span>📖 Помощь</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('hp_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Как начать использовать QuizAIPro</h1>
-      <p class="section-sub">Пройдите 4 простых шага. Можно вернуться в любое время.</p>
+      <h1 class="section-h">{{ t('hp_h') }}</h1>
+      <p class="section-sub">{{ t('hp_sub') }}</p>
     </div>
 
     <!-- Quick action banner -->
     <div class="glass-premium mb-6 flex items-center gap-4 flex-wrap" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(236,72,153,0.08)); border-color: rgba(139,92,246,0.4);">
       <div class="text-5xl flex-shrink-0">🚀</div>
       <div class="flex-1 min-w-0">
-        <div class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">Хочешь сразу всё попробовать?</div>
-        <div class="text-sm text-slate-600 dark:text-slate-300">Установим 3 готовые колоды (English, Математика, Past Simple) — попробуешь учёбу прямо сейчас.</div>
+        <div class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">{{ t('hp_quick_h') }}</div>
+        <div class="text-sm text-slate-600 dark:text-slate-300">{{ t('hp_quick_sub') }}</div>
       </div>
       <div class="flex gap-2 flex-wrap">
         <button @click="installDemo()" :disabled="installing" class="btn-premium" style="font-size: 14px;">
-          <span x-show="!installing && !installed">📥 Установить демо</span>
-          <span x-show="installing">⏳ Создаём...</span>
-          <span x-show="installed">✓ Готово!</span>
+          <span x-show="!installing && !installed" x-text="L.install_demo"></span>
+          <span x-show="installing" x-text="L.installing"></span>
+          <span x-show="installed" x-text="L.installed"></span>
         </button>
-        <button @click="restartTour()" class="btn-premium-ghost" style="font-size: 14px;">
-          🔄 Запустить тур
-        </button>
+        <button @click="restartTour()" class="btn-premium-ghost" style="font-size: 14px;" x-text="L.restart_tour"></button>
       </div>
     </div>
 
@@ -51,14 +153,15 @@
     <!-- Active step content -->
     <template x-for="(s, i) in steps" :key="i">
       <div x-show="active === i" x-transition class="glass-premium" style="padding: 2rem;">
-        <!-- Title -->
         <div class="flex items-start gap-4 mb-5 flex-wrap">
           <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 text-white shadow-md"
             :style="`background: ${s.color};`">
             <span x-text="s.emoji"></span>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="text-xs uppercase tracking-widest font-bold text-indigo-500 dark:text-indigo-300 mb-1">Шаг <span x-text="i + 1"></span> из <span x-text="steps.length"></span></div>
+            <div class="text-xs uppercase tracking-widest font-bold text-indigo-500 dark:text-indigo-300 mb-1">
+              <span x-text="L.step_n"></span> <span x-text="i + 1"></span> <span x-text="L.step_of"></span> <span x-text="steps.length"></span>
+            </div>
             <h2 class="section-h" style="font-size: 1.7rem; margin-bottom: 0.5rem;" x-text="s.title"></h2>
             <p class="text-slate-600 dark:text-slate-300" x-text="s.desc"></p>
           </div>
@@ -72,9 +175,6 @@
                 x-text="j + 1"></div>
               <div class="flex-1 min-w-0">
                 <div class="text-sm text-slate-800 dark:text-slate-100" x-html="step.text"></div>
-                <template x-if="step.action">
-                  <a :href="step.action.url" class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold hover:shadow-md transition" x-text="step.action.label"></a>
-                </template>
               </div>
             </div>
           </template>
@@ -85,7 +185,7 @@
           <div class="p-4 rounded-2xl mb-5 flex gap-3" style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.06)); border: 1.5px solid rgba(245,158,11,0.3);">
             <div class="text-2xl flex-shrink-0">💡</div>
             <div>
-              <div class="text-xs uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 mb-1">Полезно знать</div>
+              <div class="text-xs uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 mb-1" x-text="L.useful"></div>
               <div class="text-sm text-slate-700 dark:text-slate-200" x-html="s.tip"></div>
             </div>
           </div>
@@ -97,7 +197,7 @@
             <div class="flex items-start gap-3 mb-3">
               <div class="text-2xl flex-shrink-0">🎯</div>
               <div>
-                <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300 mb-1">Попробуйте сейчас</div>
+                <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300 mb-1" x-text="L.try_now"></div>
                 <div class="text-sm text-slate-700 dark:text-slate-200" x-html="s.tryIt.text"></div>
               </div>
             </div>
@@ -113,15 +213,9 @@
         <div class="flex justify-between gap-2 pt-4 border-t border-slate-200/40 dark:border-slate-700/40">
           <button @click="active = Math.max(0, active - 1)" :disabled="active === 0"
             :class="active === 0 ? 'opacity-30 cursor-not-allowed' : ''"
-            class="btn-premium-ghost">
-            ← Назад
-          </button>
-          <button x-show="active < steps.length - 1" @click="active++" class="btn-premium">
-            Дальше →
-          </button>
-          <a x-show="active === steps.length - 1" href="/dashboard" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">
-            ✓ Готово, начать!
-          </a>
+            class="btn-premium-ghost" x-text="L.back"></button>
+          <button x-show="active < steps.length - 1" @click="active++" class="btn-premium" x-text="L.next"></button>
+          <a x-show="active === steps.length - 1" href="/dashboard" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);" x-text="L.done"></a>
         </div>
       </div>
     </template>
@@ -129,8 +223,8 @@
     <!-- FAQ -->
     <div class="mt-8">
       <div class="section-header left mb-4">
-        <span class="section-badge"><span class="badge-dot"></span>❓ FAQ</span>
-        <h2 class="section-h" style="font-size: 1.7rem;">Частые вопросы</h2>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('hp_faq_badge') }}</span>
+        <h2 class="section-h" style="font-size: 1.7rem;">{{ t('hp_faq_h') }}</h2>
       </div>
       <div class="space-y-2" x-data="{ openFaq: null }">
         <template x-for="(f, i) in faq" :key="i">
@@ -148,12 +242,10 @@
     <!-- Contact -->
     <div class="glass-premium text-center mt-8" style="padding: 2rem; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.08));">
       <div class="text-5xl mb-3">💌</div>
-      <h3 class="font-bold text-xl mb-2 text-slate-900 dark:text-slate-100">Всё ещё не работает?</h3>
-      <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">Напишите нам — поможем сразу</p>
+      <h3 class="font-bold text-xl mb-2 text-slate-900 dark:text-slate-100">{{ t('hp_contact_h') }}</h3>
+      <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">{{ t('hp_contact_sub') }}</p>
       <div class="flex flex-wrap gap-3 justify-center mb-3">
-        <a href="/support" class="btn-premium" style="font-size: 14px;">
-          💬 Чат с поддержкой
-        </a>
+        <a href="/support" class="btn-premium" style="font-size: 14px;">{{ t('hp_chat_support') }}</a>
       </div>
       <div class="flex flex-wrap gap-3 justify-center mb-3">
         <a href="https://t.me/Slezul" target="_blank" class="btn-premium-ghost" style="font-size: 14px;">📨 Telegram @Slezul</a>
@@ -168,122 +260,14 @@
 </div>
 
 <script>
-function helpPage() {
+function helpPage(data) {
   return {
     active: 0,
     installing: false,
     installed: false,
-    steps: [
-      {
-        short: "Создать колоду",
-        emoji: "📚",
-        color: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-        title: "Создайте свою первую колоду",
-        desc: "Колода — это набор карточек по одной теме (например, «Английский Beginner» или «Математика 5 класс»).",
-        walkthrough: [
-          { text: "Откройте <b>Dashboard</b> через верхнее меню" },
-          { text: "Нажмите кнопку <b>«+ Новая колода»</b> в правом верхнем углу" },
-          { text: "Введите название и выберите эмодзи (например, 📚 или 🇬🇧)" },
-          { text: "Нажмите <b>«Создать»</b> — колода готова, сейчас она пустая" },
-        ],
-        tip: "Колода по умолчанию <b>приватная</b> — её видите только вы. Чтобы поделиться, в настройках колоды нажмите 🌐 «Опубликовать».",
-        tryIt: {
-          text: "Перейдите на Dashboard и создайте свою первую колоду:",
-          buttons: [
-            { url: "/dashboard", label: "📊 Открыть Dashboard" },
-          ]
-        }
-      },
-      {
-        short: "Добавить карточки",
-        emoji: "✏️",
-        color: "linear-gradient(135deg, #10b981, #059669)",
-        title: "Добавьте карточки в колоду",
-        desc: "У вас 3 способа: вручную, импорт текста/PDF, или AI-генерация из материала.",
-        walkthrough: [
-          { text: "<b>Вариант 1 (быстрый):</b> Откройте колоду → нажмите <b>«+ Карта»</b> → введите вопрос и ответ" },
-          { text: "<b>Вариант 2 (импорт):</b> Меню «📚 Учёба» → <b>📥 Импорт</b> → загрузите .txt/.pdf/.docx или вставьте текст" },
-          { text: "<b>Вариант 3 (AI):</b> Меню «📚 Учёба» → <b>🤖 AI генерация</b> → вставьте текст или укажите тему — AI сам создаст карточки" },
-          { text: "Сохраните и переходите к учёбе" },
-        ],
-        tip: "Для быстрой проверки нажмите кнопку «📥 <b>Установить демо</b>» в начале страницы — мы создадим 3 готовые колоды для теста.",
-        tryIt: {
-          text: "Попробуйте импорт или AI-генерацию:",
-          buttons: [
-            { url: "/import", label: "📥 Импорт" },
-            { url: "/ai", label: "🤖 AI генерация" },
-          ]
-        }
-      },
-      {
-        short: "Учиться",
-        emoji: "🎓",
-        color: "linear-gradient(135deg, #f59e0b, #f97316)",
-        title: "Начните учиться",
-        desc: "Есть несколько режимов: Тест с вариантами, Flashcards с переворотом, Match (пары на скорость).",
-        walkthrough: [
-          { text: "На Dashboard нажмите 📝 <b>«Тест»</b> на любой колоде" },
-          { text: "Выберите количество вопросов (10/25/50) и нажмите <b>«▶ Начать»</b>" },
-          { text: "Отвечайте — после каждого вопроса увидите правильный ответ" },
-          { text: "В конце получите % правильных и разбор ошибок" },
-        ],
-        tip: "Алгоритм <b>SM-2</b> запоминает что вы знаете хорошо, а что плохо. Сложные вопросы будут показываться чаще, лёгкие — реже. Так вы запоминаете <b>в 2-3 раза эффективнее</b>.",
-        tryIt: {
-          text: "Готовы попробовать тест?",
-          buttons: [
-            { url: "/dashboard", label: "🎯 Перейти к колодам" },
-          ]
-        }
-      },
-      {
-        short: "Сделать привычку",
-        emoji: "🔥",
-        color: "linear-gradient(135deg, #ec4899, #be185d)",
-        title: "Поставьте цель и держите streak",
-        desc: "Учиться каждый день эффективнее чем 3 часа раз в неделю. Поставьте цель — система напомнит.",
-        walkthrough: [
-          { text: "Меню «📚 Учёба» → <b>🎯 Цели</b> → нажмите <b>«+ Новая цель»</b>" },
-          { text: "Введите название (например, «Английский B1 за 3 месяца»), выберите дату экзамена" },
-          { text: "Алгоритм рассчитает: сколько карточек надо учить каждый день" },
-          { text: "На Dashboard будет шкала <b>«🎯 Сегодняшняя цель»</b> — пройдите норму чтобы держать streak (🔥)" },
-          { text: "Друзей добавляйте через <b>👥 Друзья</b> — играйте в дуэли на скорость" },
-        ],
-        tip: "Каждый день — +1 к streak (🔥). Пропустили день — сбрасывается. На странице <b>🏆 Достижения</b> вы получаете значки и XP.",
-        tryIt: {
-          text: "Начните с целей и посмотрите достижения:",
-          buttons: [
-            { url: "/goals", label: "🎯 Цели" },
-            { url: "/achievements", label: "🏆 Достижения" },
-          ]
-        }
-      },
-    ],
-    faq: [
-      {
-        q: "Как пользоваться SM-2 алгоритмом?",
-        a: "Просто учитесь через <b>Flashcards</b> или <b>Тест</b>. После каждой карточки оцените: 😣 Сложно / 👍 Хорошо / ⭐ Легко. Алгоритм сам решит когда показать карточку снова — сложные через 1 день, лёгкие через неделю или больше."
-      },
-      {
-        q: "Что лучше: Flashcards или Тест?",
-        a: "<b>Flashcards</b> — для запоминания терминов и определений (классическая методика повторений). <b>Тест</b> — для проверки знаний с вариантами ответов (как на экзамене). Используйте оба."
-      },
-      {
-        q: "Как импортировать из PDF?",
-        a: "Меню → 📚 Учёба → 📥 Импорт → загрузите PDF (учебник, лекции). Парсер прочитает текст и попытается распознать формат вопросов. Если карточки получились странные — используйте <b>🤖 AI генерация</b>: загрузите PDF и AI сам сгенерирует качественные вопросы."
-      },
-      {
-        q: "Можно использовать оффлайн?",
-        a: "Пока нет. Сайт работает только онлайн через браузер. Но можно открыть на телефоне — сохраните <b>quizaipro.com</b> в закладки и пользуйтесь как приложением."
-      },
-      {
-        q: "Что такое Live test?",
-        a: "Это групповая игра в реальном времени. Учитель создаёт сессию, получает 6-значный код, ученики вводят его на /live/join — все отвечают одновременно, лидерборд обновляется в реальном времени."
-      },
-      {
-        q: "Безопасно ли хранить данные?",
-        a: "Да. Колоды по умолчанию <b>приватные</b> — видите только вы. Пароли хранятся захешированными. База на защищённом сервере. Чтобы поделиться колодой — нужно явно нажать «🌐 Опубликовать»."
-      },
-    ],
+    L: data,
+    steps: data.steps,
+    faq: data.faq,
     async installDemo() {
       if (this.installing || this.installed) return;
       this.installing = true;
@@ -291,18 +275,16 @@ function helpPage() {
         const fd = new FormData();
         fd.append('_csrf', '{{ csrf_token() }}');
         const r = await fetch('/api/install-demo-decks', { method: 'POST', body: fd });
-        const data = await r.json();
-        if (data.ok) {
+        const json = await r.json();
+        if (json.ok) {
           this.installed = true;
-          setTimeout(() => {
-            window.location = '/dashboard';
-          }, 800);
+          setTimeout(() => { window.location = '/dashboard'; }, 800);
         } else {
-          alert('Ошибка: ' + (data.error || 'unknown'));
+          alert(this.L.error + ': ' + (json.error || this.L.unknown));
           this.installing = false;
         }
       } catch (e) {
-        alert('Ошибка: ' + e.message);
+        alert(this.L.error + ': ' + e.message);
         this.installing = false;
       }
     },
@@ -313,7 +295,7 @@ function helpPage() {
         await fetch('/api/welcome/restart', { method: 'POST', body: fd });
         window.location = '/dashboard';
       } catch (e) {
-        alert('Ошибка: ' + e.message);
+        alert(this.L.error + ': ' + e.message);
       }
     },
   };

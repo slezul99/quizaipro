@@ -7,12 +7,12 @@
   <div class="relative z-10">
     <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>🎯 Цели</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('g_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-        <h1 class="section-h">Мои цели</h1>
-        <p class="section-sub">Поставь цель, выбери срок — алгоритм распределит нагрузку и напомнит каждый день.</p>
+        <h1 class="section-h">{{ t('g_h') }}</h1>
+        <p class="section-sub">{{ t('g_sub') }}</p>
       </div>
-      <button @click="showNew = true" class="btn-premium">+ Новая цель</button>
+      <button @click="showNew = true" class="btn-premium">{{ t('g_new') }}</button>
     </div>
 
   <!-- ACTIVE GOALS -->
@@ -31,33 +31,33 @@
       <div class="flex items-start gap-4 mb-4 flex-wrap">
         <div class="text-5xl flex-shrink-0">{{ g.target_icon }}</div>
         <div class="flex-1 min-w-0">
-          <h3 class="font-bold text-xl text-slate-900">{{ g.title }}</h3>
-          <p class="text-sm text-slate-600 mt-0.5">
-            {{ '📦 Колода' if g.target_type == 'deck' else '📁 Категория' }}:
+          <h3 class="font-bold text-xl text-slate-900 dark:text-slate-100">{{ g.title }}</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+            {{ t('g_target_deck') if g.target_type == 'deck' else t('g_target_cat') }}:
             <b>{{ g.target_name }}</b>
             <span class="ml-2">
-              {% if g.difficulty == 'easy' %}<span class="badge bg-green-100 text-green-700">😌 Легко</span>
-              {% elif g.difficulty == 'medium' %}<span class="badge bg-amber-100 text-amber-700">💪 Норма</span>
-              {% else %}<span class="badge bg-red-100 text-red-700">🔥 Сложно</span>{% endif %}
-              {% if g.solo_mode %}<span class="badge bg-slate-100 text-slate-700 ml-1">🚶 Соло</span>{% endif %}
+              {% if g.difficulty == 'easy' %}<span class="badge bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{{ t('g_diff_easy') }}</span>
+              {% elif g.difficulty == 'medium' %}<span class="badge bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">{{ t('g_diff_med') }}</span>
+              {% else %}<span class="badge bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">{{ t('g_diff_hard') }}</span>{% endif %}
+              {% if g.solo_mode %}<span class="badge bg-slate-100 text-slate-700 dark:bg-slate-800/50 dark:text-slate-300 ml-1">{{ t('g_solo') }}</span>{% endif %}
             </span>
           </p>
-          <p class="text-xs text-slate-500 mt-1">
-            📅 до <b>{{ g.end_at[:16].replace('T', ' ') if g.end_at else g.end_date }}</b>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {{ t('g_until') }} <b>{{ g.end_at[:16].replace('T', ' ') if g.end_at else g.end_date }}</b>
             {% if g.status_info.expired %}
-              · <span class="text-red-600 font-bold">⏰ срок истёк</span>
+              · <span class="text-red-600 dark:text-red-400 font-bold">{{ t('g_expired') }}</span>
             {% elif g.status_info.days_left == 0 %}
-              · осталось <b class="text-orange-600">{{ g.status_info.hours_left }}ч {{ g.status_info.minutes_left }}мин</b>
+              · {{ t('g_left') }} <b class="text-orange-600 dark:text-orange-400">{{ g.status_info.hours_left }}{{ t('g_left_hours') }} {{ g.status_info.minutes_left }}{{ t('g_left_minutes') }}</b>
             {% else %}
-              · осталось <b>{{ g.status_info.days_left }} дн.</b>
-              {% if g.status_info.hours_left %}{{ g.status_info.hours_left }}ч{% endif %}
+              · {{ t('g_left') }} <b>{{ g.status_info.days_left }} {{ t('g_left_days') }}</b>
+              {% if g.status_info.hours_left %}{{ g.status_info.hours_left }}{{ t('g_left_hours') }}{% endif %}
             {% endif %}
-            {% if g.extensions %} · 📅 продлено: {{ g.extensions }}{% endif %}
+            {% if g.extensions %} · {{ t('g_extended') }}: {{ g.extensions }}{% endif %}
           </p>
         </div>
-        <form method="POST" action="/goal/{{ g.id }}/abandon" onsubmit="return confirm('Отменить цель?')">
+        <form method="POST" action="/goal/{{ g.id }}/abandon" onsubmit="return confirm({{ t('g_abandon_confirm')|tojson }})">
           <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button class="text-slate-400 hover:text-red-500 text-sm">✕ Отменить</button>
+          <button class="text-slate-400 dark:text-slate-500 hover:text-red-500 text-sm">{{ t('g_abandon') }}</button>
         </form>
       </div>
 
@@ -67,117 +67,110 @@
                border: 1px solid rgba(99,102,241,0.15);">
         <div class="flex items-center justify-between mb-3">
           <div>
-            <div class="text-xs uppercase tracking-wider font-bold text-slate-500">📅 Сегодня</div>
-            <div class="font-bold text-slate-900 text-base">
-              {% if g.today.completed %}🔥 Дневная цель выполнена!
-              {% else %}Осталось ответить на {{ g.today.total_quota - g.today.done }} карт
+            <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">{{ t('g_today') }}</div>
+            <div class="font-bold text-slate-900 dark:text-slate-100 text-base">
+              {% if g.today.completed %}{{ t('g_today_done') }}
+              {% else %}{{ t('g_today_left_pre') }} {{ g.today.total_quota - g.today.done }} {{ t('g_today_left_post') }}
               {% endif %}
             </div>
           </div>
           <div class="text-right">
-            <div class="text-3xl font-bold {% if g.today.completed %}text-emerald-600{% else %}text-indigo-600{% endif %} font-mono">
+            <div class="text-3xl font-bold {% if g.today.completed %}text-emerald-600 dark:text-emerald-400{% else %}text-indigo-600 dark:text-indigo-300{% endif %} font-mono">
               {{ g.today.done }} / {{ g.today.total_quota }}
             </div>
           </div>
         </div>
-        <div class="h-3 bg-white/60 rounded-full overflow-hidden">
+        <div class="h-3 bg-white/60 dark:bg-slate-700/40 rounded-full overflow-hidden">
           <div class="h-full transition-all duration-500"
             style="width: {{ (g.today.ratio * 100)|round }}%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
         </div>
         {% if g.today.extra_quota %}
-        <p class="text-xs text-amber-700 mt-2">💪 +{{ g.today.extra_quota }} мини-цель добавлена</p>
+        <p class="text-xs text-amber-700 dark:text-amber-400 mt-2">{{ t('g_extra_added_pre') }}{{ g.today.extra_quota }} {{ t('g_extra_added_post') }}</p>
         {% endif %}
       </div>
 
-      <!-- RECOMMENDATIONS — chto delat segodnya -->
-      <div class="bg-white/70 rounded-2xl p-4 mb-4 border border-indigo-100">
-        <div class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2">📋 План на сегодня</div>
+      <!-- RECOMMENDATIONS -->
+      <div class="bg-white/70 dark:bg-slate-800/40 rounded-2xl p-4 mb-4 border border-indigo-100 dark:border-indigo-800/40">
+        <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-2">{{ t('g_plan') }}</div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-sm">
-          <div class="bg-purple-50 rounded-xl p-2">
+          <div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-2">
             <div class="text-2xl">🃏</div>
-            <div class="font-bold text-purple-700">{{ g.recommend.flashcards }}</div>
-            <div class="text-[11px] text-slate-600">Flashcards</div>
+            <div class="font-bold text-purple-700 dark:text-purple-300">{{ g.recommend.flashcards }}</div>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300">Flashcards</div>
           </div>
-          <div class="bg-emerald-50 rounded-xl p-2">
+          <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-2">
             <div class="text-2xl">📝</div>
-            <div class="font-bold text-emerald-700">{{ g.recommend.tests_count }} {% if g.recommend.tests_count == 1 %}тест{% else %}теста{% endif %}</div>
-            <div class="text-[11px] text-slate-600">~{{ g.recommend.tests_questions }} вопр.</div>
+            <div class="font-bold text-emerald-700 dark:text-emerald-300">{{ g.recommend.tests_count }} {% if g.recommend.tests_count == 1 %}{{ t('g_plan_test_one') }}{% else %}{{ t('g_plan_test_few') }}{% endif %}</div>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300">~{{ g.recommend.tests_questions }} {{ t('g_plan_test_q') }}</div>
           </div>
-          <div class="bg-orange-50 rounded-xl p-2 {% if g.solo_mode %}opacity-30{% endif %}">
+          <div class="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-2 {% if g.solo_mode %}opacity-30{% endif %}">
             <div class="text-2xl">⚔️</div>
-            <div class="font-bold text-orange-700">{{ g.recommend.duels }}</div>
-            <div class="text-[11px] text-slate-600">{% if g.solo_mode %}отключено{% else %}дуэль{% if g.recommend.duels > 1 %}и{% endif %}{% endif %}</div>
+            <div class="font-bold text-orange-700 dark:text-orange-300">{{ g.recommend.duels }}</div>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300">{% if g.solo_mode %}{{ t('g_plan_off') }}{% else %}{{ t('g_plan_duel') }}{% if g.recommend.duels > 1 %}{{ t('g_plan_duel_pl') }}{% endif %}{% endif %}</div>
           </div>
-          <div class="bg-pink-50 rounded-xl p-2 {% if g.solo_mode %}opacity-30{% endif %}">
+          <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-2 {% if g.solo_mode %}opacity-30{% endif %}">
             <div class="text-2xl">🎮</div>
-            <div class="font-bold text-pink-700">{{ g.recommend.live }}</div>
-            <div class="text-[11px] text-slate-600">{% if g.solo_mode %}отключено{% else %}live test{% endif %}</div>
+            <div class="font-bold text-pink-700 dark:text-pink-300">{{ g.recommend.live }}</div>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300">{% if g.solo_mode %}{{ t('g_plan_off') }}{% else %}{{ t('g_plan_live') }}{% endif %}</div>
           </div>
         </div>
-        <p class="text-[11px] text-slate-500 mt-2 text-center">
-          ⏱ Примерно <b>{{ g.recommend.minutes }} мин</b> в день
-          {% if g.solo_mode %}· 🚶 Режим соло (без соц. активностей){% endif %}
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 text-center">
+          {{ t('g_plan_min_pre') }} <b>{{ g.recommend.minutes }}</b> {{ t('g_plan_min_post') }}
+          {% if g.solo_mode %}{{ t('g_plan_solo') }}{% endif %}
         </p>
       </div>
 
       <!-- OVERALL -->
       <div class="grid grid-cols-3 gap-2 text-center text-sm mb-3">
-        <div class="bg-blue-50 rounded-xl p-2">
-          <div class="font-bold text-blue-700 text-lg">{{ g.overall.attempted }}</div>
-          <div class="text-xs text-slate-600">видел</div>
+        <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-2">
+          <div class="font-bold text-blue-700 dark:text-blue-300 text-lg">{{ g.overall.attempted }}</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300">{{ t('g_overall_seen') }}</div>
         </div>
-        <div class="bg-emerald-50 rounded-xl p-2">
-          <div class="font-bold text-emerald-700 text-lg">{{ g.overall.learned }}</div>
-          <div class="text-xs text-slate-600">изучено</div>
+        <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-2">
+          <div class="font-bold text-emerald-700 dark:text-emerald-300 text-lg">{{ g.overall.learned }}</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300">{{ t('g_overall_learned') }}</div>
         </div>
-        <div class="bg-slate-50 rounded-xl p-2">
-          <div class="font-bold text-slate-700 text-lg">{{ g.overall.total }}</div>
-          <div class="text-xs text-slate-600">всего</div>
+        <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2">
+          <div class="font-bold text-slate-700 dark:text-slate-200 text-lg">{{ g.overall.total }}</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300">{{ t('g_overall_total') }}</div>
         </div>
       </div>
 
       <!-- BEHIND ALERT -->
       {% if g.status_info.behind and not g.status_info.expired %}
-      <div class="bg-orange-50 border-2 border-orange-300 rounded-2xl p-4 mb-3">
-        <p class="text-sm text-orange-900 font-bold mb-1">
-          ⚠️ Вы немного отстаёте от графика
-        </p>
-        <p class="text-xs text-orange-800">
-          Прошло {{ g.status_info.elapsed_pct }}% времени, изучено {{ (g.status_info.actual_ratio * 100)|round }}%.
-          Не сдавайтесь — у вас всё получится! Можете прибавить темп или продлить срок.
+      <div class="bg-orange-50 dark:bg-orange-900/30 border-2 border-orange-300 dark:border-orange-500/40 rounded-2xl p-4 mb-3">
+        <p class="text-sm text-orange-900 dark:text-orange-300 font-bold mb-1">{{ t('g_behind_h') }}</p>
+        <p class="text-xs text-orange-800 dark:text-orange-400">
+          {{ t('g_behind_sub_pre') }} {{ g.status_info.elapsed_pct }}{{ t('g_behind_sub_mid') }} {{ (g.status_info.actual_ratio * 100)|round }}{{ t('g_behind_sub_post') }}
         </p>
       </div>
       {% endif %}
       {% if g.status_info.expired %}
-      <div class="bg-red-50 border-2 border-red-300 rounded-2xl p-4 mb-3">
-        <p class="text-sm text-red-900 font-bold mb-1">
-          ⏰ Время истекло
-        </p>
-        <p class="text-xs text-red-800">
-          Можно продлить срок и доучить, либо попробовать сдать экзамен по тому что уже знаете.
-        </p>
+      <div class="bg-red-50 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-500/40 rounded-2xl p-4 mb-3">
+        <p class="text-sm text-red-900 dark:text-red-300 font-bold mb-1">{{ t('g_expired_h') }}</p>
+        <p class="text-xs text-red-800 dark:text-red-400">{{ t('g_expired_sub') }}</p>
       </div>
       {% endif %}
 
       <!-- ACTIONS -->
       <div class="flex flex-wrap gap-2">
         <a href="/{% if g.target_type == 'deck' %}deck/{{ g.target_id }}/flashcards{% else %}category/{{ g.target_id }}/play{% endif %}"
-          class="btn btn-primary text-sm">▶ Учить сейчас</a>
+          class="btn btn-primary text-sm">{{ t('g_act_study') }}</a>
 
         <button type="button" @click="$dispatch('goal-extra', { goalId: {{ g.id }}, title: '{{ g.title|e }}' })"
-          class="btn btn-soft text-sm bg-amber-100 text-amber-800 hover:bg-amber-200">
-          + Мини-цель сегодня
+          class="btn btn-soft text-sm bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300">
+          {{ t('g_act_extra') }}
         </button>
 
         <button type="button" @click="$dispatch('goal-extend', { goalId: {{ g.id }}, currentEnd: '{{ g.end_date }}', currentTime: '{{ g.end_at[11:16] if g.end_at else "23:59" }}' })"
           class="btn btn-ghost text-sm">
-          📅 Продлить срок
+          {{ t('g_act_extend') }}
         </button>
 
         {% if g.exam_required and g.overall.attempted >= 5 %}
         <a href="/goal/{{ g.id }}/exam" class="btn text-sm text-white"
           style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
-          🏆 Сдать экзамен
+          {{ t('g_act_exam') }}
         </a>
         {% endif %}
       </div>
@@ -187,28 +180,28 @@
   {% else %}
   <div class="glass rounded-3xl p-10 text-center mb-8">
     <div class="text-6xl mb-3">🎯</div>
-    <h3 class="text-xl font-bold text-slate-900 mb-2">Нет активных целей</h3>
-    <p class="text-slate-600 mb-4">Поставьте цель и алгоритм поможет её достичь</p>
-    <button @click="showNew = true" class="btn btn-primary">+ Создать цель</button>
+    <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">{{ t('g_no_active') }}</h3>
+    <p class="text-slate-600 dark:text-slate-300 mb-4">{{ t('g_no_active_sub') }}</p>
+    <button @click="showNew = true" class="btn btn-primary">{{ t('g_create') }}</button>
   </div>
   {% endif %}
 
   <!-- FINISHED -->
   {% if finished %}
   <div class="mb-8">
-    <h2 class="text-xl font-bold mb-3 text-slate-900">📜 История целей</h2>
+    <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100">{{ t('g_history_h') }}</h2>
     <div class="space-y-2">
       {% for g in finished %}
       <div class="glass rounded-2xl p-4 flex items-center gap-3">
         <span class="text-3xl flex-shrink-0">{{ g.target_icon or '📚' }}</span>
         <div class="flex-1 min-w-0">
           <div class="font-semibold truncate">{{ g.title }}</div>
-          <div class="text-xs text-slate-500">
+          <div class="text-xs text-slate-500 dark:text-slate-400">
             {{ g.target_name }} ·
-            {% if g.status == 'completed' %}<span class="text-emerald-600">✓ Завершена</span>
+            {% if g.status == 'completed' %}<span class="text-emerald-600 dark:text-emerald-400">{{ t('g_status_completed') }}</span>
               {% if g.exam_score %}({{ g.exam_score|round }}%){% endif %}
-            {% elif g.status == 'abandoned' %}<span class="text-slate-500">⏸ Отменена</span>
-            {% else %}<span class="text-red-500">✗ Не завершена</span>
+            {% elif g.status == 'abandoned' %}<span class="text-slate-500 dark:text-slate-400">{{ t('g_status_abandoned') }}</span>
+            {% else %}<span class="text-red-500 dark:text-red-400">{{ t('g_status_failed') }}</span>
             {% endif %}
           </div>
         </div>
@@ -230,38 +223,38 @@
       }"
       x-init="endDate = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })()">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="text-xl font-bold mb-4 h-display">🎯 Новая цель</h3>
+      <h3 class="text-xl font-bold mb-4 h-display">{{ t('g_new_h') }}</h3>
 
       <div class="mb-4">
-        <label class="text-sm font-bold text-slate-700 mb-2 block">Название</label>
-        <input name="title" required maxlength="80" placeholder="Например: Пройти Beginner за месяц"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500">
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 block">{{ t('g_title_label') }}</label>
+        <input name="title" required maxlength="80" placeholder="{{ t('g_title_ph') }}"
+          class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40 focus:outline-none focus:border-indigo-500">
       </div>
 
       <div class="mb-4">
-        <label class="text-sm font-bold text-slate-700 mb-2 block">Что учим?</label>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 block">{{ t('g_what_label') }}</label>
         <div class="grid grid-cols-2 gap-2 mb-3">
           <button type="button" @click="targetType='deck'; targetId=null"
-            :class="targetType === 'deck' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
-            class="p-3 rounded-xl border-2 font-semibold transition">📦 Колоду</button>
+            :class="targetType === 'deck' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40' : 'border-gray-200 dark:border-slate-700'"
+            class="p-3 rounded-xl border-2 font-semibold transition">{{ t('g_what_deck') }}</button>
           <button type="button" @click="targetType='category'; targetId=null"
-            :class="targetType === 'category' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
-            class="p-3 rounded-xl border-2 font-semibold transition">📁 Категорию</button>
+            :class="targetType === 'category' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40' : 'border-gray-200 dark:border-slate-700'"
+            class="p-3 rounded-xl border-2 font-semibold transition">{{ t('g_what_cat') }}</button>
         </div>
         <input type="hidden" name="target_type" :value="targetType">
 
         <select name="target_id" required x-model.number="targetId"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500">
-          <option value="">— Выберите —</option>
+          class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40 focus:outline-none focus:border-indigo-500">
+          <option value="">{{ t('g_select_pick') }}</option>
           <template x-if="targetType === 'deck'">
-            <optgroup label="Колоды">
+            <optgroup label="{{ t('g_select_decks') }}">
               {% for d in decks %}
-              <option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.cnt }} карт)</option>
+              <option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.cnt }} {{ t('g_cards_short') }})</option>
               {% endfor %}
             </optgroup>
           </template>
           <template x-if="targetType === 'category'">
-            <optgroup label="Категории">
+            <optgroup label="{{ t('g_select_cats') }}">
               {% for c in categories %}
               <option value="{{ c.id }}">
                 {% if c.parent_name %}{{ c.parent_name }} / {% endif %}{{ c.icon }} {{ c.name }}
@@ -274,66 +267,66 @@
 
       <div class="grid grid-cols-2 gap-3 mb-4">
         <div>
-          <label class="text-sm font-bold text-slate-700 mb-2 block">До какой даты?</label>
+          <label class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 block">{{ t('g_until_when') }}</label>
           <input type="date" name="end_date" required x-model="endDate" :min="tomorrow()"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500">
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40 focus:outline-none focus:border-indigo-500">
         </div>
         <div>
-          <label class="text-sm font-bold text-slate-700 mb-2 block">Время</label>
+          <label class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 block">{{ t('g_time') }}</label>
           <input type="time" name="end_time" x-model="endTime"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500">
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40 focus:outline-none focus:border-indigo-500">
         </div>
       </div>
 
       <div class="mb-4">
-        <label class="text-sm font-bold text-slate-700 mb-2 block">Уровень нагрузки</label>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 block">{{ t('g_load_label') }}</label>
         <div class="grid grid-cols-3 gap-2">
           <label class="block">
             <input type="radio" name="difficulty" value="easy" x-model="difficulty" class="hidden peer">
-            <div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-green-500 peer-checked:bg-green-50 border-gray-200">
+            <div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/30 border-gray-200 dark:border-slate-700">
               <div class="text-2xl mb-1">😌</div>
-              <div class="text-xs font-bold">Легко</div>
-              <div class="text-[10px] text-slate-500">×1 повтор</div>
+              <div class="text-xs font-bold">{{ t('g_load_easy_lbl') }}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ t('g_load_easy_sub') }}</div>
             </div>
           </label>
           <label class="block">
             <input type="radio" name="difficulty" value="medium" x-model="difficulty" class="hidden peer">
-            <div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-amber-500 peer-checked:bg-amber-50 border-gray-200">
+            <div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/30 border-gray-200 dark:border-slate-700">
               <div class="text-2xl mb-1">💪</div>
-              <div class="text-xs font-bold">Норма</div>
-              <div class="text-[10px] text-slate-500">×2 повтора</div>
+              <div class="text-xs font-bold">{{ t('g_load_med_lbl') }}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ t('g_load_med_sub') }}</div>
             </div>
           </label>
           <label class="block">
             <input type="radio" name="difficulty" value="hard" x-model="difficulty" class="hidden peer">
-            <div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-red-500 peer-checked:bg-red-50 border-gray-200">
+            <div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/30 border-gray-200 dark:border-slate-700">
               <div class="text-2xl mb-1">🔥</div>
-              <div class="text-xs font-bold">Сложно</div>
-              <div class="text-[10px] text-slate-500">×3 повтора</div>
+              <div class="text-xs font-bold">{{ t('g_load_hard_lbl') }}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ t('g_load_hard_sub') }}</div>
             </div>
           </label>
         </div>
       </div>
 
-      <label class="flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+      <label class="flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 cursor-pointer">
         <input type="checkbox" name="solo_mode" value="1" x-model="soloMode" class="w-5 h-5 accent-slate-600">
         <div class="flex-1">
-          <div class="font-semibold text-slate-900 text-sm">🚶 Пройду в одиночку</div>
-          <div class="text-xs text-slate-600">Без рекомендаций по дуэлям и live test — только flashcards и тесты</div>
+          <div class="font-semibold text-slate-900 dark:text-slate-100 text-sm">{{ t('g_solo_h') }}</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300">{{ t('g_solo_sub') }}</div>
         </div>
       </label>
 
-      <label class="flex items-center gap-3 mb-4 p-3 rounded-xl bg-amber-50/60 border border-amber-200 cursor-pointer">
+      <label class="flex items-center gap-3 mb-4 p-3 rounded-xl bg-amber-50/60 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/40 cursor-pointer">
         <input type="checkbox" name="exam_required" value="1" checked class="w-5 h-5 accent-amber-600">
         <div class="flex-1">
-          <div class="font-semibold text-slate-900 text-sm">🏆 Финальный экзамен</div>
-          <div class="text-xs text-slate-600">Зачтется только если сдадите тест ≥60% (+500 XP)</div>
+          <div class="font-semibold text-slate-900 dark:text-slate-100 text-sm">{{ t('g_exam_h') }}</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300">{{ t('g_exam_sub') }}</div>
         </div>
       </label>
 
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showNew = false" class="btn btn-ghost">Отмена</button>
-        <button type="submit" class="btn btn-primary">🎯 Создать</button>
+        <button type="button" @click="showNew = false" class="btn btn-ghost">{{ t('g_cancel') }}</button>
+        <button type="submit" class="btn btn-primary">{{ t('g_create_btn') }}</button>
       </div>
     </form>
   </div>
@@ -345,18 +338,18 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
     @click.self="open=false">
     <div class="glass-strong rounded-3xl p-7 max-w-md w-full scale-in">
-      <h3 class="text-xl font-bold mb-2 h-display">💪 Мини-цель на сегодня</h3>
-      <p class="text-slate-600 text-sm mb-4">Дополнительно к дневной норме · <b x-text="goalTitle"></b></p>
+      <h3 class="text-xl font-bold mb-2 h-display">{{ t('g_extra_h') }}</h3>
+      <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">{{ t('g_extra_sub') }} <b x-text="goalTitle"></b></p>
       <div class="grid grid-cols-4 gap-2 mb-5">
         <template x-for="n in [5, 10, 15, 25]" :key="n">
           <button @click="extra=n"
-            :class="extra === n ? 'bg-amber-500 text-white border-amber-500' : 'border-gray-200'"
+            :class="extra === n ? 'bg-amber-500 text-white border-amber-500' : 'border-gray-200 dark:border-slate-700'"
             class="p-3 rounded-xl border-2 font-bold" x-text="'+' + n"></button>
         </template>
       </div>
       <div class="flex gap-2 justify-end">
-        <button @click="open=false" class="btn btn-ghost">Отмена</button>
-        <button @click="addExtra(goalId, extra); open=false" class="btn btn-primary">Добавить</button>
+        <button @click="open=false" class="btn btn-ghost">{{ t('g_cancel') }}</button>
+        <button @click="addExtra(goalId, extra); open=false" class="btn btn-primary">{{ t('g_add') }}</button>
       </div>
     </div>
   </div>
@@ -370,23 +363,24 @@
     <form method="POST" :action="`/goal/${goalId}/extend`"
       class="glass-strong rounded-3xl p-7 max-w-md w-full scale-in">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="text-xl font-bold mb-2 h-display">📅 Продлить срок</h3>
-      <p class="text-slate-600 text-sm mb-4">Текущий: <b x-text="currentEnd"></b></p>
+      <h3 class="text-xl font-bold mb-2 h-display">{{ t('g_extend_h') }}</h3>
+      <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">{{ t('g_extend_sub') }} <b x-text="currentEnd"></b></p>
       <div class="grid grid-cols-2 gap-3 mb-5">
         <input type="date" name="end_date" x-model="newEnd" :min="currentEnd" required
-          class="px-4 py-3 rounded-xl border border-gray-200">
+          class="px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40">
         <input type="time" name="end_time" x-model="newTime"
-          class="px-4 py-3 rounded-xl border border-gray-200">
+          class="px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40">
       </div>
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="open=false" class="btn btn-ghost">Отмена</button>
-        <button type="submit" class="btn btn-primary">Продлить</button>
+        <button type="button" @click="open=false" class="btn btn-ghost">{{ t('g_cancel') }}</button>
+        <button type="submit" class="btn btn-primary">{{ t('g_extend_btn') }}</button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
+const G_ERR = {{ t('g_error')|tojson }};
 async function addExtra(goalId, extra) {
   if (!goalId || !extra) return;
   const fd = new FormData();
@@ -394,7 +388,7 @@ async function addExtra(goalId, extra) {
   fd.append('extra', extra);
   const r = await fetch(`/goal/${goalId}/extra`, { method: 'POST', body: fd });
   if (r.ok) location.reload();
-  else alert('Ошибка');
+  else alert(G_ERR);
 }
 </script>
   </div>
