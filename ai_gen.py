@@ -366,6 +366,7 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240) -> str | None:
     """Otdelnyy zapros k Gemini Vision s nabor kartinokь Vozvrashchaet raw text otveta."""
     key = _key()
     if not key:
+        print("[AI vision] NO KEY — set GEMINI_API_KEY env var")
         return None
     import base64
     parts = [{"text": VISION_EXTRACT_PROMPT}]
@@ -385,6 +386,7 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240) -> str | None:
         },
     }
     data = json.dumps(body).encode("utf-8")
+    print(f"[AI vision] sending {len(images)} images, body size: {len(data)//1024}KB")
     # Vision rabotayet TOL'KO na flash (ne na flash-lite)
     url = f"{API_URL_FALLBACK}?key={key}"
     last_err = None
@@ -396,8 +398,10 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240) -> str | None:
                 payload = json.loads(resp.read().decode("utf-8"))
             text = payload["candidates"][0]["content"]["parts"][0]["text"]
             if text and text.strip():
+                print(f"[AI vision] OK, response {len(text)} chars")
                 return text
             last_err = f"empty response: {str(payload)[:200]}"
+            print(f"[AI vision] {last_err}")
         except urlerr.HTTPError as e:
             err_body = ""
             try:

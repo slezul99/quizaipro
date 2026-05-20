@@ -105,21 +105,55 @@ def run_vision_job(jid: str, save_cards_callback):
     save_cards_callback(job_id, cards) — funktsiya kotoraya sokhranyaet karty v deck.
     Vozvrashchaet (deck_id_created, error_msg).
     """
+    import traceback
     import ai_gen
     job = get_job(jid)
     if not job:
         return
     fpath = Path(job["fpath"])
 
+    # Proverka 1: fayl est'?
+    if not fpath.exists():
+        update_job(jid, status="failed",
+                   error=f"Файл не найден на сервере: {fpath.name}",
+                   finished_at=datetime.utcnow())
+        return
+
+    # Proverka 2: Gemini API klyuch est'?
+    if not ai_gen.is_available():
+        update_job(jid, status="failed",
+                   error="Gemini API ключ не настроен на сервере. Свяжитесь с поддержкой.",
+                   finished_at=datetime.utcnow())
+        try: fpath.unlink(missing_ok=True)
+        except Exception: pass
+        return
+
+    # Proverka 3: PyMuPDF ustanovlen?
+    try:
+        import pymupdf  # type: ignore
+    except ImportError:
+        try:
+            import fitz as pymupdf  # type: ignore
+        except ImportError:
+            update_job(jid, status="failed",
+                       error="PyMuPDF не установлен на сервере. Свяжитесь с поддержкой.",
+                       finished_at=datetime.utcnow())
+            try: fpath.unlink(missing_ok=True)
+            except Exception: pass
+            return
+
     # Schitaem total pages dlya progress
     try:
-        import pymupdf
         doc = pymupdf.open(str(fpath))
         total = min(len(doc), 30)  # max 30 stranits
         doc.close()
     except Exception as e:
-        update_job(jid, status="failed", error=f"Ne udalos otkryt PDF: {e}",
+        print(f"[vision_jobs] open PDF err: {type(e).__name__}: {e}")
+        update_job(jid, status="failed",
+                   error=f"Не удалось открыть PDF: {type(e).__name__}: {e}",
                    finished_at=datetime.utcnow())
+        try: fpath.unlink(missing_ok=True)
+        except Exception: pass
         return
 
     update_job(jid, status="running", pages_total=total)
@@ -129,6 +163,7 @@ def run_vision_job(jid: str, save_cards_callback):
         update_job(jid, pages_done=done, pages_total=total_pages,
                    cards_found=found, progress=pct)
 
+    cards = []
     try:
         cards = ai_gen.vision_pdf_to_cards(
             fpath,
@@ -138,24 +173,24 @@ def run_vision_job(jid: str, save_cards_callback):
             progress_cb=progress_cb,
         )
     except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[vision_jobs] vision_pdf_to_cards err:\n{tb}")
         update_job(jid, status="failed",
-                   error=f"AI vision oshibka: {type(e).__name__}: {e}",
+                   error=f"AI vision ошибка: {type(e).__name__}: {e}",
                    finished_at=datetime.utcnow())
-        try:
-            fpath.unlink(missing_ok=True)
-        except Exception:
-            pass
+        try: fpath.unlink(missing_ok=True)
+        except Exception: pass
         return
 
     if not cards:
         update_job(jid, status="failed",
-                   error="AI ne smog izvlech zakrytye voprosy iz etogo PDF. "
-                         "Vozmozhno na nyom net testov ili kachestvo skana ploxoye.",
+                   error="AI не смог извлечь закрытые тестовые вопросы из PDF. "
+                         "Возможно: (1) на страницах нет тестов с вариантами A/B/C/D, "
+                         "(2) качество скана плохое, (3) Gemini API временно перегружен. "
+                         "Попробуйте ещё раз или загрузите более чёткий скан.",
                    finished_at=datetime.utcnow())
-        try:
-            fpath.unlink(missing_ok=True)
-        except Exception:
-            pass
+        try: fpath.unlink(missing_ok=True)
+        except Exception: pass
         return
 
     update_job(jid, progress=95, cards_found=len(cards))
@@ -167,8 +202,10 @@ def run_vision_job(jid: str, save_cards_callback):
                    deck_id_created=deck_id_created,
                    finished_at=datetime.utcnow())
     except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[vision_jobs] save err:\n{tb}")
         update_job(jid, status="failed",
-                   error=f"Ne udalos sohranit karty: {e}",
+                   error=f"Не удалось сохранить карты: {type(e).__name__}: {e}",
                    finished_at=datetime.utcnow())
 
     try:
@@ -178,6 +215,16 @@ def run_vision_job(jid: str, save_cards_callback):
 
 
 def start_vision_job(jid: str, save_cards_callback):
-    """Zapuskaet job v fonovom potoke."""
-    th = threading.Thread(target=run_vision_job, args=(jid, save_cards_callback), daemon=True)
+    """Zapuskaet job v fonovom potoke. Lyubaya neperekhvachennaya oshibka popadet v job.error."""
+    import traceback as _tb
+    def _wrapper():
+        try:
+            run_vision_job(jid, save_cards_callback)
+        except Exception as e:
+            tb = _tb.format_exc()
+            print(f"[vision_jobs] FATAL in thread:\n{tb}")
+            update_job(jid, status="failed",
+                       error=f"Внутренняя ошибка: {type(e).__name__}: {e}",
+                       finished_at=datetime.utcnow())
+    th = threading.Thread(target=_wrapper, daemon=True)
     th.start()
