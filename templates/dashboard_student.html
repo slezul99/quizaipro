@@ -117,10 +117,10 @@
     <!-- ACTIONS -->
     {% if current_user.role == 'individual' %}
     <div class="flex gap-3 mb-8 flex-wrap slide-up" style="animation-delay:.3s">
-      <button @click="showNew = true" class="btn-premium">+ {{ t('new_deck_btn') }}</button>
-      <a href="/import" class="btn-premium-ghost">📥 {{ t('import_file') }}</a>
+      <button @click="showNew = true" class="btn-premium">{{ t('new_deck_btn') }}</button>
+      <a href="/import" class="btn-premium-ghost">{{ t('import_file') }}</a>
       {% if ai_available %}
-      <a href="/ai" class="btn-premium-ghost">🤖 {{ t('ai_generation') }}</a>
+      <a href="/ai" class="btn-premium-ghost">{{ t('ai_generation') }}</a>
       {% endif %}
     </div>
     {% endif %}
@@ -178,10 +178,10 @@
       <p class="text-slate-600 dark:text-slate-300 mb-8 max-w-md mx-auto mt-3">{{ t('no_decks_text2') }}</p>
       {% if current_user.role == 'individual' %}
       <div class="flex gap-3 justify-center flex-wrap">
-        <button @click="showNew = true" class="btn-premium">+ {{ t('new_deck_btn') }}</button>
-        <a href="/import" class="btn-premium-ghost">📥 {{ t('import_file') }}</a>
+        <button @click="showNew = true" class="btn-premium">{{ t('new_deck_btn') }}</button>
+        <a href="/import" class="btn-premium-ghost">{{ t('import_file') }}</a>
         {% if ai_available %}
-        <a href="/ai" class="btn-premium-ghost">🤖 {{ t('ai_generation') }}</a>
+        <a href="/ai" class="btn-premium-ghost">{{ t('ai_generation') }}</a>
         {% endif %}
       </div>
       {% else %}
