@@ -417,6 +417,9 @@ T = {
         "u_click_to_mark_correct": "💡 Кликните на вариант ответа чтобы отметить его правильным",
         "u_create_btn": "Создать",
         "u_open_dashboard": "📊 Открыть Dashboard",
+        "search": "Поиск",
+        "skip_welcome": "Пропустить",
+    
     },
     "en": {
         "app_name": "QuizAIPro",
@@ -833,6 +836,9 @@ T = {
         "u_click_to_mark_correct": "💡 Click an option to mark it as correct",
         "u_create_btn": "Create",
         "u_open_dashboard": "📊 Open Dashboard",
+        "search": "Search",
+        "skip_welcome": "Skip",
+    
     },
     "uz": {
         "app_name": "QuizAIPro",
@@ -1249,6 +1255,9 @@ T = {
         "u_click_to_mark_correct": "💡 Toʻgʻri javobni belgilash uchun variantga bosing",
         "u_create_btn": "Yaratish",
         "u_open_dashboard": "📊 Dashboard ochish",
+        "search": "Qidirish",
+        "skip_welcome": "Oʻtkazib yuborish",
+    
     },
 }
 
