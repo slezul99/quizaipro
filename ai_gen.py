@@ -537,19 +537,19 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
                         max_pages: int = 30,
                         chunk_size: int = 1,
                         progress_cb=None,
-                        audit: bool = True) -> list[dict]:
+                        audit: bool = False,
+                        status_cb=None) -> list[dict]:
     """Skaniruyet stranitsy PDF cherez Gemini Vision i izvlekayet ZAKRYTYE voprosy.
 
-    KACHESTVENNAYA strategiya (po default):
-    - DPI=200 (lучше OCR na grязные skanы)
-    - chunk_size=1 — POSTRANICHNAYA obrabotka. AI fokusiruetsya na odnoy stranitse, propuski minimalny.
-    - audit=True — vtoroy proxod po kazhdoy stranitse: AI smotrit kakie nomera vyshli i ishchet propushchennye.
+    Strategiya (BALANS skorost' / kachestvo):
+    - DPI=175 (kompromis: kachestvo OK, body ne slishkom bolshoy)
+    - chunk_size=1 — POSTRANICHNAYA obrabotka
+    - audit=False po default (otklyucheno chtoby ne udvaivat' vremya)
 
-    progress_cb(done, total, found_so_far) — funktsiya kotoruyu zovem posle kazhdoy stranitsy.
-    Vozvrashchaet [{front, back, note}].
-    Esli VSE chanki upali — kidaet RuntimeError s prichinoy.
+    progress_cb(done, total, found_so_far) — posle kazhdoy stranitsy.
+    status_cb(stage_msg) — tekstoviy status dlya debug ("extracting page 3/14", "audit page 5", ...).
     """
-    images = _pdf_to_images(pdf_path, max_pages=max_pages)
+    images = _pdf_to_images(pdf_path, max_pages=max_pages, dpi=175)
     if not images:
         raise RuntimeError("Не удалось отрендерить страницы PDF (PyMuPDF). Возможно, файл повреждён.")
     if not _key():
@@ -562,44 +562,47 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
 
     import time
 
+    def _status(msg):
+        if status_cb:
+            try: status_cb(msg)
+            except Exception: pass
+        print(f"[AI vision] {msg}")
+
     # POSTRANICHNAYA obrabotka (chunk_size=1)
     for i in range(0, total_pages, chunk_size):
         chunk = images[i:i + chunk_size]
         page_num = i + 1
-        print(f"[AI vision] page {page_num}/{total_pages} — extracting...")
+        _status(f"extracting page {page_num}/{total_pages}")
 
         # PASS 1: glavnaya extractsia
-        raw = _gemini_vision_call(chunk, timeout=240, prompt=VISION_EXTRACT_PROMPT)
+        raw = _gemini_vision_call(chunk, timeout=120, prompt=VISION_EXTRACT_PROMPT)
         page_cards = []
         if raw:
             page_cards = _parse_vision_response(raw)
             chunk_results.append((True, len(page_cards)))
-            print(f"[AI vision]   pass 1: +{len(page_cards)} cards")
+            _status(f"page {page_num}: +{len(page_cards)} cards (total: {len(all_cards) + len(page_cards)})")
         else:
             chunk_results.append((False, 0))
             last_chunk_error = "Gemini API не ответил (rate limit / перегруз / сетевая ошибка)"
-            print(f"[AI vision]   pass 1: FAILED")
+            _status(f"page {page_num}: FAILED")
 
         # PASS 2: AUDIT — esli vklyuchen i pervyy proxod chto-to nashel
         if audit and page_cards:
-            time.sleep(3)  # malenkaya pauza chtoby ne udarit v rate limit
+            time.sleep(3)
             extracted_numbers = [c.get("_number", "") for c in page_cards if c.get("_number")]
             if extracted_numbers:
+                _status(f"audit page {page_num} (looking for missed)")
                 audit_prompt = VISION_AUDIT_PROMPT.format(
                     extracted_numbers=", ".join(extracted_numbers)
                 )
-                print(f"[AI vision]   pass 2 (audit): looking for missing among {extracted_numbers}")
-                audit_raw = _gemini_vision_call(chunk, timeout=180, prompt=audit_prompt)
+                audit_raw = _gemini_vision_call(chunk, timeout=120, prompt=audit_prompt)
                 if audit_raw:
                     missed = _parse_vision_response(audit_raw)
-                    # Filtruem dubli s tem chto uzhe est' v page_cards
                     existing_nums = set(c.get("_number", "") for c in page_cards)
                     truly_new = [c for c in missed if c.get("_number", "") not in existing_nums]
                     if truly_new:
-                        print(f"[AI vision]   pass 2: +{len(truly_new)} MISSED cards recovered")
+                        _status(f"audit page {page_num}: +{len(truly_new)} MISSED recovered")
                         page_cards.extend(truly_new)
-                    else:
-                        print(f"[AI vision]   pass 2: nothing missed")
 
         all_cards.extend(page_cards)
 
@@ -610,11 +613,11 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
             except Exception:
                 pass
 
-        # Mezhdu stranitsami — pauza chtoby ne udarit v rate limit Gemini Free (15 RPM)
+        # Mezhdu stranitsami — pauza (15 RPM = 1 zapros / 4 sek)
         if i + chunk_size < total_pages:
             time.sleep(4)
 
-    # Esli VSE stranitsy upali — eto problema s API/setu
+    # Esli VSE stranitsy upali — eto problema s API
     if chunk_results and not any(r[0] for r in chunk_results):
         raise RuntimeError(
             f"Все запросы к Gemini Vision провалились. "
@@ -623,14 +626,11 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
             f"Последняя ошибка: {last_chunk_error}. Попробуйте через 5-10 минут."
         )
 
-    # Dedupe — globalniy (mezhdu stranitsami mogut dublirovat'sya esli reading comprehension dlinnyy)
     deduped = _dedupe_cards(all_cards)
-
-    # Ochishchaem internal'noe pole _number pered vozvratom
     for c in deduped:
         c.pop("_number", None)
 
-    print(f"[AI vision] FINAL: {len(deduped)} unique cards from {total_pages} pages")
+    _status(f"FINAL: {len(deduped)} unique cards from {total_pages} pages")
     return deduped
 
 

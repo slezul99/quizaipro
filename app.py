@@ -5769,6 +5769,7 @@ def vision_status_api(job_id):
         "pages_total": job["pages_total"],
         "cards_found": job["cards_found"],
         "error": job.get("error"),
+        "stage_msg": job.get("stage_msg") or "",
         "deck_id_created": job.get("deck_id_created"),
     })
 

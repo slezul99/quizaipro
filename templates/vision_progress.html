@@ -44,6 +44,12 @@
           </div>
         </div>
 
+        <!-- Live stage message -->
+        <div class="mt-4 p-2 bg-slate-100 dark:bg-slate-800/40 rounded-lg text-xs font-mono text-slate-600 dark:text-slate-300 text-center"
+             x-show="state.stage_msg && state.stage_msg.length > 0">
+          ⚡ <span x-text="state.stage_msg"></span>
+        </div>
+
         <!-- Stages -->
         <div class="mt-5 space-y-2 text-left text-sm">
           <div class="flex items-center gap-2">
@@ -143,6 +149,7 @@ function visionProgress() {
       'pages_total': job.pages_total,
       'cards_found': job.cards_found,
       'error': job.error,
+      'stage_msg': job.stage_msg or '',
       'deck_id_created': job.deck_id_created,
     }|tojson }},
     pollTimer: null,

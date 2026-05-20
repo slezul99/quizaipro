@@ -85,6 +85,7 @@ def create_job(user_id: int, fpath: Path, filename_stem: str,
         "pages_done": 0,
         "pages_total": 0,
         "cards_found": 0,
+        "stage_msg": "",
         "result_cards": None,
         "error": None,
         "created_at": datetime.utcnow(),
@@ -222,6 +223,10 @@ def run_vision_job(jid: str, save_cards_callback):
         update_job(jid, pages_done=done, pages_total=total_pages,
                    cards_found=found, progress=pct)
 
+    def status_cb(msg):
+        # Tekstoviy stage dlya UI
+        update_job(jid, stage_msg=msg)
+
     cards = []
     try:
         cards = ai_gen.vision_pdf_to_cards(
@@ -229,8 +234,9 @@ def run_vision_job(jid: str, save_cards_callback):
             lang=job["lang"],
             max_pages=30,
             chunk_size=1,        # POSTRANICHNAYA — kachestvo > skorost'
-            audit=True,          # vtoroy proxod chtoby naiti propushchennye
+            audit=False,         # OTKLYUCHENO chtoby ne udvaivat' vremya (pri 14 stranitsah eto bylo 12 minut)
             progress_cb=progress_cb,
+            status_cb=status_cb,
         )
     except Exception as e:
         tb = traceback.format_exc()
