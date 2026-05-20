@@ -2845,7 +2845,8 @@ def deck_toggle_public(deck_id):
         conn.close(); abort(404)
     deck_d = dict(deck)
     # Vision PDF kolodu nelzya publikat na Free plane (predotvraschaem zlouupotreblenie AI Vision)
-    if deck_d.get("created_via") == "vision_pdf":
+    # Super-admin obhodit eto ogranicheniye
+    if deck_d.get("created_via") == "vision_pdf" and not is_super_admin(user):
         plan = billing.get_active_plan(user)
         if plan == "free":
             conn.close()
@@ -5621,8 +5622,13 @@ def import_page():
 def _check_vision_quota(user) -> bool:
     """Free tier: 1 vision-import v mesyats (kalendarnyy).
     Paid plany: po limitu plana.
+    Super-admin (vladelets sayta): bez limita.
 
     Vozvrashchaem True esli mojno, False esli prevyshen lim."""
+    # Super-adminy = bez limita (testirovaniye, podderzhka)
+    if is_super_admin(user):
+        return True
+
     plan = billing.get_active_plan(user)
     conn = db.get_conn()
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0).isoformat()
