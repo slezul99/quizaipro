@@ -11,10 +11,10 @@
 
     <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>📁 Категории</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('cat_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
         <h1 class="section-h">{{ t('categories') }}</h1>
-        <p class="section-sub">Организуйте колоды по предметам и уровням</p>
+        <p class="section-sub">{{ t('cat_sub') }}</p>
       </div>
       <button @click="showNew = true; parentId = null; parentName = ''" class="btn-premium">+ {{ t('categories') }}</button>
     </div>
@@ -29,15 +29,16 @@
             <div>
               <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">{{ r.name }}</h3>
               <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {{ r.children|length }} подкатегорий · {{ r.deck_count }} тестов · {{ r.card_count or 0 }} карт
+                {{ r.children|length }} {{ t('cat_subcats') }} · {{ r.deck_count }} {{ t('cat_tests') }} · {{ r.card_count or 0 }} {{ t('cat_cards') }}
               </p>
             </div>
           </div>
           <div class="flex gap-2">
             <button @click="showNew = true; parentId = {{ r.id }}; parentName = '{{ r.name|e }}'"
-              class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">+ Уровень</button>
-            <form method="POST" action="/category/{{ r.id }}/delete" onsubmit="return confirm('Удалить категорию и все подкатегории?')">
-              <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 transition p-2" title="Удалить">✕</button>
+              class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">{{ t('cat_add_level') }}</button>
+            <form method="POST" action="/category/{{ r.id }}/delete" onsubmit="return confirm({{ t('cat_del_confirm')|tojson }})">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 transition p-2" title="{{ t('cat_del_title') }}">✕</button>
             </form>
           </div>
         </div>
@@ -46,7 +47,7 @@
         <a href="/category/{{ r.id }}/play"
           class="block mb-3 p-4 rounded-2xl text-white text-center font-bold transition shadow-md hover:shadow-lg"
           style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); box-shadow: 0 10px 28px -6px rgba(99,102,241,0.45);">
-          🎮 Играть · Тест / Match / Live / Дуэль
+          {{ t('cat_play_full') }}
         </a>
         {% endif %}
 
@@ -56,32 +57,33 @@
           <div class="rounded-2xl p-4 group/sub transition" style="background: rgba(255,255,255,0.6); border: 1.5px solid rgba(99,102,241,0.15);">
             <div class="flex items-start justify-between mb-2">
               <span class="text-2xl">{{ ch.icon }}</span>
-              <form method="POST" action="/category/{{ ch.id }}/delete" onsubmit="return confirm('Удалить уровень?')">
+              <form method="POST" action="/category/{{ ch.id }}/delete" onsubmit="return confirm({{ t('cat_del_lvl_confirm')|tojson }})">
+                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
                 <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 text-xs opacity-0 group-hover/sub:opacity-100 transition">✕</button>
               </form>
             </div>
             <div class="font-bold text-sm text-slate-900 dark:text-slate-100">{{ ch.name }}</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ ch.deck_count }} тестов · {{ ch.card_count or 0 }} карт</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ ch.deck_count }} {{ t('cat_tests') }} · {{ ch.card_count or 0 }} {{ t('cat_cards') }}</div>
             {% if (ch.card_count or 0) >= 3 %}
             <a href="/category/{{ ch.id }}/play"
               class="block mt-2 px-2 py-1.5 rounded-lg text-white text-[11px] font-bold text-center transition"
               style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px -2px rgba(99,102,241,0.4);">
-              🎮 Играть
+              {{ t('cat_play_small') }}
             </a>
             {% endif %}
           </div>
           {% endfor %}
         </div>
         {% else %}
-        <div class="text-xs text-slate-400 dark:text-slate-500 italic ml-4 mt-2">Нет уровней. Добавьте первый.</div>
+        <div class="text-xs text-slate-400 dark:text-slate-500 italic ml-4 mt-2">{{ t('cat_no_lvls') }}</div>
         {% endif %}
       </div>
       {% else %}
       <div class="text-center py-16 glass-premium">
         <div class="text-7xl mb-4">📁</div>
-        <p class="text-slate-600 dark:text-slate-300 mb-5">Нет категорий. Создайте первую.</p>
-        <button @click="showNew = true; parentId = null" class="btn-premium">+ Создать категорию</button>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-4">Например: <b>Английский</b>, внутри — <b>Beginner / Elementary / Intermediate</b></p>
+        <p class="text-slate-600 dark:text-slate-300 mb-5">{{ t('cat_empty') }}</p>
+        <button @click="showNew = true; parentId = null" class="btn-premium">{{ t('cat_create_first') }}</button>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-4">{{ t('cat_example') }}: <b>English</b>, {{ t('cat_inside') }} — <b>Beginner / Elementary / Intermediate</b></p>
       </div>
       {% endfor %}
     </div>
@@ -90,13 +92,14 @@
   <!-- Modal -->
   <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
     <form method="POST" action="/category/new" class="glass-premium max-w-md w-full scale-in" style="padding: 1.75rem;">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <h3 class="section-h" style="font-size: 1.5rem;">
-        <span x-show="!parentId">+ Новая категория</span>
-        <span x-show="parentId">+ Уровень внутри <span x-text="parentName" class="text-indigo-600 dark:text-indigo-300"></span></span>
+        <span x-show="!parentId">{{ t('cat_modal_new') }}</span>
+        <span x-show="parentId">{{ t('cat_modal_lvl_in') }} <span x-text="parentName" class="text-indigo-600 dark:text-indigo-300"></span></span>
       </h3>
       <p class="text-xs text-slate-500 dark:text-slate-400 mb-5 mt-2">
-        <span x-show="!parentId">Например: Английский, Математика, Биология</span>
-        <span x-show="parentId">Например: Beginner, Elementary, Intermediate</span>
+        <span x-show="!parentId">{{ t('cat_modal_ex_root') }}</span>
+        <span x-show="parentId">{{ t('cat_modal_ex_lvl') }}</span>
       </p>
       <input type="hidden" name="parent_id" :value="parentId">
       <div class="flex gap-3 mb-5">

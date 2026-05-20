@@ -6,14 +6,14 @@
 
   <div class="relative z-10">
     <div class="section-header left mb-8">
-      <span class="section-badge"><span class="badge-dot"></span>🌐 Marketplace</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('mk_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Маркетплейс</h1>
-      <p class="section-sub">Бесплатные колоды от других учебных центров и преподавателей</p>
+      <h1 class="section-h">{{ t('mk_h') }}</h1>
+      <p class="section-sub">{{ t('mk_sub') }}</p>
     </div>
 
     <form method="GET" class="glass-premium mb-6" style="padding: 1.25rem;">
-      <input type="text" name="q" value="{{ search }}" placeholder="🔍 Найти колоду..." class="input-premium">
+      <input type="text" name="q" value="{{ search }}" placeholder="{{ t('mk_search_ph') }}" class="input-premium">
     </form>
 
     {% if decks %}
@@ -23,7 +23,7 @@
         <div class="flex items-start justify-between mb-3">
           <div class="text-4xl">{{ d.icon }}</div>
           <div class="text-right text-xs text-slate-500 dark:text-slate-400">
-            <div class="font-bold text-indigo-600 dark:text-indigo-300">📥 {{ d.clones_count }} копий</div>
+            <div class="font-bold text-indigo-600 dark:text-indigo-300">📥 {{ d.clones_count }} {{ t('mk_copies') }}</div>
             {% if d.author_id %}
             <a href="/u/{{ d.author }}" class="hover:underline font-semibold">{{ d.author }}</a>
             {% else %}
@@ -32,13 +32,13 @@
           </div>
         </div>
         <h3 class="text-xl font-bold mb-1.5 text-slate-900 dark:text-slate-100">{{ d.name }}</h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ d.card_count }} вопросов</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ d.card_count }} {{ t('mk_questions') }}</p>
         {% if d.description %}
         <p class="text-xs text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">{{ d.description }}</p>
         {% endif %}
         <form method="POST" action="/marketplace/clone/{{ d.id }}">
           <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button type="submit" class="btn-premium w-full justify-center">📥 Добавить себе</button>
+          <button type="submit" class="btn-premium w-full justify-center">{{ t('mk_add_to_self') }}</button>
         </form>
       </div>
       {% endfor %}
@@ -47,10 +47,10 @@
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">📦</div>
       <h3 class="section-h" style="font-size: 1.7rem;">
-        {% if search %}Ничего не найдено{% else %}Маркетплейс пока пуст{% endif %}
+        {% if search %}{{ t('mk_nothing_found') }}{% else %}{{ t('mk_empty_h') }}{% endif %}
       </h3>
       <p class="text-slate-600 dark:text-slate-300 mt-3">
-        {% if search %}Попробуйте другой запрос{% else %}Сделайте свою колоду публичной — поможете другим преподавателям{% endif %}
+        {% if search %}{{ t('mk_try_other') }}{% else %}{{ t('mk_make_public') }}{% endif %}
       </p>
     </div>
     {% endif %}

@@ -7,14 +7,14 @@
 
   <div class="relative z-10">
     <div class="section-header left mb-6">
-      <span class="section-badge"><span class="badge-dot"></span>💬 Поддержка</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('sup_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">{% if is_admin %}Все обращения{% else %}Связь с поддержкой{% endif %}</h1>
+      <h1 class="section-h">{% if is_admin %}{{ t('sup_h_admin') }}{% else %}{{ t('sup_h_user') }}{% endif %}</h1>
       <p class="section-sub">
         {% if is_admin %}
-        Все обращения от пользователей. Только super-admin отвечает.
+        {{ t('sup_sub_admin') }}
         {% else %}
-        Напишите нам — отвечают <b>@Slezul</b> и <b>@Aza_Dev0320</b> (super-админы)
+        {{ t('sup_sub_user_pre') }} <b>@Slezul</b>, <b>@Aza_Dev0320</b> {{ t('sup_sub_user_post') }}
         {% endif %}
       </p>
     </div>
@@ -25,8 +25,8 @@
       <div class="flex items-center gap-4 flex-wrap">
         <div class="text-5xl">📨</div>
         <div class="flex-1 min-w-0">
-          <div class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">Быстрая связь в Telegram</div>
-          <div class="text-sm text-slate-600 dark:text-slate-300">Напишите напрямую — обычно отвечаем за 1-2 часа</div>
+          <div class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">{{ t('sup_tg_h') }}</div>
+          <div class="text-sm text-slate-600 dark:text-slate-300">{{ t('sup_tg_sub') }}</div>
         </div>
         <div class="flex flex-wrap gap-2">
           <a href="https://t.me/Slezul" target="_blank" class="btn-premium" style="font-size: 14px; padding: 10px 18px;">📨 @Slezul</a>
@@ -37,24 +37,24 @@
 
     <!-- New ticket button -->
     <button @click="showNew = !showNew" class="btn-premium w-full justify-center mb-4" style="font-size: 15px;">
-      <span x-show="!showNew">✏️ Написать в поддержку</span>
-      <span x-show="showNew">↑ Свернуть</span>
+      <span x-show="!showNew">{{ t('sup_new_btn') }}</span>
+      <span x-show="showNew">{{ t('sup_collapse') }}</span>
     </button>
 
     <!-- New ticket form -->
     <div x-show="showNew" x-transition class="glass-premium mb-6">
-      <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4">✏️ Новое обращение</h3>
+      <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4">{{ t('sup_new_h') }}</h3>
       <form method="POST" action="/support/new" class="space-y-3">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
         <div>
-          <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Тема (необязательно)</label>
-          <input name="subject" maxlength="200" placeholder="Кратко о проблеме" class="input-premium">
+          <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-1.5">{{ t('sup_subj_label') }}</label>
+          <input name="subject" maxlength="200" placeholder="{{ t('sup_subj_ph') }}" class="input-premium">
         </div>
         <div>
-          <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Сообщение</label>
-          <textarea name="text" rows="5" required maxlength="5000" placeholder="Опишите проблему подробно..." class="input-premium" style="resize: vertical;"></textarea>
+          <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-1.5">{{ t('sup_msg_label') }}</label>
+          <textarea name="text" rows="5" required maxlength="5000" placeholder="{{ t('sup_msg_ph') }}" class="input-premium" style="resize: vertical;"></textarea>
         </div>
-        <button type="submit" class="btn-premium">Отправить →</button>
+        <button type="submit" class="btn-premium">{{ t('sup_send') }}</button>
       </form>
     </div>
     {% endif %}
@@ -62,8 +62,8 @@
     <!-- Tickets list -->
     {% if tickets %}
     <div class="space-y-3">
-      {% for t in tickets %}
-      <a href="/support/{{ t.id }}" class="glass-premium block hover:border-indigo-400/60 transition" style="padding: 1.25rem;">
+      {% for tk in tickets %}
+      <a href="/support/{{ tk.id }}" class="glass-premium block hover:border-indigo-400/60 transition" style="padding: 1.25rem;">
         <div class="flex items-start gap-3">
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md flex-shrink-0"
                style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
@@ -71,19 +71,19 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-bold text-slate-900 dark:text-slate-100">{{ t.subject or 'Без темы' }}</span>
-              {% if is_admin %}<span class="text-xs text-indigo-600 dark:text-indigo-300 font-semibold">@{{ t.user_username }}</span>{% endif %}
-              {% if t.status == 'closed' %}
-              <span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">✓ Закрыто</span>
+              <span class="font-bold text-slate-900 dark:text-slate-100">{{ tk.subject or t('sup_no_subject') }}</span>
+              {% if is_admin %}<span class="text-xs text-indigo-600 dark:text-indigo-300 font-semibold">@{{ tk.user_username }}</span>{% endif %}
+              {% if tk.status == 'closed' %}
+              <span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">{{ t('sup_closed') }}</span>
               {% else %}
-              <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">● Открыто</span>
+              <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t('sup_open') }}</span>
               {% endif %}
-              {% if t.unread and t.unread > 0 %}
-              <span class="badge bg-red-500 text-white">+{{ t.unread }} новых</span>
+              {% if tk.unread and tk.unread > 0 %}
+              <span class="badge bg-red-500 text-white">+{{ tk.unread }} {{ t('sup_new_unread') }}</span>
               {% endif %}
             </div>
-            <div class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ t.last_text or '— Нет сообщений —' }}</div>
-            <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ (t.last_activity or t.created_at or '')[:16].replace('T', ' ') }}</div>
+            <div class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ tk.last_text or t('sup_no_msgs') }}</div>
+            <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ (tk.last_activity or tk.created_at or '')[:16].replace('T', ' ') }}</div>
           </div>
           <span class="text-slate-400 dark:text-slate-500 text-xl">→</span>
         </div>
@@ -93,8 +93,8 @@
     {% else %}
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">📭</div>
-      <p class="text-slate-600 dark:text-slate-300 mb-2 text-lg">{% if is_admin %}Пока нет обращений{% else %}У вас нет обращений{% endif %}</p>
-      {% if not is_admin %}<p class="text-sm text-slate-500 dark:text-slate-400">Нажмите «✏️ Написать в поддержку» чтобы начать</p>{% endif %}
+      <p class="text-slate-600 dark:text-slate-300 mb-2 text-lg">{% if is_admin %}{{ t('sup_empty_admin') }}{% else %}{{ t('sup_empty_user') }}{% endif %}</p>
+      {% if not is_admin %}<p class="text-sm text-slate-500 dark:text-slate-400">{{ t('sup_empty_user_hint') }}</p>{% endif %}
     </div>
     {% endif %}
   </div>

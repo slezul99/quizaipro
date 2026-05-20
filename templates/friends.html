@@ -6,41 +6,40 @@
 
   <div class="relative z-10">
     <div class="section-header left mb-8">
-      <span class="section-badge"><span class="badge-dot"></span>👥 Друзья</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('fr_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Учитесь вместе</h1>
-      <p class="section-sub">Добавляйте друзей, играйте в дуэли и следите за прогрессом друг друга</p>
+      <h1 class="section-h">{{ t('fr_h') }}</h1>
+      <p class="section-sub">{{ t('fr_sub') }}</p>
     </div>
 
   {% if duel_category %}
-  <div class="glass rounded-3xl p-5 mb-6 border-2 border-orange-300 bg-orange-50/50">
+  <div class="glass rounded-3xl p-5 mb-6 border-2 border-orange-300 bg-orange-50/50 dark:bg-orange-900/20 dark:border-orange-500/40">
     <div class="flex items-center gap-3">
       <span class="text-3xl">⚔️</span>
       <div class="flex-1">
-        <div class="font-bold text-slate-900">Дуэль по категории «{{ duel_category.icon or '📁' }} {{ duel_category.name }}»</div>
-        <div class="text-xs text-slate-600">Выберите друга и нажмите ⚔️ для вызова</div>
+        <div class="font-bold text-slate-900 dark:text-slate-100">{{ t('fr_duel_by_cat') }} «{{ duel_category.icon or '📁' }} {{ duel_category.name }}»</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300">{{ t('fr_duel_pick') }}</div>
       </div>
-      <a href="/friends" class="text-xs text-orange-700 hover:underline">Отмена</a>
+      <a href="/friends" class="text-xs text-orange-700 dark:text-orange-400 hover:underline">{{ t('fr_cancel') }}</a>
     </div>
   </div>
   {% endif %}
 
   {% if incoming %}
-  <!-- Vhodyashchie -->
   <div class="glass rounded-3xl p-6 mb-6">
-    <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-      📩 Входящие запросы <span class="badge bg-pink-100 text-pink-700">{{ incoming|length }}</span>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+      {{ t('fr_incoming') }} <span class="badge bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300">{{ incoming|length }}</span>
     </h3>
     <div class="space-y-2">
       {% for u in incoming %}
-      <div class="flex items-center gap-3 p-3 rounded-xl bg-white/60">
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-white/60 dark:bg-slate-800/40">
         <a href="/u/{{ u.username }}" class="flex items-center gap-3 flex-1 hover:opacity-80">
           <span class="avatar">{{ u.username[0]|upper }}</span>
           <span class="font-semibold">{{ u.username }}</span>
-          <span class="text-xs text-slate-500">⭐ {{ u.xp }}</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">⭐ {{ u.xp }}</span>
         </a>
         <div class="flex gap-2">
-          <button onclick="acceptFriend('{{ u.username }}')" class="btn btn-success text-xs">✓ Принять</button>
+          <button onclick="acceptFriend('{{ u.username }}')" class="btn btn-success text-xs">{{ t('fr_accept') }}</button>
           <button onclick="removeFriend('{{ u.username }}')" class="btn btn-ghost text-xs">✗</button>
         </div>
       </div>
@@ -49,43 +48,41 @@
   </div>
   {% endif %}
 
-  <!-- Druzya -->
   <div class="glass rounded-3xl p-6 mb-6">
-    <h3 class="font-bold text-slate-900 mb-4">🤝 Друзья ({{ friends|length }})</h3>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">{{ t('fr_friends_title') }} ({{ friends|length }})</h3>
     {% if friends %}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       {% for f in friends %}
-      <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/60 hover:bg-indigo-50 border border-indigo-100 transition">
+      <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/60 dark:bg-slate-800/40 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/40 transition">
         <a href="/u/{{ f.username }}" class="flex items-center gap-3 flex-1 min-w-0">
           <span class="avatar">{{ f.username[0]|upper }}</span>
           <div class="flex-1 min-w-0">
-            <div class="font-semibold text-slate-900 truncate">{{ f.username }}</div>
-            <div class="text-xs text-slate-500">⭐ {{ f.xp }} · 🔥 {{ f.streak }} · 🌐 {{ f.public_decks }}</div>
+            <div class="font-semibold text-slate-900 dark:text-slate-100 truncate">{{ f.username }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">⭐ {{ f.xp }} · 🔥 {{ f.streak }} · 🌐 {{ f.public_decks }}</div>
           </div>
         </a>
         {% if duel_category %}
         <button onclick="duelCategory('{{ f.username }}', {{ duel_category.id }})"
           class="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition flex-shrink-0"
-          title="Вызвать на дуэль по категории">⚔️ Вызов</button>
+          title="{{ t('fr_duel_title') }}">{{ t('fr_duel_btn') }}</button>
         {% endif %}
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-slate-500 text-center py-6">Пока нет друзей. Ищите пользователей в <a href="/leaderboard" class="text-indigo-600 hover:underline">лидерборде</a>.</p>
+    <p class="text-slate-500 dark:text-slate-400 text-center py-6">{{ t('fr_no_friends') }} <a href="/leaderboard" class="text-indigo-600 dark:text-indigo-300 hover:underline">{{ t('fr_no_friends_link') }}</a>.</p>
     {% endif %}
   </div>
 
-  <!-- Iskhodyashchie -->
   {% if outgoing %}
   <div class="glass rounded-3xl p-6">
-    <h3 class="font-bold text-slate-900 mb-4">📤 Ожидают ответа</h3>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">{{ t('fr_outgoing') }}</h3>
     <div class="space-y-2">
       {% for u in outgoing %}
-      <div class="flex items-center gap-3 p-3 rounded-xl bg-white/60">
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-white/60 dark:bg-slate-800/40">
         <span class="avatar">{{ u.username[0]|upper }}</span>
         <span class="font-medium flex-1">{{ u.username }}</span>
-        <button onclick="removeFriend('{{ u.username }}')" class="btn btn-ghost text-xs">Отменить</button>
+        <button onclick="removeFriend('{{ u.username }}')" class="btn btn-ghost text-xs">{{ t('fr_undo') }}</button>
       </div>
       {% endfor %}
     </div>
@@ -94,6 +91,7 @@
 </div>
 
 <script>
+const FR_ERR = {{ t('fr_error')|tojson }};
 async function acceptFriend(username) {
   const fd = new FormData();
   fd.append('_csrf', '{{ csrf_token() }}');
@@ -114,7 +112,7 @@ async function duelCategory(username, categoryId) {
   if (r.ok && data.duel_id) {
     window.location = `/duel/${data.duel_id}`;
   } else {
-    alert('Ошибка: ' + (data.error || r.status));
+    alert(FR_ERR + ': ' + (data.error || r.status));
   }
 }
 </script>

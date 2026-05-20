@@ -6,10 +6,10 @@
 
   <div class="relative z-10">
     <div class="section-header left mb-8">
-      <span class="section-badge"><span class="badge-dot"></span>🏆 Достижения</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('ach_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Ваши успехи</h1>
-      <p class="section-sub">Получено: <b class="text-indigo-600 dark:text-indigo-300">{{ unlocked_count }}</b> из {{ total_count }}</p>
+      <h1 class="section-h">{{ t('ach_h') }}</h1>
+      <p class="section-sub">{{ t('ach_received_count') }}: <b class="text-indigo-600 dark:text-indigo-300">{{ unlocked_count }}</b> / {{ total_count }}</p>
       <div class="progress-bar h-3 mt-4 max-w-md"><div style="width: {{ (unlocked_count / total_count * 100) if total_count else 0 }}%"></div></div>
     </div>
 
@@ -21,9 +21,9 @@
         <p class="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">{{ item.desc }}</p>
         <div class="flex items-center justify-between">
           {% if item.unlocked %}
-          <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">✓ Получено</span>
+          <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t('ach_unlocked') }}</span>
           {% else %}
-          <span class="badge bg-slate-100 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">🔒 Заблок.</span>
+          <span class="badge bg-slate-100 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">{{ t('ach_locked') }}</span>
           {% endif %}
           <span class="text-xs font-bold text-indigo-600 dark:text-indigo-300">+{{ item.xp }} XP</span>
         </div>
