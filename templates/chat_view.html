@@ -145,6 +145,14 @@ function chatApp() {
       this.lastId = this.messages.length ? this.messages[this.messages.length-1].id : 0;
       this.scrollBottom(true);
       this.pollInterval = setInterval(() => this.poll(), 2500);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+        } else if (!this.pollInterval) {
+          this.poll();
+          this.pollInterval = setInterval(() => this.poll(), 2500);
+        }
+      });
     },
 
     async send() {

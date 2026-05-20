@@ -265,6 +265,14 @@ function liveHost() {
     init() {
       this.poll();
       this.pollInterval = setInterval(() => this.poll(), 1500);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+        } else if (!this.pollInterval && this.state.status !== 'finished') {
+          this.poll();
+          this.pollInterval = setInterval(() => this.poll(), 1500);
+        }
+      });
     },
 
     async poll() {

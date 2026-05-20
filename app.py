@@ -4673,7 +4673,28 @@ def live_play(code):
 
 
 def _live_auto_advance(conn, sess_d):
-    """Server-side: esli vremya na vopros istelo — avto-perehod, ne otvetivshie poluchayut 0."""
+    """Server-side: esli vremya na vopros istelo — avto-perehod, ne otvetivshie poluchayut 0.
+    Esli sessiya zomby (waiting/running > 4 chasov) — avto-zakryvaem chtoby ne grevat' API."""
+    # Auto-kill zombie sessions
+    if sess_d["status"] in ("waiting", "running"):
+        created = sess_d.get("created_at") or sess_d.get("question_started_at")
+        if created:
+            try:
+                cd = datetime.fromisoformat(created)
+                if (datetime.utcnow() - cd).total_seconds() > 4 * 3600:
+                    now = datetime.utcnow().isoformat()
+                    conn.execute(
+                        "UPDATE live_sessions SET status='finished', finished_at=? WHERE id=?",
+                        (now, sess_d["id"])
+                    )
+                    conn.commit()
+                    sess_d = dict(sess_d)
+                    sess_d["status"] = "finished"
+                    sess_d["finished_at"] = now
+                    return sess_d
+            except Exception:
+                pass
+
     if sess_d["status"] != "running":
         return sess_d
     started = sess_d.get("question_started_at")

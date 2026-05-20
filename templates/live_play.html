@@ -123,6 +123,15 @@ function livePlay() {
     init() {
       this.poll();
       this.pollInterval = setInterval(() => this.poll(), 1500);
+      // Pause polling when tab hidden — saves battery + Railway compute
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+        } else if (!this.pollInterval && this.state.status !== 'finished') {
+          this.poll();
+          this.pollInterval = setInterval(() => this.poll(), 1500);
+        }
+      });
     },
 
     async poll() {
