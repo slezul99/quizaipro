@@ -5,20 +5,20 @@
   <!-- WAITING -->
   <div x-show="state.status === 'waiting'" x-transition class="text-center py-16">
     <div class="text-6xl mb-4 pulse-soft">⏳</div>
-    <h2 class="h-display text-3xl text-slate-900 mb-2">Ожидание учителя...</h2>
-    <p class="text-slate-600 mb-6">Подключено: <span class="font-bold text-indigo-600" x-text="state.participants.length"></span></p>
-    <div class="badge bg-indigo-100 text-indigo-700">Код: {{ code }}</div>
+    <h2 class="h-display text-3xl text-slate-900 dark:text-slate-100 mb-2">{{ t('lp_waiting_h') }}</h2>
+    <p class="text-slate-600 dark:text-slate-300 mb-6">{{ t('lp_connected') }}: <span class="font-bold text-indigo-600 dark:text-indigo-300" x-text="state.participants.length"></span></p>
+    <div class="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">{{ t('lp_code') }}: {{ code }}</div>
   </div>
 
   <!-- RUNNING -->
   <div x-show="state.status === 'running'" x-transition>
     <div class="flex justify-between items-center mb-4 text-sm">
-      <span class="font-semibold text-slate-700">Вопрос <span x-text="state.current_idx + 1"></span> / <span x-text="state.question_count"></span></span>
+      <span class="font-semibold text-slate-700 dark:text-slate-200">{{ t('lp_q_n') }} <span x-text="state.current_idx + 1"></span> {{ t('lp_q_of') }} <span x-text="state.question_count"></span></span>
       <div class="flex items-center gap-2">
-        <span x-show="state.question?.my_answer" class="badge bg-emerald-100 text-emerald-700">✓ Отвечено</span>
+        <span x-show="state.question?.my_answer" class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t('lp_answered') }}</span>
         <span class="px-4 py-2 rounded-2xl font-bold text-lg transition shadow"
           :class="timeLeft <= 5 ? 'bg-red-500 text-white animate-pulse' : (timeLeft <= 10 ? 'bg-orange-500 text-white' : 'bg-indigo-600 text-white')">
-          ⏱ <span x-text="timeLeft"></span>с
+          ⏱ <span x-text="timeLeft"></span>{{ t('lp_time_unit') }}
         </span>
       </div>
     </div>
@@ -27,51 +27,51 @@
     </div>
 
     <!-- Timer progress bar -->
-    <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden mb-4">
+    <div class="h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
       <div class="h-full transition-all duration-500"
         :class="timeLeft <= 5 ? 'bg-red-500' : (timeLeft <= 10 ? 'bg-orange-500' : 'bg-indigo-500')"
         :style="`width: ${state.question?.time_per_q ? (timeLeft / state.question.time_per_q * 100) : 0}%`"></div>
     </div>
 
     <div class="glass rounded-3xl p-6 md:p-8">
-      <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3 text-center">Вопрос</div>
-      <div class="text-xl md:text-2xl font-bold text-slate-900 text-center mb-6" x-text="state.question?.front"></div>
+      <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 font-semibold mb-3 text-center">{{ t('lp_question') }}</div>
+      <div class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 text-center mb-6" x-text="state.question?.front"></div>
 
       <div class="space-y-3">
         <template x-for="opt in state.question?.options || []" :key="opt.letter">
           <button @click="answer(opt.letter)"
             :class="{
-              'border-blue-500 bg-blue-50': state.question?.my_answer === opt.letter,
-              'border-gray-200 hover:border-indigo-300': !state.question?.my_answer
+              'border-blue-500 bg-blue-50 dark:bg-blue-900/30': state.question?.my_answer === opt.letter,
+              'border-gray-200 dark:border-slate-700 hover:border-indigo-300': !state.question?.my_answer
             }"
             class="w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition cursor-pointer">
-            <span :class="state.question?.my_answer === opt.letter ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'"
+            <span :class="state.question?.my_answer === opt.letter ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200'"
               class="w-9 h-9 rounded-full flex items-center justify-center font-bold transition" x-text="opt.letter"></span>
             <span class="flex-1 font-medium" x-text="opt.text"></span>
           </button>
         </template>
-        <div x-show="!state.question?.options || state.question.options.length === 0" class="text-center text-amber-600 py-4 bg-amber-50 rounded-2xl">
-          ⚠️ В этой карте нет вариантов ответа (учитель не отметил правильный)
+        <div x-show="!state.question?.options || state.question.options.length === 0" class="text-center text-amber-600 dark:text-amber-300 py-4 bg-amber-50 dark:bg-amber-900/30 rounded-2xl">
+          {{ t('lp_no_options') }}
         </div>
       </div>
 
-      <!-- Posle otveta — soobshchenie -->
+      <!-- After answer -->
       <div x-show="state.question?.my_answer" x-transition class="mt-5 p-4 rounded-2xl text-center"
-        :class="state.question?.my_correct ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
+        :class="state.question?.my_correct ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'">
         <div class="text-2xl mb-1" x-text="state.question?.my_correct ? '✓' : '✗'"></div>
-        <div class="font-semibold" x-text="state.question?.my_correct ? 'Правильно! Ждём остальных...' : 'Неправильно. Ждём следующий вопрос...'"></div>
+        <div class="font-semibold" x-text="state.question?.my_correct ? {{ t('lp_correct_msg')|tojson }} : {{ t('lp_wrong_msg')|tojson }}"></div>
       </div>
     </div>
 
     <!-- Mini leaderboard -->
     <div class="glass rounded-2xl p-4 mt-5">
-      <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">🏆 Топ-5</div>
+      <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 font-semibold mb-2">{{ t('lp_top5') }}</div>
       <div class="space-y-1.5">
         <template x-for="(p, i) in state.participants.slice(0, 5)" :key="p.user_id">
           <div class="flex items-center gap-2 text-sm">
             <span class="w-6 text-center text-xs font-bold" x-text="(i+1)+'.'"></span>
             <span class="flex-1 truncate" x-text="p.full_name || p.username"></span>
-            <span class="font-bold text-indigo-600" x-text="p.score"></span>
+            <span class="font-bold text-indigo-600 dark:text-indigo-300" x-text="p.score"></span>
           </div>
         </template>
       </div>
@@ -81,32 +81,37 @@
   <!-- FINISHED -->
   <div x-show="state.status === 'finished'" x-transition class="text-center py-12">
     <div class="text-7xl mb-4">🏁</div>
-    <h2 class="h-display text-4xl text-slate-900 mb-2">Тест завершён!</h2>
-    <p class="text-slate-600 mb-6">Финальные результаты:</p>
+    <h2 class="h-display text-4xl text-slate-900 dark:text-slate-100 mb-2">{{ t('lp_done_h') }}</h2>
+    <p class="text-slate-600 dark:text-slate-300 mb-6">{{ t('lp_done_sub') }}</p>
 
     <div class="glass rounded-3xl p-5 max-w-md mx-auto mb-6">
       <template x-for="(p, i) in state.participants" :key="p.user_id">
         <div class="flex items-center gap-3 p-3 rounded-xl mb-1"
-          :class="p.user_id === myUserId ? 'bg-indigo-50 border-2 border-indigo-300' : 'bg-white/60'">
+          :class="p.user_id === myUserId ? 'bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-300 dark:border-indigo-500/40' : 'bg-white/60 dark:bg-slate-800/40'">
           <span class="text-2xl"
             x-text="i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : (i+1)+'.'))"></span>
           <span class="flex-1 text-left">
-            <div class="font-medium text-slate-900" x-text="p.full_name || p.username"></div>
-            <div class="text-xs text-slate-500">
+            <div class="font-medium text-slate-900 dark:text-slate-100" x-text="p.full_name || p.username"></div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">
               <span x-text="p.correct_count"></span> ✓ ·
               <span x-text="p.wrong_count"></span> ✗
             </div>
           </span>
-          <span class="font-bold text-indigo-600 text-lg" x-text="p.score"></span>
+          <span class="font-bold text-indigo-600 dark:text-indigo-300 text-lg" x-text="p.score"></span>
         </div>
       </template>
     </div>
 
-    <a href="/dashboard" class="btn btn-primary">К дашборду</a>
+    <a href="/dashboard" class="btn btn-primary">{{ t('lp_to_dashboard') }}</a>
   </div>
 </div>
 
 <script>
+const LP_T = {
+  already_answered: {{ t('lp_already_answered')|tojson }},
+  error: {{ t('lp_error')|tojson }},
+  net_error: {{ t('lp_net_error')|tojson }},
+};
 function livePlay() {
   return {
     state: { status: 'waiting', participants: [], current_idx: 0, question_count: 0, question: null },
@@ -168,7 +173,7 @@ function livePlay() {
 
     async answer(letter) {
       if (this.state.question?.my_answer) {
-        console.log('[live] уже отвечено:', this.state.question.my_answer);
+        console.log(LP_T.already_answered, this.state.question.my_answer);
         return;
       }
       try {
@@ -179,11 +184,11 @@ function livePlay() {
         const data = await r.json();
         console.log('[live] answer response:', r.status, data);
         if (!r.ok) {
-          alert('Ошибка: ' + (data.error || data.msg || r.status));
+          alert(LP_T.error + ' ' + (data.error || data.msg || r.status));
         }
       } catch (e) {
         console.error('[live] answer error:', e);
-        alert('Ошибка сети');
+        alert(LP_T.net_error);
       }
       this.poll();
     },

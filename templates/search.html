@@ -6,26 +6,26 @@
 
   <div class="relative z-10">
     <div class="section-header left mb-6">
-      <span class="section-badge"><span class="badge-dot"></span>🔍 Поиск</span>
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('sr_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Поиск</h1>
+      <h1 class="section-h">{{ t('sr_h') }}</h1>
     </div>
 
     <form method="GET" class="glass-premium mb-6" style="padding: 0.75rem;">
       <input type="text" name="q" value="{{ q }}" autofocus minlength="2"
-        placeholder="🔍 Найти пользователя, колоду или канал..." class="input-premium">
+        placeholder="{{ t('sr_ph') }}" class="input-premium">
     </form>
 
     {% if q and q|length < 2 %}
-    <p class="text-slate-500 dark:text-slate-400 text-center py-8">Введите минимум 2 символа</p>
+    <p class="text-slate-500 dark:text-slate-400 text-center py-8">{{ t('sr_min_chars') }}</p>
     {% elif q %}
     <p class="text-slate-600 dark:text-slate-300 mb-4">
-      Найдено: <b>{{ results.users|length }}</b> пользователей · <b>{{ results.decks|length }}</b> колод · <b>{{ results.channels|length }}</b> каналов
+      {{ t('sr_found_pre') }} <b>{{ results.users|length }}</b> {{ t('sr_users_count') }} · <b>{{ results.decks|length }}</b> {{ t('sr_decks_count') }} · <b>{{ results.channels|length }}</b> {{ t('sr_channels_count') }}
     </p>
 
     {% if results.users %}
     <div class="mb-8">
-      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">👤 Пользователи</h2>
+      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">{{ t('sr_users_h') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         {% for u in results.users %}
         <a href="/u/{{ u.username }}" class="glass-premium flex items-center gap-3" style="padding: 1rem;">
@@ -42,7 +42,7 @@
 
     {% if results.decks %}
     <div class="mb-8">
-      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">📚 Колоды</h2>
+      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">{{ t('sr_decks_h') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {% for d in results.decks %}
         <div class="glass-premium" style="padding: 1.25rem;">
@@ -50,7 +50,7 @@
             <span class="text-3xl">{{ d.icon }}</span>
             <div class="flex-1 min-w-0">
               <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ d.name }}</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400">{{ d.card_count }} карт · 📥 {{ d.clones_count }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ d.card_count }} {{ t('sr_cards_count') }} · 📥 {{ d.clones_count }}</p>
               {% if d.author_username %}
               <a href="/u/{{ d.author_username }}" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">@{{ d.author }}</a>
               {% else %}
@@ -60,7 +60,7 @@
           </div>
           <form method="POST" action="/marketplace/clone/{{ d.id }}">
             <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-            <button type="submit" class="btn-premium w-full justify-center" style="font-size: 12px; padding: 8px;">📥 Добавить себе</button>
+            <button type="submit" class="btn-premium w-full justify-center" style="font-size: 12px; padding: 8px;">{{ t('sr_add_self') }}</button>
           </form>
         </div>
         {% endfor %}
@@ -70,14 +70,14 @@
 
     {% if results.channels %}
     <div class="mb-8">
-      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">📡 Каналы</h2>
+      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2" style="font-family: 'Space Grotesk', sans-serif;">{{ t('sr_channels_h') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {% for c in results.channels %}
         <a href="/chat/{{ c.id }}" class="glass-premium flex items-center gap-3" style="padding: 1rem;">
           <span class="text-3xl">{{ c.avatar }}</span>
           <div class="flex-1">
             <div class="font-bold text-slate-900 dark:text-slate-100">{{ c.name }}</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">{{ c.member_count }} подписчиков</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">{{ c.member_count }} {{ t('sr_subscribers') }}</div>
           </div>
         </a>
         {% endfor %}
@@ -88,7 +88,7 @@
     {% if not results.users and not results.decks and not results.channels %}
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">🔍</div>
-      <p class="text-slate-600 dark:text-slate-300">По запросу «<b>{{ q }}</b>» ничего не найдено</p>
+      <p class="text-slate-600 dark:text-slate-300">{{ t('sr_nothing_pre') }}<b>{{ q }}</b>{{ t('sr_nothing_post') }}</p>
     </div>
     {% endif %}
     {% endif %}

@@ -7,24 +7,24 @@
   <div class="relative z-10">
     <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>📋 Live</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('lh_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-        <h1 class="section-h">История Live-тестов</h1>
-        <p class="section-sub">Завершённые сессии — как ваши, так и где вы участвовали</p>
+        <h1 class="section-h">{{ t('lh_h') }}</h1>
+        <p class="section-sub">{{ t('lh_sub') }}</p>
       </div>
       <div class="flex gap-2 flex-wrap">
         {% if current_user.role in ['admin','teacher','individual'] %}
-        <a href="/live/create" class="btn-premium">+ Новый live-тест</a>
+        <a href="/live/create" class="btn-premium">{{ t('lh_new') }}</a>
         {% endif %}
-        <a href="/live/join" class="btn-premium-ghost">Войти по коду</a>
+        <a href="/live/join" class="btn-premium-ghost">{{ t('lh_join_code') }}</a>
       </div>
     </div>
 
     {% if not sessions %}
     <div class="glass-premium text-center" style="padding: 3rem 2rem;">
       <div class="text-7xl mb-4">📭</div>
-      <p class="text-slate-700 dark:text-slate-200 font-bold text-lg mb-2">Пока нет завершённых live-тестов</p>
-      <p class="text-slate-500 dark:text-slate-400 text-sm">Создайте новый или присоединитесь по коду</p>
+      <p class="text-slate-700 dark:text-slate-200 font-bold text-lg mb-2">{{ t('lh_empty_h') }}</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">{{ t('lh_empty_sub') }}</p>
     </div>
     {% else %}
     <div class="space-y-3">
@@ -37,7 +37,7 @@
           <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
             <span>👤 {{ s.host_username }}</span>
             <span>·</span>
-            <span>👥 {{ s.player_count }} игроков</span>
+            <span>👥 {{ s.player_count }} {{ t('lh_players') }}</span>
             <span>·</span>
             <span>{{ s.finished_at[:16].replace('T', ' ') if s.finished_at else '' }}</span>
           </div>
@@ -45,16 +45,16 @@
 
         <div class="flex items-center gap-2 flex-wrap">
           {% if s.i_was_host %}
-            <span class="badge bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 text-xs">👑 Хост</span>
+            <span class="badge bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 text-xs">{{ t('lh_was_host') }}</span>
           {% endif %}
           {% if s.i_was_player %}
-            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs">🎮 Участник</span>
+            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs">{{ t('lh_was_player') }}</span>
             <div class="text-right">
               <div class="font-black text-indigo-600 dark:text-indigo-300 text-xl" style="font-family: 'Space Grotesk', sans-serif;">{{ s.my_score or 0 }}</div>
               <div class="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{{ s.my_correct or 0 }} ✓</div>
             </div>
           {% elif s.i_was_host %}
-            <span class="badge bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 text-xs">👁 Наблюдатель</span>
+            <span class="badge bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 text-xs">{{ t('lh_was_observer') }}</span>
           {% endif %}
         </div>
 

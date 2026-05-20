@@ -7,13 +7,13 @@
   <div class="relative z-10">
     <div class="flex justify-between items-end mb-6 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>💬 Чаты</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('cl_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-        <h1 class="section-h">Чаты</h1>
+        <h1 class="section-h">{{ t('cl_h') }}</h1>
       </div>
       <div class="flex gap-2">
-        <a href="/channels" class="btn-premium-ghost">📡 Каналы</a>
-        <button @click="showNew = true; type = 'group'" class="btn-premium">+ Создать</button>
+        <a href="/channels" class="btn-premium-ghost">{{ t('cl_channels_btn') }}</a>
+        <button @click="showNew = true; type = 'group'" class="btn-premium">{{ t('cl_create') }}</button>
       </div>
     </div>
 
@@ -27,11 +27,11 @@
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ c.display_name or 'Чат' }}</span>
+            <span class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ c.display_name or t('cl_chat_default') }}</span>
             {% if c.type == 'channel' %}<span class="text-xs text-purple-600 dark:text-purple-300 font-bold">📡</span>
             {% elif c.type == 'group' %}<span class="text-xs text-emerald-600 dark:text-emerald-300 font-bold">👥 {{ c.member_count }}</span>{% endif %}
           </div>
-          <div class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ c.last_msg or '— Нет сообщений —' }}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ c.last_msg or t('cl_no_msgs') }}</div>
         </div>
         {% if c.unread > 0 %}
         <span class="bg-red-500 text-white text-xs font-bold rounded-full min-w-[24px] h-[24px] flex items-center justify-center px-1.5 shadow-md">{{ c.unread }}</span>
@@ -42,8 +42,8 @@
     {% else %}
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">💬</div>
-      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">У вас пока нет чатов</p>
-      <button @click="showNew = true" class="btn-premium">+ Создать группу</button>
+      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">{{ t('cl_empty_h') }}</p>
+      <button @click="showNew = true" class="btn-premium">{{ t('cl_empty_create') }}</button>
     </div>
     {% endif %}
   </div>
@@ -52,40 +52,40 @@
   <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
     <form method="POST" action="/chat/new" class="glass-premium max-w-md w-full scale-in" style="padding: 1.75rem;">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="section-h" style="font-size: 1.5rem;">Новый чат</h3>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5 mt-2">Группа — все пишут друг другу. Канал — только владелец публикует, другие читают.</p>
+      <h3 class="section-h" style="font-size: 1.5rem;">{{ t('cl_modal_h') }}</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5 mt-2">{{ t('cl_modal_sub') }}</p>
 
       <div class="grid grid-cols-2 gap-2 mb-4">
         <label :class="type === 'group' ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/40' : 'border-indigo-200/50 dark:border-indigo-700/40'"
           class="p-4 rounded-2xl border-2 cursor-pointer text-center transition">
           <input type="radio" name="type" value="group" x-model="type" class="hidden">
           <div class="text-3xl mb-1">👥</div>
-          <div class="font-bold text-slate-900 dark:text-slate-100">Группа</div>
+          <div class="font-bold text-slate-900 dark:text-slate-100">{{ t('cl_type_group') }}</div>
         </label>
         <label :class="type === 'channel' ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/40' : 'border-indigo-200/50 dark:border-indigo-700/40'"
           class="p-4 rounded-2xl border-2 cursor-pointer text-center transition">
           <input type="radio" name="type" value="channel" x-model="type" class="hidden">
           <div class="text-3xl mb-1">📡</div>
-          <div class="font-bold text-slate-900 dark:text-slate-100">Канал</div>
+          <div class="font-bold text-slate-900 dark:text-slate-100">{{ t('cl_type_channel') }}</div>
         </label>
       </div>
 
       <div class="flex gap-3 mb-4">
         <input name="avatar" maxlength="2" value="💬" class="input-premium" style="width: 70px; text-align: center; font-size: 28px; padding: 6px;">
-        <input name="name" required placeholder="Название" class="input-premium" style="flex: 1;">
+        <input name="name" required placeholder="{{ t('cl_modal_name_ph') }}" class="input-premium" style="flex: 1;">
       </div>
 
       <label class="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/40 cursor-pointer hover:bg-indigo-50">
         <input type="checkbox" name="is_public" class="w-5 h-5 accent-indigo-600">
         <span class="text-sm">
-          <span class="font-bold text-slate-900 dark:text-slate-100">Публичный</span>
-          <span class="block text-xs text-slate-500 dark:text-slate-400">Любой сможет найти и присоединиться</span>
+          <span class="font-bold text-slate-900 dark:text-slate-100">{{ t('cl_public_h') }}</span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400">{{ t('cl_public_sub') }}</span>
         </span>
       </label>
 
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showNew = false" class="btn-premium-ghost">Отмена</button>
-        <button type="submit" class="btn-premium">Создать</button>
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">{{ t('tn_modal_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('tn_modal_create') }}</button>
       </div>
     </form>
   </div>

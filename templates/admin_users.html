@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-6 py-8" x-data="{ showNewUser: false, showNewGroup: false, resetUserId: null, resetUsername: '' }">
-  <a href="/dashboard" class="text-blue-600 text-sm">← Dashboard</a>
-  <h1 class="h-display text-3xl my-6">👥 Пользователи и группы</h1>
+  <a href="/dashboard" class="text-blue-600 dark:text-blue-300 text-sm">{{ t('au_back') }}</a>
+  <h1 class="h-display text-3xl my-6">{{ t('au_h') }}</h1>
 
-  <!-- Pokaz nogovo parolya posle sbrosa -->
+  <!-- Show new password after reset -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}
       {% if cat == 'password_reset' %}
-      <div class="glass rounded-2xl p-5 mb-5 border-2 border-orange-300 bg-orange-50/70" x-data="{ copied: false }">
+      <div class="glass rounded-2xl p-5 mb-5 border-2 border-orange-300 dark:border-orange-500/40 bg-orange-50/70 dark:bg-orange-900/20" x-data="{ copied: false }">
         <div class="flex items-start gap-3">
           <div class="text-3xl">🔑</div>
           <div class="flex-1">
-            <div class="font-bold text-slate-900 mb-1">Пароль сброшен</div>
-            <div class="font-mono text-base text-slate-800 select-all bg-white rounded-lg px-3 py-2 border border-orange-200">{{ msg }}</div>
-            <p class="text-xs text-orange-700 mt-2">⚠️ Этот пароль показан только сейчас. Скопируйте и передайте пользователю — после обновления страницы он исчезнет.</p>
+            <div class="font-bold text-slate-900 dark:text-slate-100 mb-1">{{ t('au_pwd_reset_h') }}</div>
+            <div class="font-mono text-base text-slate-800 dark:text-slate-100 select-all bg-white dark:bg-slate-800 rounded-lg px-3 py-2 border border-orange-200 dark:border-orange-500/40">{{ msg }}</div>
+            <p class="text-xs text-orange-700 dark:text-orange-300 mt-2">{{ t('au_pwd_reset_warn') }}</p>
           </div>
         </div>
       </div>
@@ -25,21 +25,22 @@
   <!-- Groups -->
   <div class="glass rounded-2xl p-6 mb-6">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">Группы</h2>
-      <button @click="showNewGroup = true" class="btn btn-primary text-sm">+ Группа</button>
+      <h2 class="text-xl font-semibold">{{ t('au_groups') }}</h2>
+      <button @click="showNewGroup = true" class="btn btn-primary text-sm">{{ t('au_new_group') }}</button>
     </div>
     <div class="grid md:grid-cols-3 gap-3">
       {% for g in groups %}
-      <div class="bg-blue-50 rounded-xl p-4 flex justify-between items-center">
+      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-4 flex justify-between items-center">
         <div>
           <div class="font-medium">{{ g.name }}</div>
         </div>
-        <form method="POST" action="/admin/group/{{ g.id }}/delete" onsubmit="return confirm('Удалить группу?')">
+        <form method="POST" action="/admin/group/{{ g.id }}/delete" onsubmit="return confirm({{ t('au_delete_group_confirm')|tojson }})">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
           <button class="text-red-500 text-sm">✕</button>
         </form>
       </div>
       {% else %}
-      <p class="text-sm text-gray-500 col-span-3">Нет групп</p>
+      <p class="text-sm text-gray-500 dark:text-slate-400 col-span-3">{{ t('au_no_groups') }}</p>
       {% endfor %}
     </div>
   </div>
@@ -47,21 +48,22 @@
   <!-- Teachers -->
   {% if current_user.role == 'admin' %}
   <div class="glass rounded-2xl p-6 mb-6">
-    <h2 class="text-xl font-semibold mb-4">Преподаватели и админы</h2>
+    <h2 class="text-xl font-semibold mb-4">{{ t('au_teachers_h') }}</h2>
     <table class="w-full text-sm">
-      <thead><tr class="text-left text-xs uppercase tracking-wider text-slate-500"><th class="p-2">Имя</th><th class="p-2">Username</th><th class="p-2">Роль</th><th class="p-2"></th></tr></thead>
+      <thead><tr class="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400"><th class="p-2">{{ t('au_th_name') }}</th><th class="p-2">{{ t('au_th_username') }}</th><th class="p-2">{{ t('au_th_role') }}</th><th class="p-2"></th></tr></thead>
       <tbody>
         {% for u in teachers %}
-        <tr class="border-t border-gray-100">
+        <tr class="border-t border-gray-100 dark:border-slate-700">
           <td class="p-2">{{ u.full_name or '—' }}</td>
           <td class="p-2 font-mono">{{ u.username }}</td>
-          <td class="p-2"><span class="badge {% if u.role == 'admin' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ u.role }}</span></td>
+          <td class="p-2"><span class="badge {% if u.role == 'admin' %}bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% endif %}">{{ u.role }}</span></td>
           <td class="p-2 text-right">
             <div class="inline-flex gap-2">
               {% if u.id != current_user.id %}
               <button type="button" @click="resetUserId = {{ u.id }}; resetUsername = '{{ u.username|e }}'"
-                class="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 text-xs font-semibold hover:bg-orange-100">🔑 Сбросить пароль</button>
-              <form method="POST" action="/admin/user/{{ u.id }}/delete" onsubmit="return confirm('Удалить?')" class="inline">
+                class="px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold hover:bg-orange-100">{{ t('au_pwd_reset_btn') }}</button>
+              <form method="POST" action="/admin/user/{{ u.id }}/delete" onsubmit="return confirm({{ t('au_delete_confirm')|tojson }})" class="inline">
+                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
                 <button class="text-red-500">✕</button>
               </form>
               {% endif %}
@@ -77,14 +79,14 @@
   <!-- Students -->
   <div class="glass rounded-2xl p-6 mb-6">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">Студенты</h2>
-      <button @click="showNewUser = true" class="btn btn-primary text-sm">+ Пользователь</button>
+      <h2 class="text-xl font-semibold">{{ t('au_students_h') }}</h2>
+      <button @click="showNewUser = true" class="btn btn-primary text-sm">{{ t('au_new_user') }}</button>
     </div>
     <table class="w-full text-sm">
-      <thead><tr class="text-left text-xs uppercase tracking-wider text-slate-500"><th class="p-2">Имя</th><th class="p-2">Username</th><th class="p-2">Группы</th><th class="p-2">XP</th><th class="p-2"></th></tr></thead>
+      <thead><tr class="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400"><th class="p-2">{{ t('au_th_name') }}</th><th class="p-2">{{ t('au_th_username') }}</th><th class="p-2">{{ t('au_th_groups') }}</th><th class="p-2">{{ t('au_th_xp') }}</th><th class="p-2"></th></tr></thead>
       <tbody>
         {% for s in students %}
-        <tr class="border-t border-gray-100">
+        <tr class="border-t border-gray-100 dark:border-slate-700">
           <td class="p-2">{{ s.full_name or '—' }}</td>
           <td class="p-2 font-mono">{{ s.username }}</td>
           <td class="p-2">{{ s.groups or '—' }}</td>
@@ -92,9 +94,10 @@
           <td class="p-2 text-right">
             <div class="inline-flex gap-2">
               <button type="button" @click="resetUserId = {{ s.id }}; resetUsername = '{{ s.username|e }}'"
-                class="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 text-xs font-semibold hover:bg-orange-100">🔑 Сбросить пароль</button>
+                class="px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold hover:bg-orange-100">{{ t('au_pwd_reset_btn') }}</button>
               {% if current_user.role == 'admin' %}
-              <form method="POST" action="/admin/user/{{ s.id }}/delete" onsubmit="return confirm('Удалить?')" class="inline">
+              <form method="POST" action="/admin/user/{{ s.id }}/delete" onsubmit="return confirm({{ t('au_delete_confirm')|tojson }})" class="inline">
+                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
                 <button class="text-red-500">✕</button>
               </form>
               {% endif %}
@@ -102,7 +105,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="5" class="text-center py-4 text-gray-500">Нет студентов</td></tr>
+        <tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-slate-400">{{ t('au_no_students') }}</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -110,39 +113,41 @@
 
   <!-- New user modal -->
   <div x-show="showNewUser" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showNewUser = false" x-cloak>
-    <form method="POST" action="/admin/user/new" class="bg-white rounded-3xl p-7 max-w-md w-full space-y-4">
-      <h3 class="text-xl font-semibold">+ Новый пользователь</h3>
-      <input name="full_name" placeholder="ФИО (опционально)" class="w-full px-4 py-2.5 rounded-xl border border-gray-200">
-      <input name="username" required minlength="3" placeholder="Username" class="w-full px-4 py-2.5 rounded-xl border border-gray-200">
-      <input type="password" name="password" required minlength="4" placeholder="Пароль" class="w-full px-4 py-2.5 rounded-xl border border-gray-200">
-      <select name="role" class="w-full px-4 py-2.5 rounded-xl border border-gray-200">
-        <option value="student">Студент</option>
+    <form method="POST" action="/admin/user/new" class="bg-white dark:bg-slate-800 rounded-3xl p-7 max-w-md w-full space-y-4">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="text-xl font-semibold">{{ t('au_new_user_h') }}</h3>
+      <input name="full_name" placeholder="{{ t('au_full_name_ph') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
+      <input name="username" required minlength="3" placeholder="{{ t('au_th_username') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
+      <input type="password" name="password" required minlength="4" placeholder="{{ t('au_password_ph') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
+      <select name="role" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
+        <option value="student">{{ t('au_role_student') }}</option>
         {% if current_user.role == 'admin' %}
-        <option value="teacher">Преподаватель</option>
-        <option value="admin">Администратор</option>
+        <option value="teacher">{{ t('au_role_teacher') }}</option>
+        <option value="admin">{{ t('au_role_admin') }}</option>
         {% endif %}
       </select>
-      <select name="group_id" class="w-full px-4 py-2.5 rounded-xl border border-gray-200">
-        <option value="">— Без группы —</option>
+      <select name="group_id" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
+        <option value="">{{ t('au_no_group') }}</option>
         {% for g in groups %}
         <option value="{{ g.id }}">{{ g.name }}</option>
         {% endfor %}
       </select>
       <div class="flex gap-2">
-        <button type="submit" class="btn btn-primary flex-1 justify-center">Создать</button>
-        <button type="button" @click="showNewUser = false" class="btn btn-ghost">Отмена</button>
+        <button type="submit" class="btn btn-primary flex-1 justify-center">{{ t('au_create') }}</button>
+        <button type="button" @click="showNewUser = false" class="btn btn-ghost">{{ t('au_cancel') }}</button>
       </div>
     </form>
   </div>
 
   <!-- New group modal -->
   <div x-show="showNewGroup" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showNewGroup = false" x-cloak>
-    <form method="POST" action="/admin/group/new" class="bg-white rounded-3xl p-7 max-w-md w-full space-y-4">
-      <h3 class="text-xl font-semibold">+ Новая группа</h3>
-      <input name="name" required placeholder="Название группы" class="w-full px-4 py-2.5 rounded-xl border border-gray-200">
+    <form method="POST" action="/admin/group/new" class="bg-white dark:bg-slate-800 rounded-3xl p-7 max-w-md w-full space-y-4">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="text-xl font-semibold">{{ t('au_new_group_h') }}</h3>
+      <input name="name" required placeholder="{{ t('au_group_name_ph') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
       <div class="flex gap-2">
-        <button type="submit" class="btn btn-primary flex-1 justify-center">Создать</button>
-        <button type="button" @click="showNewGroup = false" class="btn btn-ghost">Отмена</button>
+        <button type="submit" class="btn btn-primary flex-1 justify-center">{{ t('au_create') }}</button>
+        <button type="button" @click="showNewGroup = false" class="btn btn-ghost">{{ t('au_cancel') }}</button>
       </div>
     </form>
   </div>
@@ -150,30 +155,29 @@
   <!-- Reset password modal -->
   <div x-show="resetUserId !== null" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="resetUserId = null" x-cloak>
     <form method="POST" :action="`/admin/user/${resetUserId}/reset-password`"
-      class="bg-white rounded-3xl p-7 max-w-md w-full space-y-4">
+      class="bg-white dark:bg-slate-800 rounded-3xl p-7 max-w-md w-full space-y-4">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <div class="flex items-center gap-3">
         <div class="text-4xl">🔑</div>
         <div>
-          <h3 class="text-xl font-semibold">Сброс пароля</h3>
-          <p class="text-sm text-slate-600">Пользователь: <b>@<span x-text="resetUsername"></span></b></p>
+          <h3 class="text-xl font-semibold">{{ t('au_reset_h') }}</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300">{{ t('au_reset_user') }} <b>@<span x-text="resetUsername"></span></b></p>
         </div>
       </div>
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-        ⚠️ Старые пароли узнать невозможно (хранятся в зашифрованном виде).
-        Вы можете задать новый пароль или сгенерировать случайный.
+      <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-500/40 rounded-xl p-4 text-sm text-amber-800 dark:text-amber-200">
+        {{ t('au_reset_warn') }}
       </div>
       <div>
-        <label class="text-sm text-slate-700 font-semibold mb-1 block">Новый пароль (или оставьте пустым для генерации)</label>
+        <label class="text-sm text-slate-700 dark:text-slate-200 font-semibold mb-1 block">{{ t('au_reset_label') }}</label>
         <input type="text" name="new_password" minlength="4" maxlength="64"
-          placeholder="Например: petya2026 (или пусто = автогенерация 8 симв.)"
-          class="w-full px-4 py-2.5 rounded-xl border border-gray-200 font-mono">
+          placeholder="{{ t('au_reset_ph') }}"
+          class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40 font-mono">
       </div>
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="resetUserId = null" class="btn btn-ghost">Отмена</button>
+        <button type="button" @click="resetUserId = null" class="btn btn-ghost">{{ t('au_cancel') }}</button>
         <button type="submit" class="btn"
           style="background: linear-gradient(135deg,#f59e0b,#ef4444); color: white;">
-          🔑 Сбросить пароль
+          {{ t('au_reset_btn') }}
         </button>
       </div>
     </form>

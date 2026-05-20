@@ -6,30 +6,35 @@
 
   <div class="relative z-10">
     <div class="text-8xl mb-5">🔒</div>
-    <h2 class="section-h">Профиль скрыт</h2>
+    <h2 class="section-h">{{ t('pv_h') }}</h2>
     <p class="text-slate-600 dark:text-slate-300 mb-6 mt-3">
-      @{{ target.username }} не открывает свой профиль публично.
+      {{ t('pv_sub_pre') }}{{ target.username }} {{ t('pv_sub_post') }}
     </p>
     {% if target.allow_friend_requests %}
-    <button onclick="sendRequest()" class="btn-premium">👋 Отправить запрос в друзья</button>
+    <button onclick="sendRequest()" class="btn-premium">{{ t('pv_send_request') }}</button>
     {% endif %}
     <div class="mt-6">
-      <a href="/leaderboard" class="text-indigo-600 dark:text-indigo-300 hover:underline text-sm font-semibold">← К лидерборду</a>
+      <a href="/leaderboard" class="text-indigo-600 dark:text-indigo-300 hover:underline text-sm font-semibold">{{ t('pv_back') }}</a>
     </div>
   </div>
 </div>
 
 {% if target.allow_friend_requests %}
 <script>
+const PV_T = {
+  request_pre: {{ t('pv_request_sent_alert_pre')|tojson }},
+  request_post: {{ t('pv_request_sent_alert_post')|tojson }},
+  error: {{ t('pv_error')|tojson }},
+};
 async function sendRequest() {
   const fd = new FormData();
   fd.append('_csrf', '{{ csrf_token() }}');
   const r = await fetch('/friend/{{ target.username }}/request', { method: 'POST', body: fd });
   const data = await r.json();
   if (data.ok) {
-    alert('Запрос отправлен. Если @{{ target.username }} примет — сможете видеть его профиль.');
+    alert(PV_T.request_pre + '{{ target.username }} ' + PV_T.request_post);
   } else {
-    alert(data.msg || 'Ошибка');
+    alert(data.msg || PV_T.error);
   }
 }
 </script>

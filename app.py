@@ -3810,7 +3810,7 @@ def tournament_view(tournament_id):
 
     conn.close()
     return render_template("tournament_view.html",
-        t=dict(t), players=players, rounds=rounds, is_player=is_player,
+        tournament=dict(t), players=players, rounds=rounds, is_player=is_player,
         my_match=my_match, current_uid=user["id"])
 
 

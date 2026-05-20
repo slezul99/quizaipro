@@ -6,8 +6,8 @@
 
   <div class="relative z-10">
     <div class="text-7xl mb-5">🎮</div>
-    <h1 class="section-h">Присоединиться к тесту</h1>
-    <p class="text-slate-600 dark:text-slate-300 mb-8 mt-3">Введите 6-значный код от учителя</p>
+    <h1 class="section-h">{{ t('lj_h') }}</h1>
+    <p class="text-slate-600 dark:text-slate-300 mb-8 mt-3">{{ t('lj_sub') }}</p>
 
     <form method="POST" action="/live/join" class="glass-premium" style="padding: 2rem;">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
@@ -17,11 +17,11 @@
         style="font-size: 32px; text-align: center; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; font-family: 'Space Grotesk', monospace; padding: 18px;"
         autofocus autocomplete="off">
       <button type="submit" class="btn-premium w-full justify-center mt-5" style="font-size: 16px; padding: 14px 28px;">
-        ▶ Войти
+        {{ t('lj_enter') }}
       </button>
     </form>
 
-    <a href="/dashboard" class="text-indigo-600 dark:text-indigo-300 text-sm hover:underline inline-block mt-6 font-semibold">← На главную</a>
+    <a href="/dashboard" class="text-indigo-600 dark:text-indigo-300 text-sm hover:underline inline-block mt-6 font-semibold">{{ t('lj_back') }}</a>
   </div>
 </div>
 {% endblock %}

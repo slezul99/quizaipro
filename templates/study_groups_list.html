@@ -7,17 +7,17 @@
   <div class="relative z-10">
     <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>🎓 Группы</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('sg_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-        <h1 class="section-h">Учебные группы</h1>
-        <p class="section-sub">Учитесь вместе с друзьями · общая библиотека · общая статистика · общий чат</p>
+        <h1 class="section-h">{{ t('sg_h') }}</h1>
+        <p class="section-sub">{{ t('sg_sub') }}</p>
       </div>
-      <button @click="showNew = true" class="btn-premium">+ Создать группу</button>
+      <button @click="showNew = true" class="btn-premium">{{ t('sg_create') }}</button>
     </div>
 
     {% if my_groups %}
     <div class="mb-8">
-      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">📚 Мои группы</h2>
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">{{ t('sg_my_h') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {% for g in my_groups %}
         <a href="/study-group/{{ g.id }}" class="glass-premium" style="padding: 1.25rem;">
@@ -27,9 +27,9 @@
               <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ g.name }}</h3>
               <p class="text-xs text-slate-500 dark:text-slate-400">@{{ g.owner_username }}</p>
             </div>
-            {% if not g.is_public %}<span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">🔒 Закрытая</span>{% endif %}
+            {% if not g.is_public %}<span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">{{ t('sg_private') }}</span>{% endif %}
           </div>
-          <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">👥 {{ g.members_count }} · 📚 {{ g.decks_count }} колод</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">👥 {{ g.members_count }} · 📚 {{ g.decks_count }} {{ t('sg_decks') }}</div>
         </a>
         {% endfor %}
       </div>
@@ -38,7 +38,7 @@
 
     {% if public_groups %}
     <div>
-      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">🌐 Публичные группы</h2>
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">{{ t('sg_public_h') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for g in public_groups %}
         <a href="/study-group/{{ g.id }}" class="glass-premium" style="padding: 1.25rem;">
@@ -46,11 +46,11 @@
             <span class="text-3xl">{{ g.avatar }}</span>
             <div class="flex-1 min-w-0">
               <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ g.name }}</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ g.description or 'Без описания' }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ g.description or t('sg_no_desc') }}</p>
             </div>
           </div>
           <div class="text-xs text-slate-600 dark:text-slate-300 flex justify-between mt-2">
-            <span>👥 {{ g.members_count }} участников</span>
+            <span>👥 {{ g.members_count }} {{ t('sg_members') }}</span>
             <span>📚 {{ g.decks_count }}</span>
           </div>
         </a>
@@ -62,8 +62,8 @@
     {% if not my_groups and not public_groups %}
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">🎓</div>
-      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">Нет учебных групп</p>
-      <button @click="showNew = true" class="btn-premium">+ Создать первую</button>
+      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">{{ t('sg_empty') }}</p>
+      <button @click="showNew = true" class="btn-premium">{{ t('sg_create_first') }}</button>
     </div>
     {% endif %}
   </div>
@@ -72,27 +72,27 @@
   <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
     <form method="POST" action="/study-group/new" class="glass-premium max-w-md w-full scale-in" style="padding: 1.75rem;">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="section-h" style="font-size: 1.5rem;">🎓 Новая учебная группа</h3>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-2">Объединитесь с друзьями для совместного изучения</p>
+      <h3 class="section-h" style="font-size: 1.5rem;">{{ t('sg_modal_h') }}</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-2">{{ t('sg_modal_sub') }}</p>
 
       <div class="flex gap-3 mb-4">
         <input name="avatar" maxlength="2" value="🎓" class="input-premium" style="width: 70px; text-align: center; font-size: 28px; padding: 6px;">
-        <input name="name" required maxlength="60" placeholder="Например: «Английский B1»" class="input-premium" style="flex: 1;">
+        <input name="name" required maxlength="60" placeholder="{{ t('sg_modal_name_ph') }}" class="input-premium" style="flex: 1;">
       </div>
 
-      <textarea name="description" rows="2" maxlength="300" placeholder="Описание (необязательно)" class="input-premium mb-4" style="resize: none;"></textarea>
+      <textarea name="description" rows="2" maxlength="300" placeholder="{{ t('sg_modal_desc_ph') }}" class="input-premium mb-4" style="resize: none;"></textarea>
 
       <label class="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/40 cursor-pointer">
         <input type="checkbox" name="is_public" checked class="w-5 h-5 accent-indigo-600">
         <span class="text-sm">
-          <span class="font-bold text-slate-900 dark:text-slate-100">🌐 Публичная</span>
-          <span class="block text-xs text-slate-500 dark:text-slate-400">Все могут найти и присоединиться. Иначе — только по приглашению.</span>
+          <span class="font-bold text-slate-900 dark:text-slate-100">{{ t('sg_modal_public_h') }}</span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400">{{ t('sg_modal_public_sub') }}</span>
         </span>
       </label>
 
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showNew = false" class="btn-premium-ghost">Отмена</button>
-        <button type="submit" class="btn-premium">Создать</button>
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">{{ t('tn_modal_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('tn_modal_create') }}</button>
       </div>
     </form>
   </div>

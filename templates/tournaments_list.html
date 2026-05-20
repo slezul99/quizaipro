@@ -9,29 +9,29 @@
   <div class="relative z-10">
     <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>🏆 Турниры</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('tn_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-        <h1 class="section-h">Турниры</h1>
-        <p class="section-sub">4-16 игроков · единичный нокаут · победитель +200 XP</p>
+        <h1 class="section-h">{{ t('tn_h') }}</h1>
+        <p class="section-sub">{{ t('tn_sub') }}</p>
       </div>
-      <button @click="showNew = true" class="btn-premium">+ Создать турнир</button>
+      <button @click="showNew = true" class="btn-premium">{{ t('tn_create') }}</button>
     </div>
 
     {% if open_tours %}
     <div class="mb-8">
-      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">🎯 Открытая регистрация</h2>
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">{{ t('tn_open_h') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {% for t in open_tours %}
-        <a href="/tournament/{{ t.id }}" class="glass-premium" style="padding: 1.25rem;">
+        {% for tn in open_tours %}
+        <a href="/tournament/{{ tn.id }}" class="glass-premium" style="padding: 1.25rem;">
           <div class="flex items-start gap-3 mb-2">
-            <span class="text-3xl">{{ t.deck_icon }}</span>
+            <span class="text-3xl">{{ tn.deck_icon }}</span>
             <div class="flex-1 min-w-0">
-              <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ t.name }}</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400">@{{ t.creator_username }} · {{ t.deck_name }}</p>
+              <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ tn.name }}</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">@{{ tn.creator_username }} · {{ tn.deck_name }}</p>
             </div>
-            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t.players_count }}/{{ t.size }}</span>
+            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ tn.players_count }}/{{ tn.size }}</span>
           </div>
-          <div class="text-xs text-slate-600 dark:text-slate-300 mt-2">⚔️ {{ t.size }} игроков · бракет</div>
+          <div class="text-xs text-slate-600 dark:text-slate-300 mt-2">⚔️ {{ tn.size }} {{ t('tn_players') }} · {{ t('tn_bracket') }}</div>
         </a>
         {% endfor %}
       </div>
@@ -40,17 +40,17 @@
 
     {% if my_tours %}
     <div>
-      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">⚔️ Мои турниры</h2>
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 mb-3" style="font-family: 'Space Grotesk', sans-serif;">{{ t('tn_my_h') }}</h2>
       <div class="space-y-2">
-        {% for t in my_tours %}
-        <a href="/tournament/{{ t.id }}" class="glass-premium flex items-center gap-3" style="padding: 1rem 1.25rem;">
-          <span class="text-2xl">{{ t.deck_icon }}</span>
+        {% for tn in my_tours %}
+        <a href="/tournament/{{ tn.id }}" class="glass-premium flex items-center gap-3" style="padding: 1rem 1.25rem;">
+          <span class="text-2xl">{{ tn.deck_icon }}</span>
           <div class="flex-1 min-w-0">
-            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ t.name }}</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">{{ t.deck_name }} · {{ t.size }} игроков</div>
+            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ tn.name }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">{{ tn.deck_name }} · {{ tn.size }} {{ t('tn_players') }}</div>
           </div>
-          <span class="badge {% if t.status == 'open' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% elif t.status == 'running' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300{% else %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300{% endif %}">
-            {% if t.status == 'open' %}Открыт{% elif t.status == 'running' %}Идёт{% else %}Завершён{% endif %}
+          <span class="badge {% if tn.status == 'open' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% elif tn.status == 'running' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300{% else %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300{% endif %}">
+            {% if tn.status == 'open' %}{{ t('tn_status_open') }}{% elif tn.status == 'running' %}{{ t('tn_status_running') }}{% else %}{{ t('tn_status_finished') }}{% endif %}
           </span>
         </a>
         {% endfor %}
@@ -61,8 +61,8 @@
     {% if not open_tours and not my_tours %}
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">🏆</div>
-      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">Пока нет турниров</p>
-      <button @click="showNew = true" class="btn-premium">+ Создать первый</button>
+      <p class="text-slate-600 dark:text-slate-300 mb-5 text-lg">{{ t('tn_empty') }}</p>
+      <button @click="showNew = true" class="btn-premium">{{ t('tn_create_first') }}</button>
     </div>
     {% endif %}
   </div>
@@ -71,33 +71,33 @@
   <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
     <form method="POST" action="/tournament/new" class="glass-premium max-w-md w-full scale-in" style="padding: 1.75rem;">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="section-h" style="font-size: 1.5rem;">🏆 Новый турнир</h3>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-2">Один-на-один матчи на выбывание. Финалист +200 XP.</p>
+      <h3 class="section-h" style="font-size: 1.5rem;">{{ t('tn_modal_h') }}</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 mt-2">{{ t('tn_modal_sub') }}</p>
 
-      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Название</label>
-      <input name="name" required maxlength="60" placeholder="Английский Premier" class="input-premium mb-4">
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('tn_modal_name') }}</label>
+      <input name="name" required maxlength="60" placeholder="{{ t('tn_modal_name_ph') }}" class="input-premium mb-4">
 
-      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Колода</label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('tn_modal_deck') }}</label>
       <select name="deck_id" required class="input-premium mb-4">
-        <option value="">— Выберите колоду —</option>
+        <option value="">{{ t('tn_modal_deck_ph') }}</option>
         <template x-for="d in decks" :key="d.id">
           <option :value="d.id" x-text="d.icon + ' ' + d.name + ' (' + d.cnt + ')'"></option>
         </template>
       </select>
 
-      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">Размер</label>
+      <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('tn_modal_size') }}</label>
       <div class="grid grid-cols-3 gap-2 mb-5">
         {% for s in [4, 8, 16] %}
         <label class="cursor-pointer">
           <input type="radio" name="size" value="{{ s }}" {% if loop.first %}checked{% endif %} class="hidden peer">
-          <div class="py-3 rounded-xl border-2 border-indigo-200/50 dark:border-indigo-700/40 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/40 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 text-center font-bold transition">{{ s }} игроков</div>
+          <div class="py-3 rounded-xl border-2 border-indigo-200/50 dark:border-indigo-700/40 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/40 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 text-center font-bold transition">{{ s }} {{ t('tn_modal_size_unit') }}</div>
         </label>
         {% endfor %}
       </div>
 
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showNew = false" class="btn-premium-ghost">Отмена</button>
-        <button type="submit" class="btn-premium">Создать</button>
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">{{ t('tn_modal_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('tn_modal_create') }}</button>
       </div>
     </form>
   </div>

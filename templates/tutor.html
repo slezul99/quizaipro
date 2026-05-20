@@ -23,11 +23,11 @@
   <div class="relative z-10">
     <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
       <div>
-        <span class="section-badge"><span class="badge-dot"></span>🤖 AI</span>
-        <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.3rem); margin-top: 0.5rem;">AI Tutor</h1>
-        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Персональный репетитор · спросите что угодно</p>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('tu_badge') }}</span>
+        <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.3rem); margin-top: 0.5rem;">{{ t('tu_h') }}</h1>
+        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ t('tu_sub') }}</p>
       </div>
-      <button @click="clearHistory()" class="btn-premium-danger">🗑 Очистить</button>
+      <button @click="clearHistory()" class="btn-premium-danger">{{ t('tu_clear') }}</button>
     </div>
 
     <div class="glass-premium flex flex-col" style="height: calc(100vh - 220px); min-height: 500px; padding: 0;">
@@ -35,9 +35,9 @@
         <!-- Welcome -->
         <div x-show="messages.length === 0" class="text-center py-10">
           <div class="text-7xl mb-4">🤖</div>
-          <h3 class="section-h" style="font-size: 1.5rem;">Привет! Я ваш AI-репетитор</h3>
+          <h3 class="section-h" style="font-size: 1.5rem;">{{ t('tu_welcome_h') }}</h3>
           <p class="text-slate-600 dark:text-slate-300 max-w-md mx-auto text-sm mb-6 mt-2">
-            Спросите что-то непонятное, попросите примеры, объяснение правила или просто помощь с темой
+            {{ t('tu_welcome_sub') }}
           </p>
           <div class="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
             <template x-for="s in suggestions" :key="s">
@@ -61,7 +61,7 @@
           </div>
         </template>
 
-        <!-- Typing indicator -->
+        <!-- Typing -->
         <div x-show="loading" class="tutor-msg flex gap-3">
           <div class="flex-shrink-0 text-xl w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40">🤖</div>
           <div class="bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 rounded-2xl p-4 typing-dots text-amber-600 dark:text-amber-300">
@@ -73,7 +73,7 @@
       <form @submit.prevent="send()" class="border-t border-slate-200/40 dark:border-slate-700/40 p-3 flex gap-2">
         <textarea x-model="newMsg" @keydown.enter.prevent="if (!$event.shiftKey) send()"
           rows="1" :disabled="loading"
-          placeholder="Задайте вопрос... (Enter — отправить, Shift+Enter — новая строка)"
+          placeholder="{{ t('tu_input_ph') }}"
           class="input-premium" style="flex: 1; padding: 10px 14px; resize: none;"></textarea>
         <button type="submit" :disabled="!newMsg.trim() || loading"
           :class="(!newMsg.trim() || loading) ? 'opacity-40 cursor-not-allowed' : ''"
@@ -83,29 +83,32 @@
 
     {% if not ai_available %}
     <div class="mt-4 glass-premium text-center text-sm text-amber-700 dark:text-amber-200" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(255,255,255,0.85)); border-color: rgba(245,158,11,0.4); padding: 1rem;">
-      ⚠️ AI временно недоступен. Попробуйте позже.
+      {{ t('tu_unavail') }}
     </div>
     {% endif %}
   </div>
 </div>
 
 <script>
+const TU_T = {
+  clear_confirm: {{ t('tu_clear_confirm')|tojson }},
+  error: {{ t('tu_error')|tojson }},
+  net_error: {{ t('tu_net_error')|tojson }},
+};
 function tutorApp() {
   return {
     messages: [],
     newMsg: '',
     loading: false,
     suggestions: [
-      'Объясни Present Perfect простыми словами',
-      'Дай примеры на passive voice',
-      'В чем разница между some и any?',
-      'Помоги составить план изучения английского',
-      'Как лучше запоминать новые слова?',
+      {{ t('tu_sug_1')|tojson }},
+      {{ t('tu_sug_2')|tojson }},
+      {{ t('tu_sug_3')|tojson }},
+      {{ t('tu_sug_4')|tojson }},
+      {{ t('tu_sug_5')|tojson }},
     ],
 
-    init() {
-      this.scrollBottom();
-    },
+    init() { this.scrollBottom(); },
 
     async send() {
       if (!this.newMsg.trim() || this.loading) return;
@@ -122,17 +125,17 @@ function tutorApp() {
         if (data.ok) {
           this.messages.push({ role: 'assistant', content: data.answer });
         } else {
-          this.messages.push({ role: 'assistant', content: '⚠️ ' + (data.msg || 'Ошибка') });
+          this.messages.push({ role: 'assistant', content: '⚠️ ' + (data.msg || TU_T.error) });
         }
       } catch (e) {
-        this.messages.push({ role: 'assistant', content: '⚠️ Ошибка сети' });
+        this.messages.push({ role: 'assistant', content: TU_T.net_error });
       }
       this.loading = false;
       this.$nextTick(() => this.scrollBottom());
     },
 
     async clearHistory() {
-      if (!confirm('Очистить весь чат?')) return;
+      if (!confirm(TU_T.clear_confirm)) return;
       const fd = new FormData();
       await fetch('/api/tutor/clear', { method: 'POST', body: fd });
       this.messages = [];

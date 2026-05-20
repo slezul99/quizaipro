@@ -6,11 +6,11 @@
   <div class="relative z-10">
     <div class="flex justify-between items-end mb-8 flex-wrap gap-3">
       <div class="section-header left" style="margin-bottom: 0;">
-        <span class="section-badge"><span class="badge-dot"></span>📡 Каналы</span>
+        <span class="section-badge"><span class="badge-dot"></span>{{ t('ch_badge') }}</span>
         <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-        <h1 class="section-h">Каналы</h1>
+        <h1 class="section-h">{{ t('ch_h') }}</h1>
       </div>
-      <a href="/chats" class="btn-premium-ghost">← К чатам</a>
+      <a href="/chats" class="btn-premium-ghost">{{ t('ch_back_chats') }}</a>
     </div>
 
     {% if channels %}
@@ -21,7 +21,7 @@
           <span class="text-4xl">{{ c.avatar }}</span>
           <div class="flex-1 min-w-0">
             <h3 class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ c.name }}</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">📡 Канал · {{ c.member_count }} подписчиков</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">📡 {{ t('cl_type_channel') }} · {{ c.member_count }} {{ t('ch_subscribers') }}</p>
           </div>
         </div>
       </a>
@@ -30,7 +30,7 @@
     {% else %}
     <div class="text-center py-16 glass-premium">
       <div class="text-7xl mb-4">📡</div>
-      <p class="text-slate-600 dark:text-slate-300">Пока нет публичных каналов</p>
+      <p class="text-slate-600 dark:text-slate-300">{{ t('ch_empty') }}</p>
     </div>
     {% endif %}
   </div>

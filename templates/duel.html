@@ -2,20 +2,20 @@
 {% block content %}
 <div class="max-w-3xl mx-auto px-6 py-8" x-data="duelApp()" x-init="init()">
 
-  <!-- PENDING (zhdu prinyatiyu) -->
+  <!-- PENDING -->
   <div x-show="state.status === 'pending'" x-transition>
     <div x-show="state.is_p1" class="text-center py-12">
       <div class="text-7xl mb-4 pulse-soft">⏳</div>
-      <h2 class="h-display text-3xl text-slate-900 mb-2">Ожидаем @<span x-text="state.p2_username"></span></h2>
-      <p class="text-slate-600">Вы вызвали на дуэль. Ждём ответа.</p>
+      <h2 class="h-display text-3xl text-slate-900 dark:text-slate-100 mb-2">{{ t('du_waiting_p1_pre') }}<span x-text="state.p2_username"></span></h2>
+      <p class="text-slate-600 dark:text-slate-300">{{ t('du_waiting_p1_sub') }}</p>
     </div>
     <div x-show="!state.is_p1" class="text-center py-12 glass rounded-3xl">
       <div class="text-7xl mb-4">⚔️</div>
-      <h2 class="h-display text-3xl text-slate-900 mb-2">@<span x-text="state.p1_username"></span> вызвал вас на дуэль!</h2>
-      <p class="text-slate-600 mb-6">«<span x-text="state.deck_name"></span>» · <span x-text="state.question_count"></span> вопросов</p>
+      <h2 class="h-display text-3xl text-slate-900 dark:text-slate-100 mb-2">{{ t('du_invite_h_pre') }}<span x-text="state.p1_username"></span> {{ t('du_invite_h_post') }}</h2>
+      <p class="text-slate-600 dark:text-slate-300 mb-6">«<span x-text="state.deck_name"></span>» · <span x-text="state.question_count"></span> {{ t('du_invite_questions') }}</p>
       <div class="flex gap-3 justify-center">
-        <button @click="accept()" class="btn btn-success">⚔️ Принять</button>
-        <button @click="decline()" class="btn btn-ghost">Отклонить</button>
+        <button @click="accept()" class="btn btn-success">{{ t('du_accept_btn') }}</button>
+        <button @click="decline()" class="btn btn-ghost">{{ t('du_decline_btn') }}</button>
       </div>
     </div>
   </div>
@@ -24,49 +24,49 @@
   <div x-show="state.status === 'running'" x-transition>
     <div class="grid grid-cols-2 gap-3 mb-4">
       <div class="glass rounded-2xl p-3 text-center" :class="state.is_p1 ? 'border-2 border-indigo-400' : ''">
-        <div class="text-xs text-slate-500">Вы</div>
-        <div class="font-bold text-2xl text-indigo-600" x-text="state.is_p1 ? state.p1_score : state.p2_score"></div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">{{ t('du_you') }}</div>
+        <div class="font-bold text-2xl text-indigo-600 dark:text-indigo-300" x-text="state.is_p1 ? state.p1_score : state.p2_score"></div>
       </div>
       <div class="glass rounded-2xl p-3 text-center" :class="!state.is_p1 ? 'border-2 border-indigo-400' : ''">
-        <div class="text-xs text-slate-500" x-text="state.is_p1 ? '@'+state.p2_username : '@'+state.p1_username"></div>
-        <div class="font-bold text-2xl text-slate-700" x-text="state.is_p1 ? state.p2_score : state.p1_score"></div>
+        <div class="text-xs text-slate-500 dark:text-slate-400" x-text="state.is_p1 ? '@'+state.p2_username : '@'+state.p1_username"></div>
+        <div class="font-bold text-2xl text-slate-700 dark:text-slate-200" x-text="state.is_p1 ? state.p2_score : state.p1_score"></div>
       </div>
     </div>
 
-    <div class="flex justify-between text-sm text-slate-600 mb-2">
-      <span>Вопрос <span x-text="state.current_idx + 1"></span> из <span x-text="state.question_count"></span></span>
-      <span class="badge bg-indigo-100 text-indigo-700">⏱ <span x-text="timeLeft"></span>с</span>
+    <div class="flex justify-between text-sm text-slate-600 dark:text-slate-300 mb-2">
+      <span>{{ t('du_q_n_pre') }} <span x-text="state.current_idx + 1"></span> {{ t('du_q_n_mid') }} <span x-text="state.question_count"></span></span>
+      <span class="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">⏱ <span x-text="timeLeft"></span>{{ t('lp_time_unit') }}</span>
     </div>
     <div class="progress-bar h-2 mb-5">
       <div :style="`width: ${(state.current_idx / state.question_count * 100)}%`"></div>
     </div>
 
     <div class="glass rounded-3xl p-6">
-      <div class="text-xl font-bold text-slate-900 mb-5 text-center" x-text="state.question?.front"></div>
+      <div class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-5 text-center" x-text="state.question?.front"></div>
 
       <div class="space-y-2">
         <template x-for="opt in state.question?.options || []" :key="opt.letter">
           <button @click="answer(opt.letter)"
             :class="{
-              'border-blue-500 bg-blue-50': state.question?.my_answer === opt.letter,
-              'border-gray-200 hover:border-indigo-300': !state.question?.my_answer
+              'border-blue-500 bg-blue-50 dark:bg-blue-900/30': state.question?.my_answer === opt.letter,
+              'border-gray-200 dark:border-slate-700 hover:border-indigo-300': !state.question?.my_answer
             }"
             class="w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition cursor-pointer">
-            <span :class="state.question?.my_answer === opt.letter ? 'bg-blue-500 text-white' : 'bg-gray-100'"
+            <span :class="state.question?.my_answer === opt.letter ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-slate-700 dark:text-slate-200'"
               class="w-9 h-9 rounded-full flex items-center justify-center font-bold transition" x-text="opt.letter"></span>
             <span class="flex-1 font-medium" x-text="opt.text"></span>
           </button>
         </template>
         <div x-show="!state.question?.options || state.question.options.length === 0"
-          class="text-center text-amber-600 py-4 bg-amber-50 rounded-2xl">
-          ⚠️ Нет вариантов в этой карте
+          class="text-center text-amber-600 dark:text-amber-300 py-4 bg-amber-50 dark:bg-amber-900/30 rounded-2xl">
+          {{ t('du_no_options') }}
         </div>
       </div>
 
       <div x-show="state.question?.my_answer" x-transition class="mt-5 text-center">
-        <div x-show="state.question?.my_correct" class="text-emerald-600 font-bold text-lg">✓ Правильно!</div>
-        <div x-show="!state.question?.my_correct" class="text-red-600 font-bold text-lg">✗ Неправильно</div>
-        <div x-show="!state.question?.opp_answered" class="text-sm text-slate-500 mt-2">⏳ Ждём опонента...</div>
+        <div x-show="state.question?.my_correct" class="text-emerald-600 dark:text-emerald-300 font-bold text-lg">{{ t('du_correct') }}</div>
+        <div x-show="!state.question?.my_correct" class="text-red-600 dark:text-red-300 font-bold text-lg">{{ t('du_wrong') }}</div>
+        <div x-show="!state.question?.opp_answered" class="text-sm text-slate-500 dark:text-slate-400 mt-2">{{ t('du_wait_opp') }}</div>
       </div>
     </div>
   </div>
@@ -78,36 +78,40 @@
       <span x-show="state.winner_id && state.winner_id !== {{ current_user.id }}">😔</span>
       <span x-show="!state.winner_id">🤝</span>
     </div>
-    <h2 class="h-display text-4xl text-slate-900 mb-2">
-      <span x-show="state.winner_id === {{ current_user.id }}">Победа!</span>
-      <span x-show="state.winner_id && state.winner_id !== {{ current_user.id }}">Поражение</span>
-      <span x-show="!state.winner_id">Ничья</span>
+    <h2 class="h-display text-4xl text-slate-900 dark:text-slate-100 mb-2">
+      <span x-show="state.winner_id === {{ current_user.id }}">{{ t('du_won_h') }}</span>
+      <span x-show="state.winner_id && state.winner_id !== {{ current_user.id }}">{{ t('du_lost_h') }}</span>
+      <span x-show="!state.winner_id">{{ t('du_draw_h') }}</span>
     </h2>
-    <p x-show="state.winner_id === {{ current_user.id }}" class="text-emerald-600 font-semibold mb-6">+50 XP бонус</p>
+    <p x-show="state.winner_id === {{ current_user.id }}" class="text-emerald-600 dark:text-emerald-300 font-semibold mb-6">{{ t('du_won_bonus') }}</p>
 
     <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
       <div class="glass rounded-2xl p-5">
-        <div class="text-xs text-slate-500">Вы</div>
-        <div class="text-3xl font-bold text-indigo-600" x-text="state.is_p1 ? state.p1_score : state.p2_score"></div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">{{ t('du_you') }}</div>
+        <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-300" x-text="state.is_p1 ? state.p1_score : state.p2_score"></div>
       </div>
       <div class="glass rounded-2xl p-5">
-        <div class="text-xs text-slate-500" x-text="state.is_p1 ? '@'+state.p2_username : '@'+state.p1_username"></div>
-        <div class="text-3xl font-bold text-slate-700" x-text="state.is_p1 ? state.p2_score : state.p1_score"></div>
+        <div class="text-xs text-slate-500 dark:text-slate-400" x-text="state.is_p1 ? '@'+state.p2_username : '@'+state.p1_username"></div>
+        <div class="text-3xl font-bold text-slate-700 dark:text-slate-200" x-text="state.is_p1 ? state.p2_score : state.p1_score"></div>
       </div>
     </div>
 
-    <a href="/duels" class="btn btn-primary">К списку дуэлей</a>
+    <a href="/duels" class="btn btn-primary">{{ t('du_to_list') }}</a>
   </div>
 
   <!-- DECLINED -->
   <div x-show="state.status === 'declined'" class="text-center py-12">
     <div class="text-6xl mb-3">❌</div>
-    <h2 class="h-display text-2xl text-slate-900">Дуэль отклонена</h2>
-    <a href="/duels" class="text-indigo-600 hover:underline mt-3 inline-block">← К списку</a>
+    <h2 class="h-display text-2xl text-slate-900 dark:text-slate-100">{{ t('du_declined_h') }}</h2>
+    <a href="/duels" class="text-indigo-600 dark:text-indigo-300 hover:underline mt-3 inline-block">{{ t('du_to_list_back') }}</a>
   </div>
 </div>
 
 <script>
+const DU_T = {
+  error: {{ t('du_error')|tojson }},
+  net_error: {{ t('du_net_error')|tojson }},
+};
 function duelApp() {
   return {
     state: {{ duel|tojson }},
@@ -130,7 +134,6 @@ function duelApp() {
           if (this.state.status === 'finished' || this.state.status === 'declined') {
             clearInterval(this.pollInterval);
             if (this.timeInterval) clearInterval(this.timeInterval);
-            // Pri pervom obnovlenii do finished — pokazyvaem dostizheniya
             if (!wasFinished && this.state.status === 'finished') {
               this.fetchAchievements();
             }
@@ -173,8 +176,8 @@ function duelApp() {
         const r = await fetch('/api/duel/{{ duel.id }}/answer', { method: 'POST', body: fd });
         const data = await r.json();
         console.log('[duel] answer:', r.status, data);
-        if (!r.ok) alert('Ошибка: ' + (data.error || r.status));
-      } catch(e) { console.error(e); alert('Ошибка сети'); }
+        if (!r.ok) alert(DU_T.error + ' ' + (data.error || r.status));
+      } catch(e) { console.error(e); alert(DU_T.net_error); }
       this.poll();
     },
     async accept() {
