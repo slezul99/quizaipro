@@ -233,8 +233,8 @@ def run_vision_job(jid: str, save_cards_callback):
             fpath,
             lang=job["lang"],
             max_pages=30,
-            chunk_size=1,        # POSTRANICHNAYA — kachestvo > skorost'
-            audit=False,         # OTKLYUCHENO chtoby ne udvaivat' vremya (pri 14 stranitsah eto bylo 12 minut)
+            chunk_size=2,        # 2 stranitsy za zapros — luchshe dlya reading comprehension (tekst + voprosy na raznyh stranitsah)
+            audit=False,
             progress_cb=progress_cb,
             status_cb=status_cb,
         )

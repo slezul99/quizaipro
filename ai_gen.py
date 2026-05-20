@@ -324,52 +324,60 @@ def _pdf_to_images(pdf_path: Path, max_pages: int = 30, dpi: int = 200) -> list[
     return images
 
 
-# Promt edinyy dlya vsekh chankov — grazneukhostoychivyy, dotoshnyy
-VISION_EXTRACT_PROMPT = """Ты — ЭКСТРАКТОР тестовых вопросов из сканированных страниц.
-Твоя цель: извлечь ВСЕ ДО ЕДИНОГО закрытые тестовые вопросы (с вариантами A/B/C/D).
-Пропустить вопрос — это ПРОВАЛ. Будь дотошным.
+# Promt edinyy dlya vsekh chankov — MAKSIMALNO GIBKY i ZHADNYY
+VISION_EXTRACT_PROMPT = """Ты — извлекатель тестовых вопросов из учебных материалов.
 
-АЛГОРИТМ (выполняй ВНУТРИ себя, не выводи):
-1. ПОДСЧЁТ. Сначала пройдись по странице сверху вниз и посчитай: сколько вопросов с вариантами видишь? Запомни число N.
-2. ИЗВЛЕЧЕНИЕ. Извлеки каждый из N вопросов в JSON.
-3. ПРОВЕРКА. Перепроверь: твой массив = N? Если меньше — вернись и найди пропущенные.
+КРИТИЧНО: твоя задача — извлечь ВСЁ что хоть отдалённо похоже на закрытый тест.
+ПРОПУСТИТЬ ВОПРОС ПЛОХО. Лучше извлечь сомнительный, чем потерять реальный.
 
-ЧТО БРАТЬ (закрытые вопросы — обязательно):
-✓ Любой вопрос с вариантами A/B/C/D (или 1/2/3/4, или а/б/в/г, или ①②③④, или I/II/III/IV)
-✓ Грамматика с пропусками: "I ___ to school. A) go B) goes C) went D) gone"
-✓ Reading comprehension по тексту — ВКЛЮЧИ контекст в сам вопрос
-   Пример: текст "Tom went to school" + вопрос "When?" → 
-   front: "Tom went to school yesterday. When did Tom go to school?"
-✓ Vocabulary, синонимы, перевод
-✓ Listening вопросы — если ответ можно понять без аудио (по контексту)
-✓ Несколько вопросов к одному тексту = несколько отдельных карточек (с одним и тем же контекстом)
+🎯 ПОДРОБНЫЙ АЛГОРИТМ:
+1. Внимательно осмотри ВСЁ изображение сверху донизу
+2. Найди КАЖДЫЙ блок где есть варианты ответов (любая буква/цифра + текст после)
+3. Для каждого блока определи вопрос (часто над вариантами или со стороны)
+4. ИЗВЛЕКИ. Не фильтруй по сложности, не оценивай качество — просто извлекай ВСЁ
 
-ЧТО НЕ БРАТЬ:
-✗ Открытые вопросы (write an essay, describe, explain — без вариантов)
-✗ Заголовки, шапки, водяные знаки, логотипы школ
-✗ Инструкции "Time: 90 minutes", "Read carefully"
-✗ Описания заданий "Часть А. Грамматика" — это не вопрос
-✗ Номера страниц, footer/header
+✅ БЕРИ (закрытые тесты — ЛЮБОЙ из этих форматов):
+• A) ... B) ... C) ... D) ... — классический MCQ
+• 1) ... 2) ... 3) ... 4) ... — нумерованный
+• а) ... б) ... в) ... г) ... — кириллица
+• ① ② ③ ④ — кружки
+• I, II, III, IV — римские
+• ☐ или □ или ⚪ перед вариантами — чекбоксы
+• Заполни пропуск: "I ___ to school" + варианты — БЕРИ
+• Match (соединить) — БЕРИ как 1 карточку с вариантами
+• True/False (Верно/Неверно) — БЕРИ
+• Yes/No вопросы с вариантами — БЕРИ
+• Reading comprehension: текст + 5 вопросов после — извлеки ВСЕ 5 вопросов отдельно
+  (можно НЕ повторять контекст в каждом, AI сам поймёт)
+• Грамматика, vocabulary, аудирование (если ответ виден) — БЕРИ
+• Любой "Choose the correct..." / "Выберите..." / "Tanlang..."
 
-ФОРМАТ КАЖДОЙ КАРТОЧКИ:
-- "number": номер вопроса как на картинке ("1", "12", "Q5") — КРИТИЧНО для проверки
-- "question": полный текст вопроса (с контекстом если нужен), без номера задания
-- "options": массив всех вариантов как есть с картинки
-- "correct_letter": "A"/"B"/"C"/"D" если правильный отмечен (✓, обведён, жирный, "Answer: B" внизу), иначе null
-- "is_open": false (для закрытых) или true (для открытых — не извлекаем их)
+❌ НЕ БЕРИ:
+• Открытые: "Write an essay", "Describe", "Explain in your own words"
+• Только если ЯВНО нет вариантов
+• Заголовки страниц, footer/header, номера страниц
+• Логотипы школ, водяные знаки
 
-СОХРАНЯЙ:
-- Орфографию как на картинке (даже опечатки)
-- Полный текст вариантов, не сокращай
-- Минимум 2 варианта на вопрос (обычно 4)
+🔧 ФОРМАТ:
+- "number": номер задания если есть ("1", "12", "Q5")
+- "question": текст вопроса (если есть контекст-текст — кратко включи в вопрос или пропусти)
+- "options": МАССИВ ВСЕХ вариантов как текст ["A) текст", "B) текст", ...]
+- "correct_letter": "A"/"B"/"C"/"D" если правильный отмечен (✓, кружок, жирный, "Ответ: B"), иначе null
 
-ВЫХОД — СТРОГО JSON-массив. Если на странице 0 закрытых вопросов → `[]`.
-НЕ ПРОПУСТИ НИ ОДНОГО ВОПРОСА.
+📌 ВАЖНО:
+- Минимум 2 варианта = это уже тест, БЕРИ
+- Если на странице явно видишь несколько вопросов → должно быть несколько объектов в массиве
+- Орфографию сохраняй как на картинке
+- Не пропускай вопросы из-за плохого качества скана — попробуй угадать текст
 
-Пример вывода:
+🎯 ОЖИДАНИЕ: на типичной странице теста 5-15 вопросов. Если ты вернул < 5 — перепроверь, ты точно ничего не пропустил?
+
+ВЫХОД — JSON-массив. Если 0 закрытых вопросов на странице → `[]`.
+НЕ ОБЪЯСНЯЙ, не пиши комментарии, ТОЛЬКО JSON:
+
 [
-  {"number": "1", "question": "Choose the correct option: I ___ tea every morning.", "options": ["A) drink", "B) drinks", "C) drinking", "D) drank"], "correct_letter": "A", "is_open": false},
-  {"number": "2", "question": "...", "options": [...], "correct_letter": null, "is_open": false}
+  {"number": "1", "question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "correct_letter": "A"},
+  {"number": "2", "question": "...", "options": [...], "correct_letter": null}
 ]"""
 
 
@@ -462,8 +470,8 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
 
 
 def _parse_vision_response(text: str) -> list[dict]:
-    """Razbiraet otvet Gemini -> spisok kart. Filtruet otkrytye voprosy.
-    Sokranyaet pole 'number' dlya audit-passa."""
+    """Razbiraet otvet Gemini -> spisok kart. MAKSIMALNO GIBKY parser.
+    Sokranyaet pole '_number' dlya dedupe."""
     if not text:
         return []
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.MULTILINE)
@@ -472,28 +480,43 @@ def _parse_vision_response(text: str) -> list[dict]:
     except Exception:
         m = re.search(r"\[.*\]", text, re.DOTALL)
         if not m:
+            print(f"[AI vision parse] no JSON array. Raw: {text[:300]}")
             return []
         try:
             items = json.loads(m.group(0))
-        except Exception:
+        except Exception as e:
+            print(f"[AI vision parse] JSON parse err: {e}. Raw: {text[:300]}")
             return []
+    # Esli vernuli {"questions": [...]} ili pohozhee — razvorachivaem
+    if isinstance(items, dict):
+        for key in ("questions", "cards", "items", "data", "results"):
+            if key in items and isinstance(items[key], list):
+                items = items[key]
+                break
     if not isinstance(items, list):
+        print(f"[AI vision parse] not a list, type={type(items).__name__}")
         return []
     cards = []
     for it in items:
         if not isinstance(it, dict):
             continue
-        # Yavno propustit otkrytye
+        # Yavno propustit otkrytye TOLKO esli AI yavno pomenil
         if it.get("is_open") is True:
             continue
-        q = (it.get("question") or it.get("front") or "").strip()
-        opts = it.get("options") or []
-        correct = (it.get("correct_letter") or "").strip().upper()
+        q = (it.get("question") or it.get("front") or it.get("q") or it.get("text") or "").strip()
+        opts = it.get("options") or it.get("choices") or it.get("variants") or []
+        correct_raw = (it.get("correct_letter") or it.get("answer") or it.get("correct") or "").strip()
+        # Esli correct = "B) text" — vyderzhi bukvu
+        if correct_raw and len(correct_raw) > 2:
+            m = re.match(r"^\s*([A-Za-zА-Яа-яЁё0-9])", correct_raw)
+            if m:
+                correct_raw = m.group(1)
+        correct = correct_raw.upper()
         number = str(it.get("number") or "").strip()
         # Trebuyem minimum 2 varianta
         if not q or not isinstance(opts, list) or len(opts) < 2:
             continue
-        # Ochishchaem varianty: ubirayem dubl' bukvy esli ona uzhe tam
+        # Ochishchaem varianty
         clean_opts = []
         for opt in opts:
             opt_str = str(opt).strip()

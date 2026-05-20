@@ -175,14 +175,7 @@ function visionProgress() {
           this.pollTimer = setInterval(() => this.poll(), 2500);
         }
       });
-
-      // Predupreditelno — esli polzovatel pytaetsya zakryt vkladku
-      window.addEventListener('beforeunload', (e) => {
-        if (this.state.status === 'pending' || this.state.status === 'running') {
-          e.preventDefault();
-          e.returnValue = '';
-        }
-      });
+      // beforeunload otklyuchen — bil razdrazhayushchim ("Perezagruzit'?" pri navigatsii)
     },
 
     async poll() {
