@@ -12,13 +12,13 @@
     <div class="section-header mb-10">
       <span class="section-badge"><span class="badge-dot"></span>💎 Pricing</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">Тарифы</h1>
-      <p class="section-sub">Текущий: <b class="text-indigo-600 dark:text-indigo-300">{{ plans[plan].name }}</b> · AI: {{ used }}/{{ limit }} в месяц</p>
+      <h1 class="section-h">{{ t('bl_h') }}</h1>
+      <p class="section-sub">{{ t('bl_current') }} <b class="text-indigo-600 dark:text-indigo-300">{{ plans[plan].name }}</b> · {{ t('bl_ai_per_month') }}: {{ used }}/{{ limit }} {{ t('lp_q_of') }} {{ t('bl_month') }}</p>
     </div>
 
     {% if request.args.get('status') == 'success' %}
     <div class="glass-premium mb-6" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(255,255,255,0.85)); border-color: rgba(16,185,129,0.4);">
-      <p class="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">✓ Подписка активирована! Может потребоваться 1-2 минуты для обновления.</p>
+      <p class="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">{{ t('bl_subscribed_msg') }}</p>
     </div>
     {% endif %}
 
@@ -28,25 +28,25 @@
         <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-slate-100">{{ p.name }}</h3>
         <div class="my-4">
           <span class="text-5xl font-black" style="font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">${{ p.price_usd }}</span>
-          <span class="text-slate-500 dark:text-slate-400 text-sm font-semibold">/мес</span>
+          <span class="text-slate-500 dark:text-slate-400 text-sm font-semibold">{{ t('bl_per_month_short') }}</span>
         </div>
         <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-300 mb-6 flex-1">
-          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.max_decks }} колод</span></li>
-          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.max_cards_per_deck }} карт/колода</span></li>
-          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.ai_generations_per_month }} AI/мес</span></li>
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.max_decks }} {{ t('bl_decks_unit') }}</span></li>
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.max_cards_per_deck }} {{ t('bl_cards_per_deck_unit') }}</span></li>
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ p.limits.ai_generations_per_month }} {{ t('bl_ai_unit') }}</span></li>
           {% if p.limits.max_students > 0 %}
-          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>До {{ p.limits.max_students }} студентов</span></li>
+          <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ t('bl_students_unit_pre') }} {{ p.limits.max_students }} {{ t('bl_students_unit_post') }}</span></li>
           {% endif %}
         </ul>
         {% if plan == plan_id %}
-        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-70">Текущий</button>
+        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-70">{{ t('bl_current_btn') }}</button>
         {% elif plan_id == 'free' %}
         <button disabled class="btn-premium-ghost justify-center cursor-default opacity-50">—</button>
         {% else %}
         {% if has_stripe %}
-        <a href="/billing/checkout/{{ plan_id }}" class="btn-premium justify-center">Выбрать</a>
+        <a href="/billing/checkout/{{ plan_id }}" class="btn-premium justify-center">{{ t('bl_choose_btn') }}</a>
         {% else %}
-        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-60" title="Stripe не настроен">Скоро</button>
+        <button disabled class="btn-premium-ghost justify-center cursor-default opacity-60" title="{{ t('bl_stripe_not_set') }}">{{ t('bl_soon_btn') }}</button>
         {% endif %}
         {% endif %}
       </div>

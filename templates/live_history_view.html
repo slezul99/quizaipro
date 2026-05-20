@@ -3,7 +3,7 @@
 <div class="max-w-7xl mx-auto px-6 py-8">
 
   <div class="mb-5">
-    <a href="/live/history" class="text-sm text-indigo-600 hover:underline">← Назад к истории</a>
+    <a href="/live/history" class="text-sm text-indigo-600 dark:text-indigo-300 hover:underline">{{ t('lhv_back') }}</a>
   </div>
 
   <!-- Header -->
@@ -11,27 +11,27 @@
     <div class="flex items-center gap-4 flex-wrap">
       <div class="text-5xl">{{ sess.deck_icon or '📚' }}</div>
       <div class="flex-1 min-w-0">
-        <h1 class="h-display text-2xl md:text-3xl text-slate-900">{{ sess.deck_name }}</h1>
-        <div class="text-sm text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
-          <span>👤 Хост: <b>{{ sess.host_username }}</b></span>
+        <h1 class="h-display text-2xl md:text-3xl text-slate-900 dark:text-slate-100">{{ sess.deck_name }}</h1>
+        <div class="text-sm text-slate-600 dark:text-slate-300 mt-1 flex items-center gap-2 flex-wrap">
+          <span>{{ t('lhv_host') }} <b>{{ sess.host_username }}</b></span>
           <span>·</span>
           <span>📅 {{ sess.finished_at[:16].replace('T', ' ') if sess.finished_at else '' }}</span>
           <span>·</span>
-          <span>❓ {{ sess.question_count }} вопросов</span>
+          <span>❓ {{ sess.question_count }} {{ t('lhv_questions') }}</span>
           <span>·</span>
-          <span>⏱ {{ sess.time_per_q }}с/вопрос</span>
+          <span>⏱ {{ sess.time_per_q }}{{ t('lp_time_unit') }}/{{ t('lhv_per_q') }}</span>
         </div>
       </div>
       <span class="badge bg-{{ 'emerald' if sess.host_role == 'participant' else 'blue' }}-100
-        text-{{ 'emerald' if sess.host_role == 'participant' else 'blue' }}-700">
-        Хост был {{ 'участником' if sess.host_role == 'participant' else 'наблюдателем' }}
+        text-{{ 'emerald' if sess.host_role == 'participant' else 'blue' }}-700 dark:bg-{{ 'emerald' if sess.host_role == 'participant' else 'blue' }}-900/40 dark:text-{{ 'emerald' if sess.host_role == 'participant' else 'blue' }}-300">
+        {{ t('lhv_was_participant') if sess.host_role == 'participant' else t('lhv_was_observer') }}
       </span>
     </div>
   </div>
 
   <!-- Top scoreboard -->
   <div class="glass rounded-3xl p-5 mb-6">
-    <h2 class="font-bold text-slate-900 mb-3">🏆 Финальная таблица</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('lhv_final_table') }}</h2>
     <div class="space-y-2">
       {% for p in players %}
       <div class="flex items-center gap-3 p-3 rounded-xl
@@ -56,60 +56,60 @@
       </div>
       {% endfor %}
       {% if not players %}
-      <p class="text-slate-500 italic text-center py-4">Никто не участвовал</p>
+      <p class="text-slate-500 dark:text-slate-400 italic text-center py-4">{{ t('lhv_no_one') }}</p>
       {% endif %}
     </div>
   </div>
 
-  <!-- Matritsa otvetov -->
+  <!-- Answer matrix -->
   {% if players and questions %}
   <div class="glass rounded-3xl p-5 overflow-x-auto">
-    <h2 class="font-bold text-slate-900 mb-3">📊 Ответы по вопросам</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('lhv_answers_h') }}</h2>
     <table class="w-full text-sm border-collapse">
       <thead>
         <tr>
-          <th class="sticky left-0 bg-white/90 p-2 text-left font-semibold text-slate-700 border-b border-gray-200">Студент</th>
+          <th class="sticky left-0 bg-white/90 dark:bg-slate-800/90 p-2 text-left font-semibold text-slate-700 dark:text-slate-200 border-b border-gray-200 dark:border-slate-700">{{ t('lhv_th_student') }}</th>
           {% for q in questions %}
-          <th class="p-2 text-center font-semibold text-slate-700 border-b border-gray-200 min-w-[60px]"
+          <th class="p-2 text-center font-semibold text-slate-700 dark:text-slate-200 border-b border-gray-200 dark:border-slate-700 min-w-[60px]"
             title="{{ q.front }}">
-            <div class="text-xs">Q{{ loop.index }}</div>
-            <div class="text-[10px] text-slate-500 truncate max-w-[80px]">{{ (q.correct or '?') }}</div>
+            <div class="text-xs">{{ t('lhv_th_q') }}{{ loop.index }}</div>
+            <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[80px]">{{ (q.correct or '?') }}</div>
           </th>
           {% endfor %}
-          <th class="p-2 text-center font-semibold text-slate-700 border-b border-gray-200">Итог</th>
+          <th class="p-2 text-center font-semibold text-slate-700 dark:text-slate-200 border-b border-gray-200 dark:border-slate-700">{{ t('lhv_th_total') }}</th>
         </tr>
       </thead>
       <tbody>
         {% for p in players %}
-        <tr class="hover:bg-white/40">
-          <td class="sticky left-0 bg-white/80 p-2 font-medium text-slate-900 border-b border-gray-100 truncate max-w-[180px]">
+        <tr class="hover:bg-white/40 dark:hover:bg-slate-800/40">
+          <td class="sticky left-0 bg-white/80 dark:bg-slate-800/80 p-2 font-medium text-slate-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-700 truncate max-w-[180px]">
             {{ p.full_name or p.username }}
           </td>
           {% set u_answers = answers_by_user.get(p.user_id, {}) %}
           {% for q in questions %}
             {% set a = u_answers.get(q.position) %}
-            <td class="p-2 text-center border-b border-gray-100">
+            <td class="p-2 text-center border-b border-gray-100 dark:border-slate-700">
               {% if a %}
-                <div class="font-mono font-bold {% if a.is_correct %}text-emerald-600{% else %}text-red-500{% endif %}">
+                <div class="font-mono font-bold {% if a.is_correct %}text-emerald-600 dark:text-emerald-400{% else %}text-red-500 dark:text-red-400{% endif %}">
                   {{ a.chosen or '–' }}
                   {% if a.is_correct %}✓{% else %}✗{% endif %}
                 </div>
-                <div class="text-[10px] text-slate-400">{{ a.time_taken }}с</div>
+                <div class="text-[10px] text-slate-400 dark:text-slate-500">{{ a.time_taken }}{{ t('lp_time_unit') }}</div>
               {% else %}
-                <span class="text-slate-300">—</span>
+                <span class="text-slate-300 dark:text-slate-600">—</span>
               {% endif %}
             </td>
           {% endfor %}
-          <td class="p-2 text-center border-b border-gray-100 font-bold text-indigo-600">{{ p.score }}</td>
+          <td class="p-2 text-center border-b border-gray-100 dark:border-slate-700 font-bold text-indigo-600 dark:text-indigo-300">{{ p.score }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <!-- Voprosy -->
+  <!-- Questions -->
   <div class="glass rounded-3xl p-5 mt-6">
-    <h2 class="font-bold text-slate-900 mb-3">❓ Вопросы</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('lhv_questions_h') }}</h2>
     <div class="space-y-3">
       {% for q in questions %}
       <div class="bg-white/60 rounded-2xl p-4">

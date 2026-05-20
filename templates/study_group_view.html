@@ -1,79 +1,79 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-5xl mx-auto px-6 py-8" x-data="{ showAddDeck: false }">
-  <a href="/study-groups" class="text-indigo-600 text-sm hover:underline">← К группам</a>
+  <a href="/study-groups" class="text-indigo-600 dark:text-indigo-300 text-sm hover:underline">{{ t('sgv_back') }}</a>
 
   <!-- Hero -->
   <div class="glass rounded-3xl p-6 my-4">
     <div class="flex items-start gap-4 flex-wrap">
       <span class="text-5xl">{{ group.avatar }}</span>
       <div class="flex-1 min-w-0">
-        <h1 class="h-display text-3xl text-slate-900 mb-1">{{ group.name }}</h1>
-        <p class="text-slate-600 text-sm mb-2">@{{ group.owner_username }} · {{ members|length }} участников</p>
+        <h1 class="h-display text-3xl text-slate-900 dark:text-slate-100 mb-1">{{ group.name }}</h1>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-2">@{{ group.owner_username }} · {{ members|length }} {{ t('sgv_members') }}</p>
         {% if group.description %}
-        <p class="text-slate-700">{{ group.description }}</p>
+        <p class="text-slate-700 dark:text-slate-200">{{ group.description }}</p>
         {% endif %}
       </div>
       <div class="flex gap-2">
         {% if group.chat_id and is_member %}
-        <a href="/chat/{{ group.chat_id }}" class="btn btn-primary text-sm">💬 Чат</a>
+        <a href="/chat/{{ group.chat_id }}" class="btn btn-primary text-sm">{{ t('sgv_chat_btn') }}</a>
         {% endif %}
         {% if is_member %}
-        <form method="POST" action="/study-group/{{ group.id }}/leave" onsubmit="return confirm('Выйти из группы?')">
+        <form method="POST" action="/study-group/{{ group.id }}/leave" onsubmit="return confirm({{ t('sgv_leave_confirm')|tojson }})">
           <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button class="btn btn-ghost text-sm">Выйти</button>
+          <button class="btn btn-ghost text-sm">{{ t('sgv_leave') }}</button>
         </form>
         {% else %}
         <form method="POST" action="/study-group/{{ group.id }}/join">
           <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button class="btn btn-primary text-sm">+ Присоединиться</button>
+          <button class="btn btn-primary text-sm">{{ t('sgv_join') }}</button>
         </form>
         {% endif %}
       </div>
     </div>
   </div>
 
-  <!-- Stat -->
+  <!-- Stats -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="glass rounded-2xl p-5">
       <div class="icon-bubble bg-gradient-to-br from-indigo-100 to-purple-200 mb-2">👥</div>
       <div class="text-2xl font-bold h-display">{{ members|length }}</div>
-      <div class="text-xs text-gray-500 mt-1 font-medium">Участников</div>
+      <div class="text-xs text-gray-500 dark:text-slate-400 mt-1 font-medium">{{ t('sgv_members_card') }}</div>
     </div>
     <div class="glass rounded-2xl p-5">
       <div class="icon-bubble bg-gradient-to-br from-emerald-100 to-emerald-200 mb-2">📚</div>
-      <div class="text-2xl font-bold h-display text-emerald-600">{{ group_decks|length }}</div>
-      <div class="text-xs text-gray-500 mt-1 font-medium">Колод</div>
+      <div class="text-2xl font-bold h-display text-emerald-600 dark:text-emerald-300">{{ group_decks|length }}</div>
+      <div class="text-xs text-gray-500 dark:text-slate-400 mt-1 font-medium">{{ t('sgv_decks_card') }}</div>
     </div>
     <div class="glass rounded-2xl p-5">
       <div class="icon-bubble bg-gradient-to-br from-blue-100 to-blue-200 mb-2">⚡</div>
-      <div class="text-2xl font-bold h-display text-blue-600">{{ total_reviews }}</div>
-      <div class="text-xs text-gray-500 mt-1 font-medium">Ответов всего</div>
+      <div class="text-2xl font-bold h-display text-blue-600 dark:text-blue-300">{{ total_reviews }}</div>
+      <div class="text-xs text-gray-500 dark:text-slate-400 mt-1 font-medium">{{ t('sgv_total_answers') }}</div>
     </div>
     <div class="glass rounded-2xl p-5">
       <div class="icon-bubble bg-gradient-to-br from-orange-100 to-pink-200 mb-2">🎯</div>
-      <div class="text-2xl font-bold h-display text-orange-600">{{ accuracy }}%</div>
-      <div class="text-xs text-gray-500 mt-1 font-medium">Точность</div>
+      <div class="text-2xl font-bold h-display text-orange-600 dark:text-orange-300">{{ accuracy }}%</div>
+      <div class="text-xs text-gray-500 dark:text-slate-400 mt-1 font-medium">{{ t('sgv_accuracy') }}</div>
     </div>
   </div>
 
-  <!-- Kolody -->
+  <!-- Decks -->
   <div class="glass rounded-3xl p-6 mb-6">
     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-      <h3 class="font-bold text-slate-900">📚 Общая библиотека</h3>
+      <h3 class="font-bold text-slate-900 dark:text-slate-100">{{ t('sgv_library_h') }}</h3>
       {% if is_member and available_decks %}
-      <button @click="showAddDeck = true" class="btn btn-ghost text-sm">+ Добавить колоду</button>
+      <button @click="showAddDeck = true" class="btn btn-ghost text-sm">{{ t('sgv_add_deck_btn') }}</button>
       {% endif %}
     </div>
     {% if group_decks %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {% for d in group_decks %}
-      <div class="bg-white/60 rounded-2xl p-4 border border-indigo-100 group">
+      <div class="bg-white/60 dark:bg-slate-800/40 rounded-2xl p-4 border border-indigo-100 dark:border-indigo-800/40 group">
         <div class="flex items-start gap-3 mb-2">
           <span class="text-3xl">{{ d.icon }}</span>
           <div class="flex-1 min-w-0">
-            <a href="/deck/{{ d.id }}" class="font-bold text-slate-900 truncate block hover:text-indigo-600">{{ d.name }}</a>
-            <p class="text-xs text-slate-500">{{ d.cnt }} карт · от @{{ d.added_by_username }}</p>
+            <a href="/deck/{{ d.id }}" class="font-bold text-slate-900 dark:text-slate-100 truncate block hover:text-indigo-600 dark:hover:text-indigo-300">{{ d.name }}</a>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ d.cnt }} {{ t('dk_cards_count') }} · {{ t('sgv_card_from') }}{{ d.added_by_username }}</p>
           </div>
         </div>
         <div class="flex gap-1 mt-2">
@@ -81,9 +81,9 @@
             style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);">🃏 Flashcards</a>
           <a href="/deck/{{ d.id }}/test" class="btn btn-ghost text-xs">📝</a>
           {% if is_member %}
-          <form method="POST" action="/study-group/{{ group.id }}/remove-deck/{{ d.id }}" onsubmit="return confirm('Убрать из группы?')">
+          <form method="POST" action="/study-group/{{ group.id }}/remove-deck/{{ d.id }}" onsubmit="return confirm({{ t('sgv_remove_confirm')|tojson }})">
             <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-            <button class="text-red-500 hover:bg-red-50 rounded-lg px-2 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+            <button class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg px-2 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
           </form>
           {% endif %}
         </div>
@@ -91,18 +91,18 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-slate-500 text-center py-6">Пока нет общих колод. Добавьте первую — все участники смогут изучать.</p>
+    <p class="text-slate-500 dark:text-slate-400 text-center py-6">{{ t('sgv_no_decks') }}</p>
     {% endif %}
   </div>
 
   <!-- Members + leaderboard -->
   <div class="glass rounded-3xl p-6">
-    <h3 class="font-bold text-slate-900 mb-4">🏆 Лидерборд группы</h3>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">{{ t('sgv_lb_h') }}</h3>
     <div class="space-y-2">
       {% for m in members %}
-      <a href="/u/{{ m.username }}" class="flex items-center gap-3 p-3 rounded-2xl bg-white/60 border border-indigo-100 hover:bg-indigo-50/60 transition">
+      <a href="/u/{{ m.username }}" class="flex items-center gap-3 p-3 rounded-2xl bg-white/60 dark:bg-slate-800/40 border border-indigo-100 dark:border-indigo-800/40 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/30 transition">
         <span class="w-8 text-center text-sm font-bold
-          {% if loop.index == 1 %}text-yellow-500 text-xl{% elif loop.index == 2 %}text-gray-400 text-lg{% elif loop.index == 3 %}text-orange-500 text-lg{% else %}text-slate-400{% endif %}">
+          {% if loop.index == 1 %}text-yellow-500 text-xl{% elif loop.index == 2 %}text-gray-400 text-lg{% elif loop.index == 3 %}text-orange-500 text-lg{% else %}text-slate-400 dark:text-slate-500{% endif %}">
           {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
         </span>
         <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
@@ -110,15 +110,15 @@
           {{ (m.full_name or m.username)[0]|upper }}
         </div>
         <div class="flex-1 min-w-0">
-          <div class="font-semibold text-slate-900 truncate">
+          <div class="font-semibold text-slate-900 dark:text-slate-100 truncate">
             {{ m.full_name or m.username }}
-            {% if m.role == 'owner' %}<span class="text-xs text-amber-600 ml-1">👑</span>{% endif %}
+            {% if m.role == 'owner' %}<span class="text-xs text-amber-600 dark:text-amber-300 ml-1">👑</span>{% endif %}
           </div>
-          <div class="text-xs text-slate-500">⭐ {{ m.xp }} · 🔥 {{ m.streak }}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">⭐ {{ m.xp }} · 🔥 {{ m.streak }}</div>
         </div>
         <div class="text-right">
-          <div class="text-sm font-bold text-indigo-600">{{ m.group_reviews }}</div>
-          <div class="text-xs text-slate-500">ответов</div>
+          <div class="text-sm font-bold text-indigo-600 dark:text-indigo-300">{{ m.group_reviews }}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">{{ t('sgv_answers_short') }}</div>
         </div>
       </a>
       {% endfor %}
@@ -129,17 +129,17 @@
   <div x-show="showAddDeck" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showAddDeck = false" x-cloak>
     <form method="POST" action="/study-group/{{ group.id }}/add-deck" class="glass-strong rounded-3xl p-7 max-w-md w-full scale-in">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h3 class="text-xl font-bold mb-1 h-display">+ Добавить колоду</h3>
-      <p class="text-xs text-slate-500 mb-4">Любой участник сможет изучать эту колоду</p>
-      <select name="deck_id" required class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white mb-5">
-        <option value="">— Выберите колоду —</option>
+      <h3 class="text-xl font-bold mb-1 h-display">{{ t('sgv_add_modal_h') }}</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">{{ t('sgv_add_modal_sub') }}</p>
+      <select name="deck_id" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800/40 bg-white mb-5">
+        <option value="">{{ t('sgv_pick_deck') }}</option>
         {% for d in available_decks %}
         <option value="{{ d.id }}">{{ d.icon }} {{ d.name }}</option>
         {% endfor %}
       </select>
       <div class="flex gap-2 justify-end">
-        <button type="button" @click="showAddDeck = false" class="btn btn-ghost">Отмена</button>
-        <button type="submit" class="btn btn-primary">Добавить</button>
+        <button type="button" @click="showAddDeck = false" class="btn btn-ghost">{{ t('sgv_cancel') }}</button>
+        <button type="submit" class="btn btn-primary">{{ t('sgv_add') }}</button>
       </div>
     </form>
   </div>

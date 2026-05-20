@@ -1122,7 +1122,7 @@
       <a href="/dashboard" class="nav-link hidden lg:flex">
         {{ icon('dashboard', 18) }}<span>{{ t('nav_dashboard') }}</span>
       </a>
-      <a href="/search" class="nav-icon-btn" title="{{ t('search') if t('search') != 'search' else 'Поиск' }}">{{ icon('search', 19) }}</a>
+      <a href="/search" class="nav-icon-btn" title="{{ t('search') }}">{{ icon('search', 19) }}</a>
 
       {% if current_user.role in ['admin','teacher','individual'] %}
       <!-- Sotsial'noe dropdown -->
@@ -1189,7 +1189,7 @@
         <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md">0</span>
       </a>
 
-      <a href="/support" class="nav-icon-btn" title="Поддержка">{{ icon('chat', 19) }}</a>
+      <a href="/support" class="nav-icon-btn" title="{{ t('sup_badge') }}">{{ icon('chat', 19) }}</a>
 
       <a href="/help" class="nav-icon-btn" title="{{ t('nav_help') }}">{{ icon('help', 19) }}</a>
 
@@ -1198,16 +1198,16 @@
       {% endif %}
 
       {% if current_user.role in ['admin','teacher'] %}
-      <a href="/admin/students" class="nav-icon-btn hidden xl:flex" title="Пользователи">{{ icon('users', 19) }}</a>
+      <a href="/admin/students" class="nav-icon-btn hidden xl:flex" title="{{ t('au_h') }}">{{ icon('users', 19) }}</a>
       {% endif %}
 
-      <div class="nav-stat-pill streak hidden xl:flex" title="Дней подряд">
+      <div class="nav-stat-pill streak hidden xl:flex" title="{{ t('st_streak_days') }}">
         {{ icon('flame', 14) }} {{ current_user.streak or 0 }}
       </div>
       <div class="nav-stat-pill xp hidden xl:flex" title="XP">
         {{ icon('star', 14) }} {{ current_user.xp or 0 }}
       </div>
-      <button onclick="toggleDarkMode()" class="nav-icon-btn" title="Тема">
+      <button onclick="toggleDarkMode()" class="nav-icon-btn" title="{{ t('u_theme_label') if t('u_theme_label') != 'u_theme_label' else 'Theme' }}">
         <span id="theme-icon-light">{{ icon('moon', 19) }}</span>
         <span id="theme-icon-dark" style="display:none">{{ icon('sun', 19) }}</span>
       </button>
@@ -1255,7 +1255,7 @@
         <a href="/admin/students" class="mob-link indigo">{{ icon('users', 19) }} <span>{{ t('users') }}</span></a>
         {% endif %}
         <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 border-t border-indigo-100 dark:border-indigo-700/40 mt-2">
-          {{ icon('flame', 16) }} {{ current_user.streak or 0 }} дней · {{ icon('star', 16) }} {{ current_user.xp or 0 }} XP
+          {{ icon('flame', 16) }} {{ current_user.streak or 0 }} {{ t('g_left_days') }} · {{ icon('star', 16) }} {{ current_user.xp or 0 }} XP
         </div>
         <a href="/logout" class="mob-link red">{{ icon('logout', 19) }} <span>{{ t('logout') }}</span></a>
       </div>
@@ -1311,7 +1311,7 @@
               <div class="text-sm text-slate-700 mt-0.5" x-text="step.desc"></div>
               <a x-show="i === current && step.link" :href="step.link"
                 class="inline-block mt-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
-                <span x-text="step.cta || 'Начать'"></span>
+                <span x-text="step.cta || {{ t('u_start_btn')|tojson }}"></span>
               </a>
             </div>
           </div>
@@ -1323,7 +1323,7 @@
     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
       <button @click="prev()" :disabled="current === 0"
         :class="current === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'"
-        class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700">← {{ t('back') if t('back') != 'back' else 'Назад' }}</button>
+        class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700">← {{ t('hp_back')|replace('← ','') }}</button>
       <div class="flex gap-1.5">
         <template x-for="(s, i) in steps" :key="i">
           <div class="w-2 h-2 rounded-full transition"
@@ -1331,14 +1331,14 @@
         </template>
       </div>
       <button x-show="current < steps.length - 1" @click="next()"
-        class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold">{{ t('next') if t('next') != 'next' else 'Далее' }} →</button>
+        class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold">{{ t('hp_next')|replace(' →','') }} →</button>
       <button x-show="current >= steps.length - 1" @click="dismiss()"
-        class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold">✓ {{ t('start_using') if t('start_using') != 'start_using' else 'Начать использовать' }}</button>
+        class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold">✓ {{ t('u_start_using_btn')|default('Start using') }}</button>
     </div>
 
     <div class="text-center mt-4">
       <button @click="dismiss()" class="text-xs text-slate-500 hover:text-slate-700 underline">
-        {{ t('skip_welcome') if t('skip_welcome') != 'skip_welcome' else 'Пропустить' }}
+        {{ t('skip_welcome') }}
       </button>
     </div>
   </div>
@@ -1440,7 +1440,7 @@ async function dismissGoalReminder() {
     <div class="flex items-start gap-4">
       <div class="text-5xl flex-shrink-0">{{ ach.icon }}</div>
       <div class="flex-1">
-        <div class="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">🎉 Новое достижение!</div>
+        <div class="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">{{ t('u_new_achievement') }}</div>
         <div class="font-bold text-slate-900 text-lg">{{ ach.name }}</div>
         <div class="text-xs text-slate-600 mt-0.5">{{ ach.desc }}</div>
         <div class="text-xs font-bold text-indigo-600 mt-2">+{{ ach.xp }} XP</div>
@@ -1544,7 +1544,7 @@ window.showAchievementToasts = function(achievements) {
       <div class="flex items-start gap-4">
         <div class="text-5xl flex-shrink-0">${ach.icon}</div>
         <div class="flex-1">
-          <div class="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">🎉 Новое достижение!</div>
+          <div class="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">{{ t('u_new_achievement') }}</div>
           <div class="font-bold text-slate-900 text-lg">${ach.name}</div>
           <div class="text-xs text-slate-600 mt-0.5">${ach.desc}</div>
           <div class="text-xs font-bold text-indigo-600 mt-2">+${ach.xp} XP</div>

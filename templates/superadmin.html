@@ -3,66 +3,66 @@
 <div class="max-w-7xl mx-auto px-6 py-8">
 
   <div class="mb-6">
-    <h1 class="h-display text-4xl text-slate-900">🔐 <span class="text-gradient">Super Admin</span></h1>
-    <p class="text-slate-600 text-sm">Аналитика по сайту — видно только владельцу</p>
+    <h1 class="h-display text-4xl text-slate-900 dark:text-slate-100">🔐 <span class="text-gradient">{{ t('sa_h') }}</span></h1>
+    <p class="text-slate-600 dark:text-slate-300 text-sm">{{ t('sa_sub') }}</p>
   </div>
 
   <!-- KPI -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="glass rounded-2xl p-4">
-      <div class="text-xs uppercase tracking-wider font-bold text-slate-500">👥 Всего юзеров</div>
-      <div class="text-3xl font-bold text-indigo-600 h-display">{{ stats.users_total }}</div>
-      <div class="text-xs text-slate-500 mt-1">+{{ stats.users_today }} сегодня · +{{ stats.users_7d }} за 7д</div>
+      <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">{{ t('sa_users_total') }}</div>
+      <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-300 h-display">{{ stats.users_total }}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">+{{ stats.users_today }} {{ t('sa_today') }} · +{{ stats.users_7d }} {{ t('sa_per_7d') }}</div>
     </div>
     <div class="glass rounded-2xl p-4">
-      <div class="text-xs uppercase tracking-wider font-bold text-slate-500">🟢 Активные сейчас</div>
-      <div class="text-3xl font-bold text-emerald-600 h-display">{{ stats.active_today }}</div>
-      <div class="text-xs text-slate-500 mt-1">{{ stats.active_7d }} за 7д · {{ stats.active_30d }} за 30д</div>
+      <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">{{ t('sa_active_now') }}</div>
+      <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-300 h-display">{{ stats.active_today }}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ stats.active_7d }} {{ t('sa_per_7d') }} · {{ stats.active_30d }} {{ t('sa_per_30d') }}</div>
     </div>
     <div class="glass rounded-2xl p-4">
-      <div class="text-xs uppercase tracking-wider font-bold text-slate-500">📚 Колод</div>
-      <div class="text-3xl font-bold text-purple-600 h-display">{{ stats.decks_total }}</div>
-      <div class="text-xs text-slate-500 mt-1">{{ stats.cards_total }} карт</div>
+      <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">{{ t('sa_decks_total') }}</div>
+      <div class="text-3xl font-bold text-purple-600 dark:text-purple-300 h-display">{{ stats.decks_total }}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ stats.cards_total }} {{ t('sa_cards_total') }}</div>
     </div>
     <div class="glass rounded-2xl p-4">
-      <div class="text-xs uppercase tracking-wider font-bold text-slate-500">⚡ Ответов</div>
-      <div class="text-3xl font-bold text-pink-600 h-display">{{ stats.reviews_total }}</div>
-      <div class="text-xs text-slate-500 mt-1">+{{ stats.reviews_today }} сегодня</div>
+      <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">{{ t('sa_reviews_total') }}</div>
+      <div class="text-3xl font-bold text-pink-600 dark:text-pink-300 h-display">{{ stats.reviews_total }}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">+{{ stats.reviews_today }} {{ t('sa_today') }}</div>
     </div>
   </div>
 
   <!-- USAGE BY FEATURE -->
   <div class="glass rounded-3xl p-5 mb-6">
-    <h2 class="font-bold text-slate-900 mb-3">🎮 Использование функций</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_features_h') }}</h2>
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-      <div class="bg-purple-50 rounded-xl p-3 text-center">
+      <div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3 text-center">
         <div class="text-2xl">🃏</div>
-        <div class="font-bold text-purple-700 text-xl">{{ feature_users.flashcards }}</div>
-        <div class="text-xs text-slate-600 mt-1">юзеров flashcards</div>
+        <div class="font-bold text-purple-700 dark:text-purple-300 text-xl">{{ feature_users.flashcards }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('sa_users_flashcards') }}</div>
       </div>
-      <div class="bg-emerald-50 rounded-xl p-3 text-center">
+      <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3 text-center">
         <div class="text-2xl">📝</div>
-        <div class="font-bold text-emerald-700 text-xl">{{ feature_users.tests }}</div>
-        <div class="text-xs text-slate-600 mt-1">юзеров тесты</div>
-        <div class="text-[11px] text-slate-500">{{ games_usage.total_test_runs }} прохождений</div>
+        <div class="font-bold text-emerald-700 dark:text-emerald-300 text-xl">{{ feature_users.tests }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('sa_users_tests') }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ games_usage.total_test_runs }} {{ t('sa_test_runs') }}</div>
       </div>
-      <div class="bg-amber-50 rounded-xl p-3 text-center">
+      <div class="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3 text-center">
         <div class="text-2xl">🎯</div>
-        <div class="font-bold text-amber-700 text-xl">{{ feature_users.match }}</div>
-        <div class="text-xs text-slate-600 mt-1">юзеров match</div>
-        <div class="text-[11px] text-slate-500">{{ games_usage.total_match_runs }} игр</div>
+        <div class="font-bold text-amber-700 dark:text-amber-300 text-xl">{{ feature_users.match }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('sa_users_match') }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ games_usage.total_match_runs }} {{ t('sa_match_runs') }}</div>
       </div>
-      <div class="bg-orange-50 rounded-xl p-3 text-center">
+      <div class="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-3 text-center">
         <div class="text-2xl">⚔️</div>
-        <div class="font-bold text-orange-700 text-xl">{{ feature_users.duels }}</div>
-        <div class="text-xs text-slate-600 mt-1">юзеров дуэли</div>
-        <div class="text-[11px] text-slate-500">{{ duels_stats.total }} дуэлей</div>
+        <div class="font-bold text-orange-700 dark:text-orange-300 text-xl">{{ feature_users.duels }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('sa_users_duels') }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ duels_stats.total }} {{ t('sa_duels_count') }}</div>
       </div>
-      <div class="bg-pink-50 rounded-xl p-3 text-center">
+      <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-3 text-center">
         <div class="text-2xl">🎮</div>
-        <div class="font-bold text-pink-700 text-xl">{{ feature_users.live }}</div>
-        <div class="text-xs text-slate-600 mt-1">юзеров live</div>
-        <div class="text-[11px] text-slate-500">{{ live_stats.total }} сессий</div>
+        <div class="font-bold text-pink-700 dark:text-pink-300 text-xl">{{ feature_users.live }}</div>
+        <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ t('sa_users_live') }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ live_stats.total }} {{ t('sa_live_sessions') }}</div>
       </div>
     </div>
   </div>
@@ -70,39 +70,39 @@
   <!-- GOALS / ROLES -->
   <div class="grid md:grid-cols-2 gap-4 mb-6">
     <div class="glass rounded-3xl p-5">
-      <h2 class="font-bold text-slate-900 mb-3">🎯 Цели</h2>
+      <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_goals_h') }}</h2>
       <div class="grid grid-cols-4 gap-2 text-center">
-        <div class="bg-slate-50 rounded-xl p-2">
-          <div class="font-bold text-slate-800 text-xl">{{ goals_stats.total }}</div>
-          <div class="text-[11px] text-slate-600">всего</div>
+        <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2">
+          <div class="font-bold text-slate-800 dark:text-slate-100 text-xl">{{ goals_stats.total }}</div>
+          <div class="text-[11px] text-slate-600 dark:text-slate-300">{{ t('sa_goals_total') }}</div>
         </div>
-        <div class="bg-blue-50 rounded-xl p-2">
-          <div class="font-bold text-blue-700 text-xl">{{ goals_stats.active }}</div>
-          <div class="text-[11px] text-slate-600">активных</div>
+        <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-2">
+          <div class="font-bold text-blue-700 dark:text-blue-300 text-xl">{{ goals_stats.active }}</div>
+          <div class="text-[11px] text-slate-600 dark:text-slate-300">{{ t('sa_goals_active') }}</div>
         </div>
-        <div class="bg-emerald-50 rounded-xl p-2">
-          <div class="font-bold text-emerald-700 text-xl">{{ goals_stats.completed }}</div>
-          <div class="text-[11px] text-slate-600">сдано</div>
+        <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-2">
+          <div class="font-bold text-emerald-700 dark:text-emerald-300 text-xl">{{ goals_stats.completed }}</div>
+          <div class="text-[11px] text-slate-600 dark:text-slate-300">{{ t('sa_goals_done') }}</div>
         </div>
-        <div class="bg-red-50 rounded-xl p-2">
-          <div class="font-bold text-red-700 text-xl">{{ goals_stats.abandoned }}</div>
-          <div class="text-[11px] text-slate-600">брошено</div>
+        <div class="bg-red-50 dark:bg-red-900/30 rounded-xl p-2">
+          <div class="font-bold text-red-700 dark:text-red-300 text-xl">{{ goals_stats.abandoned }}</div>
+          <div class="text-[11px] text-slate-600 dark:text-slate-300">{{ t('sa_goals_abandoned') }}</div>
         </div>
       </div>
     </div>
 
     <div class="glass rounded-3xl p-5">
-      <h2 class="font-bold text-slate-900 mb-3">👤 Юзеры по ролям</h2>
+      <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_roles_h') }}</h2>
       <div class="space-y-2">
         {% for r in by_role %}
-        <div class="flex items-center justify-between p-2 rounded-lg bg-white/60">
-          <span class="font-medium text-slate-800">{{ r.role }}</span>
-          <span class="font-bold text-indigo-600">{{ r.c }}</span>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-white/60 dark:bg-slate-800/40">
+          <span class="font-medium text-slate-800 dark:text-slate-100">{{ r.role }}</span>
+          <span class="font-bold text-indigo-600 dark:text-indigo-300">{{ r.c }}</span>
         </div>
         {% endfor %}
-        <div class="flex items-center justify-between p-2 rounded-lg bg-white/60 border-t border-gray-200 pt-2">
-          <span class="font-medium text-slate-800">🏢 Орг.</span>
-          <span class="font-bold text-indigo-600">{{ stats.orgs_total }}</span>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-white/60 dark:bg-slate-800/40 border-t border-gray-200 dark:border-slate-700 pt-2">
+          <span class="font-medium text-slate-800 dark:text-slate-100">{{ t('sa_orgs') }}</span>
+          <span class="font-bold text-indigo-600 dark:text-indigo-300">{{ stats.orgs_total }}</span>
         </div>
       </div>
     </div>
@@ -111,11 +111,11 @@
   <!-- DAILY ACTIVITY CHART -->
   {% if daily %}
   <div class="glass rounded-3xl p-5 mb-6">
-    <h2 class="font-bold text-slate-900 mb-3">📈 Активность за 30 дней</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_activity_h') }}</h2>
     {% set max_r = (daily | map(attribute='reviews') | list | max) or 1 %}
     <div class="flex items-end gap-1 h-40">
       {% for d in daily %}
-      <div class="flex-1 flex flex-col justify-end h-full group relative" title="{{ d.d }}: {{ d.reviews }} ответов от {{ d.users }} юзеров">
+      <div class="flex-1 flex flex-col justify-end h-full group relative" title="{{ d.d }}: {{ d.reviews }} {{ t('su_answers') }}">
         <div class="bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t w-full transition hover:from-indigo-600"
           style="height: {{ (d.reviews / max_r * 100)|round }}%"></div>
         <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10">
@@ -124,7 +124,7 @@
       </div>
       {% endfor %}
     </div>
-    <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+    <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1">
       <span>{{ daily[0].d if daily else '' }}</span>
       <span>{{ daily[-1].d if daily else '' }}</span>
     </div>
@@ -134,7 +134,7 @@
   <!-- REGISTRATIONS -->
   {% if registrations %}
   <div class="glass rounded-3xl p-5 mb-6">
-    <h2 class="font-bold text-slate-900 mb-3">📝 Регистрации за 30 дней</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_regs_h') }}</h2>
     {% set max_reg = (registrations | map(attribute='c') | list | max) or 1 %}
     <div class="flex items-end gap-1 h-32">
       {% for r in registrations %}
@@ -149,42 +149,42 @@
 
   <!-- TOP USERS -->
   <div class="glass rounded-3xl p-5 mb-6">
-    <h2 class="font-bold text-slate-900 mb-3">🏆 Топ пользователей</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_top_users_h') }}</h2>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-gray-200">
+          <tr class="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-gray-200 dark:border-slate-700">
             <th class="py-2 px-2">#</th>
-            <th class="py-2 px-2">User</th>
-            <th class="py-2 px-2">Роль</th>
-            <th class="py-2 px-2 text-right">⭐ XP</th>
-            <th class="py-2 px-2 text-right">🔥</th>
-            <th class="py-2 px-2 text-right">📚 Колод</th>
-            <th class="py-2 px-2 text-right">⚡ Ответов</th>
-            <th class="py-2 px-2">Последний раз</th>
+            <th class="py-2 px-2">{{ t('sa_th_user') }}</th>
+            <th class="py-2 px-2">{{ t('sa_th_role') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_xp') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_streak') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_decks') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_answers') }}</th>
+            <th class="py-2 px-2">{{ t('sa_th_last') }}</th>
           </tr>
         </thead>
         <tbody>
           {% for u in top_users %}
-          <tr class="border-b border-gray-100 hover:bg-white/50">
-            <td class="py-2 px-2 text-slate-500">{{ loop.index }}</td>
+          <tr class="border-b border-gray-100 dark:border-slate-700 hover:bg-white/50 dark:hover:bg-slate-800/40">
+            <td class="py-2 px-2 text-slate-500 dark:text-slate-400">{{ loop.index }}</td>
             <td class="py-2 px-2">
-              <a href="/superadmin/user/{{ u.id }}" class="font-medium text-indigo-600 hover:underline">
+              <a href="/superadmin/user/{{ u.id }}" class="font-medium text-indigo-600 dark:text-indigo-300 hover:underline">
                 {{ u.full_name or u.username }}
               </a>
-              <div class="text-[10px] text-slate-500 font-mono">@{{ u.username }}{% if u.org_name %} · {{ u.org_name }}{% endif %}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">@{{ u.username }}{% if u.org_name %} · {{ u.org_name }}{% endif %}</div>
             </td>
             <td class="py-2 px-2">
-              {% if u.role == 'admin' %}<span class="badge bg-red-100 text-red-700">{{ u.role }}</span>
-              {% elif u.role == 'teacher' %}<span class="badge bg-blue-100 text-blue-700">{{ u.role }}</span>
-              {% elif u.role == 'individual' %}<span class="badge bg-emerald-100 text-emerald-700">{{ u.role }}</span>
-              {% else %}<span class="badge bg-slate-100">{{ u.role }}</span>{% endif %}
+              {% if u.role == 'admin' %}<span class="badge bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">{{ u.role }}</span>
+              {% elif u.role == 'teacher' %}<span class="badge bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ u.role }}</span>
+              {% elif u.role == 'individual' %}<span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ u.role }}</span>
+              {% else %}<span class="badge bg-slate-100 dark:bg-slate-800/60">{{ u.role }}</span>{% endif %}
             </td>
-            <td class="py-2 px-2 text-right font-bold text-amber-600">{{ u.xp or 0 }}</td>
-            <td class="py-2 px-2 text-right text-orange-600">{{ u.streak or 0 }}</td>
-            <td class="py-2 px-2 text-right text-slate-600">{{ u.my_decks }}</td>
-            <td class="py-2 px-2 text-right text-slate-600">{{ u.reviews_count }}</td>
-            <td class="py-2 px-2 text-xs text-slate-500">{{ u.last_study[:16].replace('T', ' ') if u.last_study else '—' }}</td>
+            <td class="py-2 px-2 text-right font-bold text-amber-600 dark:text-amber-300">{{ u.xp or 0 }}</td>
+            <td class="py-2 px-2 text-right text-orange-600 dark:text-orange-300">{{ u.streak or 0 }}</td>
+            <td class="py-2 px-2 text-right text-slate-600 dark:text-slate-300">{{ u.my_decks }}</td>
+            <td class="py-2 px-2 text-right text-slate-600 dark:text-slate-300">{{ u.reviews_count }}</td>
+            <td class="py-2 px-2 text-xs text-slate-500 dark:text-slate-400">{{ u.last_study[:16].replace('T', ' ') if u.last_study else '—' }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -194,33 +194,33 @@
 
   <!-- TOP DECKS -->
   <div class="glass rounded-3xl p-5 mb-6">
-    <h2 class="font-bold text-slate-900 mb-3">📚 Топ колод (по использованию)</h2>
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3">{{ t('sa_top_decks_h') }}</h2>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-gray-200">
+          <tr class="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-gray-200 dark:border-slate-700">
             <th class="py-2 px-2">#</th>
-            <th class="py-2 px-2">Колода</th>
-            <th class="py-2 px-2">Автор</th>
-            <th class="py-2 px-2 text-right">Карт</th>
-            <th class="py-2 px-2 text-right">Юзеров</th>
-            <th class="py-2 px-2 text-right">Ответов</th>
-            <th class="py-2 px-2 text-center">Pub</th>
+            <th class="py-2 px-2">{{ t('sa_th_deck') }}</th>
+            <th class="py-2 px-2">{{ t('sa_th_author') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_cards') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_users_count') }}</th>
+            <th class="py-2 px-2 text-right">{{ t('sa_th_answers') }}</th>
+            <th class="py-2 px-2 text-center">{{ t('sa_th_pub') }}</th>
           </tr>
         </thead>
         <tbody>
           {% for d in top_decks %}
-          <tr class="border-b border-gray-100 hover:bg-white/50">
-            <td class="py-2 px-2 text-slate-500">{{ loop.index }}</td>
+          <tr class="border-b border-gray-100 dark:border-slate-700 hover:bg-white/50 dark:hover:bg-slate-800/40">
+            <td class="py-2 px-2 text-slate-500 dark:text-slate-400">{{ loop.index }}</td>
             <td class="py-2 px-2">
-              <a href="/deck/{{ d.id }}" class="font-medium text-indigo-600 hover:underline">
+              <a href="/deck/{{ d.id }}" class="font-medium text-indigo-600 dark:text-indigo-300 hover:underline">
                 {{ d.icon }} {{ d.name }}
               </a>
             </td>
             <td class="py-2 px-2 text-xs">@{{ d.owner_name or '—' }}</td>
-            <td class="py-2 px-2 text-right text-slate-600">{{ d.cards_count }}</td>
-            <td class="py-2 px-2 text-right text-slate-600">{{ d.unique_users }}</td>
-            <td class="py-2 px-2 text-right font-bold text-indigo-600">{{ d.reviews_count }}</td>
+            <td class="py-2 px-2 text-right text-slate-600 dark:text-slate-300">{{ d.cards_count }}</td>
+            <td class="py-2 px-2 text-right text-slate-600 dark:text-slate-300">{{ d.unique_users }}</td>
+            <td class="py-2 px-2 text-right font-bold text-indigo-600 dark:text-indigo-300">{{ d.reviews_count }}</td>
             <td class="py-2 px-2 text-center">{% if d.is_public %}🌐{% endif %}</td>
           </tr>
           {% endfor %}
