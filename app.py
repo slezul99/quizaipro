@@ -151,6 +151,32 @@ def csrf_protect():
             abort(403, "CSRF token missing or invalid")
 
 
+# last_seen tracker — obnovlyaem ne chashche raza v 60 sek
+import threading
+_last_seen_cache = {}
+_last_seen_lock = threading.Lock()
+
+@app.before_request
+def track_last_seen():
+    """Otmechaem polzovatelya kak online (last_seen) na lyubom zaprose, ne chashche raza v minutu."""
+    uid = session.get("user_id")
+    if not uid or request.path.startswith("/static/") or request.path.startswith("/api/live/"):
+        return
+    now = datetime.utcnow()
+    with _last_seen_lock:
+        last = _last_seen_cache.get(uid)
+        if last and (now - last).total_seconds() < 60:
+            return
+        _last_seen_cache[uid] = now
+    try:
+        conn = db.get_conn()
+        conn.execute("UPDATE users SET last_seen=? WHERE id=?", (now.isoformat(), uid))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
 @app.context_processor
 def inject_csrf():
     """Dostupno v shablonakh kak {{ csrf_token() }}."""
@@ -5939,6 +5965,123 @@ def superadmin_dashboard():
         "finished": conn.execute("SELECT COUNT(*) AS c FROM duels WHERE status='finished'").fetchone()["c"],
     }
 
+    # ============================================================
+    # === RASSHIRENNAYA ANALITIKA (dlya owner-only super-admina) ==
+    # ============================================================
+
+    # AI usage: vsego / segodnya / 7dn / 30dn
+    ai_stats = {
+        "total": conn.execute("SELECT COUNT(*) AS c FROM ai_usage").fetchone()["c"],
+        "today": conn.execute("SELECT COUNT(*) AS c FROM ai_usage WHERE DATE(created_at)=DATE('now')").fetchone()["c"],
+        "yesterday": conn.execute("SELECT COUNT(*) AS c FROM ai_usage WHERE DATE(created_at)=DATE('now','-1 day')").fetchone()["c"],
+        "last_7d": conn.execute("SELECT COUNT(*) AS c FROM ai_usage WHERE created_at >= datetime('now','-7 days')").fetchone()["c"],
+        "last_30d": conn.execute("SELECT COUNT(*) AS c FROM ai_usage WHERE created_at >= datetime('now','-30 days')").fetchone()["c"],
+        "cards_total": conn.execute("SELECT COALESCE(SUM(cards_generated),0) AS c FROM ai_usage").fetchone()["c"],
+        "cards_today": conn.execute("SELECT COALESCE(SUM(cards_generated),0) AS c FROM ai_usage WHERE DATE(created_at)=DATE('now')").fetchone()["c"],
+    }
+    # AI po dnyam (30 dn) dlya grafika
+    ai_daily = conn.execute("""
+        SELECT DATE(created_at) AS d, COUNT(*) AS calls,
+               COALESCE(SUM(cards_generated),0) AS cards,
+               COUNT(DISTINCT user_id) AS users
+        FROM ai_usage
+        WHERE created_at >= datetime('now','-30 days')
+        GROUP BY DATE(created_at) ORDER BY d
+    """).fetchall()
+    # AI po vidam (text/topic/pdf/...)
+    ai_by_kind = conn.execute("""
+        SELECT kind, COUNT(*) AS c, COALESCE(SUM(cards_generated),0) AS cards
+        FROM ai_usage GROUP BY kind ORDER BY c DESC
+    """).fetchall()
+    # Top AI-potrebiteli
+    ai_top_users = conn.execute("""
+        SELECT u.id, u.username, u.full_name, u.role,
+               COUNT(*) AS calls,
+               COALESCE(SUM(au.cards_generated),0) AS cards,
+               MAX(au.created_at) AS last_call
+        FROM ai_usage au
+        JOIN users u ON u.id = au.user_id
+        WHERE au.user_id IS NOT NULL
+        GROUP BY u.id
+        ORDER BY calls DESC LIMIT 15
+    """).fetchall()
+
+    # Online seychas (poslednie 5 minut)
+    online_now = conn.execute("""
+        SELECT id, username, full_name, role, last_seen, last_study, xp, streak
+        FROM users
+        WHERE last_seen >= datetime('now','-5 minutes')
+        ORDER BY last_seen DESC LIMIT 50
+    """).fetchall()
+    # Aktivnye za chas
+    active_hour = conn.execute("""
+        SELECT COUNT(*) AS c FROM users
+        WHERE last_seen >= datetime('now','-1 hour')
+    """).fetchone()["c"]
+
+    # Support tikety
+    support_stats = {
+        "total":  conn.execute("SELECT COUNT(*) AS c FROM support_tickets").fetchone()["c"],
+        "open":   conn.execute("SELECT COUNT(*) AS c FROM support_tickets WHERE status='open'").fetchone()["c"],
+        "closed": conn.execute("SELECT COUNT(*) AS c FROM support_tickets WHERE status='closed'").fetchone()["c"],
+        "unanswered": conn.execute("""
+            SELECT COUNT(*) AS c FROM support_tickets t
+            WHERE t.status='open'
+            AND NOT EXISTS (
+                SELECT 1 FROM support_messages m
+                WHERE m.ticket_id=t.id AND m.is_admin=1
+            )
+        """).fetchone()["c"],
+        "today": conn.execute("""
+            SELECT COUNT(*) AS c FROM support_tickets
+            WHERE DATE(created_at)=DATE('now')
+        """).fetchone()["c"],
+    }
+    # Posledniye 10 ticketov
+    recent_tickets = conn.execute("""
+        SELECT t.id, t.subject, t.status, t.created_at, t.last_activity,
+               u.username AS user_username,
+               (SELECT COUNT(*) FROM support_messages WHERE ticket_id=t.id) AS msg_count,
+               (SELECT COUNT(*) FROM support_messages WHERE ticket_id=t.id AND is_admin=0 AND is_read=0) AS unread
+        FROM support_tickets t
+        JOIN users u ON u.id = t.user_id
+        ORDER BY t.last_activity DESC LIMIT 10
+    """).fetchall()
+
+    # Sotsial nyy: chats / channels / study groups / tournaments
+    social_stats = {
+        "chats_total":   conn.execute("SELECT COUNT(*) AS c FROM chats").fetchone()["c"],
+        "chats_dm":      conn.execute("SELECT COUNT(*) AS c FROM chats WHERE type='dm'").fetchone()["c"],
+        "chats_group":   conn.execute("SELECT COUNT(*) AS c FROM chats WHERE type='group'").fetchone()["c"],
+        "chats_channel": conn.execute("SELECT COUNT(*) AS c FROM chats WHERE type='channel'").fetchone()["c"],
+        "messages_total": conn.execute("SELECT COUNT(*) AS c FROM messages").fetchone()["c"],
+        "messages_today": conn.execute("SELECT COUNT(*) AS c FROM messages WHERE DATE(created_at)=DATE('now')").fetchone()["c"],
+        "study_groups": conn.execute("SELECT COUNT(*) AS c FROM study_groups").fetchone()["c"],
+        "tournaments_total":    conn.execute("SELECT COUNT(*) AS c FROM tournaments").fetchone()["c"],
+        "tournaments_running":  conn.execute("SELECT COUNT(*) AS c FROM tournaments WHERE status='running'").fetchone()["c"],
+        "tournaments_finished": conn.execute("SELECT COUNT(*) AS c FROM tournaments WHERE status='finished'").fetchone()["c"],
+        "friendships_total":    conn.execute("SELECT COUNT(*) AS c FROM friendships WHERE status='accepted'").fetchone()["c"] // 2,  # parnaya zapis'
+        "notifications_total":  conn.execute("SELECT COUNT(*) AS c FROM notifications").fetchone()["c"],
+    }
+
+    # Posledniye 10 registratsiy (kto?)
+    recent_users = conn.execute("""
+        SELECT id, username, full_name, role, created_at, org_id, last_study
+        FROM users
+        ORDER BY created_at DESC LIMIT 10
+    """).fetchall()
+
+    # Marketplace: top public decks
+    public_decks = conn.execute("""
+        SELECT d.id, d.name, d.icon, d.owner_id, d.clones_count,
+               u.username AS author,
+               (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS cards_count
+        FROM decks d
+        LEFT JOIN users u ON u.id = d.owner_id
+        WHERE d.is_public = 1
+        ORDER BY d.clones_count DESC LIMIT 10
+    """).fetchall()
+
     conn.close()
     return render_template("superadmin.html",
         stats=stats,
@@ -5952,6 +6095,18 @@ def superadmin_dashboard():
         goals_stats=goals_stats,
         live_stats=live_stats,
         duels_stats=duels_stats,
+        # New blocks
+        ai_stats=ai_stats,
+        ai_daily=[dict(d) for d in ai_daily],
+        ai_by_kind=[dict(k) for k in ai_by_kind],
+        ai_top_users=[dict(u) for u in ai_top_users],
+        online_now=[dict(u) for u in online_now],
+        active_hour=active_hour,
+        support_stats=support_stats,
+        recent_tickets=[dict(t) for t in recent_tickets],
+        social_stats=social_stats,
+        recent_users=[dict(u) for u in recent_users],
+        public_decks=[dict(d) for d in public_decks],
     )
 
 

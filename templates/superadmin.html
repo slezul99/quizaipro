@@ -7,6 +7,48 @@
     <p class="text-slate-600 dark:text-slate-300 text-sm">{{ t('sa_sub') }}</p>
   </div>
 
+  <!-- ONLINE NOW + ALERT BADGES -->
+  <div class="grid md:grid-cols-3 gap-4 mb-6">
+    <div class="glass rounded-2xl p-4 border-2 border-emerald-300/40 dark:border-emerald-500/30" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(255,255,255,0.6));">
+      <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">🟢 Сейчас онлайн (5 мин)</div>
+      <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-300 h-display">{{ online_now|length }}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ active_hour }} за последний час</div>
+    </div>
+    <div class="glass rounded-2xl p-4 border-2 {% if support_stats.unanswered > 0 %}border-red-300 dark:border-red-500/40{% else %}border-transparent{% endif %}" style="background: {% if support_stats.unanswered > 0 %}linear-gradient(135deg, rgba(239,68,68,0.08), rgba(255,255,255,0.6)){% else %}{% endif %};">
+      <div class="text-xs uppercase tracking-wider font-bold {% if support_stats.unanswered > 0 %}text-red-700 dark:text-red-300{% else %}text-slate-500 dark:text-slate-400{% endif %}">💬 Поддержка{% if support_stats.unanswered > 0 %} — БЕЗ ОТВЕТА{% endif %}</div>
+      <div class="text-3xl font-bold {% if support_stats.unanswered > 0 %}text-red-600 dark:text-red-300{% else %}text-slate-700 dark:text-slate-200{% endif %} h-display">{{ support_stats.unanswered }}<span class="text-base font-normal text-slate-400 dark:text-slate-500">/{{ support_stats.open }}</span></div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ support_stats.total }} всего · +{{ support_stats.today }} сегодня</div>
+    </div>
+    <div class="glass rounded-2xl p-4 border-2 border-purple-300/40 dark:border-purple-500/30" style="background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(255,255,255,0.6));">
+      <div class="text-xs uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">🤖 AI вызовов сегодня</div>
+      <div class="text-3xl font-bold text-purple-600 dark:text-purple-300 h-display">{{ ai_stats.today }}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ ai_stats.cards_today }} карт · вчера {{ ai_stats.yesterday }}</div>
+    </div>
+  </div>
+
+  <!-- WHO IS ONLINE NOW -->
+  {% if online_now %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+      <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span></span>
+      Онлайн сейчас ({{ online_now|length }})
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+      {% for u in online_now %}
+      <a href="/superadmin/user/{{ u.id }}" class="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/40 dark:bg-emerald-900/20 border border-emerald-200/40 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          {{ (u.full_name or u.username)[0]|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate">{{ u.full_name or u.username }}</div>
+          <div class="text-[10px] text-slate-500 dark:text-slate-400">⭐{{ u.xp or 0 }} · 🔥{{ u.streak or 0 }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- KPI -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="glass rounded-2xl p-4">
@@ -30,6 +72,227 @@
       <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">+{{ stats.reviews_today }} {{ t('sa_today') }}</div>
     </div>
   </div>
+
+  <!-- ============== AI USAGE BLOCK ============== -->
+  <div class="glass rounded-3xl p-5 mb-6" style="background: linear-gradient(135deg, rgba(168,85,247,0.06), rgba(99,102,241,0.04));">
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+      <h2 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <span class="text-2xl">🤖</span> AI Usage
+      </h2>
+      <div class="text-xs text-slate-500 dark:text-slate-400">⚠️ Free tier: 1500/день, ~15 RPM</div>
+    </div>
+
+    <!-- KPI line -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-black text-purple-700 dark:text-purple-300">{{ ai_stats.total }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">всего вызовов</div>
+      </div>
+      <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-3 text-center {% if ai_stats.today >= 1500 %}ring-2 ring-red-500{% elif ai_stats.today >= 1000 %}ring-2 ring-orange-500{% endif %}">
+        <div class="text-2xl font-black {% if ai_stats.today >= 1500 %}text-red-600{% elif ai_stats.today >= 1000 %}text-orange-600{% else %}text-pink-700 dark:text-pink-300{% endif %}">{{ ai_stats.today }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">сегодня
+          {% if ai_stats.today >= 1500 %}<span class="text-red-600 dark:text-red-400 ml-1">⚠️ ЛИМИТ</span>{% elif ai_stats.today >= 1000 %}<span class="text-orange-600 dark:text-orange-400 ml-1">⚠️ блиско</span>{% endif %}
+        </div>
+      </div>
+      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-black text-blue-700 dark:text-blue-300">{{ ai_stats.last_7d }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">за 7 дней</div>
+      </div>
+      <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-black text-indigo-700 dark:text-indigo-300">{{ ai_stats.last_30d }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">за 30 дней</div>
+      </div>
+      <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300">{{ ai_stats.cards_total }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">карт сгенерировано</div>
+      </div>
+    </div>
+
+    <!-- AI graphic — 30 days -->
+    {% if ai_daily %}
+    <div class="mb-4">
+      <div class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-2">📈 AI вызовы по дням (30д)</div>
+      {% set max_a = (ai_daily | map(attribute='calls') | list | max) or 1 %}
+      <div class="flex items-end gap-1 h-32">
+        {% for d in ai_daily %}
+        <div class="flex-1 flex flex-col justify-end h-full group relative" title="{{ d.d }}: {{ d.calls }} вызовов · {{ d.cards }} карт · {{ d.users }} юзеров">
+          <div class="bg-gradient-to-t {% if d.calls >= 1500 %}from-red-500 to-rose-400{% elif d.calls >= 1000 %}from-orange-500 to-amber-400{% else %}from-purple-500 to-indigo-400{% endif %} rounded-t w-full transition"
+            style="height: {{ (d.calls / max_a * 100)|round }}%; min-height: 2px;"></div>
+          <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10">
+            {{ d.calls }} ({{ d.users }}u)
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+        <span>{{ ai_daily[0].d if ai_daily else '' }}</span>
+        <span>{{ ai_daily[-1].d if ai_daily else '' }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- AI by kind + top users — side by side -->
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-2">📊 По типу запроса</div>
+        <div class="space-y-1.5">
+          {% for k in ai_by_kind %}
+          <div class="flex items-center gap-3 p-2 rounded-lg bg-white/60 dark:bg-slate-800/40">
+            <span class="text-lg flex-shrink-0">
+              {% if k.kind == 'text' %}📝{% elif k.kind == 'topic' %}💡{% elif k.kind == 'pdf' %}📄{% elif k.kind == 'tutor' %}🤖{% elif k.kind == 'explain' %}💬{% else %}🔧{% endif %}
+            </span>
+            <span class="flex-1 font-medium text-sm text-slate-800 dark:text-slate-100">{{ k.kind }}</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400">{{ k.cards }} карт</span>
+            <span class="font-bold text-purple-600 dark:text-purple-300">{{ k.c }}</span>
+          </div>
+          {% else %}
+          <p class="text-sm text-slate-400 dark:text-slate-500 italic">Пока нет данных</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-2">🏆 Топ AI потребителей</div>
+        <div class="space-y-1.5 max-h-[280px] overflow-y-auto">
+          {% for u in ai_top_users %}
+          <a href="/superadmin/user/{{ u.id }}" class="flex items-center gap-2 p-2 rounded-lg bg-white/60 dark:bg-slate-800/40 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition">
+            <span class="w-6 text-center text-xs font-bold text-slate-500">{{ loop.index }}</span>
+            <span class="flex-1 min-w-0">
+              <div class="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{{ u.full_name or u.username }}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400">@{{ u.username }} · {{ (u.last_call or '')[:10] }}</div>
+            </span>
+            <span class="text-right flex-shrink-0">
+              <div class="font-bold text-purple-600 dark:text-purple-300 text-sm">{{ u.calls }}</div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ u.cards }}к</div>
+            </span>
+          </a>
+          {% else %}
+          <p class="text-sm text-slate-400 dark:text-slate-500 italic">Пока никто не использовал AI</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== SUPPORT TICKETS ============== -->
+  <div class="glass rounded-3xl p-5 mb-6 {% if support_stats.unanswered > 0 %}border-2 border-red-300 dark:border-red-500/40{% endif %}">
+    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+      <h2 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <span class="text-2xl">💬</span> Поддержка
+        {% if support_stats.unanswered > 0 %}<span class="badge bg-red-500 text-white animate-pulse">{{ support_stats.unanswered }} без ответа</span>{% endif %}
+      </h2>
+      <a href="/support" class="text-sm text-indigo-600 dark:text-indigo-300 font-semibold hover:underline">Перейти в чат →</a>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">{{ support_stats.total }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold uppercase">всего</div>
+      </div>
+      <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ support_stats.open }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold uppercase">открытых</div>
+      </div>
+      <div class="bg-red-50 dark:bg-red-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-red-700 dark:text-red-300">{{ support_stats.unanswered }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold uppercase">без ответа</div>
+      </div>
+      <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-slate-600 dark:text-slate-300">{{ support_stats.closed }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold uppercase">закрытых</div>
+      </div>
+      <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-pink-700 dark:text-pink-300">+{{ support_stats.today }}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold uppercase">сегодня</div>
+      </div>
+    </div>
+    {% if recent_tickets %}
+    <div class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-2">📋 Последние 10 обращений</div>
+    <div class="space-y-1.5">
+      {% for tk in recent_tickets %}
+      <a href="/support/{{ tk.id }}" class="flex items-center gap-3 p-2 rounded-lg bg-white/60 dark:bg-slate-800/40 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+        <span class="badge {% if tk.status == 'open' %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300{% else %}bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300{% endif %} text-xs flex-shrink-0">
+          {% if tk.status == 'open' %}● Открыт{% else %}✓ Закрыт{% endif %}
+        </span>
+        <span class="flex-1 min-w-0 truncate text-sm font-medium text-slate-900 dark:text-slate-100">{{ tk.subject or '— без темы —' }}</span>
+        <span class="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">@{{ tk.user_username }}</span>
+        <span class="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{{ tk.msg_count }} 💬</span>
+        {% if tk.unread > 0 %}<span class="badge bg-red-500 text-white text-xs flex-shrink-0">+{{ tk.unread }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ============== SOCIAL STATS ============== -->
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+      <span class="text-2xl">🌐</span> Социальные функции
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 text-center">
+        <div class="text-xl">💬</div>
+        <div class="font-bold text-indigo-700 dark:text-indigo-300 text-lg">{{ social_stats.chats_total }}</div>
+        <div class="text-[10px] text-slate-600 dark:text-slate-300">всего чатов</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400">DM:{{ social_stats.chats_dm }} · G:{{ social_stats.chats_group }}</div>
+      </div>
+      <div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3 text-center">
+        <div class="text-xl">📡</div>
+        <div class="font-bold text-purple-700 dark:text-purple-300 text-lg">{{ social_stats.chats_channel }}</div>
+        <div class="text-[10px] text-slate-600 dark:text-slate-300">каналов</div>
+      </div>
+      <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-3 text-center">
+        <div class="text-xl">📨</div>
+        <div class="font-bold text-pink-700 dark:text-pink-300 text-lg">{{ social_stats.messages_total }}</div>
+        <div class="text-[10px] text-slate-600 dark:text-slate-300">сообщений</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400">+{{ social_stats.messages_today }} сегодня</div>
+      </div>
+      <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3 text-center">
+        <div class="text-xl">🤝</div>
+        <div class="font-bold text-emerald-700 dark:text-emerald-300 text-lg">{{ social_stats.friendships_total }}</div>
+        <div class="text-[10px] text-slate-600 dark:text-slate-300">дружбы</div>
+      </div>
+      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3 text-center">
+        <div class="text-xl">🎓</div>
+        <div class="font-bold text-blue-700 dark:text-blue-300 text-lg">{{ social_stats.study_groups }}</div>
+        <div class="text-[10px] text-slate-600 dark:text-slate-300">учеб. групп</div>
+      </div>
+      <div class="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3 text-center">
+        <div class="text-xl">🏆</div>
+        <div class="font-bold text-amber-700 dark:text-amber-300 text-lg">{{ social_stats.tournaments_total }}</div>
+        <div class="text-[10px] text-slate-600 dark:text-slate-300">турниров</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400">▶{{ social_stats.tournaments_running }} · ✓{{ social_stats.tournaments_finished }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== RECENT REGISTRATIONS ============== -->
+  {% if recent_users %}
+  <div class="glass rounded-3xl p-5 mb-6">
+    <h2 class="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Последние 10 регистраций
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      {% for u in recent_users %}
+      <a href="/superadmin/user/{{ u.id }}" class="flex items-center gap-3 p-2 rounded-lg bg-white/60 dark:bg-slate-800/40 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          {{ (u.full_name or u.username)[0]|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{{ u.full_name or u.username }}</div>
+          <div class="text-[10px] text-slate-500 dark:text-slate-400">@{{ u.username }} · {{ u.role }}</div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ (u.created_at or '')[:16].replace('T', ' ') }}</div>
+          {% if u.last_study %}
+          <div class="text-[10px] text-emerald-600 dark:text-emerald-300">был {{ (u.last_study or '')[:16].replace('T', ' ') }}</div>
+          {% else %}
+          <div class="text-[10px] text-slate-400 dark:text-slate-500">не учился</div>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- USAGE BY FEATURE -->
   <div class="glass rounded-3xl p-5 mb-6">

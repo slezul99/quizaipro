@@ -533,6 +533,12 @@ def init_db():
         c.execute("ALTER TABLE users ADD COLUMN welcome_shown INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
         pass
+
+    # last_seen: lyuboy zapros (chtoby znat' kto online seyz)
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN last_seen TEXT")
+    except sqlite3.OperationalError:
+        pass
     # Tip kolody: mcq (testy s variantami) ili terms (slovari/terminy/pravila)
     try:
         c.execute("ALTER TABLE decks ADD COLUMN deck_type TEXT DEFAULT 'mcq'")
