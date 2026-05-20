@@ -16,7 +16,8 @@
           ID {{ u.id }} ·
           {{ t('su_role_lbl') }} <b>{{ u.role }}</b> ·
           {{ t('su_reg') }} {{ u.created_at[:16].replace('T', ' ') }}
-          {% if u.last_study %} · {{ t('su_last_seen') }} {{ u.last_study[:16].replace('T', ' ') }}{% endif %}
+          {% if u.last_seen %} · {{ t('su_last_online') }} <b class="text-emerald-600 dark:text-emerald-300">{{ u.last_seen[:16].replace('T', ' ') }}</b>{% endif %}
+          {% if u.last_study %} · {{ t('su_last_study') }} {{ u.last_study[:16].replace('T', ' ') }}{% endif %}
         </p>
       </div>
     </div>
