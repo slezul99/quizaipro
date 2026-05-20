@@ -10,7 +10,7 @@
   <!-- ONLINE NOW + ALERT BADGES -->
   <div class="grid md:grid-cols-3 gap-4 mb-6">
     <div class="glass rounded-2xl p-4 border-2 border-emerald-300/40 dark:border-emerald-500/30" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(255,255,255,0.6));">
-      <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">🟢 Сейчас онлайн (5 мин)</div>
+      <div class="text-xs uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">🟢 Сейчас онлайн (2 мин)</div>
       <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-300 h-display">{{ online_now|length }}</div>
       <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ active_hour }} за последний час</div>
     </div>
@@ -35,13 +35,13 @@
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
       {% for u in online_now %}
-      <a href="/superadmin/user/{{ u.id }}" class="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/40 dark:bg-emerald-900/20 border border-emerald-200/40 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
+      <a href="/superadmin/user/{{ u.id }}" class="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/40 dark:bg-emerald-900/20 border border-emerald-200/40 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition" title="last_seen: {{ u.last_seen }}">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
           {{ (u.full_name or u.username)[0]|upper }}
         </div>
         <div class="flex-1 min-w-0">
           <div class="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate">{{ u.full_name or u.username }}</div>
-          <div class="text-[10px] text-slate-500 dark:text-slate-400">⭐{{ u.xp or 0 }} · 🔥{{ u.streak or 0 }}</div>
+          <div class="text-[10px] text-slate-500 dark:text-slate-400">⭐{{ u.xp or 0 }} · 🔥{{ u.streak or 0 }} · {{ (u.last_seen or '')[11:16] }}</div>
         </div>
       </a>
       {% endfor %}

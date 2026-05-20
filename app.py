@@ -6199,11 +6199,11 @@ def superadmin_dashboard():
         ORDER BY calls DESC LIMIT 15
     """).fetchall()
 
-    # Online seychas (poslednie 5 minut)
+    # Online seychas (poslednie 2 minuty — bolee tochno chem 5)
     online_now = conn.execute("""
         SELECT id, username, full_name, role, last_seen, last_study, xp, streak
         FROM users
-        WHERE last_seen >= datetime('now','-5 minutes')
+        WHERE last_seen >= datetime('now','-2 minutes')
         ORDER BY last_seen DESC LIMIT 50
     """).fetchall()
     # Aktivnye za chas
