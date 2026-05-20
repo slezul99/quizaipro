@@ -34,7 +34,13 @@
       <div>
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('import_help') }}</label>
         <input type="file" name="file" accept=".txt,.csv,.tsv,.docx,.pdf" class="input-premium" style="padding: 8px 12px;">
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">📄 {{ t('u_pdf_scan_hint') }}</p>
+        <div class="mt-2 p-3 rounded-xl text-xs" style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05)); border: 1px solid rgba(99,102,241,0.2);">
+          <p class="text-slate-700 dark:text-slate-200 leading-relaxed">
+            <b>📄 {{ t('u_pdf_scan_hint') }}</b><br>
+            <span class="text-slate-600 dark:text-slate-300">{{ t('u_vision_filter_note') }}</span>
+            <br><span class="text-slate-500 dark:text-slate-400 text-[11px]">{{ t('u_vision_quota_note') }}</span>
+          </p>
+        </div>
       </div>
 
       <div class="flex items-center gap-3 my-2">

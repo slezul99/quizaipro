@@ -18,6 +18,7 @@ import config
 import google_auth
 import billing
 import ai_gen
+import vision_jobs
 import achievements as ach_mod
 import goals as goals_mod
 import help_content
@@ -2842,6 +2843,17 @@ def deck_toggle_public(deck_id):
     deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
     if not deck or not can_view_deck(user, dict(deck)):
         conn.close(); abort(404)
+    deck_d = dict(deck)
+    # Vision PDF kolodu nelzya publikat na Free plane (predotvraschaem zlouupotreblenie AI Vision)
+    if deck_d.get("created_via") == "vision_pdf":
+        plan = billing.get_active_plan(user)
+        if plan == "free":
+            conn.close()
+            return jsonify({
+                "ok": False,
+                "error": "vision_no_publish_on_free",
+                "msg": "На бесплатном тарифе колоды созданные через AI Vision нельзя публиковать. Обновите план."
+            }), 403
     new_state = 0 if deck["is_public"] else 1
     conn.execute("UPDATE decks SET is_public=? WHERE id=?", (new_state, deck_id))
     conn.commit(); conn.close()
@@ -5526,27 +5538,38 @@ def import_page():
                 print(f"[IMPORT] parsed {len(cards)} cards from {fname}")
 
                 # FALLBACK dlya skanirovannyh PDF (kartinki bez tekstovogo sloya)
-                # Esli kart 0 i fayl PDF i tekst pochti pustoy — probuyem Gemini Vision
+                # Esli kart 0 i fayl PDF — proveryaem ne skan li eto
                 if not cards and fpath.suffix.lower() == ".pdf":
                     if importer.is_scanned_pdf(fpath):
-                        if ai_gen.is_available():
-                            print(f"[IMPORT] PDF appears scanned — trying Gemini Vision")
-                            try:
-                                vision_cards = ai_gen.vision_pdf_to_cards(fpath, lang=session.get("lang", "ru"))
-                                if vision_cards:
-                                    cards = vision_cards
-                                    billing.log_ai_usage(user, "vision_pdf", len(vision_cards))
-                                    print(f"[IMPORT] Vision parsed {len(vision_cards)} cards")
-                                    flash(f"📄 Сканированный PDF распознан через AI (+{len(vision_cards)} карт)", "success")
-                            except Exception as e:
-                                print(f"[IMPORT] Vision failed: {type(e).__name__}: {e}")
-                                flash(f"AI не смог распознать сканированный PDF: {e}", "error")
-                                fpath.unlink(missing_ok=True)
-                                return redirect(url_for("import_page"))
-                        else:
+                        if not ai_gen.is_available():
                             flash("Это сканированный PDF, для распознавания нужен AI. Загрузите PDF с текстовым слоем или используйте текстовый импорт.", "error")
                             fpath.unlink(missing_ok=True)
                             return redirect(url_for("import_page"))
+
+                        # PROVERKA LIMITA: Free tier — 1 vision-import v mesyats, bez publikatsii
+                        if not _check_vision_quota(user):
+                            flash("⚠️ Лимит AI Vision исчерпан. Бесплатно — 1 раз в месяц. "
+                                  "В будущем для большего лимита потребуется подписка.", "error")
+                            fpath.unlink(missing_ok=True)
+                            return redirect(url_for("import_page"))
+
+                        # ZAPUSKAEM ASYNC JOB
+                        jid = vision_jobs.create_job(
+                            user_id=user["id"],
+                            fpath=fpath,
+                            filename_stem=uploaded_filename,
+                            deck_id=deck_id,
+                            new_deck_name=new_deck_name,
+                            category_id=category_id,
+                            lang=session.get("lang", "ru"),
+                        )
+
+                        def save_cb(job_id, cards):
+                            return _save_vision_cards_to_deck(job_id, cards)
+
+                        vision_jobs.start_vision_job(jid, save_cb)
+                        # Idem na stranitsu progressa
+                        return redirect(url_for("vision_progress", job_id=jid))
 
                 fpath.unlink(missing_ok=True)
             elif text:
@@ -5591,6 +5614,125 @@ def import_page():
         cats = conn.execute("SELECT * FROM categories WHERE owner_id=?", (user["id"],)).fetchall()
     conn.close()
     return render_template("import.html", decks=decks, categories=cats)
+
+
+# ---------------------- VISION PDF — async job + progress -------------------
+
+def _check_vision_quota(user) -> bool:
+    """Free tier: 1 vision-import v mesyats (kalendarnyy).
+    Paid plany: po limitu plana.
+
+    Vozvrashchaem True esli mojno, False esli prevyshen lim."""
+    plan = billing.get_active_plan(user)
+    conn = db.get_conn()
+    month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0).isoformat()
+    used = conn.execute("""
+        SELECT COUNT(*) AS c FROM ai_usage
+        WHERE user_id=? AND kind='vision_pdf' AND created_at >= ?
+    """, (user["id"], month_start)).fetchone()["c"]
+    conn.close()
+    # Limity po planam
+    limits = {
+        "free": 1,
+        "pro": 20,
+        "team": 50,
+        "school": 200,
+    }
+    return used < limits.get(plan, 1)
+
+
+def _save_vision_cards_to_deck(job_id: str, cards: list[dict]) -> int:
+    """Sokhranyaem karty v deck. Eto vyzyvayetsya iz fonovogo potoka,
+    poetomu sami otkryvayem soedinenie s BD i flask app context."""
+    job = vision_jobs.get_job(job_id)
+    if not job:
+        raise RuntimeError("Job not found")
+
+    user_id = job["user_id"]
+    deck_id = job.get("deck_id")
+    new_deck_name = job.get("new_deck_name") or job.get("filename_stem") or f"AI Vision {datetime.now():%Y-%m-%d}"
+    category_id = job.get("category_id")
+
+    with app.app_context():
+        conn = db.get_conn()
+        user = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+        if not user:
+            conn.close()
+            raise RuntimeError("User not found")
+        user_d = dict(user)
+
+        # Free tier: ne razreshat publikatsiyu
+        is_free_tier = billing.get_active_plan(user_d) == "free"
+
+        if deck_id:
+            target = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+            if not target:
+                conn.close()
+                raise RuntimeError("Deck not found")
+            target_id = target["id"]
+        else:
+            if user_d["org_id"]:
+                cur = conn.execute(
+                    "INSERT INTO decks (org_id, category_id, name, icon, is_public, created_via) VALUES (?, ?, ?, ?, 0, 'vision_pdf')",
+                    (user_d["org_id"], category_id, new_deck_name, "🤖")
+                )
+            else:
+                cur = conn.execute(
+                    "INSERT INTO decks (owner_id, category_id, name, icon, is_public, created_via) VALUES (?, ?, ?, ?, 0, 'vision_pdf')",
+                    (user_d["id"], category_id, new_deck_name, "🤖")
+                )
+            target_id = cur.lastrowid
+
+        for c in cards:
+            conn.execute(
+                "INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+                (target_id, c["front"], c["back"], c.get("note", ""))
+            )
+
+        # Logiruyem AI usage
+        conn.execute("""INSERT INTO ai_usage (user_id, org_id, kind, cards_generated)
+                        VALUES (?, ?, ?, ?)""",
+                     (user_d.get("id") if user_d.get("role") == "individual" else None,
+                      user_d.get("org_id"),
+                      "vision_pdf",
+                      len(cards)))
+
+        conn.commit()
+        conn.close()
+        return target_id
+
+
+@app.route("/import/vision/<job_id>")
+@login_required
+def vision_progress(job_id):
+    """Stranitsa progressa Vision PDF importa."""
+    user = current_user()
+    job = vision_jobs.get_job(job_id)
+    if not job or job["user_id"] != user["id"]:
+        flash("Задача не найдена или принадлежит другому пользователю", "error")
+        return redirect(url_for("import_page"))
+    return render_template("vision_progress.html", job=job)
+
+
+@app.route("/api/import/vision/<job_id>/status")
+@login_required
+def vision_status_api(job_id):
+    """JSON-status fonovoy zadachi (dlya AJAX-polling)."""
+    user = current_user()
+    job = vision_jobs.get_job(job_id)
+    if not job or job["user_id"] != user["id"]:
+        return jsonify({"error": "not_found"}), 404
+    # Otdaem tol'ko bezopasnye polya
+    return jsonify({
+        "id": job["id"],
+        "status": job["status"],
+        "progress": job["progress"],
+        "pages_done": job["pages_done"],
+        "pages_total": job["pages_total"],
+        "cards_found": job["cards_found"],
+        "error": job.get("error"),
+        "deck_id_created": job.get("deck_id_created"),
+    })
 
 
 # ---------------------- AI generation ---------------------------------------

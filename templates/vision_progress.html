@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="relative max-w-2xl mx-auto px-6 py-12" x-data="visionProgress()" x-init="init()">
+  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+  <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
+
+  <div class="relative z-10">
+
+    <!-- WORKING STATE -->
+    <div x-show="state.status === 'pending' || state.status === 'running'" class="text-center">
+      <div class="text-7xl mb-5 inline-block">
+        <span class="inline-block animate-bounce">🤖</span>
+      </div>
+      <h1 class="section-h">{{ t('vp_h') }}</h1>
+      <p class="text-slate-600 dark:text-slate-300 mt-2 mb-8">{{ t('vp_sub') }}</p>
+
+      <!-- Progress bar -->
+      <div class="glass-premium mb-5" style="padding: 2rem;">
+        <div class="flex justify-between mb-2 text-sm">
+          <span class="font-bold text-slate-700 dark:text-slate-200">
+            {{ t('vp_pages') }}: <span x-text="state.pages_done"></span> / <span x-text="state.pages_total || '?'"></span>
+          </span>
+          <span class="font-bold text-indigo-600 dark:text-indigo-300">
+            <span x-text="state.progress"></span>%
+          </span>
+        </div>
+
+        <!-- Bar -->
+        <div class="h-4 bg-slate-200/60 dark:bg-slate-700/40 rounded-full overflow-hidden mb-3">
+          <div class="h-full transition-all duration-500 rounded-full"
+               :style="`width: ${state.progress}%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);`">
+          </div>
+        </div>
+
+        <!-- Counts -->
+        <div class="grid grid-cols-2 gap-3 mt-4 text-center">
+          <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3">
+            <div class="text-2xl font-black text-indigo-700 dark:text-indigo-300" x-text="state.pages_done"></div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{{ t('vp_pages_processed') }}</div>
+          </div>
+          <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3">
+            <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300" x-text="state.cards_found"></div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{{ t('vp_cards_found') }}</div>
+          </div>
+        </div>
+
+        <!-- Stages -->
+        <div class="mt-5 space-y-2 text-left text-sm">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs">✓</span>
+            <span class="text-slate-700 dark:text-slate-200">{{ t('vp_stage_uploaded') }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
+                  :class="state.progress > 0 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'">
+              <span x-show="state.progress >= 100">✓</span>
+              <span x-show="state.progress < 100 && state.progress > 0">⋯</span>
+              <span x-show="state.progress === 0">·</span>
+            </span>
+            <span class="text-slate-700 dark:text-slate-200">{{ t('vp_stage_extracting') }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
+                  :class="state.progress >= 100 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'">
+              <span x-show="state.status === 'done'">✓</span>
+              <span x-show="state.progress >= 100 && state.status !== 'done'">⋯</span>
+              <span x-show="state.progress < 100">·</span>
+            </span>
+            <span class="text-slate-700 dark:text-slate-200">{{ t('vp_stage_saving') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DO NOT CLOSE WARNING -->
+      <div class="glass-premium border-2 border-amber-400/60 dark:border-amber-500/40" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(255,255,255,0.6)); padding: 1.25rem;">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl flex-shrink-0">⚠️</span>
+          <div class="text-left">
+            <div class="font-bold text-amber-900 dark:text-amber-200 mb-1">{{ t('vp_warn_h') }}</div>
+            <p class="text-sm text-amber-800 dark:text-amber-100">{{ t('vp_warn_sub') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-5">{{ t('vp_filter_note') }}</p>
+    </div>
+
+    <!-- DONE -->
+    <div x-show="state.status === 'done'" class="text-center">
+      <div class="text-8xl mb-4">🎉</div>
+      <h1 class="section-h">{{ t('vp_done_h') }}</h1>
+      <p class="text-slate-700 dark:text-slate-200 mt-3 mb-8 text-lg">
+        {{ t('vp_done_pre') }} <b class="text-emerald-600 dark:text-emerald-300" x-text="state.cards_found"></b> {{ t('vp_done_post') }}
+      </p>
+
+      <div class="flex gap-3 justify-center flex-wrap">
+        <a :href="`/deck/${state.deck_id_created}`" class="btn-premium" style="font-size: 16px; padding: 14px 28px;">
+          {{ t('vp_open_deck') }}
+        </a>
+        <a href="/import" class="btn-premium-ghost">{{ t('vp_back_import') }}</a>
+      </div>
+    </div>
+
+    <!-- FAILED -->
+    <div x-show="state.status === 'failed'" class="text-center">
+      <div class="text-8xl mb-4">😔</div>
+      <h1 class="section-h" style="color: #dc2626;">{{ t('vp_failed_h') }}</h1>
+      <div class="glass-premium mt-5 mb-6" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(255,255,255,0.6)); border-color: rgba(239,68,68,0.3);">
+        <p class="text-sm text-slate-700 dark:text-slate-200" x-text="state.error || {{ t('vp_unknown_error')|tojson }}"></p>
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">{{ t('vp_failed_hint') }}</p>
+      <div class="flex gap-3 justify-center flex-wrap">
+        <a href="/import" class="btn-premium">{{ t('vp_try_again') }}</a>
+        <a href="/dashboard" class="btn-premium-ghost">{{ t('lp_to_dashboard') }}</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function visionProgress() {
+  return {
+    state: {{ {
+      'id': job.id,
+      'status': job.status,
+      'progress': job.progress,
+      'pages_done': job.pages_done,
+      'pages_total': job.pages_total,
+      'cards_found': job.cards_found,
+      'error': job.error,
+      'deck_id_created': job.deck_id_created,
+    }|tojson }},
+    pollTimer: null,
+
+    init() {
+      // Esli uzhe done/failed — ne pollim
+      if (this.state.status === 'done' || this.state.status === 'failed') return;
+      this.poll();
+      this.pollTimer = setInterval(() => this.poll(), 2000);
+
+      // Pause polling kogda vkladka skryta
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+        } else if (!this.pollTimer && this.state.status !== 'done' && this.state.status !== 'failed') {
+          this.poll();
+          this.pollTimer = setInterval(() => this.poll(), 2000);
+        }
+      });
+
+      // Predupreditelno — esli polzovatel pytaetsya zakryt vkladku
+      window.addEventListener('beforeunload', (e) => {
+        if (this.state.status === 'pending' || this.state.status === 'running') {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+    },
+
+    async poll() {
+      try {
+        const r = await fetch(`/api/import/vision/{{ job.id }}/status`);
+        if (!r.ok) return;
+        this.state = await r.json();
+        if (this.state.status === 'done' || this.state.status === 'failed') {
+          if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+        }
+      } catch (e) { console.error('[vision] poll err:', e); }
+    }
+  };
+}
+</script>
+{% endblock %}

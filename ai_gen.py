@@ -295,7 +295,7 @@ def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru",
 
 # === VISION: PDF -> kartochki cherez Gemini Vision (dlya skanov i kartinok) ===
 
-def _pdf_to_images(pdf_path: Path, max_pages: int = 20, dpi: int = 150) -> list[bytes]:
+def _pdf_to_images(pdf_path: Path, max_pages: int = 30, dpi: int = 150) -> list[bytes]:
     """Renderim stranitsy PDF v PNG-baytah. PyMuPDF — bez sistemnyh zavisimostey.
     Vozvrashchaem spisok PNG bytes."""
     try:
@@ -323,97 +323,109 @@ def _pdf_to_images(pdf_path: Path, max_pages: int = 20, dpi: int = 150) -> list[
     return images
 
 
-def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
-                        max_pages: int = 20) -> list[dict]:
-    """Skaniruyet stranitsy PDF cherez Gemini Vision i izvlekayet voprosy s otvetami.
-    Rabotaet s OTSKANIROVANNYMI PDF (ne tekstovymi).
+# Promt edinyy dlya vsekh chankov — grazneukhostoychivyy
+VISION_EXTRACT_PROMPT = """Ты — экстрактор тестовых вопросов из сканированных страниц.
 
-    Vozvrashchaet [{front, back, note}].
+ТВОЯ ЗАДАЧА:
+На картинках — страницы тестов (могут быть со сканами, водяными знаками, шапками школ, разными форматами).
+Извлеки ТОЛЬКО ЗАКРЫТЫЕ ВОПРОСЫ — это вопросы с готовыми вариантами ответов (A, B, C, D).
+ОТКРЫТЫЕ ВОПРОСЫ (где нужно писать свой ответ, эссе, развёрнутые задания) — ПРОПУСКАЙ.
 
-    Strategiya: otdayem do max_pages stranits za odin zapros (Gemini umeet multi-image input).
-    Esli stranits mnogo — bilo by dorogo, no dlya testa do 50 stranits OK.
-    """
-    images = _pdf_to_images(pdf_path, max_pages=max_pages)
-    if not images:
-        return []
+ПРАВИЛА ОЧИСТКИ:
+1. Игнорируй водяные знаки, логотипы школ, шапки/подвалы документов
+2. Игнорируй описания типа "Часть A. Грамматика" / "Раздел 1" / "Read the text and answer"
+3. Игнорируй инструкции типа "Time: 90 minutes", "Mark your answer", "Answer key"
+4. Игнорируй номера страниц и нумерацию заданий ("Вопрос 1", "Question 5") — только сам ВОПРОС нужен
+5. Если вопрос ссылается на текст/диалог выше ("Read the text. Q1: What is mentioned?") — ИГНОРИРУЙ его, потому что без контекста он бесполезен. Бери только самодостаточные вопросы.
+6. Если несколько вопросов сгруппированы под общим текстом — пропускай все эти вопросы.
 
-    key = _key()
-    if not key:
-        return []
+ТОЧНОСТЬ:
+- Орфография как на картинке (не исправляй опечатки)
+- Если правильный ответ ОТМЕЧЕН (✓, *, [x], жирный, подчёркнут, выделен цветом, "Answer: B" внизу) — ОБЯЗАТЕЛЬНО укажи correct_letter
+- Если правильный ответ НЕ виден на странице — оставь correct_letter null
 
-    lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
-    lang_name = lang_map.get(lang, "русском")
+ФОРМАТ ВАРИАНТОВ:
+- Только настоящие варианты с буквами A/B/C/D (или 1/2/3/4) — минимум 2 варианта
+- Не выдумывай варианты если их нет в оригинале
 
-    prompt = f"""Ты — экстрактор тестовых вопросов из изображений (сканов PDF).
-
-На картинках — тестовые задания. Извлеки ВСЕ вопросы с вариантами ответов.
-
-Для каждого вопроса определи:
-- "question" — текст вопроса (без номера типа "1.")
-- "answer" — правильный ответ (только текст правильного варианта, БЕЗ буквы)
-- "options" — список всех вариантов в формате "буква) текст"
-- "correct_letter" — буква правильного ответа (A/B/C/D...). Если не отмечен — null.
-- "note" — все варианты через перенос строки (для подсказки), это поле обязательное
-
-Если в тестах есть отметки (✓, *, [x], "Answer: B", выделение жирным или подчёркиванием правильного ответа) — учти их.
-
-Yazyk voprosov: оставь как в оригинале (на {lang_name} или другом).
-
-Если вопросы дублируются (например, продолжаются на следующей странице) — объедини их.
-
-Если на странице нет вопросов (титулка, инструкция и т.п.) — пропусти.
-
-Вывод ТОЛЬКО JSON-массив:
+Вывод СТРОГО JSON-массив (если ничего не нашёл — `[]`):
 [
-  {{
-    "question": "...",
-    "answer": "...",
-    "options": ["A) ...", "B) ...", "C) ..."],
+  {
+    "question": "Чистый текст вопроса без номера и без 'Question:'",
+    "options": ["A) вариант 1", "B) вариант 2", "C) вариант 3", "D) вариант 4"],
     "correct_letter": "B",
-    "note": "A) ...\\nB) ...\\nC) ..."
-  }},
+    "is_open": false
+  },
   ...
 ]
 
-Если не можешь распознать ни одного вопроса — верни []."""
+Если вопрос открытый (требует развернутого ответа) — НЕ включай его вообще."""
 
-    # Sobiraem mnogokartinochnyy zapros
-    parts = [{"text": prompt}]
+
+def _gemini_vision_call(images: list[bytes], timeout: int = 240) -> str | None:
+    """Otdelnyy zapros k Gemini Vision s nabor kartinokь Vozvrashchaet raw text otveta."""
+    key = _key()
+    if not key:
+        return None
     import base64
+    parts = [{"text": VISION_EXTRACT_PROMPT}]
     for png in images:
-        b64 = base64.b64encode(png).decode("ascii")
-        parts.append({"inline_data": {"mime_type": "image/png", "data": b64}})
-
+        parts.append({
+            "inline_data": {
+                "mime_type": "image/png",
+                "data": base64.b64encode(png).decode("ascii"),
+            }
+        })
     body = {
         "contents": [{"parts": parts}],
         "generationConfig": {
-            "temperature": 0.2,
+            "temperature": 0.1,  # detrministic kak mozhno bolshe
             "maxOutputTokens": 8000,
             "responseMimeType": "application/json",
         },
     }
     data = json.dumps(body).encode("utf-8")
-
-    # Vision rabotayet TOL'KO na flash, ne na flash-lite
+    # Vision rabotayet TOL'KO na flash (ne na flash-lite)
     url = f"{API_URL_FALLBACK}?key={key}"
-    req = urlreq.Request(url, data=data, method="POST",
-                         headers={"Content-Type": "application/json"})
-    try:
-        with urlreq.urlopen(req, timeout=180) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-        text = payload["candidates"][0]["content"]["parts"][0]["text"]
-    except urlerr.HTTPError as e:
-        err_body = e.read().decode("utf-8", errors="replace")[:300]
-        print(f"[AI vision] HTTP {e.code}: {err_body}")
-        return []
-    except Exception as e:
-        print(f"[AI vision] {type(e).__name__}: {e}")
-        return []
+    last_err = None
+    for attempt in range(3):
+        req = urlreq.Request(url, data=data, method="POST",
+                             headers={"Content-Type": "application/json"})
+        try:
+            with urlreq.urlopen(req, timeout=timeout) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            text = payload["candidates"][0]["content"]["parts"][0]["text"]
+            if text and text.strip():
+                return text
+            last_err = f"empty response: {str(payload)[:200]}"
+        except urlerr.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")[:300]
+            except Exception:
+                pass
+            last_err = f"HTTP {e.code}: {err_body}"
+            print(f"[AI vision] attempt {attempt+1}/3: {last_err}")
+            # 429 = rate limit, 503 = overload — wait & retry
+            if e.code in (429, 503, 500, 502, 504):
+                import time
+                time.sleep(5 + attempt * 5)
+                continue
+            return None
+        except Exception as e:
+            last_err = f"{type(e).__name__}: {e}"
+            print(f"[AI vision] attempt {attempt+1}/3: {last_err}")
+            import time
+            time.sleep(3)
+            continue
+    print(f"[AI vision] failed after 3 attempts: {last_err}")
+    return None
 
+
+def _parse_vision_response(text: str) -> list[dict]:
+    """Razbiraet otvet Gemini -> spisok kart. Filtruet otkrytye voprosy."""
     if not text:
         return []
-
-    # Razbiraem JSON
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.MULTILINE)
     try:
         items = json.loads(text)
@@ -425,38 +437,116 @@ Yazyk voprosov: оставь как в оригинале (на {lang_name} ил
             items = json.loads(m.group(0))
         except Exception:
             return []
-
     if not isinstance(items, list):
         return []
-
     cards = []
     for it in items:
         if not isinstance(it, dict):
             continue
+        # Yavno propustit otkrytye
+        if it.get("is_open") is True:
+            continue
         q = (it.get("question") or it.get("front") or "").strip()
-        a = (it.get("answer") or it.get("back") or "").strip()
         opts = it.get("options") or []
-        correct = it.get("correct_letter") or ""
+        correct = (it.get("correct_letter") or "").strip().upper()
+        # Trebuyem minimum 2 varianta
+        if not q or not isinstance(opts, list) or len(opts) < 2:
+            continue
+        # Ochishchaem varianty: ubirayem dubl' bukvy esli ona uzhe tam
+        clean_opts = []
+        for opt in opts:
+            opt_str = str(opt).strip()
+            if opt_str:
+                clean_opts.append(opt_str)
+        if len(clean_opts) < 2:
+            continue
         # Sobiraem note: vse varianty cherez perenos
-        note = (it.get("note") or "").strip()
-        if not note and opts:
-            note = "\n".join(str(o).strip() for o in opts if o)
-        # Esli est' bukva pravil'nogo otveta — formiruem back v formate "B) tekst"
-        if correct and opts:
-            for opt in opts:
-                opt_str = str(opt).strip()
-                m = re.match(r"^\s*([A-Za-zА-Яа-яЁё])\s*[\)\.]\s*(.+)$", opt_str)
-                if m and m.group(1).upper() == correct.upper():
-                    a = f"{correct.upper()}) {m.group(2).strip()}"
+        note = "\n".join(clean_opts)
+        # Esli est' bukva pravilnogo otveta — formiruyem back v formate "B) tekst"
+        back = ""
+        if correct:
+            for opt in clean_opts:
+                m = re.match(r"^\s*([A-Za-zА-Яа-яЁё]|\d+)\s*[\)\.\:]?\s*(.+)$", opt)
+                if m and m.group(1).upper() == correct:
+                    back = f"{correct}) {m.group(2).strip()}"
                     break
-        if q and (a or note):
-            cards.append({
-                "front": q,
-                "back": a or (note.split("\n")[0] if note else ""),
-                "note": note,
-            })
-
+        # Esli ne nashli — vse varianty v back (pust' uchitel sam otmetit)
+        if not back:
+            back = note
+            note = ""
+        cards.append({"front": q, "back": back, "note": note})
     return cards
+
+
+def _dedupe_cards(cards: list[dict]) -> list[dict]:
+    """Ubirayem dubli — chasto vznikayut na granitsah chankov ili pri povtorah strogi."""
+    seen = set()
+    out = []
+    for c in cards:
+        # Klyuch — pervye 80 simvolov voprosa v lower-case bez probelov
+        key = re.sub(r"\s+", "", (c.get("front") or "").lower())[:80]
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(c)
+    return out
+
+
+def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
+                        max_pages: int = 30,
+                        chunk_size: int = 5,
+                        progress_cb=None) -> list[dict]:
+    """Skaniruyet stranitsy PDF cherez Gemini Vision i izvlekayet ZAKRYTYE voprosy.
+
+    Strategiya:
+    - Renderim do max_pages stranits
+    - Obrabatyvayem ne vse srazu, a chankami po chunk_size stranits (sekonomim tokeny + nadeyno)
+    - Mezhdu chankami delaem sleep 2 sek (15 RPM limit na free tier)
+    - V kontse — dedupliciruem (chanki mogut peresekatsya)
+
+    progress_cb(done, total, found_so_far) — funktsiya kotoruyu zovem posle kazhdogo chanka
+    chtoby pokazat' progress polzovatelyu.
+
+    Vozvrashchaet [{front, back, note}].
+    """
+    images = _pdf_to_images(pdf_path, max_pages=max_pages)
+    if not images:
+        return []
+    if not _key():
+        return []
+
+    total_pages = len(images)
+    all_cards = []
+
+    # Razbivayem na chanki
+    for i in range(0, total_pages, chunk_size):
+        chunk = images[i:i + chunk_size]
+        chunk_num = i // chunk_size + 1
+        total_chunks = (total_pages + chunk_size - 1) // chunk_size
+        print(f"[AI vision] chunk {chunk_num}/{total_chunks} (pages {i+1}-{min(i+chunk_size, total_pages)})")
+
+        raw = _gemini_vision_call(chunk, timeout=240)
+        if raw:
+            chunk_cards = _parse_vision_response(raw)
+            all_cards.extend(chunk_cards)
+            print(f"[AI vision]   +{len(chunk_cards)} cards (total: {len(all_cards)})")
+        else:
+            print(f"[AI vision]   chunk failed (skipping)")
+
+        # Progress callback
+        if progress_cb:
+            try:
+                progress_cb(min(i + chunk_size, total_pages), total_pages, len(all_cards))
+            except Exception:
+                pass
+
+        # Mezhdu chankami — pauza chtoby ne udarit' v rate limit Gemini Free (15 RPM)
+        if i + chunk_size < total_pages:
+            import time
+            time.sleep(4)
+
+    # Dedupe na sluchay esli AI vydal dubli na granitsah
+    return _dedupe_cards(all_cards)
 
 
 

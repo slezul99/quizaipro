@@ -545,6 +545,13 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # Otkuda kolodu sozdana (manual, import, ai_text, ai_topic, ai_pdf, vision_pdf...)
+    # Nuzhno chtoby pomnit' ogranicheniya (naprimer, vision_pdf na free — bez publikatsii)
+    try:
+        c.execute("ALTER TABLE decks ADD COLUMN created_via TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+
     # === LEARNING GOALS ===
     c.execute("""
         CREATE TABLE IF NOT EXISTS learning_goals (
