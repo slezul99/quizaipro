@@ -126,12 +126,20 @@
         <div class="text-sm text-slate-600 dark:text-slate-300">{{ t('hp_quick_sub') }}</div>
       </div>
       <div class="flex gap-2 flex-wrap">
-        <button @click="installDemo()" :disabled="installing" class="btn-premium" style="font-size: 14px;">
-          <span x-show="!installing && !installed">{{ t('hp_install_demo') }}</span>
-          <span x-show="installing">{{ t('hp_installing') }}</span>
-          <span x-show="installed">{{ t('hp_installed') }}</span>
+        <button @click="installDemo()" :disabled="installing" type="button"
+                class="btn-premium" style="font-size: 14px; min-width: 180px;">
+          <template x-if="!installing && !installed">
+            <span>{{ t('hp_install_demo') }}</span>
+          </template>
+          <template x-if="installing">
+            <span>{{ t('hp_installing') }}</span>
+          </template>
+          <template x-if="installed">
+            <span>{{ t('hp_installed') }}</span>
+          </template>
+          <span x-show="false" x-cloak>{{ t('hp_install_demo') }}</span>
         </button>
-        <button @click="restartTour()" class="btn-premium-ghost" style="font-size: 14px;">{{ t('hp_restart_tour') }}</button>
+        <button @click="restartTour()" type="button" class="btn-premium-ghost" style="font-size: 14px;">{{ t('hp_restart_tour') }}</button>
       </div>
     </div>
 
