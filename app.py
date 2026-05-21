@@ -2644,6 +2644,101 @@ def export_deck_json(deck_id):
     )
 
 
+@app.route("/deck/<int:deck_id>/ai-find-answers", methods=["POST"])
+@login_required
+def deck_ai_find_answers(deck_id):
+    """AI analiziruet karty bez otmechennogo pravil'nogo otveta i nakhodit ego.
+    Kartochka schitaetsya 'bez otveta' esli back soderzhit polnyy spisok variantov
+    (mnogostrochnyy s A) B) C) D)) — eto signal chto pravil'nyy ne razobran."""
+    user = current_user()
+    if not can_manage_content(user):
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+
+    if not ai_gen.is_available():
+        return jsonify({"ok": False, "error": "ai_not_configured"}), 503
+
+    # Proverka kvoty AI
+    ok, used, limit = billing.check_ai_limit(user)
+    if not ok:
+        return jsonify({"ok": False, "error": "ai_quota_exceeded",
+                        "used": used, "limit": limit}), 429
+
+    conn = db.get_conn()
+    deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+    if not deck or not can_view_deck(user, dict(deck)):
+        conn.close()
+        return jsonify({"ok": False, "error": "not_found"}), 404
+
+    # Berem vse karty kolody
+    rows = conn.execute(
+        "SELECT id, front, back, note FROM cards WHERE deck_id=? ORDER BY id",
+        (deck_id,)
+    ).fetchall()
+
+    # Filtruem te, chto BEZ otmechennogo pravil'nogo otveta:
+    # - Esli back mnogostrochnyy I soderzhit A) B) C) ... = ne otmecheno
+    # - Esli back odna stroka i nachinaetsya s "X) ..." — uzhe otmecheno
+    candidates = []
+    import re as _re
+    for r in rows:
+        back = (r["back"] or "").strip()
+        # Schitayem skol'ko strok-variantov
+        lines = [l.strip() for l in back.split("\n") if l.strip()]
+        option_lines = [l for l in lines if _re.match(r"^[A-Da-d1-4А-Гa-г]\s*[\)\.]\s*", l)]
+        # Esli > 1 strok-variantov v back — eto polnyy spisok bez otmetki
+        if len(option_lines) >= 2:
+            candidates.append({
+                "id": r["id"],
+                "front": r["front"],
+                "back": back,
+                "note": r["note"] or "",
+            })
+
+    if not candidates:
+        conn.close()
+        return jsonify({"ok": True, "updated": 0, "skipped": 0,
+                        "msg": "Все карты уже имеют отмеченные правильные ответы"})
+
+    # Vyzyvayem AI
+    lang = session.get("lang", "ru")
+    try:
+        results = ai_gen.find_correct_answers(candidates, lang=lang)
+    except Exception as e:
+        conn.close()
+        print(f"[AI find-answers] err: {e}")
+        return jsonify({"ok": False, "error": "ai_error", "msg": str(e)[:200]}), 500
+
+    # Obnovlyaem karty
+    updated = 0
+    skipped = 0
+    for res in results:
+        if not res.get("correct_letter") or not res.get("back"):
+            skipped += 1
+            continue
+        conn.execute(
+            "UPDATE cards SET back=?, note=? WHERE id=? AND deck_id=?",
+            (res["back"], res.get("note", ""), res["id"], deck_id)
+        )
+        updated += 1
+
+    # Logiruem AI usage
+    if updated > 0:
+        conn.execute("""INSERT INTO ai_usage (user_id, org_id, kind, cards_generated)
+                        VALUES (?, ?, ?, ?)""",
+                     (user.get("id") if user.get("role") == "individual" else None,
+                      user.get("org_id"), "find_answers", updated))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "ok": True,
+        "updated": updated,
+        "skipped": skipped,
+        "total": len(candidates),
+    })
+
+
 @app.route("/import-json", methods=["POST"])
 @login_required
 def import_deck_json():

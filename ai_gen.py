@@ -712,6 +712,133 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
 
 
 
+def find_correct_answers(cards: list[dict], lang: str = "ru",
+                          batch_size: int = 15) -> list[dict]:
+    """Dlya kazhdoy karty bez otmechennogo pravil'nogo otveta —
+    AI analiziruet vopros i varianty, vybirayet pravil'nyy.
+
+    Vhod: list[{"id": ..., "front": vopros, "back": varianty (mnogostrochno),
+                "note": (optional, varianty)}]
+
+    Vozvraschayet: list[{"id": ..., "correct_letter": "B", "back": "B) text", "note": vse_varianty}]
+    Karty bez korrektnogo razbora pomechayutsya correct_letter=None — propuskayutsya.
+    """
+    if not cards:
+        return []
+
+    lang_map = {"ru": "русском", "en": "English", "uz": "узбекском"}
+    lang_name = lang_map.get(lang, "русском")
+
+    results = []
+    # Obrabatyvayem batchami chtoby ne vyletet po tokenam
+    for batch_start in range(0, len(cards), batch_size):
+        batch = cards[batch_start:batch_start + batch_size]
+        # Sobiraem promt
+        items_text = []
+        for i, c in enumerate(batch):
+            front = (c.get("front") or "").strip()
+            # Varianty mogut byt' v back ili note
+            options_text = (c.get("back") or "").strip()
+            if c.get("note"):
+                # Esli est' note s variantami — beryom ego
+                note = c["note"].strip()
+                if "\n" in note and any(re.match(r"^\s*[A-Da-d1-4]\s*[\)\.]", line)
+                                          for line in note.split("\n")):
+                    options_text = note
+
+            items_text.append(f"[{i+1}]\nВопрос: {front}\nВарианты:\n{options_text}\n")
+
+        prompt = f"""Ты — эксперт-преподаватель. Для каждого тестового вопроса определи ПРАВИЛЬНЫЙ ответ из вариантов.
+
+ЯЗЫК: {lang_name}
+
+ИНСТРУКЦИИ:
+1. Внимательно прочитай вопрос и все варианты ответов
+2. Используй свои знания чтобы определить какой вариант ВЕРНЫЙ
+3. Если уверенность < 70% — пометь correct_letter как null (не угадывай)
+4. Если в формате варианты не A/B/C/D, а 1/2/3/4 — конвертируй в A=1, B=2, C=3, D=4
+
+ВОПРОСЫ:
+{chr(10).join(items_text)}
+
+Вывод СТРОГО JSON (массив, индекс i соответствует вопросу [i+1]):
+[
+  {{"index": 1, "correct_letter": "B", "confidence": 0.95}},
+  {{"index": 2, "correct_letter": null, "confidence": 0.4}},
+  ...
+]
+
+Если уверенность < 0.7 — correct_letter null. Не выдумывай ответы."""
+
+        raw = _call_gemini(prompt, max_tokens=4000)
+        if not raw:
+            # Esli AI ne otvetil — propuskayem batch (pust' ostavet kak est')
+            for c in batch:
+                results.append({"id": c.get("id"), "correct_letter": None})
+            continue
+
+        try:
+            text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+            answers = json.loads(text)
+        except Exception:
+            m = re.search(r"\[.*\]", raw, re.DOTALL)
+            if m:
+                try:
+                    answers = json.loads(m.group(0))
+                except Exception:
+                    answers = []
+            else:
+                answers = []
+
+        if not isinstance(answers, list):
+            answers = []
+
+        # Sopostavlyaem otvety s kartami po index
+        ans_by_idx = {}
+        for a in answers:
+            if isinstance(a, dict):
+                idx = a.get("index")
+                if isinstance(idx, int):
+                    ans_by_idx[idx] = a
+
+        for i, c in enumerate(batch):
+            ans = ans_by_idx.get(i + 1, {})
+            correct = (ans.get("correct_letter") or "").strip().upper() if ans.get("correct_letter") else None
+            confidence = ans.get("confidence", 0.0)
+
+            # Esli AI ne uverenny — propuskaem
+            if not correct or confidence < 0.7:
+                results.append({"id": c.get("id"), "correct_letter": None})
+                continue
+
+            # Konvertiruem 1/2/3/4 -> A/B/C/D
+            if correct in "1234":
+                correct = "ABCD"["1234".index(correct)]
+
+            # Stroim novyy back v formate "B) text"
+            options_text = (c.get("back") or "").strip()
+            if c.get("note") and "\n" in c.get("note", ""):
+                options_text = c["note"]
+
+            new_back = correct
+            new_note = options_text
+            for line in options_text.split("\n"):
+                m = re.match(r"^\s*([A-Da-d]|\d+)\s*[\)\.\:]?\s*(.+)$", line.strip())
+                if m and m.group(1).upper() == correct:
+                    new_back = f"{correct}) {m.group(2).strip()}"
+                    break
+
+            results.append({
+                "id": c.get("id"),
+                "correct_letter": correct,
+                "back": new_back,
+                "note": new_note,
+                "confidence": confidence,
+            })
+
+    return results
+
+
 def explain_question(question: str, answer: str, lang: str = "ru") -> str | None:
     """AI-pomoshnik: ob'yasnyayet vopros i otvet prostym yazykom."""
     if not is_available():

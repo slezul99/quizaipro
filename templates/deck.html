@@ -12,6 +12,12 @@ const DK_T = {
   remove_image: {{ t('dk_js_remove_image')|tojson }},
   delete_card: {{ t('dk_js_delete_card')|tojson }},
   error: {{ t('dk_js_error')|tojson }},
+  ai_answers_confirm: {{ t('dk_js_ai_answers_confirm')|tojson }},
+  ai_answers_done: {{ t('dk_js_ai_answers_done')|tojson }},
+  ai_answers_no_candidates: {{ t('dk_js_ai_answers_no_candidates')|tojson }},
+  ai_not_configured: {{ t('dk_js_ai_not_configured')|tojson }},
+  ai_quota_exceeded: {{ t('dk_js_ai_quota_exceeded')|tojson }},
+  ai_error: {{ t('dk_js_ai_error')|tojson }},
 };
 function deckEditor() {
   return {
@@ -58,6 +64,31 @@ function deckEditor() {
       if (data.ok) {
         this.deck.is_public = !!data.is_public;
         if (this.deck.is_public) alert(DK_T.published_alert);
+      }
+    },
+    aiFinding: false,
+    async aiFindAnswers() {
+      if (!confirm(DK_T.ai_answers_confirm)) return;
+      this.aiFinding = true;
+      try {
+        const r = await fetch(`/deck/${this.deck.id}/ai-find-answers`, { method: 'POST' });
+        const data = await r.json();
+        this.aiFinding = false;
+        if (!data.ok) {
+          if (data.error === 'ai_not_configured') alert(DK_T.ai_not_configured);
+          else if (data.error === 'ai_quota_exceeded') alert(DK_T.ai_quota_exceeded + ` (${data.used}/${data.limit})`);
+          else alert(DK_T.ai_error + (data.msg ? ': ' + data.msg : ''));
+          return;
+        }
+        if (data.updated > 0) {
+          alert(DK_T.ai_answers_done.replace('{updated}', data.updated).replace('{skipped}', data.skipped || 0));
+          location.reload();
+        } else {
+          alert(data.msg || DK_T.ai_answers_no_candidates);
+        }
+      } catch (e) {
+        this.aiFinding = false;
+        alert(DK_T.ai_error + ': ' + e);
       }
     }
   };
@@ -349,6 +380,12 @@ function deckEditor() {
         {% endif %}
         {% if can_edit %}
         <a href="/export/deck/{{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_excel_title') }}">{{ t('dk_btn_excel') }}</a>
+        <button type="button" @click="aiFindAnswers()" :disabled="aiFinding"
+                class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px; background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border-color: rgba(99,102,241,0.4);"
+                title="{{ t('dk_btn_ai_answers_title') }}">
+          <span x-show="!aiFinding">🤖 {{ t('dk_btn_ai_answers') }}</span>
+          <span x-show="aiFinding">⏳ {{ t('dk_btn_ai_answers_finding') }}</span>
+        </button>
         <div class="relative" x-data="{ pdfMenu: false }">
           <button type="button" @click="pdfMenu = !pdfMenu" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_pdf_title') }}">{{ t('dk_btn_pdf') }}</button>
           <div x-show="pdfMenu" @click.outside="pdfMenu = false" x-transition x-cloak class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-xl overflow-hidden z-30">
