@@ -50,6 +50,8 @@
   html.dark body { background: #0f1729; }
   /* Pri navigatsii — bystro skryvaem belyy fleshk */
   body { background-color: transparent; overflow-x: hidden; }
+  /* Blokiruem skroll kogda modal otkryt */
+  body.modal-open { overflow: hidden; }
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
@@ -1467,7 +1469,8 @@ function welcomeModal() {
     steps: {{ welcome_steps_json|safe }},
 
     init() {
-      // Pokazyvaem tol'ko 1 raz
+      // Blokiruem skrol fona poka modal otkryt
+      document.body.classList.add('modal-open');
     },
 
     next() {
@@ -1478,6 +1481,8 @@ function welcomeModal() {
     },
     async dismiss() {
       this.open = false;
+      // Vozvraschaem skrol
+      document.body.classList.remove('modal-open');
       try {
         const fd = new FormData();
         fd.append('_csrf', '{{ csrf_token() }}');
