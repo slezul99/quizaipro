@@ -18,6 +18,13 @@ API_URL = ("https://generativelanguage.googleapis.com/v1beta/models/"
 # Fallback model esli osnovnaya zabita (rate limit)
 API_URL_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
                     "gemini-2.5-flash:generateContent")
+# Vision-specific URLs (vision rabotayet TOLKO na flash, ne na flash-lite)
+# gemini-2.0-flash: 1500 RPD na free tier (vyshe chem 2.5)
+# gemini-2.5-flash: 250 RPD na free tier (NIZHE — eto byla nasha problema!)
+API_URL_VISION_PRIMARY = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                          "gemini-2.0-flash:generateContent")
+API_URL_VISION_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                           "gemini-2.5-flash:generateContent")
 
 
 def _key():
@@ -405,8 +412,9 @@ VISION_AUDIT_PROMPT = """Ты — АУДИТОР извлечения тесто
 
 
 def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = None) -> str | None:
-    """Otdelnyy zapros k Gemini Vision s nabor kartinokь Vozvrashchaet raw text otveta.
-    prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT)."""
+    """Otdelnyy zapros k Gemini Vision s nabor kartinok. Vozvrashchaet raw text otveta.
+    prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT).
+    Probuet snachala gemini-2.0-flash (1500 RPD), potom gemini-2.5-flash (250 RPD)."""
     key = _key()
     if not key:
         print("[AI vision] NO KEY — set GEMINI_API_KEY env var")
@@ -423,49 +431,57 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
     body = {
         "contents": [{"parts": parts}],
         "generationConfig": {
-            "temperature": 0.1,  # detrministic kak mozhno bolshe
+            "temperature": 0.1,
             "maxOutputTokens": 16000,
             "responseMimeType": "application/json",
         },
     }
     data = json.dumps(body).encode("utf-8")
     print(f"[AI vision] sending {len(images)} images, body size: {len(data)//1024}KB")
-    # Vision rabotayet TOL'KO na flash (ne na flash-lite)
-    url = f"{API_URL_FALLBACK}?key={key}"
+
     last_err = None
-    for attempt in range(3):
-        req = urlreq.Request(url, data=data, method="POST",
-                             headers={"Content-Type": "application/json"})
-        try:
-            with urlreq.urlopen(req, timeout=timeout) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            text = payload["candidates"][0]["content"]["parts"][0]["text"]
-            if text and text.strip():
-                print(f"[AI vision] OK, response {len(text)} chars")
-                return text
-            last_err = f"empty response: {str(payload)[:200]}"
-            print(f"[AI vision] {last_err}")
-        except urlerr.HTTPError as e:
-            err_body = ""
+    # Probuyem 2 modeli: 2.0-flash (1500 RPD) -> 2.5-flash (250 RPD)
+    for model_idx, url_base in enumerate([API_URL_VISION_PRIMARY, API_URL_VISION_FALLBACK]):
+        model_name = url_base.split("/models/")[-1].split(":")[0]
+        url = f"{url_base}?key={key}"
+        for attempt in range(2):  # 2 retry na model'
+            req = urlreq.Request(url, data=data, method="POST",
+                                 headers={"Content-Type": "application/json"})
             try:
-                err_body = e.read().decode("utf-8", errors="replace")[:300]
-            except Exception:
-                pass
-            last_err = f"HTTP {e.code}: {err_body}"
-            print(f"[AI vision] attempt {attempt+1}/3: {last_err}")
-            # 429 = rate limit, 503 = overload — wait & retry
-            if e.code in (429, 503, 500, 502, 504):
+                with urlreq.urlopen(req, timeout=timeout) as resp:
+                    payload = json.loads(resp.read().decode("utf-8"))
+                text = payload["candidates"][0]["content"]["parts"][0]["text"]
+                if text and text.strip():
+                    print(f"[AI vision] OK on {model_name}, response {len(text)} chars")
+                    return text
+                last_err = f"empty response: {str(payload)[:200]}"
+                print(f"[AI vision] {model_name}: {last_err}")
+            except urlerr.HTTPError as e:
+                err_body = ""
+                try:
+                    err_body = e.read().decode("utf-8", errors="replace")[:300]
+                except Exception:
+                    pass
+                last_err = f"HTTP {e.code}: {err_body}"
+                print(f"[AI vision] {model_name} attempt {attempt+1}/2: {last_err}")
+                if e.code == 429:
+                    # Rate limit — perehodim k sleduyushchey modeli
+                    print(f"[AI vision] {model_name} rate limited, switching to next model")
+                    break
+                if e.code in (503, 500, 502, 504):
+                    import time
+                    time.sleep(3 + attempt * 3)
+                    continue
+                # Drugie HTTP oshibki — probuyem fallback model'
+                break
+            except Exception as e:
+                last_err = f"{type(e).__name__}: {e}"
+                print(f"[AI vision] {model_name} attempt {attempt+1}/2: {last_err}")
                 import time
-                time.sleep(5 + attempt * 5)
+                time.sleep(2)
                 continue
-            return None
-        except Exception as e:
-            last_err = f"{type(e).__name__}: {e}"
-            print(f"[AI vision] attempt {attempt+1}/3: {last_err}")
-            import time
-            time.sleep(3)
-            continue
-    print(f"[AI vision] failed after 3 attempts: {last_err}")
+
+    print(f"[AI vision] FAILED on all models: {last_err}")
     return None
 
 
@@ -643,10 +659,9 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
     # Esli VSE stranitsy upali — eto problema s API
     if chunk_results and not any(r[0] for r in chunk_results):
         raise RuntimeError(
-            f"Все запросы к Gemini Vision провалились. "
-            f"Возможные причины: дневной лимит 1500 запросов исчерпан, "
-            f"перегрузка серверов Google, или сетевая ошибка. "
-            f"Последняя ошибка: {last_chunk_error}. Попробуйте через 5-10 минут."
+            "Дневной лимит Gemini AI исчерпан (1500 запросов в сутки на free tier). "
+            "Попробуйте завтра, или подождите перезагрузки квоты в полночь по UTC. "
+            "Если проблема повторяется — возможно перегрузка серверов Google."
         )
 
     deduped = _dedupe_cards(all_cards)
