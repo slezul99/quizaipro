@@ -14,15 +14,19 @@ BASE = Path(__file__).resolve().parent
 KEY_FILE = BASE / "gemini_key.txt"
 
 API_URL = ("https://generativelanguage.googleapis.com/v1beta/models/"
-           "gemini-2.0-flash-lite:generateContent")
+           "gemini-2.5-flash-lite:generateContent")
 # Fallback model esli osnovnaya zabita (rate limit)
 API_URL_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
                     "gemini-2.5-flash:generateContent")
-# Vision-specific URLs (vision rabotayet TOLKO na flash, ne na flash-lite)
-# gemini-2.0-flash: 1500 RPD na free tier (vyshe chem 2.5)
-# gemini-2.5-flash: 250 RPD na free tier (NIZHE — eto byla nasha problema!)
+# Vision URLs.
+# Posle dekabrskogo 2025 urezaniya kvot Google:
+# - gemini-2.0-flash:        limit 0 (ubrali iz free tier!)
+# - gemini-2.0-flash-lite:   limit 0 (ubrali!)
+# - gemini-2.5-flash-lite:   1000 RPD (samyy luchshiy free tier)
+# - gemini-2.5-flash:        250 RPD
+# - gemini-2.5-pro:          100 RPD
 API_URL_VISION_PRIMARY = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                          "gemini-2.0-flash:generateContent")
+                          "gemini-2.5-flash-lite:generateContent")
 API_URL_VISION_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
                            "gemini-2.5-flash:generateContent")
 
@@ -677,8 +681,10 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
         # Opredelyaem konkretnyy tip oshibki
         if "429" in gemini_err or "RESOURCE_EXHAUSTED" in gemini_err.upper() or "quota" in gemini_err.lower():
             raise RuntimeError(
-                "🚫 Дневной лимит Gemini AI исчерпан. Free tier: 1500 запросов/день для 2.0-flash + 250 для 2.5-flash. "
+                "🚫 Дневной лимит Gemini AI исчерпан. "
+                "Free tier: gemini-2.5-flash-lite — 1000 запросов/день, gemini-2.5-flash — 250/день. "
                 "Квота сбрасывается в полночь по Pacific Time (=11:00 утра в Ташкенте). "
+                "Для production-нагрузки нужен paid tier (~$0.10 за PDF). "
                 f"\n\nПодробности от Google: {gemini_err[:300]}"
             )
         elif "401" in gemini_err or "403" in gemini_err or "API_KEY" in gemini_err.upper():
