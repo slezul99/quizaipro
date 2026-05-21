@@ -58,21 +58,52 @@ def get_active_plan(user: dict) -> str:
 
 
 def check_ai_limit(user: dict) -> tuple[bool, int, int]:
-    """Vozvraschayet (mozhno_li, ispol'zovano_v_mes, limit)."""
+    """Vozvraschayet (mozhno_li, ispol'zovano_v_mes, limit).
+    Esli u polzovatelya zadan kastomnyy lim (ai_limit_monthly) — beryom ego."""
+    # Super-admin = bezlimit (proverim po hardcoded usernames v app.py)
+    # Beta-tester ili kastomnyy ai_limit_monthly perekrivayet plan
+    custom_monthly = user.get("ai_limit_monthly") if user else None
+    custom_daily = user.get("ai_limit_daily") if user else None
+    is_beta = user.get("is_beta_tester") if user else False
+
     plan = get_active_plan(user)
-    limit = config.PLANS[plan]["limits"]["ai_generations_per_month"]
+    plan_limit = config.PLANS[plan]["limits"]["ai_generations_per_month"]
+
     conn = db.get_conn()
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0).isoformat()
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0).isoformat()
+
     if user.get("org_id"):
-        used = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
+        used_month = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
                                WHERE org_id=? AND created_at >= ?""",
                             (user["org_id"], month_start)).fetchone()["c"]
+        used_today = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
+                               WHERE org_id=? AND created_at >= ?""",
+                            (user["org_id"], today_start)).fetchone()["c"]
     else:
-        used = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
+        used_month = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
                                WHERE user_id=? AND created_at >= ?""",
                             (user["id"], month_start)).fetchone()["c"]
+        used_today = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
+                               WHERE user_id=? AND created_at >= ?""",
+                            (user["id"], today_start)).fetchone()["c"]
     conn.close()
-    return (used < limit, used, limit)
+
+    # Daily lim (esli zadan)
+    if custom_daily is not None:
+        if used_today >= custom_daily:
+            return (False, used_month, custom_monthly if custom_monthly is not None else plan_limit)
+
+    # Monthly: prioritet u kastomnogo lim'a
+    if custom_monthly is not None:
+        return (used_month < custom_monthly, used_month, custom_monthly)
+
+    # Beta-tester (esli kastomnogo lim'a net) = bezlimit
+    if is_beta:
+        return (True, used_month, 99999)
+
+    # Default — po planu
+    return (used_month < plan_limit, used_month, plan_limit)
 
 
 def log_ai_usage(user: dict, kind: str, cards: int = 0):

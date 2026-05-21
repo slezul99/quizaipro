@@ -6636,6 +6636,42 @@ def superadmin_set_vision_limits(user_id):
     return jsonify({"ok": True, "daily": daily, "monthly": monthly})
 
 
+@app.route("/superadmin/user/<int:user_id>/ai-limits", methods=["POST"])
+@super_admin_required
+def superadmin_set_ai_limits(user_id):
+    """Ustanavlivaet kastomnye lim'ity OBYCHNOGO AI (text/topic/pdf generation).
+    body: {"daily": int|null, "monthly": int|null}"""
+    data = request.get_json(silent=True) or {}
+    daily = data.get("daily")
+    monthly = data.get("monthly")
+
+    def _clean(v):
+        if v is None or v == "" or v == "null":
+            return None
+        try:
+            n = int(v)
+            return max(0, min(n, 9999))
+        except (TypeError, ValueError):
+            return None
+
+    daily = _clean(daily)
+    monthly = _clean(monthly)
+
+    conn = db.get_conn()
+    user = conn.execute("SELECT id FROM users WHERE id=?", (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({"ok": False, "error": "user_not_found"}), 404
+
+    conn.execute(
+        "UPDATE users SET ai_limit_daily=?, ai_limit_monthly=? WHERE id=?",
+        (daily, monthly, user_id)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "daily": daily, "monthly": monthly})
+
+
 # ---------------------- main ------------------------------------------------
 
 # Iniciializatsiya BD pri importe modulya — sjabotaet i pri gunicorn (production)

@@ -565,6 +565,16 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # ai_limit_monthly / ai_limit_daily: kastomnye limity OBYCHNOGO AI (text/topic/pdf generation)
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN ai_limit_monthly INTEGER")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN ai_limit_daily INTEGER")
+    except sqlite3.OperationalError:
+        pass
+
     # Avto-otmechaem ranniyh beta-testerov (Saidxon, Malika, farida)
     # Hardcoded usernames — chtoby sozdat' im bezlimit srazu posle deploya
     try:
