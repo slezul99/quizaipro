@@ -798,24 +798,39 @@ def api_install_demo_decks():
         },
     ]
 
-    conn = db.get_conn()
-    created_ids = []
-    for deck_data in DEMO_DECKS:
-        cur = conn.execute(
-            """INSERT INTO decks (org_id, owner_id, name, icon, is_public)
-               VALUES (?, ?, ?, ?, 0)""",
-            (org_id, user_id, deck_data["name"], deck_data["icon"])
-        )
-        deck_id = cur.lastrowid
-        created_ids.append(deck_id)
-        for front, back, note in deck_data["cards"]:
-            conn.execute(
-                """INSERT INTO cards (deck_id, front, back, note)
-                   VALUES (?, ?, ?, ?)""",
-                (deck_id, front, back, note)
+    # Vsyo v try/except — chtoby vmesto HTML 500 oshibki vernut' JSON s tochnym soobshcheniyem
+    try:
+        conn = db.get_conn()
+        created_ids = []
+        for deck_data in DEMO_DECKS:
+            cur = conn.execute(
+                """INSERT INTO decks (org_id, owner_id, name, icon, is_public)
+                   VALUES (?, ?, ?, ?, 0)""",
+                (org_id, user_id, deck_data["name"], deck_data["icon"])
             )
-    conn.commit(); conn.close()
-    return jsonify({"ok": True, "deck_ids": created_ids, "count": len(created_ids)})
+            deck_id = cur.lastrowid
+            created_ids.append(deck_id)
+            for front, back, note in deck_data["cards"]:
+                conn.execute(
+                    """INSERT INTO cards (deck_id, front, back, note)
+                       VALUES (?, ?, ?, ?)""",
+                    (deck_id, front, back, note)
+                )
+        conn.commit()
+        conn.close()
+        return jsonify({"ok": True, "deck_ids": created_ids, "count": len(created_ids)})
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[install-demo-decks] {type(e).__name__}: {e}\n{tb}")
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return jsonify({
+            "ok": False,
+            "error": f"{type(e).__name__}: {e}",
+        }), 500
 
 
 @app.route("/dashboard")
