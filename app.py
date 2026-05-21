@@ -749,7 +749,7 @@ def api_install_demo_decks():
 
     DEMO_DECKS = [
         {
-            "icon": "🇬🇧",
+            "icon": "📘",
             "name": "English Beginner — 10 voprosov",
             "cards": [
                 ("I ___ a student.", "B) am", "A) is\nB) am\nC) are\nD) be"),
