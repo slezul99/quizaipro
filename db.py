@@ -545,6 +545,23 @@ def init_db():
         c.execute("UPDATE users SET last_seen = REPLACE(last_seen, 'T', ' ') WHERE last_seen LIKE '%T%'")
     except sqlite3.OperationalError:
         pass
+
+    # is_beta_tester: bezlimit AI Vision dlya beta-testerov (super-admin upravlyaet)
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN is_beta_tester INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+
+    # Avto-otmechaem ranniyh beta-testerov (Saidxon, Malika, farida)
+    # Hardcoded usernames — chtoby sozdat' im bezlimit srazu posle deploya
+    try:
+        c.execute("""
+            UPDATE users SET is_beta_tester = 1
+            WHERE LOWER(username) IN ('saidxon', 'malika.', 'farida')
+              AND (is_beta_tester IS NULL OR is_beta_tester = 0)
+        """)
+    except sqlite3.OperationalError:
+        pass
     # Tip kolody: mcq (testy s variantami) ili terms (slovari/terminy/pravila)
     try:
         c.execute("ALTER TABLE decks ADD COLUMN deck_type TEXT DEFAULT 'mcq'")

@@ -19,6 +19,25 @@
           {% if u.last_seen %} · {{ t('su_last_online') }} <b class="text-emerald-600 dark:text-emerald-300">{{ u.last_seen|tashkent }}</b>{% endif %}
           {% if u.last_study %} · {{ t('su_last_study') }} {{ u.last_study|tashkent }}{% endif %}
         </p>
+        {% if u.is_beta_tester %}
+          <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200">
+            🧪 Beta-tester · безлимит AI Vision
+          </span>
+        {% endif %}
+      </div>
+      <!-- Beta-tester toggle -->
+      <div x-data="{ isBeta: {{ 'true' if u.is_beta_tester else 'false' }}, busy: false }">
+        <button type="button"
+                @click="busy=true; fetch('/superadmin/user/{{ u.id }}/toggle-beta', {method:'POST'})
+                  .then(r=>r.json())
+                  .then(d=>{ if(d.ok) isBeta = d.is_beta_tester === 1; busy=false; })
+                  .catch(()=>busy=false)"
+                :disabled="busy"
+                :class="isBeta ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'"
+                class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2"
+                :title="isBeta ? 'Снять статус beta-tester' : 'Сделать beta-tester (безлимит AI Vision)'">
+          <span x-text="isBeta ? '🧪 Beta ON' : '🧪 Beta OFF'"></span>
+        </button>
       </div>
     </div>
   </div>

@@ -2877,8 +2877,8 @@ def deck_toggle_public(deck_id):
         conn.close(); abort(404)
     deck_d = dict(deck)
     # Vision PDF kolodu nelzya publikat na Free plane (predotvraschaem zlouupotreblenie AI Vision)
-    # Super-admin obhodit eto ogranicheniye
-    if deck_d.get("created_via") == "vision_pdf" and not is_super_admin(user):
+    # Super-admin i beta-tester obhodyat eto ogranicheniye
+    if deck_d.get("created_via") == "vision_pdf" and not is_super_admin(user) and not user.get("is_beta_tester"):
         plan = billing.get_active_plan(user)
         if plan == "free":
             conn.close()
@@ -5655,10 +5655,14 @@ def _check_vision_quota(user) -> bool:
     """Free tier: 1 vision-import v mesyats (kalendarnyy).
     Paid plany: po limitu plana.
     Super-admin (vladelets sayta): bez limita.
+    Beta-tester (otmechen super-adminom): bez limita.
 
     Vozvrashchaem True esli mojno, False esli prevyshen lim."""
     # Super-adminy = bez limita (testirovaniye, podderzhka)
     if is_super_admin(user):
+        return True
+    # Beta-tester = bez limita (testiruyut funktsiyu)
+    if user.get("is_beta_tester"):
         return True
 
     plan = billing.get_active_plan(user)
@@ -6497,6 +6501,23 @@ def superadmin_user_detail(user_id):
         goals_list=[dict(g) for g in goals_list],
         deck_usage=[dict(d) for d in deck_usage],
     )
+
+
+@app.route("/superadmin/user/<int:user_id>/toggle-beta", methods=["POST"])
+@super_admin_required
+def superadmin_toggle_beta(user_id):
+    """Pereklyuchaet flag is_beta_tester u polzovatelya.
+    Beta-tester poluchaet bezlimit AI Vision + mozhet publikat vision_pdf kolody."""
+    conn = db.get_conn()
+    user = conn.execute("SELECT id, is_beta_tester FROM users WHERE id=?", (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({"ok": False, "error": "user_not_found"}), 404
+    new_state = 0 if user["is_beta_tester"] else 1
+    conn.execute("UPDATE users SET is_beta_tester=? WHERE id=?", (new_state, user_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "is_beta_tester": new_state})
 
 
 # ---------------------- main ------------------------------------------------
