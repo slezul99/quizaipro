@@ -720,7 +720,7 @@
     </div>
 
     <!-- IN-PROGRESS -->
-    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center" x-show="!finished">
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start" x-show="!finished">
       <div class="reveal">
         <!-- Progress bar over the deck -->
         <div class="mb-4 flex items-center justify-between text-sm text-slate-600">
@@ -749,9 +749,13 @@
           </div>
         </div>
 
-        <div class="mt-5 flex items-center justify-center gap-3" x-show="flipped" x-transition>
-          <button class="demo-btn demo-btn-wrong" @click.stop="answer(false)">{{ t('lp_demo_btn_unknown') }}</button>
-          <button class="demo-btn demo-btn-correct" @click.stop="answer(true)">{{ t('lp_demo_btn_known') }}</button>
+        <div class="mt-5 flex items-center justify-center gap-3 min-h-[56px]">
+          <template x-if="flipped">
+            <div class="flex items-center justify-center gap-3" x-transition>
+              <button class="demo-btn demo-btn-wrong" @click.stop="answer(false)">{{ t('lp_demo_btn_unknown') }}</button>
+              <button class="demo-btn demo-btn-correct" @click.stop="answer(true)">{{ t('lp_demo_btn_known') }}</button>
+            </div>
+          </template>
         </div>
       </div>
 
