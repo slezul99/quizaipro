@@ -781,8 +781,8 @@ def api_install_demo_decks():
             ],
         },
         {
-            "icon": "\ud83d\udcda",
-            "name": "English Grammar \u2014 Past Simple",
+            "icon": "📚",
+            "name": "English Grammar — Past Simple",
             "cards": [
                 ("Yesterday I ___ to the cinema.", "B) went", "A) go\nB) went\nC) goes\nD) gone"),
                 ("She ___ a beautiful song last night.", "A) sang", "A) sang\nB) sing\nC) sings\nD) sung"),
