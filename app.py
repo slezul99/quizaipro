@@ -242,10 +242,61 @@ def inject_globals():
                 pending = [g for g in active_goals if not g["today"]["completed"]]
                 behind = [g for g in active_goals if g["status_info"].get("behind")]
                 if pending or behind:
+                    # Vybiraem sluchaynuyu motivatsionnuyu frazu chtoby ne nadoedalo
+                    import random as _random
+                    lang = session.get("lang", "ru")
+                    motivation_pool = {
+                        "ru": [
+                            "Не сдавайтесь, у вас всё получится!",
+                            "Каждая карточка — шаг к цели 💪",
+                            "Маленький рывок сегодня — большой результат завтра",
+                            "Ваш мозг скажет вам спасибо ✨",
+                            "Лучшее время начать — прямо сейчас",
+                            "Один день — одна привычка ближе к успеху",
+                            "Регулярность сильнее таланта 🚀",
+                            "Сделайте сегодня то, что благодарно завтра",
+                            "Цель ближе чем кажется — продолжайте!",
+                            "5 минут — лучше чем 0 минут",
+                            "Память любит постоянство 🧠",
+                            "Вы уже на пути — не сворачивайте",
+                        ],
+                        "en": [
+                            "Don't give up, you can do it!",
+                            "Every card is a step closer 💪",
+                            "Small effort today, big results tomorrow",
+                            "Your brain will thank you ✨",
+                            "The best time to start is now",
+                            "One day, one habit closer to success",
+                            "Consistency beats talent 🚀",
+                            "Do today what your future self will thank you for",
+                            "Your goal is closer than it seems!",
+                            "5 minutes beats 0 minutes",
+                            "Memory loves consistency 🧠",
+                            "You're already on track — keep going",
+                        ],
+                        "uz": [
+                            "Taslim boʻlmang, qoʻlingizdan keladi!",
+                            "Har bir kartochka — maqsadingiz tomon qadam 💪",
+                            "Bugungi kichik harakat — ertangi katta natija",
+                            "Miyangiz sizga rahmat aytadi ✨",
+                            "Boshlash uchun eng yaxshi vaqt — hozir",
+                            "Bir kun — bir odat muvaffaqiyatga yaqinroq",
+                            "Doimiylik isteʼdoddan kuchliroq 🚀",
+                            "Bugun shunday qilingki, ertaga oʻzingizga rahmat aytasiz",
+                            "Maqsad koʻrinishidan ham yaqinroq — davom eting!",
+                            "5 daqiqa hech narsadan koʻra yaxshi",
+                            "Xotira doimiylikni yaxshi koʻradi 🧠",
+                            "Siz allaqachon yoʻldasiz — yana bir oz!",
+                        ],
+                    }
+                    pool = motivation_pool.get(lang, motivation_pool["ru"])
+                    motivation = _random.choice(pool)
+
                     goal_reminder = {
                         "pending": pending[:3],   # max 3 chtoby ne pereveshat'
                         "behind": behind[:3],
                         "count": len(active_goals),
+                        "motivation": motivation,
                     }
             conn.close()
         except Exception as e:
