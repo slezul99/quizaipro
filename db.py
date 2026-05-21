@@ -552,6 +552,19 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # vision_limit_monthly / vision_limit_daily: kastomnye limity AI Vision na polzovatelya
+    # NULL = ispolzovat' default po planu (1/mes na free i t.d.)
+    # 0 = polnost'yu zapretit'
+    # > 0 = konkretnoe chislo
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN vision_limit_monthly INTEGER")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN vision_limit_daily INTEGER")
+    except sqlite3.OperationalError:
+        pass
+
     # Avto-otmechaem ranniyh beta-testerov (Saidxon, Malika, farida)
     # Hardcoded usernames — chtoby sozdat' im bezlimit srazu posle deploya
     try:

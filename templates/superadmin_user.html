@@ -40,6 +40,75 @@
         </button>
       </div>
     </div>
+
+    <!-- AI Vision custom limits -->
+    <div class="mt-5 pt-5 border-t border-slate-200 dark:border-slate-700"
+         x-data="{
+           daily: {{ u.vision_limit_daily if u.vision_limit_daily is not none else 'null' }},
+           monthly: {{ u.vision_limit_monthly if u.vision_limit_monthly is not none else 'null' }},
+           busy: false,
+           saved: false,
+           save() {
+             this.busy = true;
+             this.saved = false;
+             fetch('/superadmin/user/{{ u.id }}/vision-limits', {
+               method: 'POST',
+               headers: {'Content-Type': 'application/json'},
+               body: JSON.stringify({daily: this.daily, monthly: this.monthly})
+             })
+             .then(r => r.json())
+             .then(d => {
+               if (d.ok) {
+                 this.daily = d.daily;
+                 this.monthly = d.monthly;
+                 this.saved = true;
+                 setTimeout(() => this.saved = false, 2000);
+               }
+               this.busy = false;
+             })
+             .catch(() => this.busy = false);
+           }
+         }">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-lg">🤖</span>
+        <h3 class="font-bold text-slate-800 dark:text-slate-100">Лимиты AI Vision</h3>
+        <span class="text-xs text-slate-500 dark:text-slate-400">(пусто = по умолчанию плана, 0 = запрет)</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+        <div>
+          <label class="text-xs text-slate-600 dark:text-slate-400 font-bold block mb-1">📅 В день</label>
+          <input type="number" min="0" max="9999"
+                 x-model.number="daily"
+                 placeholder="напр. 5"
+                 class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-slate-600 dark:text-slate-400 font-bold block mb-1">📆 В месяц</label>
+          <input type="number" min="0" max="9999"
+                 x-model.number="monthly"
+                 placeholder="напр. 25"
+                 class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 text-sm">
+        </div>
+        <div class="flex gap-2">
+          <button type="button" @click="save()" :disabled="busy"
+                  class="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition">
+            <span x-show="!busy && !saved">💾 Сохранить</span>
+            <span x-show="busy">⏳</span>
+            <span x-show="saved" class="text-emerald-200">✓ Сохранено</span>
+          </button>
+          <button type="button"
+                  @click="daily=null; monthly=null; save()"
+                  :disabled="busy"
+                  class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm"
+                  title="Сбросить на лимит по плану">
+            ✖
+          </button>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+        Например: «5 в день, 25 в месяц» — или только одно поле. Пустые поля = действует обычный лимит по плану.
+      </p>
+    </div>
   </div>
 
   <!-- KPI -->

@@ -5656,31 +5656,56 @@ def _check_vision_quota(user) -> bool:
     Paid plany: po limitu plana.
     Super-admin (vladelets sayta): bez limita.
     Beta-tester (otmechen super-adminom): bez limita.
+    Kastomnye lim'ity (vision_limit_daily/monthly) zadannye v profile super-adminom — perekriyvayut default.
 
     Vozvrashchaem True esli mojno, False esli prevyshen lim."""
     # Super-adminy = bez limita (testirovaniye, podderzhka)
     if is_super_admin(user):
         return True
-    # Beta-tester = bez limita (testiruyut funktsiyu)
-    if user.get("is_beta_tester"):
-        return True
 
-    plan = billing.get_active_plan(user)
     conn = db.get_conn()
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0).isoformat()
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0).isoformat()
-    used = conn.execute("""
+
+    used_today = conn.execute("""
+        SELECT COUNT(*) AS c FROM ai_usage
+        WHERE user_id=? AND kind='vision_pdf' AND created_at >= ?
+    """, (user["id"], today_start)).fetchone()["c"]
+    used_month = conn.execute("""
         SELECT COUNT(*) AS c FROM ai_usage
         WHERE user_id=? AND kind='vision_pdf' AND created_at >= ?
     """, (user["id"], month_start)).fetchone()["c"]
     conn.close()
-    # Limity po planam
+
+    # KASTOMNYY DAILY (perekriyvayet vse ostal'noye esli zadan)
+    custom_daily = user.get("vision_limit_daily")
+    if custom_daily is not None:
+        if used_today >= custom_daily:
+            return False
+
+    # KASTOMNYY MONTHLY
+    custom_monthly = user.get("vision_limit_monthly")
+    if custom_monthly is not None:
+        if used_month >= custom_monthly:
+            return False
+
+    # Esli zadan hot' odin kastomnyy lim — proverki proshli, propuskaem
+    if custom_daily is not None or custom_monthly is not None:
+        return True
+
+    # Beta-tester = bez limita (esli kastomnyh net)
+    if user.get("is_beta_tester"):
+        return True
+
+    # DEFAULT po planu
+    plan = billing.get_active_plan(user)
     limits = {
         "free": 1,
         "pro": 20,
         "team": 50,
         "school": 200,
     }
-    return used < limits.get(plan, 1)
+    return used_month < limits.get(plan, 1)
 
 
 def _save_vision_cards_to_deck(job_id: str, cards: list[dict]) -> int:
@@ -6518,6 +6543,46 @@ def superadmin_toggle_beta(user_id):
     conn.commit()
     conn.close()
     return jsonify({"ok": True, "is_beta_tester": new_state})
+
+
+@app.route("/superadmin/user/<int:user_id>/vision-limits", methods=["POST"])
+@super_admin_required
+def superadmin_set_vision_limits(user_id):
+    """Ustanavlivaet kastomnye lim'ity AI Vision dlya polzovatelya.
+    body: {"daily": int|null, "monthly": int|null}
+    null = sbrosit' (vernutsya k defaultu po planu)
+    0 = polnost'yu zapretit'
+    """
+    data = request.get_json(silent=True) or {}
+    daily = data.get("daily")
+    monthly = data.get("monthly")
+
+    # Validatsia: dolzhno byt' int >= 0 ili None
+    def _clean(v):
+        if v is None or v == "" or v == "null":
+            return None
+        try:
+            n = int(v)
+            return max(0, min(n, 9999))  # razumnyy diapazon
+        except (TypeError, ValueError):
+            return None
+
+    daily = _clean(daily)
+    monthly = _clean(monthly)
+
+    conn = db.get_conn()
+    user = conn.execute("SELECT id FROM users WHERE id=?", (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({"ok": False, "error": "user_not_found"}), 404
+
+    conn.execute(
+        "UPDATE users SET vision_limit_daily=?, vision_limit_monthly=? WHERE id=?",
+        (daily, monthly, user_id)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "daily": daily, "monthly": monthly})
 
 
 # ---------------------- main ------------------------------------------------
