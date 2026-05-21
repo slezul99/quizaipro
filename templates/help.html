@@ -105,7 +105,11 @@
     {'q': t('hp_faq6_q'), 'a': t('hp_faq6_a')},
   ]
 } %}
-<div class="relative max-w-5xl mx-auto px-6 py-8" x-data="helpPage({{ HP|tojson }})">
+<script>
+  // Peredayem perevody cherez global'nuyu peremennuyu — bezopasno otnositel'no kavychek/HTML-entities
+  window.__HP_DATA = {{ HP|tojson }};
+</script>
+<div class="relative max-w-5xl mx-auto px-6 py-8" x-data="helpPage(window.__HP_DATA)">
   <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
   <div class="deco-blob deco-blob-2" style="bottom:300px; left:-150px;"></div>
 
