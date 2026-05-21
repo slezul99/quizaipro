@@ -438,6 +438,197 @@ def parse_pdf(filepath: Path, delimiter: str = "|") -> list[dict]:
     return cards
 
 
+def parse_excel(filepath: Path) -> list[dict]:
+    """Razbiraet .xlsx / .xls fayly. Format:
+       Stolbets A = vopros (front)
+       Stolbets B = otvet (back)
+       Stolbets C = obyasnenie / note (optional)
+
+    Esli est' MCQ — popytayemsya razobrat' format:
+       Stolbets A = vopros
+       Stolbets B-E = varianty A/B/C/D
+       Stolbets F = pravilnyy otvet (bukva)
+    """
+    suffix = filepath.suffix.lower()
+    # Avto-determinim format po magic bytes (.xls mozhet byt' xlsx s nepravilnym razshireniyem)
+    is_old_xls = False
+    try:
+        with open(filepath, "rb") as fh:
+            magic = fh.read(8)
+        if magic.startswith(b"\xd0\xcf\x11\xe0"):
+            is_old_xls = True   # OLE format = staryy xls
+        elif magic.startswith(b"PK\x03\x04"):
+            is_old_xls = False  # ZIP = xlsx
+        else:
+            is_old_xls = (suffix == ".xls")
+    except Exception:
+        is_old_xls = (suffix == ".xls")
+
+    rows_per_sheet = []   # [(sheet_name, [list_of_row_lists]), ...]
+    if is_old_xls:
+        # Staryy xls cherez xlrd
+        try:
+            import xlrd
+        except ImportError:
+            raise RuntimeError("Trebuetsya: pip install xlrd (dlya .xls fayloв)")
+        try:
+            wb = xlrd.open_workbook(str(filepath))
+        except Exception as e:
+            raise RuntimeError(f"Ne udalos' otkryt' .xls fayl: {e}")
+        for sheet in wb.sheets():
+            rows = []
+            for r in range(sheet.nrows):
+                row = [sheet.cell_value(r, c) for c in range(sheet.ncols)]
+                rows.append(row)
+            rows_per_sheet.append((sheet.name, rows))
+    else:
+        # Sovremennyy xlsx cherez openpyxl
+        try:
+            import openpyxl
+        except ImportError:
+            raise RuntimeError("Trebuetsya: pip install openpyxl")
+        try:
+            wb = openpyxl.load_workbook(str(filepath), read_only=True, data_only=True)
+        except Exception as e:
+            raise RuntimeError(f"Ne udalos' otkryt' Excel-fayl: {e}")
+        for sheet in wb.worksheets:
+            rows = []
+            for row in sheet.iter_rows(values_only=True):
+                rows.append(list(row))
+            rows_per_sheet.append((sheet.title, rows))
+
+    # Dlya kazhdogo lista probuyem 2 strategii (s zagolovkom i bez), berem maksimum
+    best_cards = []
+    for sheet_name, rows in rows_per_sheet:
+        if not rows:
+            continue
+        for skip_header in (False, True):
+            data_rows = rows[1:] if skip_header else rows
+            cards = _parse_excel_rows(data_rows)
+            if len(cards) > len(best_cards):
+                best_cards = cards
+        if len(best_cards) >= 5:
+            break   # uzhe nashli khoroshiy variant — net smysla iskat' v drugih listah
+
+    return best_cards
+
+
+def _parse_excel_rows(rows: list) -> list[dict]:
+    """Vnutrenniy parser strok. Probuyem:
+       1. MCQ format: vopros + 4 varianta + pravilnaya bukva (6 kolonok)
+       2. Prostoy format: front | back | note (2-3 kolonki)
+    """
+    if not rows:
+        return []
+
+    # Otsekayem pustye stroki srazu
+    rows = [r for r in rows if r and any(_cell_to_str(c) for c in r)]
+    if not rows:
+        return []
+
+    n_cols = max(len(r) for r in rows)
+    cards = []
+
+    # MCQ-format: 6 kolonok (vopros + 4 varianta + otvet)
+    if n_cols >= 6:
+        header_keywords = {
+            "вопрос", "question", "savol", "front", "term",
+            "ответ", "answer", "javob", "back", "definition",
+            "правильный", "correct", "toʻgʻri", "togri"
+        }
+        for row in rows:
+            vals = [_cell_to_str(row[i]) if i < len(row) else "" for i in range(n_cols)]
+            question = vals[0]
+            opts = vals[1:5]
+            answer_raw = vals[5] if n_cols > 5 else ""
+            if not question or sum(1 for o in opts if o) < 2:
+                continue
+            # Otsekayem zagolovochnye stroki: esli vse 6 yacheek korotkie i sovpadayut s
+            # tipichnymi nazvaniyami header'a (вопрос, A, B, C, D, правильный)
+            short_vals = [v.lower().strip() for v in vals[:6]]
+            if (short_vals[0] in header_keywords and
+                all(len(v) <= 25 for v in short_vals) and
+                short_vals[5] in header_keywords):
+                continue
+            # Esli kolonok B-E vse iz 1 simvola (A/B/C/D) — eto header
+            if all(len(v) <= 2 for v in short_vals[1:5]) and short_vals[1:5] == ["a", "b", "c", "d"]:
+                continue
+            # Pytayemsya nayti pravil'nuyu bukvu
+            ans_letter = ""
+            ans_match = re.match(r"^\s*([A-Da-d1-4А-Гa-г])", answer_raw)
+            if ans_match:
+                ans_letter = ans_match.group(1).upper()
+                if ans_letter in "1234":
+                    ans_letter = "ABCD"["1234".index(ans_letter)]
+                if ans_letter in "АБВГ":
+                    ans_letter = "ABCD"["АБВГ".index(ans_letter)]
+            options = []
+            correct_text = ""
+            for i, opt in enumerate(opts):
+                if not opt:
+                    continue
+                letter = "ABCD"[i]
+                options.append(f"{letter}) {opt}")
+                if letter == ans_letter:
+                    correct_text = f"{letter}) {opt}"
+            if len(options) < 2:
+                continue
+            back = correct_text if correct_text else "\n".join(options)
+            note = "\n".join(options) if correct_text else ""
+            cards.append({"front": question, "back": back, "note": note})
+        if cards:
+            return cards
+
+    # Prostoy format: front | back | note
+    if n_cols >= 2:
+        for row in rows:
+            front = _cell_to_str(row[0]) if len(row) > 0 else ""
+            back = _cell_to_str(row[1]) if len(row) > 1 else ""
+            note = _cell_to_str(row[2]) if len(row) > 2 else ""
+            # Filtruem zagolovochnye stroki
+            if front.lower() in ("вопрос", "question", "savol", "front", "term") and \
+               back.lower() in ("ответ", "answer", "javob", "back", "definition"):
+                continue
+            if not front or not back:
+                continue
+            cards.append({"front": front, "back": back, "note": note})
+
+    return cards
+
+
+def _cell_to_str(val) -> str:
+    """Konvertiruem znacheniye yacheyki v strochku, obrabatyvaem pustye/None/NaN."""
+    if val is None:
+        return ""
+    try:
+        import math
+        if isinstance(val, float) and math.isnan(val):
+            return ""
+        # Excel sokhranyaet tselye chisla kak floati (5.0 vmesto 5) — uberyom .0
+        if isinstance(val, float) and val.is_integer():
+            return str(int(val))
+    except Exception:
+        pass
+    s = str(val).strip()
+    if s.lower() in ("nan", "none", "null"):
+        return ""
+    return s
+
+
+def _is_na(val) -> bool:
+    """Proverka NaN/None/пусто."""
+    if val is None:
+        return True
+    try:
+        import math
+        if isinstance(val, float) and math.isnan(val):
+            return True
+    except Exception:
+        pass
+    s = str(val).strip().lower()
+    return s in ("", "nan", "none", "null")
+
+
 def auto_parse(filepath: Path, delimiter: str = "|") -> list[dict]:
     """Avto-opredeleniye po rasshireniyu."""
     suffix = filepath.suffix.lower()
@@ -445,6 +636,8 @@ def auto_parse(filepath: Path, delimiter: str = "|") -> list[dict]:
         return parse_docx(filepath, delimiter)
     if suffix == ".pdf":
         return parse_pdf(filepath, delimiter)
+    if suffix in (".xlsx", ".xls", ".xlsm"):
+        return parse_excel(filepath)
     if suffix in (".txt", ".csv", ".tsv"):
         text = filepath.read_text(encoding="utf-8", errors="ignore")
         if suffix == ".tsv":

@@ -20,9 +20,10 @@
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <div>
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('import_help') }}</label>
-        <input type="file" name="file" accept=".txt,.csv,.tsv,.docx,.pdf" class="input-premium" style="padding: 8px 12px;">
+        <input type="file" name="file" accept=".txt,.csv,.tsv,.docx,.pdf,.xlsx,.xls" class="input-premium" style="padding: 8px 12px;">
         <div class="mt-2 p-3 rounded-xl text-xs" style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05)); border: 1px solid rgba(99,102,241,0.2);">
           <p class="text-slate-700 dark:text-slate-200 leading-relaxed">
+            <b>📊 Excel:</b> {{ t('u_excel_format_hint') }}<br>
             <b>📄 {{ t('u_pdf_scan_hint') }}</b><br>
             <span class="text-slate-600 dark:text-slate-300">{{ t('u_vision_filter_note') }}</span>
             <br><span class="text-slate-500 dark:text-slate-400 text-[11px]">{{ t('u_vision_quota_note') }}</span>
@@ -94,6 +95,7 @@
         <li><b>{{ t('u_format_simple') }}</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">{{ t('u_format_simple_example') }}</code></li>
         <li><b>{{ t('u_format_qa') }}</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">Q: ... A: ... Note: ...</code></li>
         <li><b>{{ t('u_format_mcq') }}</b> {{ t('u_format_mcq_hint') }} <code class="bg-emerald-100/60 dark:bg-emerald-900/30 px-2 py-0.5 rounded text-xs">✓</code></li>
+        <li><b>📊 Excel (.xlsx/.xls):</b> {{ t('u_format_excel_hint') }}</li>
       </ul>
       <pre class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl mt-3 text-xs overflow-x-auto text-slate-700 dark:text-slate-300 font-mono">{{ t('u_format_mcq_example') }}</pre>
     </div>
