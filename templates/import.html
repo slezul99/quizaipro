@@ -16,19 +16,6 @@
       <p class="section-sub">{{ t('u_load_cards_from') }}</p>
     </div>
 
-    <!-- JSON import -->
-    <div class="glass-premium mb-5" style="border-color: rgba(16,185,129,0.3); border-width: 2px;">
-      <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
-        <span class="text-2xl">💾</span> {{ t('u_json_backup_title') }}
-      </h3>
-      <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">{{ t('u_json_backup_desc') }}</p>
-      <form method="POST" action="/import-json" enctype="multipart/form-data" class="flex gap-3 items-center flex-wrap">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-        <input type="file" name="file" accept=".json" required class="input-premium flex-1" style="padding: 8px 12px; min-width: 200px;">
-        <button type="submit" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">💾 {{ t('u_import_json_btn') }}</button>
-      </form>
-    </div>
-
     <form method="POST" action="/import" enctype="multipart/form-data" class="glass-premium space-y-5">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <div>
@@ -110,6 +97,25 @@
       </ul>
       <pre class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl mt-3 text-xs overflow-x-auto text-slate-700 dark:text-slate-300 font-mono">{{ t('u_format_mcq_example') }}</pre>
     </div>
+
+    <!-- Advanced: JSON-backup import (skryt po default — tehnicheskaya feature) -->
+    <details class="mt-6">
+      <summary class="cursor-pointer text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition flex items-center gap-2 select-none">
+        <span class="text-base">⚙️</span>
+        <span>{{ t('u_advanced_options') }}</span>
+      </summary>
+      <div class="mt-3 glass-premium" style="padding: 1.25rem; border-color: rgba(16,185,129,0.3); border-width: 1px;">
+        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
+          <span class="text-xl">💾</span> {{ t('u_json_backup_title') }}
+        </h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">{{ t('u_json_backup_desc') }}</p>
+        <form method="POST" action="/import-json" enctype="multipart/form-data" class="flex gap-3 items-center flex-wrap">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <input type="file" name="file" accept=".json" required class="input-premium flex-1" style="padding: 6px 10px; min-width: 200px; font-size: 13px;">
+          <button type="submit" class="btn-premium-ghost" style="font-size: 13px; padding: 8px 14px;">💾 {{ t('u_import_json_btn') }}</button>
+        </form>
+      </div>
+    </details>
   </div>
 </div>
 {% endblock %}
