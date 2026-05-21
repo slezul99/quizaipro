@@ -433,6 +433,61 @@ def index():
     return render_template("landing.html")
 
 
+@app.route("/terms")
+def terms_page():
+    """Pol'zovatelskoye soglashenie (publicno dostupno bez login)."""
+    return render_template("terms.html")
+
+
+@app.route("/privacy")
+def privacy_page():
+    """Politika konfidentsial'nosti (publicno dostupno bez login)."""
+    return render_template("privacy.html")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    """SEO sitemap dlya Google Search Console."""
+    pages = [
+        ("", "1.0", "weekly"),
+        ("/login", "0.7", "monthly"),
+        ("/register", "0.8", "monthly"),
+        ("/terms", "0.4", "yearly"),
+        ("/privacy", "0.4", "yearly"),
+    ]
+    base_url = "https://quizaipro.com"
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for path, priority, freq in pages:
+        xml.append("<url>")
+        xml.append(f"<loc>{base_url}{path}</loc>")
+        xml.append(f"<lastmod>{today}</lastmod>")
+        xml.append(f"<changefreq>{freq}</changefreq>")
+        xml.append(f"<priority>{priority}</priority>")
+        xml.append("</url>")
+    xml.append("</urlset>")
+    from flask import Response
+    return Response("\n".join(xml), mimetype="application/xml")
+
+
+@app.route("/robots.txt")
+def robots_txt():
+    """SEO robots.txt — razreshaem indeksirovat' publichnye stranitsy."""
+    txt = "User-agent: *\n"
+    txt += "Allow: /\n"
+    txt += "Disallow: /dashboard\n"
+    txt += "Disallow: /superadmin\n"
+    txt += "Disallow: /api/\n"
+    txt += "Disallow: /admin/\n"
+    txt += "Disallow: /settings\n"
+    txt += "Disallow: /billing\n"
+    txt += "\n"
+    txt += "Sitemap: https://quizaipro.com/sitemap.xml\n"
+    from flask import Response
+    return Response(txt, mimetype="text/plain")
+
+
 @app.route("/set-lang/<lang>")
 def set_lang(lang):
     if lang not in ("ru", "en", "uz"): lang = "ru"

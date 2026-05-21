@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ t('privacy_title') }} — QuizAIPro{% endblock %}
+{% block meta_description %}{{ t('privacy_meta') }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-10">
+  <h1 class="h-display text-3xl mb-2 text-slate-900 dark:text-slate-100">{{ t('privacy_title') }}</h1>
+  <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">{{ t('terms_updated') }}: 21.05.2026</p>
+
+  <div class="glass-premium prose prose-sm max-w-none dark:prose-invert" style="padding: 2rem;">
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0 mb-3">1. {{ t('priv_h_1') }}</h2>
+    <p class="text-slate-700 dark:text-slate-300 mb-5">{{ t('priv_p_1') }}</p>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">2. {{ t('priv_h_2') }}</h2>
+    <ul class="text-slate-700 dark:text-slate-300 mb-5 list-disc pl-6 space-y-1">
+      <li>{{ t('priv_li_2_1') }}</li>
+      <li>{{ t('priv_li_2_2') }}</li>
+      <li>{{ t('priv_li_2_3') }}</li>
+      <li>{{ t('priv_li_2_4') }}</li>
+    </ul>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">3. {{ t('priv_h_3') }}</h2>
+    <ul class="text-slate-700 dark:text-slate-300 mb-5 list-disc pl-6 space-y-1">
+      <li>{{ t('priv_li_3_1') }}</li>
+      <li>{{ t('priv_li_3_2') }}</li>
+      <li>{{ t('priv_li_3_3') }}</li>
+    </ul>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">4. {{ t('priv_h_4') }}</h2>
+    <p class="text-slate-700 dark:text-slate-300 mb-5">{{ t('priv_p_4') }}</p>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">5. {{ t('priv_h_5') }}</h2>
+    <ul class="text-slate-700 dark:text-slate-300 mb-5 list-disc pl-6 space-y-1">
+      <li><b>Google:</b> {{ t('priv_li_5_google') }} — <a class="text-indigo-600 dark:text-indigo-300 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></li>
+      <li><b>Stripe:</b> {{ t('priv_li_5_stripe') }} — <a class="text-indigo-600 dark:text-indigo-300 hover:underline" href="https://stripe.com/privacy" target="_blank" rel="noopener">stripe.com/privacy</a></li>
+      <li><b>Railway:</b> {{ t('priv_li_5_railway') }} — <a class="text-indigo-600 dark:text-indigo-300 hover:underline" href="https://railway.app/legal/privacy" target="_blank" rel="noopener">railway.app/legal/privacy</a></li>
+    </ul>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">6. {{ t('priv_h_6') }}</h2>
+    <p class="text-slate-700 dark:text-slate-300 mb-5">{{ t('priv_p_6') }}</p>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">7. {{ t('priv_h_7') }}</h2>
+    <ul class="text-slate-700 dark:text-slate-300 mb-5 list-disc pl-6 space-y-1">
+      <li>{{ t('priv_li_7_1') }}</li>
+      <li>{{ t('priv_li_7_2') }}</li>
+      <li>{{ t('priv_li_7_3') }}</li>
+    </ul>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">8. {{ t('priv_h_8') }}</h2>
+    <p class="text-slate-700 dark:text-slate-300 mb-5">{{ t('priv_p_8') }}</p>
+
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">9. {{ t('priv_h_contact') }}</h2>
+    <p class="text-slate-700 dark:text-slate-300 mb-0">
+      {{ t('priv_contact') }}: <a href="mailto:slezul99@gmail.com" class="text-indigo-600 dark:text-indigo-300 hover:underline">slezul99@gmail.com</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

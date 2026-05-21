@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ t('app_name') }}{% endblock %}</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+
+<!-- SEO + Open Graph -->
+<meta name="description" content="{% block meta_description %}{{ t('seo_default_description') }}{% endblock %}">
+<meta name="keywords" content="{{ t('seo_keywords') }}">
+<meta name="author" content="QuizAIPro">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://quizaipro.com{{ request.path if request else '/' }}">
+
+<!-- Open Graph (Telegram / Facebook / WhatsApp preview) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="QuizAIPro">
+<meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+<meta property="og:image" content="https://quizaipro.com/static/og-image.png">
+<meta property="og:url" content="https://quizaipro.com{{ request.path if request else '/' }}">
+<meta property="og:locale" content="{{ 'uz_UZ' if lang == 'uz' else 'ru_RU' if lang == 'ru' else 'en_US' }}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% block tw_title %}{{ self.title() }}{% endblock %}">
+<meta name="twitter:description" content="{% block tw_description %}{{ self.meta_description() }}{% endblock %}">
+<meta name="twitter:image" content="https://quizaipro.com/static/og-image.png">
 <!-- Anti-FOUC: stavim dark klass i fon DO renderinga -->
 <script>
 (function() {
@@ -1357,6 +1379,25 @@
 <main class="fade-in">
 {% block content %}{% endblock %}
 </main>
+
+<!-- Footer -->
+{% block footer %}
+<footer class="mt-16 mb-8 px-6">
+  <div class="max-w-6xl mx-auto pt-6 border-t border-slate-200 dark:border-slate-700/50">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🧠</span>
+        <span>{{ t('footer_copyright') }}</span>
+      </div>
+      <nav class="flex items-center gap-4">
+        <a href="/terms" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_terms') }}</a>
+        <a href="/privacy" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_privacy') }}</a>
+        <a href="mailto:slezul99@gmail.com" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_contact') }}</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+{% endblock %}
 
 {% if current_user and not current_user.get('welcome_shown', 1) %}
 <!-- Welcome modal — pokazyvaem 1 raz novomu polzovatelyu -->
