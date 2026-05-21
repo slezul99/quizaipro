@@ -67,6 +67,7 @@
           style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);">🃏 Flashcards</a>
         {% else %}
         <a href="/deck/{{ d['id'] }}/test?count=10&shuffle=1" class="btn btn-success flex-1 justify-center text-sm {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}">📝 {{ t('btn_test') }}</a>
+        <a href="/deck/{{ d['id'] }}/flashcards" class="rounded-xl text-sm font-bold text-center transition flex items-center justify-center {% if d['card_count'] == 0 %}pointer-events-none opacity-50{% endif %}" style="padding: 0 12px; background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border: 1px solid rgba(99,102,241,0.4);" title="🃏 Flashcards">🃏</a>
         {% endif %}
         <a href="/deck/{{ d['id'] }}" class="btn btn-ghost text-sm">⚙</a>
       </div>
