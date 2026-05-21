@@ -5803,6 +5803,67 @@ def vision_recent_jobs_api():
     return jsonify({"jobs": jobs, "count": len(jobs)})
 
 
+@app.route("/api/admin/gemini-health")
+@login_required
+def gemini_health_check():
+    """SUPER-ADMIN ONLY: testovyy zapros k Gemini chtoby uznat' rabotaet li.
+    Otpravlyaem kroshechnyy text-zapros na obeih modelyah Vision i smotrim chto Google otvechayet."""
+    user = current_user()
+    if not is_super_admin(user):
+        return jsonify({"error": "forbidden"}), 403
+
+    import json as _json
+    from urllib import request as _urlreq, error as _urlerr
+
+    key = ai_gen._key()
+    if not key:
+        return jsonify({"error": "no_api_key", "message": "GEMINI_API_KEY ne nastroen"}), 500
+
+    results = {}
+    test_body = _json.dumps({
+        "contents": [{"parts": [{"text": "Say 'OK' in JSON: {\"status\":\"OK\"}"}]}],
+        "generationConfig": {"maxOutputTokens": 50, "responseMimeType": "application/json"},
+    }).encode("utf-8")
+
+    for model_url in [
+        ai_gen.API_URL_VISION_PRIMARY,    # gemini-2.0-flash (1500 RPD)
+        ai_gen.API_URL_VISION_FALLBACK,   # gemini-2.5-flash (250 RPD)
+        ai_gen.API_URL,                    # gemini-2.0-flash-lite (default text)
+    ]:
+        model_name = model_url.split("/models/")[-1].split(":")[0]
+        url = f"{model_url}?key={key}"
+        try:
+            req = _urlreq.Request(url, data=test_body, method="POST",
+                                  headers={"Content-Type": "application/json"})
+            with _urlreq.urlopen(req, timeout=15) as resp:
+                payload = _json.loads(resp.read().decode("utf-8"))
+                txt = payload.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                results[model_name] = {"status": "OK", "response": txt[:100]}
+        except _urlerr.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")[:500]
+            except Exception:
+                pass
+            results[model_name] = {
+                "status": f"HTTP_{e.code}",
+                "error": err_body,
+                "is_quota": e.code == 429,
+            }
+        except Exception as e:
+            results[model_name] = {"status": "ERROR", "error": f"{type(e).__name__}: {e}"}
+
+    # Polnoe zaklyuchenie
+    any_ok = any(r.get("status") == "OK" for r in results.values())
+    return jsonify({
+        "any_working": any_ok,
+        "summary": "✅ Gemini рабочий" if any_ok else "❌ Все модели Gemini недоступны",
+        "models": results,
+        "key_present": bool(key),
+        "key_prefix": key[:10] + "..." if key else None,
+    })
+
+
 # ---------------------- AI generation ---------------------------------------
 
 @app.route("/ai", methods=["GET", "POST"])

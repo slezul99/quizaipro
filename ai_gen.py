@@ -411,12 +411,19 @@ VISION_AUDIT_PROMPT = """Ты — АУДИТОР извлечения тесто
 Если ничего не пропущено → `[]`. Не возвращай дубликаты тех номеров что уже в списке."""
 
 
+# Globalnaya peremennaya — sokranyaem POSLEDNUYU HTTP-oshibku ot Gemini
+# Chtoby pokazat' polzovatelyu konkretno chto skazal Google (429, 401, 503...)
+_last_gemini_error = ""
+
+
 def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = None) -> str | None:
     """Otdelnyy zapros k Gemini Vision s nabor kartinok. Vozvrashchaet raw text otveta.
     prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT).
     Probuet snachala gemini-2.0-flash (1500 RPD), potom gemini-2.5-flash (250 RPD)."""
+    global _last_gemini_error
     key = _key()
     if not key:
+        _last_gemini_error = "GEMINI_API_KEY ne nastroen"
         print("[AI vision] NO KEY — set GEMINI_API_KEY env var")
         return None
     import base64
@@ -459,11 +466,12 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
             except urlerr.HTTPError as e:
                 err_body = ""
                 try:
-                    err_body = e.read().decode("utf-8", errors="replace")[:300]
+                    err_body = e.read().decode("utf-8", errors="replace")[:500]
                 except Exception:
                     pass
-                last_err = f"HTTP {e.code}: {err_body}"
-                print(f"[AI vision] {model_name} attempt {attempt+1}/2: {last_err}")
+                last_err = f"{model_name} HTTP {e.code}: {err_body[:300]}"
+                _last_gemini_error = last_err
+                print(f"[AI vision] {model_name} attempt {attempt+1}/2: HTTP {e.code}: {err_body[:300]}")
                 if e.code == 429:
                     # Rate limit — perehodim k sleduyushchey modeli
                     print(f"[AI vision] {model_name} rate limited, switching to next model")
@@ -472,10 +480,11 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
                     import time
                     time.sleep(3 + attempt * 3)
                     continue
-                # Drugie HTTP oshibki — probuyem fallback model'
+                # Drugie HTTP oshibki (401, 403, 400) — probuyem fallback model'
                 break
             except Exception as e:
-                last_err = f"{type(e).__name__}: {e}"
+                last_err = f"{model_name} {type(e).__name__}: {e}"
+                _last_gemini_error = last_err
                 print(f"[AI vision] {model_name} attempt {attempt+1}/2: {last_err}")
                 import time
                 time.sleep(2)
@@ -483,6 +492,11 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
 
     print(f"[AI vision] FAILED on all models: {last_err}")
     return None
+
+
+def get_last_gemini_error() -> str:
+    """Vozvrashchaem poslednyuyu detal'nuyu HTTP-oshibku ot Gemini (dlya debug)."""
+    return _last_gemini_error
 
 
 def _parse_vision_response(text: str) -> list[dict]:
@@ -658,11 +672,30 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
 
     # Esli VSE stranitsy upali — eto problema s API
     if chunk_results and not any(r[0] for r in chunk_results):
-        raise RuntimeError(
-            "Дневной лимит Gemini AI исчерпан (1500 запросов в сутки на free tier). "
-            "Попробуйте завтра, или подождите перезагрузки квоты в полночь по UTC. "
-            "Если проблема повторяется — возможно перегрузка серверов Google."
-        )
+        # Beryom poslednyuyu detal'nuyu oshibku ot Gemini
+        gemini_err = get_last_gemini_error() or "(net detalei)"
+        # Opredelyaem konkretnyy tip oshibki
+        if "429" in gemini_err or "RESOURCE_EXHAUSTED" in gemini_err.upper() or "quota" in gemini_err.lower():
+            raise RuntimeError(
+                "🚫 Дневной лимит Gemini AI исчерпан. Free tier: 1500 запросов/день для 2.0-flash + 250 для 2.5-flash. "
+                "Квота сбрасывается в полночь по Pacific Time (=11:00 утра в Ташкенте). "
+                f"\n\nПодробности от Google: {gemini_err[:300]}"
+            )
+        elif "401" in gemini_err or "403" in gemini_err or "API_KEY" in gemini_err.upper():
+            raise RuntimeError(
+                "🔑 Проблема с API ключом Gemini. Проверьте GEMINI_API_KEY в Railway env. "
+                f"\n\nПодробности: {gemini_err[:300]}"
+            )
+        elif "503" in gemini_err or "500" in gemini_err or "overload" in gemini_err.lower():
+            raise RuntimeError(
+                "⚙️ Серверы Gemini перегружены. Попробуйте через 5-10 минут. "
+                f"\n\nПодробности: {gemini_err[:300]}"
+            )
+        else:
+            raise RuntimeError(
+                "❌ Все запросы к Gemini Vision провалились. "
+                f"\n\nПодробности: {gemini_err[:400]}"
+            )
 
     deduped = _dedupe_cards(all_cards)
     for c in deduped:
