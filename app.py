@@ -394,6 +394,8 @@ def can_view_deck(user, deck):
     if not deck: return False
     org = deck["org_id"] if isinstance(deck, dict) or hasattr(deck, "keys") else None
     own = deck["owner_id"] if isinstance(deck, dict) or hasattr(deck, "keys") else None
+    # Super-admin vidit lyubuyu kolodu (dlya audita / podderzhki)
+    if is_super_admin(user): return True
     if org and user["org_id"] == org: return True
     if own and user["id"] == own: return True
     return False
