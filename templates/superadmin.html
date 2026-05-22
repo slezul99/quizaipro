@@ -574,8 +574,9 @@
           <tr class="border-b border-gray-100 dark:border-slate-700 hover:bg-white/50 dark:hover:bg-slate-800/40">
             <td class="py-2 px-2 text-slate-500 dark:text-slate-400">{{ loop.index }}</td>
             <td class="py-2 px-2">
-              <a href="/deck/{{ d.id }}" class="font-medium text-indigo-600 dark:text-indigo-300 hover:underline">
+              <a href="{% if d.is_public %}/deck/{{ d.id }}{% else %}/superadmin/deck/{{ d.id }}/view{% endif %}" class="font-medium text-indigo-600 dark:text-indigo-300 hover:underline">
                 {{ d.icon }} {{ d.name }}
+                {% if not d.is_public %}<span class="text-[10px] text-amber-600 dark:text-amber-400 ml-1" title="Приватная — открывается в режиме админ-аудита">🔒</span>{% endif %}
               </a>
             </td>
             <td class="py-2 px-2 text-xs">@{{ d.owner_name or '—' }}</td>

@@ -330,6 +330,24 @@ function deckEditor() {
   <div class="deco-blob deco-blob-3" style="bottom:200px; left:-150px;"></div>
 
   <div class="relative z-10">
+    {% if admin_view %}
+    <!-- BANNER super-admin audita -->
+    <div class="mb-4 px-4 py-3 rounded-2xl border-2 border-amber-400/60 dark:border-amber-500/40 flex items-center justify-between flex-wrap gap-2"
+         style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08));">
+      <div class="flex items-center gap-3 text-sm">
+        <span class="text-2xl">🔓</span>
+        <div>
+          <div class="font-bold text-amber-900 dark:text-amber-200">Режим админ-аудита</div>
+          <div class="text-xs text-amber-800 dark:text-amber-300/80">
+            Чужая приватная колода. Только просмотр — редактирование/удаление недоступны.
+            {% if admin_view_owner %}Владелец: <a href="/superadmin/user/{{ admin_view_owner.id }}" class="underline font-semibold">{{ admin_view_owner.full_name or admin_view_owner.username }}</a> (@{{ admin_view_owner.username }}){% endif %}
+          </div>
+        </div>
+      </div>
+      <a href="/superadmin" class="text-xs font-semibold text-amber-900 dark:text-amber-200 hover:underline">← К панели</a>
+    </div>
+    {% endif %}
+
     <a href="/dashboard" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
       <span>←</span> {{ t('decks') }}
     </a>

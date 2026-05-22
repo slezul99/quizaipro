@@ -394,8 +394,13 @@ def can_view_deck(user, deck):
     if not deck: return False
     org = deck["org_id"] if isinstance(deck, dict) or hasattr(deck, "keys") else None
     own = deck["owner_id"] if isinstance(deck, dict) or hasattr(deck, "keys") else None
-    # Super-admin vidit lyubuyu kolodu (dlya audita / podderzhki)
-    if is_super_admin(user): return True
+    # Publichnaya koloda — viden lyubomu polzovatelyu (vklyuchaya super-admina)
+    try:
+        is_pub = (deck.get("is_public") if isinstance(deck, dict) else deck["is_public"]) or 0
+    except (KeyError, IndexError, TypeError):
+        is_pub = 0
+    if is_pub:
+        return True
     if org and user["org_id"] == org: return True
     if own and user["id"] == own: return True
     return False
@@ -6409,6 +6414,59 @@ def support_close(ticket_id):
 
 
 # ---------------------- SUPER ADMIN — analitika dlya vladel'tsa sayta -------
+
+@app.route("/superadmin/deck/<int:deck_id>/view")
+@super_admin_required
+def superadmin_deck_view(deck_id):
+    """Super-admin: prosmotr LYUBOY kolody (vklyuchaya privatnye) v read-only rezhime.
+    Ispol'zuyetsya iz top-decks tablitsy v /superadmin dlya audita."""
+    user = current_user()
+    conn = db.get_conn()
+    deck = conn.execute("""SELECT d.*, c.name AS category_name FROM decks d
+                            LEFT JOIN categories c ON c.id=d.category_id WHERE d.id=?""",
+                        (deck_id,)).fetchone()
+    if not deck:
+        conn.close(); abort(404)
+    cards_raw = conn.execute("""SELECT c.*, NULL AS ef, NULL AS interval_days,
+                                       0 AS reviews, 0 AS lapses, NULL AS due_at
+        FROM cards c WHERE c.deck_id=? ORDER BY c.id DESC""", (deck_id,)).fetchall()
+    cards = [dict(c) for c in cards_raw]
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$")
+    for c in cards:
+        c["level"] = 0
+        c["difficulty"] = 0
+        source = (c.get("note") or "").strip() or (c.get("back") or "")
+        opts = []
+        for line in source.split("\n"):
+            m = _opt_re.match(line.strip())
+            if m:
+                opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+        if not opts and c.get("back"):
+            for line in c["back"].split("\n"):
+                m = _opt_re.match(line.strip())
+                if m:
+                    opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+        c["options"] = opts
+        c["correct_letter"] = None
+        if c.get("back") and opts:
+            m = _opt_re.match(c["back"].strip().split("\n")[0].strip())
+            if m:
+                letter = m.group(1).upper()
+                if any(o["letter"] == letter for o in opts):
+                    c["correct_letter"] = letter
+    # Vladelets dlya banner'a "vy smotrite chuzhuyu kolodu"
+    owner = None
+    if deck["owner_id"]:
+        owner = conn.execute("SELECT id, username, full_name FROM users WHERE id=?",
+                             (deck["owner_id"],)).fetchone()
+    cats = []
+    conn.close()
+    return render_template("deck.html",
+                           deck=deck, cards=cards, categories=cats,
+                           can_edit=False,         # super-admin v read-only
+                           admin_view=True,         # banner "audit mode"
+                           admin_view_owner=dict(owner) if owner else None)
+
 
 @app.route("/superadmin/deck-debug/<int:deck_id>")
 @super_admin_required
