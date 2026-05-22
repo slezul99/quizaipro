@@ -6649,7 +6649,6 @@ def superadmin_dashboard():
     def _scalar(sql):
         row = conn.execute(sql).fetchone()
         return (row["c"] if row else 0) or 0
-
     today_stats = {
         # Polzovateli
         "users_online":   _scalar("SELECT COUNT(DISTINCT id) AS c FROM users WHERE DATE(last_seen)=DATE('now')"),
@@ -6692,6 +6691,44 @@ def superadmin_dashboard():
         "messages":       _scalar("SELECT COUNT(*) AS c FROM messages WHERE DATE(created_at)=DATE('now','-1 day')"),
     }
 
+    # ============================================================
+    # === KTO CHTO SDELAL: aktivnost' po kazhdomu polzovatelyu ===
+    # ============================================================
+    # Sortiruem po summarnoy aktivnosti — ts'ko byl posledniy raz online + chto delal
+    user_activity = conn.execute("""
+        SELECT
+            u.id, u.username, u.full_name, u.role, u.xp, u.streak,
+            u.created_at, u.last_seen, u.last_study, u.is_beta_tester,
+            -- Kontent kotoryy on sozdal
+            (SELECT COUNT(*) FROM decks WHERE owner_id=u.id) AS decks_created,
+            (SELECT COUNT(*) FROM decks WHERE owner_id=u.id AND DATE(created_at)=DATE('now')) AS decks_today,
+            (SELECT COUNT(*) FROM decks WHERE owner_id=u.id AND created_at >= datetime('now','-7 days')) AS decks_7d,
+            (SELECT COUNT(*) FROM cards c JOIN decks d ON d.id=c.deck_id WHERE d.owner_id=u.id) AS cards_created,
+            -- Uchyoba (otvety na karty)
+            (SELECT COUNT(*) FROM reviews WHERE user_id=u.id) AS reviews_total,
+            (SELECT COUNT(*) FROM reviews WHERE user_id=u.id AND DATE(reviewed_at)=DATE('now')) AS reviews_today,
+            (SELECT COUNT(*) FROM reviews WHERE user_id=u.id AND reviewed_at >= datetime('now','-7 days')) AS reviews_7d,
+            -- AI ispol'zovaniye
+            (SELECT COUNT(*) FROM ai_usage WHERE user_id=u.id) AS ai_calls,
+            (SELECT COALESCE(SUM(cards_generated),0) FROM ai_usage WHERE user_id=u.id) AS ai_cards,
+            -- Igry
+            COALESCE((SELECT tests_played FROM user_game_stats WHERE user_id=u.id), 0) AS tests_played,
+            COALESCE((SELECT duels_played FROM user_game_stats WHERE user_id=u.id), 0) AS duels_played,
+            COALESCE((SELECT live_played + live_hosted FROM user_game_stats WHERE user_id=u.id), 0) AS live_played,
+            COALESCE((SELECT match_played FROM user_game_stats WHERE user_id=u.id), 0) AS match_played,
+            -- Sotsial'no
+            (SELECT COUNT(*) FROM messages WHERE user_id=u.id) AS messages_sent,
+            -- Tseli
+            (SELECT COUNT(*) FROM learning_goals WHERE user_id=u.id) AS goals_total,
+            (SELECT COUNT(*) FROM learning_goals WHERE user_id=u.id AND status='completed') AS goals_done
+        FROM users u
+        ORDER BY
+            CASE WHEN u.last_seen IS NULL THEN 1 ELSE 0 END,
+            u.last_seen DESC,
+            u.xp DESC
+        LIMIT 100
+    """).fetchall()
+
     conn.close()
     return render_template("superadmin.html",
         stats=stats,
@@ -6719,6 +6756,7 @@ def superadmin_dashboard():
         public_decks=[dict(d) for d in public_decks],
         today_stats=today_stats,
         yesterday_stats=yesterday_stats,
+        user_activity=[dict(u) for u in user_activity],
     )
 
 

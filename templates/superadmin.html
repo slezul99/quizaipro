@@ -590,5 +590,110 @@
     </div>
   </div>
 
+  <!-- ============== 👥 АКТИВНОСТЬ КАЖДОГО ПОЛЬЗОВАТЕЛЯ ============== -->
+  <div class="glass rounded-3xl p-5 mb-6">
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+      <h2 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <span class="text-2xl">👥</span> Активность пользователей
+      </h2>
+      <div class="flex items-center gap-2 text-xs">
+        <input type="text" id="user-filter" placeholder="🔍 Поиск по имени..."
+          class="px-3 py-1.5 rounded-lg bg-white/60 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-48" />
+        <span class="text-slate-500 dark:text-slate-400">всего показано: {{ user_activity|length }}</span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto -mx-2 px-2">
+      <table class="w-full text-sm" id="user-activity-table">
+        <thead>
+          <tr class="text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-gray-200 dark:border-slate-700 sticky top-0">
+            <th class="py-2 px-2">Пользователь</th>
+            <th class="py-2 px-1 text-right" title="Сколько колод создал">📚 Колоды</th>
+            <th class="py-2 px-1 text-right" title="Сколько карточек создал в своих колодах">🃏 Карты</th>
+            <th class="py-2 px-1 text-right" title="Сколько раз отвечал на карты (повторения)">📝 Ответы</th>
+            <th class="py-2 px-1 text-right" title="Сколько раз использовал AI">🤖 AI</th>
+            <th class="py-2 px-1 text-right" title="Тесты / Дуэли / Live / Match">🎮 Игры</th>
+            <th class="py-2 px-1 text-right" title="Сообщения в чатах">💬 Чат</th>
+            <th class="py-2 px-1 text-right" title="Цели обучения">🎯 Цели</th>
+            <th class="py-2 px-1 text-right">⭐ XP</th>
+            <th class="py-2 px-1 text-right">🟢 Был онлайн</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in user_activity %}
+          {% set total_actions = u.decks_created + u.reviews_total + u.ai_calls + u.tests_played + u.duels_played + u.live_played + u.match_played + u.messages_sent + u.goals_total %}
+          <tr class="user-row border-b border-gray-100 dark:border-slate-700 hover:bg-white/50 dark:hover:bg-slate-800/40 {% if total_actions == 0 %}opacity-60{% endif %}"
+              data-username="{{ (u.username or '')|lower }}{{ (u.full_name or '')|lower }}">
+            <td class="py-2 px-2">
+              <a href="/superadmin/user/{{ u.id }}" class="flex items-center gap-2 group">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {{ (u.full_name or u.username or '?')[0]|upper }}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-300 flex items-center gap-1">
+                    {{ u.full_name or u.username }}
+                    {% if u.is_beta_tester %}<span class="text-[9px] px-1 rounded bg-amber-200 text-amber-900 font-bold">β</span>{% endif %}
+                    {% if u.role == 'admin' %}<span class="text-[9px] px-1 rounded bg-rose-200 text-rose-900 font-bold">A</span>{% endif %}
+                  </div>
+                  <div class="text-[10px] text-slate-400 truncate">@{{ u.username }} · 🔥{{ u.streak or 0 }}</div>
+                </div>
+              </a>
+            </td>
+            <td class="py-2 px-1 text-right">
+              <div class="font-bold text-purple-600 dark:text-purple-300">{{ u.decks_created }}</div>
+              {% if u.decks_today > 0 %}<div class="text-[10px] text-emerald-500">+{{ u.decks_today }} сегодня</div>
+              {% elif u.decks_7d > 0 %}<div class="text-[10px] text-slate-400">+{{ u.decks_7d }} / 7д</div>
+              {% endif %}
+            </td>
+            <td class="py-2 px-1 text-right text-slate-600 dark:text-slate-300">{{ u.cards_created }}</td>
+            <td class="py-2 px-1 text-right">
+              <div class="font-semibold text-pink-600 dark:text-pink-300">{{ u.reviews_total }}</div>
+              {% if u.reviews_today > 0 %}<div class="text-[10px] text-emerald-500">+{{ u.reviews_today }} сегодня</div>{% endif %}
+            </td>
+            <td class="py-2 px-1 text-right">
+              <div class="font-semibold text-violet-600 dark:text-violet-300">{{ u.ai_calls }}</div>
+              {% if u.ai_cards > 0 %}<div class="text-[10px] text-slate-400">{{ u.ai_cards }} карт</div>{% endif %}
+            </td>
+            <td class="py-2 px-1 text-right text-[11px] text-slate-600 dark:text-slate-300">
+              {% if u.tests_played %}<span title="Тесты">🧪{{ u.tests_played }}</span> {% endif %}
+              {% if u.duels_played %}<span title="Дуэли">⚔️{{ u.duels_played }}</span> {% endif %}
+              {% if u.live_played %}<span title="Live">🎬{{ u.live_played }}</span> {% endif %}
+              {% if u.match_played %}<span title="Match">🎴{{ u.match_played }}</span>{% endif %}
+              {% if not u.tests_played and not u.duels_played and not u.live_played and not u.match_played %}<span class="text-slate-300 dark:text-slate-600">—</span>{% endif %}
+            </td>
+            <td class="py-2 px-1 text-right text-blue-600 dark:text-blue-300">{{ u.messages_sent }}</td>
+            <td class="py-2 px-1 text-right text-orange-600 dark:text-orange-300">
+              {{ u.goals_total }}{% if u.goals_done %}<span class="text-[10px] text-emerald-500"> ✓{{ u.goals_done }}</span>{% endif %}
+            </td>
+            <td class="py-2 px-1 text-right font-bold text-indigo-600 dark:text-indigo-300">{{ u.xp or 0 }}</td>
+            <td class="py-2 px-1 text-right text-[10px] whitespace-nowrap">
+              {% if u.last_seen %}
+                {% set is_online = (u.last_seen | tashkent('%s')) %}
+                <span class="text-slate-500 dark:text-slate-400">{{ u.last_seen|tashkent('%d.%m %H:%M') }}</span>
+              {% else %}
+                <span class="text-slate-300 dark:text-slate-600">никогда</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      (function(){
+        const inp = document.getElementById('user-filter');
+        const rows = document.querySelectorAll('#user-activity-table tbody tr.user-row');
+        if (!inp) return;
+        inp.addEventListener('input', function(){
+          const q = this.value.trim().toLowerCase();
+          rows.forEach(function(r){
+            r.style.display = !q || r.dataset.username.includes(q) ? '' : 'none';
+          });
+        });
+      })();
+    </script>
+  </div>
+
 </div>
 {% endblock %}
