@@ -7,6 +7,104 @@
     <p class="text-slate-600 dark:text-slate-300 text-sm">{{ t('sa_sub') }}</p>
   </div>
 
+  <!-- ============== 📅 СЕГОДНЯ — chto proishodit pryamo seychas ============== -->
+  {% macro delta(today, yesterday) -%}
+    {%- if yesterday and yesterday > 0 -%}
+      {%- set diff = ((today - yesterday) / yesterday * 100)|round|int -%}
+      {%- if diff > 0 -%}
+        <span class="text-emerald-600 dark:text-emerald-400 font-bold">↑{{ diff }}%</span>
+      {%- elif diff < 0 -%}
+        <span class="text-red-500 dark:text-red-400 font-bold">↓{{ diff|abs }}%</span>
+      {%- else -%}
+        <span class="text-slate-400">=</span>
+      {%- endif -%}
+    {%- elif today > 0 -%}
+      <span class="text-emerald-600 dark:text-emerald-400 font-bold">NEW</span>
+    {%- else -%}
+      <span class="text-slate-400">—</span>
+    {%- endif -%}
+  {%- endmacro %}
+
+  <div class="rounded-3xl p-5 mb-6 border-2 border-indigo-200/60 dark:border-indigo-500/30"
+       style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.06), rgba(236,72,153,0.05));">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+      <h2 class="font-bold text-xl text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <span class="text-2xl">📅</span> Сегодня на сайте
+      </h2>
+      <div class="text-xs text-slate-500 dark:text-slate-400">
+        Сравнение с вчера · UTC+5
+      </div>
+    </div>
+
+    <!-- 1-y ryad: kto i skol'ko -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">🟢 Онлайн сегодня</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.users_online }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.users_online }} · {{ delta(today_stats.users_online, yesterday_stats.users_online) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-teal-700 dark:text-teal-300">⚡ Активные</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.users_active }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.users_active }} · {{ delta(today_stats.users_active, yesterday_stats.users_active) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-indigo-700 dark:text-indigo-300">🆕 Регистраций</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.users_new }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.users_new }} · {{ delta(today_stats.users_new, yesterday_stats.users_new) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">📚 Колод создано</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.decks_new }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.decks_new }} · {{ delta(today_stats.decks_new, yesterday_stats.decks_new) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-fuchsia-700 dark:text-fuchsia-300">🃏 Карточек добавлено</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.cards_new }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.cards_new }} · {{ delta(today_stats.cards_new, yesterday_stats.cards_new) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-pink-700 dark:text-pink-300">📝 Ответов на карты</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.reviews }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.reviews }} · {{ delta(today_stats.reviews, yesterday_stats.reviews) }}</div>
+      </div>
+    </div>
+
+    <!-- 2-y ryad: AI / igry / soobshcheniya -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-violet-700 dark:text-violet-300">🤖 AI вызовов</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.ai_calls }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.ai_calls }} · {{ delta(today_stats.ai_calls, yesterday_stats.ai_calls) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">📥 Импортов AI</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.ai_imports }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">из них Vision: {{ today_stats.ai_vision }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">⚔️ Дуэли</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.duels }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{{ today_stats.duels_finished }} завершено · вчера {{ yesterday_stats.duels }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-cyan-700 dark:text-cyan-300">🎬 Live сессий</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.live }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">турниров: {{ today_stats.tournaments }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-blue-700 dark:text-blue-300">💬 Сообщений</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.messages }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">вчера {{ yesterday_stats.messages }} · {{ delta(today_stats.messages, yesterday_stats.messages) }}</div>
+      </div>
+      <div class="bg-white/70 dark:bg-slate-800/50 rounded-xl p-3 backdrop-blur">
+        <div class="text-[10px] uppercase tracking-wider font-bold text-orange-700 dark:text-orange-300">🎯 Целей создано</div>
+        <div class="text-2xl font-black text-slate-900 dark:text-slate-100 h-display">{{ today_stats.goals_new }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">завершено: {{ today_stats.goals_done }} · 🎫 тикетов: {{ today_stats.tickets }}</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ONLINE NOW + ALERT BADGES -->
   <div class="grid md:grid-cols-3 gap-4 mb-6">
     <div class="glass rounded-2xl p-4 border-2 border-emerald-300/40 dark:border-emerald-500/30" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(255,255,255,0.6));">

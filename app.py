@@ -6643,6 +6643,55 @@ def superadmin_dashboard():
         ORDER BY d.clones_count DESC LIMIT 10
     """).fetchall()
 
+    # ============================================================
+    # === SEGODNYA: chto proishodit na sayte segodnya =============
+    # ============================================================
+    def _scalar(sql):
+        row = conn.execute(sql).fetchone()
+        return (row["c"] if row else 0) or 0
+
+    today_stats = {
+        # Polzovateli
+        "users_online":   _scalar("SELECT COUNT(DISTINCT id) AS c FROM users WHERE DATE(last_seen)=DATE('now')"),
+        "users_active":   stats["active_today"],            # otvechali na voprosy (reviews)
+        "users_new":      stats["users_today"],             # zaregistrirovalis'
+        # Kontent
+        "decks_new":      _scalar("SELECT COUNT(*) AS c FROM decks WHERE DATE(created_at)=DATE('now')"),
+        "cards_new":      _scalar("SELECT COUNT(*) AS c FROM cards WHERE DATE(created_at)=DATE('now')"),
+        "reviews":        stats["reviews_today"],
+        # AI / import
+        "ai_calls":       ai_stats["today"],
+        "ai_cards":       ai_stats["cards_today"],
+        "ai_imports":     _scalar("SELECT COUNT(*) AS c FROM ai_usage WHERE kind IN ('pdf','vision_pdf','text','topic') AND DATE(created_at)=DATE('now')"),
+        "ai_vision":      _scalar("SELECT COUNT(*) AS c FROM ai_usage WHERE kind='vision_pdf' AND DATE(created_at)=DATE('now')"),
+        # Igry
+        "duels":          _scalar("SELECT COUNT(*) AS c FROM duels WHERE DATE(created_at)=DATE('now')"),
+        "duels_finished": _scalar("SELECT COUNT(*) AS c FROM duels WHERE DATE(finished_at)=DATE('now') AND status='finished'"),
+        "live":           _scalar("SELECT COUNT(*) AS c FROM live_sessions WHERE DATE(created_at)=DATE('now')"),
+        "tournaments":    _scalar("SELECT COUNT(*) AS c FROM tournaments WHERE DATE(created_at)=DATE('now')"),
+        # Sotsial'no
+        "messages":       social_stats["messages_today"],
+        # Tseli
+        "goals_new":      _scalar("SELECT COUNT(*) AS c FROM learning_goals WHERE DATE(created_at)=DATE('now')"),
+        "goals_done":     _scalar("SELECT COUNT(*) AS c FROM learning_goals WHERE DATE(completed_at)=DATE('now') AND status='completed'"),
+        # Podderzhka
+        "tickets":        support_stats["today"],
+    }
+
+    # Vchera dlya sravneniya (delta v %)
+    yesterday_stats = {
+        "users_online":   _scalar("SELECT COUNT(DISTINCT id) AS c FROM users WHERE DATE(last_seen)=DATE('now','-1 day')"),
+        "users_active":   _scalar("SELECT COUNT(DISTINCT user_id) AS c FROM reviews WHERE DATE(reviewed_at)=DATE('now','-1 day')"),
+        "users_new":      _scalar("SELECT COUNT(*) AS c FROM users WHERE DATE(created_at)=DATE('now','-1 day')"),
+        "decks_new":      _scalar("SELECT COUNT(*) AS c FROM decks WHERE DATE(created_at)=DATE('now','-1 day')"),
+        "cards_new":      _scalar("SELECT COUNT(*) AS c FROM cards WHERE DATE(created_at)=DATE('now','-1 day')"),
+        "reviews":        _scalar("SELECT COUNT(*) AS c FROM reviews WHERE DATE(reviewed_at)=DATE('now','-1 day')"),
+        "ai_calls":       ai_stats["yesterday"],
+        "ai_imports":     _scalar("SELECT COUNT(*) AS c FROM ai_usage WHERE kind IN ('pdf','vision_pdf','text','topic') AND DATE(created_at)=DATE('now','-1 day')"),
+        "duels":          _scalar("SELECT COUNT(*) AS c FROM duels WHERE DATE(created_at)=DATE('now','-1 day')"),
+        "messages":       _scalar("SELECT COUNT(*) AS c FROM messages WHERE DATE(created_at)=DATE('now','-1 day')"),
+    }
+
     conn.close()
     return render_template("superadmin.html",
         stats=stats,
@@ -6668,6 +6717,8 @@ def superadmin_dashboard():
         social_stats=social_stats,
         recent_users=[dict(u) for u in recent_users],
         public_decks=[dict(d) for d in public_decks],
+        today_stats=today_stats,
+        yesterday_stats=yesterday_stats,
     )
 
 
