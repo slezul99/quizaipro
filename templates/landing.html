@@ -1,6 +1,48 @@
 {% extends "base.html" %}
 
+{% block title %}QuizAIPro — Учи быстрее с AI · Флешкарты, тесты, дуэли{% endblock %}
+{% block meta_description %}QuizAIPro — умная платформа подготовки к экзаменам с AI. Создавайте флешкарты, тесты, дуэли и live-сессии. AI извлекает вопросы из PDF за минуты. Бесплатно, на русском, узбекском и английском.{% endblock %}
+
 {% block extra_head %}
+<!-- Structured data: Schema.org JSON-LD dlya rich snippets v Google -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "QuizAIPro",
+  "alternateName": "Quiz AI Pro",
+  "url": "https://quizaipro.com",
+  "description": "AI-платформа для подготовки к экзаменам. Флешкарты, тесты, дуэли в реальном времени, генерация вопросов из PDF через AI Vision OCR.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "inLanguage": ["ru", "uz", "en"],
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "Флешкарты с алгоритмом интервальных повторений",
+    "AI генерация вопросов из PDF",
+    "Дуэли 1 на 1 в реальном времени",
+    "Live-сессии тестирования для классов",
+    "Турниры и ачивки",
+    "3 языка интерфейса"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "QuizAIPro",
+  "url": "https://quizaipro.com",
+  "logo": "https://quizaipro.com/static/og-image.png",
+  "sameAs": [
+    "https://github.com/slezul99/quizaipro"
+  ]
+}
+</script>
 <style>
   /* === Anime Sky Hero (Makoto Shinkai vibe) === */
   .hero-wrap {

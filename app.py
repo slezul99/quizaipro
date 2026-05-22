@@ -65,6 +65,12 @@ app.config.update(
 if os.environ.get("HTTPS_ONLY") == "1":
     app.config["SESSION_COOKIE_SECURE"] = True
 
+# === SEO verifikatsiya (Google Search Console + Yandex) ===
+# Nuzhno: zaregistrirovat'sya v https://search.google.com/search-console,
+# vybrat' sposob "HTML tag" — vstavit' tot tokin v env GOOGLE_SITE_VERIFICATION na Railway.
+app.config["GOOGLE_SITE_VERIFICATION"] = os.environ.get("GOOGLE_SITE_VERIFICATION", "")
+app.config["YANDEX_VERIFICATION"] = os.environ.get("YANDEX_VERIFICATION", "")
+
 
 # === RATE LIMITING (brute-force zashchita) ===
 # Prostoy in-memory limiter. Dlya MVP horoshchiy.
@@ -447,25 +453,66 @@ def privacy_page():
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    """SEO sitemap dlya Google Search Console."""
-    pages = [
+    """SEO sitemap dlya Google Search Console — vklyuchaem publichnyy kontent."""
+    base_url = "https://quizaipro.com"
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+
+    # Staticheskie publichnye stranitsy
+    static_pages = [
         ("", "1.0", "weekly"),
         ("/login", "0.7", "monthly"),
         ("/register", "0.8", "monthly"),
+        ("/marketplace", "0.9", "weekly"),
+        ("/leaderboard", "0.6", "weekly"),
         ("/terms", "0.4", "yearly"),
         ("/privacy", "0.4", "yearly"),
     ]
-    base_url = "https://quizaipro.com"
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for path, priority, freq in pages:
+
+    for path, priority, freq in static_pages:
         xml.append("<url>")
         xml.append(f"<loc>{base_url}{path}</loc>")
         xml.append(f"<lastmod>{today}</lastmod>")
         xml.append(f"<changefreq>{freq}</changefreq>")
         xml.append(f"<priority>{priority}</priority>")
         xml.append("</url>")
+
+    # Dinamicheskoye: publichnye kolody iz marketplace
+    try:
+        conn = db.get_conn()
+        public_decks = conn.execute("""
+            SELECT id, COALESCE(created_at, '') AS created_at FROM decks
+            WHERE is_public = 1
+            ORDER BY clones_count DESC LIMIT 500
+        """).fetchall()
+        for d in public_decks:
+            lastmod = (d["created_at"] or today).split(" ")[0][:10] or today
+            xml.append("<url>")
+            xml.append(f"<loc>{base_url}/deck/{d['id']}</loc>")
+            xml.append(f"<lastmod>{lastmod}</lastmod>")
+            xml.append("<changefreq>weekly</changefreq>")
+            xml.append("<priority>0.7</priority>")
+            xml.append("</url>")
+
+        # Polzovateli s otkrytym profilem
+        public_users = conn.execute("""
+            SELECT username FROM users
+            WHERE COALESCE(profile_public, 1) = 1 AND username IS NOT NULL
+            ORDER BY xp DESC LIMIT 200
+        """).fetchall()
+        for u in public_users:
+            xml.append("<url>")
+            xml.append(f"<loc>{base_url}/u/{u['username']}</loc>")
+            xml.append(f"<lastmod>{today}</lastmod>")
+            xml.append("<changefreq>monthly</changefreq>")
+            xml.append("<priority>0.5</priority>")
+            xml.append("</url>")
+        conn.close()
+    except Exception as e:
+        print(f"[sitemap] dynamic part failed: {e}")
+
     xml.append("</urlset>")
     from flask import Response
     return Response("\n".join(xml), mimetype="application/xml")
