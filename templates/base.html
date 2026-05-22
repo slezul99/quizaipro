@@ -28,7 +28,10 @@
 <meta name="twitter:description" content="{% block tw_description %}{{ self.meta_description() }}{% endblock %}">
 <meta name="twitter:image" content="https://quizaipro.com/static/og-image.png">
 
-<!-- Google Search Console verification (mozhesh' dobavit' kontent META TOKENA z svoego SC) -->
+<!-- Google Search Console verification -->
+<meta name="google-site-verification" content="G9x9r5zCIaqqyTQDpAyzYhAjyRzJcsrxikHgl4caRWs">
+
+<!-- Google Search Console verification (cherez env, esli ustanovlen) -->
 {% if config.get('GOOGLE_SITE_VERIFICATION') %}
 <meta name="google-site-verification" content="{{ config['GOOGLE_SITE_VERIFICATION'] }}">
 {% endif %}
