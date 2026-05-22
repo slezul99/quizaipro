@@ -6694,40 +6694,71 @@ def superadmin_dashboard():
     # ============================================================
     # === KTO CHTO SDELAL: aktivnost' po kazhdomu polzovatelyu ===
     # ============================================================
-    # Sortiruem po summarnoy aktivnosti — ts'ko byl posledniy raz online + chto delal
-    user_activity = conn.execute("""
+    # Period iz URL param: today / week / month / all (po umolchaniyu = all)
+    period = request.args.get("period", "all").lower()
+    if period not in ("today", "week", "month", "all"):
+        period = "all"
+
+    if period == "today":
+        clause_reviewed   = "AND DATE(reviewed_at)=DATE('now')"
+        clause_created    = "AND DATE(created_at)=DATE('now')"
+        clause_c_created  = "AND DATE(c.created_at)=DATE('now')"
+        clause_ls_created = "AND DATE(ls.created_at)=DATE('now')"
+        clause_completed  = "AND DATE(completed_at)=DATE('now')"
+        period_label = "сегодня"
+    elif period == "week":
+        clause_reviewed   = "AND reviewed_at >= datetime('now','-7 days')"
+        clause_created    = "AND created_at >= datetime('now','-7 days')"
+        clause_c_created  = "AND c.created_at >= datetime('now','-7 days')"
+        clause_ls_created = "AND ls.created_at >= datetime('now','-7 days')"
+        clause_completed  = "AND completed_at >= datetime('now','-7 days')"
+        period_label = "за неделю"
+    elif period == "month":
+        clause_reviewed   = "AND reviewed_at >= datetime('now','-30 days')"
+        clause_created    = "AND created_at >= datetime('now','-30 days')"
+        clause_c_created  = "AND c.created_at >= datetime('now','-30 days')"
+        clause_ls_created = "AND ls.created_at >= datetime('now','-30 days')"
+        clause_completed  = "AND completed_at >= datetime('now','-30 days')"
+        period_label = "за месяц"
+    else:
+        clause_reviewed = clause_created = clause_c_created = clause_ls_created = clause_completed = ""
+        period_label = "за всё время"
+
+    sql = f"""
         SELECT
             u.id, u.username, u.full_name, u.role, u.xp, u.streak,
             u.created_at, u.last_seen, u.last_study, u.is_beta_tester,
-            -- Kontent kotoryy on sozdal
-            (SELECT COUNT(*) FROM decks WHERE owner_id=u.id) AS decks_created,
-            (SELECT COUNT(*) FROM decks WHERE owner_id=u.id AND DATE(created_at)=DATE('now')) AS decks_today,
-            (SELECT COUNT(*) FROM decks WHERE owner_id=u.id AND created_at >= datetime('now','-7 days')) AS decks_7d,
-            (SELECT COUNT(*) FROM cards c JOIN decks d ON d.id=c.deck_id WHERE d.owner_id=u.id) AS cards_created,
-            -- Uchyoba (otvety na karty)
-            (SELECT COUNT(*) FROM reviews WHERE user_id=u.id) AS reviews_total,
-            (SELECT COUNT(*) FROM reviews WHERE user_id=u.id AND DATE(reviewed_at)=DATE('now')) AS reviews_today,
-            (SELECT COUNT(*) FROM reviews WHERE user_id=u.id AND reviewed_at >= datetime('now','-7 days')) AS reviews_7d,
-            -- AI ispol'zovaniye
-            (SELECT COUNT(*) FROM ai_usage WHERE user_id=u.id) AS ai_calls,
-            (SELECT COALESCE(SUM(cards_generated),0) FROM ai_usage WHERE user_id=u.id) AS ai_cards,
-            -- Igry
-            COALESCE((SELECT tests_played FROM user_game_stats WHERE user_id=u.id), 0) AS tests_played,
-            COALESCE((SELECT duels_played FROM user_game_stats WHERE user_id=u.id), 0) AS duels_played,
-            COALESCE((SELECT live_played + live_hosted FROM user_game_stats WHERE user_id=u.id), 0) AS live_played,
+            (SELECT COUNT(*) FROM decks
+                WHERE owner_id=u.id {clause_created}) AS decks_created,
+            (SELECT COUNT(*) FROM cards c JOIN decks d ON d.id=c.deck_id
+                WHERE d.owner_id=u.id {clause_c_created}) AS cards_created,
+            (SELECT COUNT(*) FROM reviews
+                WHERE user_id=u.id {clause_reviewed}) AS reviews_total,
+            (SELECT COUNT(*) FROM ai_usage
+                WHERE user_id=u.id {clause_created}) AS ai_calls,
+            (SELECT COALESCE(SUM(cards_generated),0) FROM ai_usage
+                WHERE user_id=u.id {clause_created}) AS ai_cards,
+            (SELECT COUNT(*) FROM duels
+                WHERE (player1_id=u.id OR player2_id=u.id) {clause_created}) AS duels_played,
+            (SELECT COUNT(*) FROM live_participants lp
+                JOIN live_sessions ls ON ls.id=lp.session_id
+                WHERE lp.user_id=u.id {clause_ls_created}) AS live_played,
             COALESCE((SELECT match_played FROM user_game_stats WHERE user_id=u.id), 0) AS match_played,
-            -- Sotsial'no
-            (SELECT COUNT(*) FROM messages WHERE user_id=u.id) AS messages_sent,
-            -- Tseli
-            (SELECT COUNT(*) FROM learning_goals WHERE user_id=u.id) AS goals_total,
-            (SELECT COUNT(*) FROM learning_goals WHERE user_id=u.id AND status='completed') AS goals_done
+            COALESCE((SELECT tests_played FROM user_game_stats WHERE user_id=u.id), 0) AS tests_played_total,
+            (SELECT COUNT(*) FROM messages
+                WHERE user_id=u.id {clause_created}) AS messages_sent,
+            (SELECT COUNT(*) FROM learning_goals
+                WHERE user_id=u.id {clause_created}) AS goals_total,
+            (SELECT COUNT(*) FROM learning_goals
+                WHERE user_id=u.id AND status='completed' {clause_completed}) AS goals_done
         FROM users u
         ORDER BY
             CASE WHEN u.last_seen IS NULL THEN 1 ELSE 0 END,
             u.last_seen DESC,
             u.xp DESC
         LIMIT 100
-    """).fetchall()
+    """
+    user_activity = conn.execute(sql).fetchall()
 
     conn.close()
     return render_template("superadmin.html",
@@ -6757,6 +6788,8 @@ def superadmin_dashboard():
         today_stats=today_stats,
         yesterday_stats=yesterday_stats,
         user_activity=[dict(u) for u in user_activity],
+        activity_period=period,
+        activity_period_label=period_label,
     )
 
 
