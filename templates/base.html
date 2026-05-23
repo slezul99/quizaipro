@@ -1627,60 +1627,153 @@ function welcomeModal() {
 {% endif %}
 
 {% if goal_reminder and current_user %}
-<!-- Goals reminder toast -->
-<div x-data="{ open: true }" x-show="open" x-cloak x-transition
-  class="fixed bottom-4 right-4 z-40 max-w-sm">
-  <div class="rounded-2xl p-4 shadow-2xl border-2 backdrop-blur-xl
-              bg-gradient-to-br from-amber-50/95 to-orange-50/95
-              dark:from-slate-900/95 dark:to-slate-950/95
-              border-amber-300/60 dark:border-orange-500/50">
-    <div class="flex items-start gap-3">
-      <div class="text-3xl flex-shrink-0">🎯</div>
-      <div class="flex-1 min-w-0">
-        {% if goal_reminder.behind %}
-        <div class="font-bold text-orange-900 dark:text-orange-300 mb-1">⚠️ {{ t('u_behind_goal') }}</div>
-        {% for g in goal_reminder.behind %}
-        <p class="text-xs text-slate-700 dark:text-slate-100 mb-1">
-          <b class="text-slate-900 dark:text-white">{{ g.title }}</b> — {{ t('u_days_left') }} {{ g.status_info.days_left }} {{ t('u_days_short') }}
-        </p>
-        {% endfor %}
-        <p class="text-xs text-orange-800 dark:text-amber-200 italic mb-2">{{ goal_reminder.motivation or t('u_keep_going') }}</p>
-        {% else %}
-        <div class="font-bold text-amber-900 dark:text-amber-300 mb-1">📚 {{ t('u_today_plan') }}</div>
-        {% for g in goal_reminder.pending %}
-        <p class="text-xs text-slate-700 dark:text-slate-100 mb-1">
-          <b class="text-slate-900 dark:text-white">{{ g.title }}</b>: {{ g.today.done }} / {{ g.today.total_quota }}
-        </p>
-        {% endfor %}
-        <p class="text-xs text-amber-800 dark:text-amber-200 italic mt-1 mb-1">{{ goal_reminder.motivation or t('u_keep_going') }}</p>
-        {% endif %}
+<!-- Goals reminder toast — minimalisticheskiy, krasivyy -->
+<div id="goal-reminder-root" x-data="goalReminder()" x-init="init()" x-show="open" x-cloak x-transition.opacity
+  class="fixed bottom-4 right-4 z-40 max-w-sm w-[calc(100vw-2rem)] sm:w-auto">
+  <div class="rounded-2xl shadow-xl border overflow-hidden
+              bg-white dark:bg-slate-900
+              border-slate-200 dark:border-slate-700">
 
-        <div class="flex gap-2 mt-2">
-          <a href="/goals"
-            class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold">
-            {{ t('u_open') }}
-          </a>
-          <button @click="dismissGoalReminder()"
-            class="px-3 py-1.5 rounded-lg bg-white/70 hover:bg-white dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-100 text-xs font-semibold border border-amber-200 dark:border-slate-600">
-            {{ t('u_not_today') }}
-          </button>
-        </div>
+    <!-- Header -->
+    <div class="px-4 pt-3 pb-2 flex items-start gap-3 relative
+                {% if goal_reminder.behind %}bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40
+                {% else %}bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40{% endif %}">
+      <div class="text-2xl flex-shrink-0">
+        {% if goal_reminder.behind %}⚠️{% else %}🎯{% endif %}
       </div>
-      <button @click="open = false" class="text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white text-lg leading-none flex-shrink-0">×</button>
+      <div class="flex-1 min-w-0 pr-6">
+        {% if goal_reminder.behind %}
+        <div class="font-bold text-orange-900 dark:text-orange-200 text-sm">{{ t('u_behind_goal') }}</div>
+        {% else %}
+        <div class="font-bold text-indigo-900 dark:text-indigo-200 text-sm">{{ t('u_today_plan') }}</div>
+        {% endif %}
+      </div>
+      <!-- Close menu trigger -->
+      <button @click="snoozeOpen = !snoozeOpen" type="button"
+        class="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 dark:hover:text-white transition"
+        :title="snoozeOpen ? '' : '{{ t('gr_snooze_title') }}'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body: spisok tseley -->
+    <div class="px-4 py-3 space-y-1.5 text-xs">
+      {% if goal_reminder.behind %}
+        {% for g in goal_reminder.behind %}
+        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+          <span class="w-1 h-1 rounded-full bg-orange-500"></span>
+          <span class="font-semibold truncate flex-1">{{ g.title }}</span>
+          <span class="text-orange-600 dark:text-orange-300 font-bold whitespace-nowrap">{{ g.status_info.days_left }}{{ t('u_days_short') }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        {% for g in goal_reminder.pending %}
+        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+          <span class="w-1 h-1 rounded-full bg-indigo-500"></span>
+          <span class="font-semibold truncate flex-1">{{ g.title }}</span>
+          <span class="text-indigo-600 dark:text-indigo-300 font-bold whitespace-nowrap">{{ g.today.done }}/{{ g.today.total_quota }}</span>
+        </div>
+        {% endfor %}
+      {% endif %}
+      <div class="pt-1.5 italic text-slate-500 dark:text-slate-400">{{ goal_reminder.motivation or t('u_keep_going') }}</div>
+    </div>
+
+    <!-- Snooze panel (vyezhajet pri klike na ×) -->
+    <div x-show="snoozeOpen" x-cloak x-transition
+      class="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5">
+      <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold mb-2 px-1">{{ t('gr_snooze_title') }}</div>
+      <div class="grid grid-cols-3 gap-1.5 mb-1.5">
+        <button @click="snoozeMinutes(5)"   type="button" class="snz">5 {{ t('gr_min') }}</button>
+        <button @click="snoozeMinutes(10)"  type="button" class="snz">10 {{ t('gr_min') }}</button>
+        <button @click="snoozeMinutes(30)"  type="button" class="snz">30 {{ t('gr_min') }}</button>
+        <button @click="snoozeMinutes(60)"  type="button" class="snz">1 {{ t('gr_hr') }}</button>
+        <button @click="snoozeMinutes(120)" type="button" class="snz">2 {{ t('gr_hr') }}</button>
+        <button @click="snoozeMinutes(180)" type="button" class="snz">3 {{ t('gr_hr') }}</button>
+      </div>
+      <button @click="snoozeUntilTomorrow()" type="button"
+        class="w-full px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition">
+        🌙 {{ t('u_not_today') }}
+      </button>
+    </div>
+
+    <!-- Footer with main CTA -->
+    <div x-show="!snoozeOpen"
+      class="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/30 px-3 py-2.5">
+      <a href="/goals"
+        class="block text-center px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition">
+        {{ t('u_open') }} →
+      </a>
     </div>
   </div>
 </div>
 
+<style>
+  #goal-reminder-root .snz {
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid rgb(226 232 240);
+    color: rgb(51 65 85);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  #goal-reminder-root .snz:hover {
+    background: rgb(238 242 255);
+    border-color: rgb(165 180 252);
+    color: rgb(67 56 202);
+  }
+  html.dark #goal-reminder-root .snz {
+    background: rgb(15 23 41);
+    border-color: rgb(51 65 85);
+    color: rgb(203 213 225);
+  }
+  html.dark #goal-reminder-root .snz:hover {
+    background: rgb(30 41 75);
+    border-color: rgb(99 102 241);
+    color: rgb(196 181 253);
+  }
+</style>
+
 <script>
-async function dismissGoalReminder() {
-  const fd = new FormData();
-  fd.append('_csrf', '{{ csrf_token() }}');
-  await fetch('/api/goal/dismiss-reminder', { method: 'POST', body: fd });
-  document.querySelectorAll('[x-data*="open: true"]').forEach(el => {
-    if (el.querySelector('.text-amber-900, .text-orange-900')) {
-      el.remove();
-    }
-  });
+function goalReminder() {
+  return {
+    open: false,
+    snoozeOpen: false,
+    KEY: 'goal_reminder_snooze_until',
+    init() {
+      // Proveryaem mestnyy snooze-deadline
+      try {
+        var until = parseInt(localStorage.getItem(this.KEY) || '0', 10);
+        if (until > Date.now()) {
+          this.open = false;
+          return;
+        }
+      } catch(e) {}
+      this.open = true;
+    },
+    snoozeMinutes(m) {
+      try {
+        localStorage.setItem(this.KEY, String(Date.now() + m * 60 * 1000));
+      } catch(e) {}
+      this.open = false;
+    },
+    async snoozeUntilTomorrow() {
+      try {
+        var fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        await fetch('/api/goal/dismiss-reminder', { method: 'POST', body: fd });
+      } catch(e) {}
+      // Lokalno tozhe stavlim — chtoby na drugih stranitsah ne vsplyl srazu
+      try { localStorage.setItem(this.KEY, String(Date.now() + 24*60*60*1000)); } catch(e) {}
+      this.open = false;
+    },
+  };
 }
 </script>
 {% endif %}

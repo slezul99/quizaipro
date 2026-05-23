@@ -399,6 +399,9 @@ T = {
         "u_open": "Открыть",
         "u_not_today": "Не сегодня",
         "u_behind_goal": "Вы отстаёте от цели",
+        "gr_snooze_title": "Скрыть на",
+        "gr_min": "мин",
+        "gr_hr": "ч",
 
         # === SEO + landing meta ===
         "seo_default_description": "QuizAIPro — умная платформа для подготовки к экзаменам с AI. Создавайте флеш-карточки, тесты, дуэли и live-сессии. AI извлекает вопросы из PDF за минуты.",
@@ -2009,6 +2012,9 @@ T = {
         "u_open": "Open",
         "u_not_today": "Not today",
         "u_behind_goal": "You're behind your goal",
+        "gr_snooze_title": "Hide for",
+        "gr_min": "min",
+        "gr_hr": "h",
 
         # === SEO + landing meta ===
         "seo_default_description": "QuizAIPro — smart AI-powered exam prep. Build flashcards, tests, duels, live sessions. AI extracts questions from PDFs in minutes.",
@@ -3617,6 +3623,9 @@ T = {
         "u_open": "Ochish",
         "u_not_today": "Bugun emas",
         "u_behind_goal": "Maqsaddan ortda qoldingiz",
+        "gr_snooze_title": "Yashirish",
+        "gr_min": "daq",
+        "gr_hr": "soat",
 
         # === SEO + landing meta ===
         "seo_default_description": "QuizAIPro — imtihonlarga AI bilan tayyorlanish uchun aqlli platforma. Flesh-kartochkalar, testlar, duellar va jonli sessiyalar. AI PDF dan savollarni daqiqalarda chiqaradi.",
