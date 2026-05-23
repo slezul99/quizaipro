@@ -138,17 +138,17 @@
 
       <!-- BEHIND ALERT -->
       {% if g.status_info.behind and not g.status_info.expired %}
-      <div class="bg-orange-50 dark:bg-orange-900/30 border-2 border-orange-300 dark:border-orange-500/40 rounded-2xl p-4 mb-3">
-        <p class="text-sm text-orange-900 dark:text-orange-300 font-bold mb-1">{{ t('g_behind_h') }}</p>
-        <p class="text-xs text-orange-800 dark:text-orange-400">
+      <div class="bg-orange-50 dark:bg-orange-500/15 border-2 border-orange-300 dark:border-orange-400/50 rounded-2xl p-4 mb-3">
+        <p class="text-sm text-orange-900 dark:text-orange-200 font-bold mb-1">{{ t('g_behind_h') }}</p>
+        <p class="text-xs text-orange-800 dark:text-orange-100/90">
           {{ t('g_behind_sub_pre') }} {{ g.status_info.elapsed_pct }}{{ t('g_behind_sub_mid') }} {{ (g.status_info.actual_ratio * 100)|round }}{{ t('g_behind_sub_post') }}
         </p>
       </div>
       {% endif %}
       {% if g.status_info.expired %}
-      <div class="bg-red-50 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-500/40 rounded-2xl p-4 mb-3">
-        <p class="text-sm text-red-900 dark:text-red-300 font-bold mb-1">{{ t('g_expired_h') }}</p>
-        <p class="text-xs text-red-800 dark:text-red-400">{{ t('g_expired_sub') }}</p>
+      <div class="bg-red-50 dark:bg-red-500/15 border-2 border-red-300 dark:border-red-400/50 rounded-2xl p-4 mb-3">
+        <p class="text-sm text-red-900 dark:text-red-200 font-bold mb-1">{{ t('g_expired_h') }}</p>
+        <p class="text-xs text-red-800 dark:text-red-100/90">{{ t('g_expired_sub') }}</p>
       </div>
       {% endif %}
 
