@@ -1526,7 +1526,7 @@
       <nav class="flex items-center gap-4">
         <a href="/terms" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_terms') }}</a>
         <a href="/privacy" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_privacy') }}</a>
-        <a href="mailto:slezul99@gmail.com" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_contact') }}</a>
+        <a href="{% if current_user %}/support{% else %}/login?next=/support{% endif %}" class="hover:text-indigo-600 dark:hover:text-indigo-300 transition">{{ t('footer_contact') }}</a>
       </nav>
     </div>
   </div>
