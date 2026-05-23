@@ -56,6 +56,53 @@
   } catch(e) {}
 })();
 </script>
+
+<!-- Lite Mode: avto-otkluchaem tyazhelye effekty na slabykh telefonakh -->
+<script>
+(function() {
+  try {
+    var manual = localStorage.getItem('lite-mode'); // '1' / '0' / null
+    var lite = false;
+
+    if (manual === '1') {
+      lite = true;
+    } else if (manual === '0') {
+      lite = false;
+    } else {
+      // Avto-detekt
+      var dm = navigator.deviceMemory;     // GB RAM, mozhet byt' undefined
+      var cc = navigator.hardwareConcurrency || 4;
+      var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      var saveData = conn && conn.saveData === true;
+      var slowNet = conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g' || conn.effectiveType === '3g');
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var androidLow = /Android/i.test(navigator.userAgent) && (cc <= 4 || (dm && dm <= 4));
+
+      if (saveData || slowNet || reduced || androidLow || (dm && dm <= 2)) {
+        lite = true;
+      }
+    }
+
+    if (lite) {
+      document.documentElement.classList.add('lite-mode');
+    }
+    // Globalno dostupno chtoby UI knopka mogla pereklyuchat'
+    window.__liteMode = lite;
+    window.__toggleLiteMode = function() {
+      var now = !document.documentElement.classList.contains('lite-mode');
+      if (now) {
+        document.documentElement.classList.add('lite-mode');
+        localStorage.setItem('lite-mode', '1');
+      } else {
+        document.documentElement.classList.remove('lite-mode');
+        localStorage.setItem('lite-mode', '0');
+      }
+      window.__liteMode = now;
+      return now;
+    };
+  } catch(e) {}
+})();
+</script>
 <style>
   /* Garantiruem chto fon stranitsy seras' tochno otkroyetsya v pravil'nom tsvete */
   html { background: #87ceeb; }
@@ -1201,6 +1248,78 @@
     .grid.grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     h1.section-h { font-size: 1.25rem !important; }
   }
+
+  /* ============ LITE MODE: dlya slabykh telefonov ============ */
+  /* Otkluchaem TOLKO ochevidno tyazhelye veschi, dizayn ostaetsya. */
+  html.lite-mode *,
+  html.lite-mode *::before,
+  html.lite-mode *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Otkluchaem vse beskonechnye animatsii (animation-iteration-count: infinite) */
+  html.lite-mode .gradient-bg::before,
+  html.lite-mode .gradient-bg::after,
+  html.lite-mode .orb,
+  html.lite-mode .deco-blob,
+  html.lite-mode .deco-shape,
+  html.lite-mode .floating-card,
+  html.lite-mode .star,
+  html.lite-mode .cloud,
+  html.lite-mode .particle {
+    display: none !important;
+  }
+
+  /* Vse beskonechnye animatsii vyklyuchaem cherez prefers-reduced-motion approach */
+  html.lite-mode * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 100ms !important;
+  }
+  /* No klyuchevye micro-animatsii (knopki, ripple) ostaviаem korotkimi */
+  html.lite-mode button,
+  html.lite-mode a,
+  html.lite-mode input,
+  html.lite-mode select,
+  html.lite-mode textarea {
+    transition-duration: 150ms !important;
+  }
+
+  /* Glass-effekty zamenyaem na prosto neprozrachnyy fon */
+  html.lite-mode .glass {
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 12px -2px rgba(0,0,0,0.08) !important;
+  }
+  html.lite-mode.dark .glass,
+  html.dark.lite-mode .glass {
+    background: rgba(30, 41, 75, 0.95) !important;
+  }
+
+  /* Ubirayem tyazhelyy 3D transform (perspective) — ochen' tyazhelo dlya GPU */
+  html.lite-mode [style*="perspective"],
+  html.lite-mode [style*="preserve-3d"] {
+    perspective: none !important;
+    transform-style: flat !important;
+  }
+
+  /* Fon na landing — uberyom 2400px Unsplash */
+  html.lite-mode .hero-wrap,
+  html.lite-mode .hero-bg {
+    background-image: linear-gradient(135deg, #87ceeb 0%, #b3d9f2 50%, #fef0c7 100%) !important;
+  }
+  html.dark.lite-mode .hero-wrap,
+  html.lite-mode.dark .hero-wrap {
+    background-image: linear-gradient(135deg, #0f1729 0%, #1a2342 50%, #1e2747 100%) !important;
+  }
+
+  /* Skryvayem ne-kriticheskie dekorativnye SVG-volnystatychki */
+  html.lite-mode .bg-decoration,
+  html.lite-mode .bg-decoration-2,
+  html.lite-mode .gradient-bg::before,
+  html.lite-mode .gradient-bg::after {
+    display: none !important;
+  }
 </style>
 {% block extra_head %}{% endblock %}
 </head>
@@ -1747,6 +1866,41 @@ document.addEventListener('mousemove', (e) => {
     card.style.setProperty('--my', y + '%');
   });
 });
+
+// === Lite Mode floating toggle button ===
+// Pokazyvaem v pravom nizhnem uglu chtoby polzovatel' mog peresklyuchit' kogda hochet
+(function(){
+  function makeBtn(){
+    if (document.getElementById('lite-mode-fab')) return;
+    var btn = document.createElement('button');
+    btn.id = 'lite-mode-fab';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Lite mode toggle');
+    btn.style.cssText = 'position:fixed;bottom:14px;right:14px;z-index:9999;width:42px;height:42px;border-radius:50%;border:none;background:rgba(99,102,241,0.92);color:#fff;font-size:18px;cursor:pointer;box-shadow:0 6px 16px -4px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0.65;transition:opacity 0.2s;';
+    btn.onmouseenter = function(){ btn.style.opacity = '1'; };
+    btn.onmouseleave = function(){ btn.style.opacity = '0.65'; };
+    function render(){
+      var on = document.documentElement.classList.contains('lite-mode');
+      btn.innerHTML = on ? '🚀' : '✨';
+      btn.title = on
+        ? 'Lite режим вкл. (для слабых телефонов). Нажмите чтобы выкл.'
+        : 'Лагает? Нажмите для облегчённого режима';
+    }
+    btn.onclick = function(){
+      if (typeof window.__toggleLiteMode === 'function') {
+        window.__toggleLiteMode();
+        render();
+      }
+    };
+    render();
+    document.body.appendChild(btn);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', makeBtn);
+  } else {
+    makeBtn();
+  }
+})();
 </script>
 
 </body>
