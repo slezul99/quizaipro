@@ -44,11 +44,19 @@
         </div>
 
         {% if (r.card_count or 0) >= 3 %}
-        <a href="/category/{{ r.id }}/play"
-          class="block mb-3 p-4 rounded-2xl text-white text-center font-bold transition shadow-md hover:shadow-lg"
-          style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); box-shadow: 0 10px 28px -6px rgba(99,102,241,0.45);">
-          {{ t('cat_play_full') }}
-        </a>
+        <div class="flex gap-2 mb-3">
+          <a href="/category/{{ r.id }}/play"
+            class="flex-1 p-4 rounded-2xl text-white text-center font-bold transition shadow-md hover:shadow-lg"
+            style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); box-shadow: 0 10px 28px -6px rgba(99,102,241,0.45);">
+            {{ t('cat_play_full') }}
+          </a>
+          <a href="/test/history?scope_type=category&scope_id={{ r.id }}"
+            class="px-4 py-3 rounded-2xl font-bold transition text-sm flex items-center gap-2 whitespace-nowrap"
+            style="background: rgba(168,85,247,0.12); color: #7c3aed; border: 1.5px solid rgba(168,85,247,0.35);"
+            title="История тестов">
+            📊 <span class="hidden sm:inline">История</span>
+          </a>
+        </div>
         {% endif %}
 
         {% if r.children %}
@@ -65,11 +73,19 @@
             <div class="font-bold text-sm text-slate-900 dark:text-slate-100">{{ ch.name }}</div>
             <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ ch.deck_count }} {{ t('cat_tests') }} · {{ ch.card_count or 0 }} {{ t('cat_cards') }}</div>
             {% if (ch.card_count or 0) >= 3 %}
-            <a href="/category/{{ ch.id }}/play"
-              class="block mt-2 px-2 py-1.5 rounded-lg text-white text-[11px] font-bold text-center transition"
-              style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px -2px rgba(99,102,241,0.4);">
-              {{ t('cat_play_small') }}
-            </a>
+            <div class="flex gap-1 mt-2">
+              <a href="/category/{{ ch.id }}/play"
+                class="flex-1 px-2 py-1.5 rounded-lg text-white text-[11px] font-bold text-center transition"
+                style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px -2px rgba(99,102,241,0.4);">
+                {{ t('cat_play_small') }}
+              </a>
+              <a href="/test/history?scope_type=category&scope_id={{ ch.id }}"
+                class="px-2 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center"
+                style="background: rgba(168,85,247,0.12); color: #7c3aed; border: 1px solid rgba(168,85,247,0.35);"
+                title="История">
+                📊
+              </a>
+            </div>
             {% endif %}
           </div>
           {% endfor %}

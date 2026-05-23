@@ -1865,6 +1865,49 @@ def study_grade():
 
 # ---------------------- TEST mode (multiple choice) -------------------------
 
+@app.route("/test/history")
+@login_required
+def test_history():
+    """Istoriya vseh testov polzovatelya. Mozhet fil'trovat'sya po scope."""
+    user = current_user()
+    scope_type = request.args.get("scope_type")  # 'deck' / 'category' / None
+    scope_id = request.args.get("scope_id", type=int)
+
+    conn = db.get_conn()
+    if scope_type and scope_id:
+        attempts = conn.execute("""
+            SELECT * FROM test_attempts
+            WHERE user_id=? AND scope_type=? AND scope_id=?
+            ORDER BY finished_at DESC LIMIT 100
+        """, (user["id"], scope_type, scope_id)).fetchall()
+    else:
+        attempts = conn.execute("""
+            SELECT * FROM test_attempts
+            WHERE user_id=?
+            ORDER BY finished_at DESC LIMIT 100
+        """, (user["id"],)).fetchall()
+
+    # Aggregate stats
+    summary = {
+        "total": len(attempts),
+        "perfect": sum(1 for a in attempts if a["is_perfect"]),
+        "avg_score": round(sum(a["score_pct"] for a in attempts) / len(attempts), 1) if attempts else 0,
+        "best_score": max((a["score_pct"] for a in attempts), default=0),
+        "total_time_min": round(sum(a["duration_sec"] or 0 for a in attempts) / 60, 1),
+    }
+    scope_label = ""
+    if scope_type and scope_id and attempts:
+        scope_label = attempts[0]["scope_name"] or ""
+    conn.close()
+    return render_template("test_history.html",
+        attempts=[dict(a) for a in attempts],
+        summary=summary,
+        scope_type=scope_type,
+        scope_id=scope_id,
+        scope_label=scope_label,
+    )
+
+
 @app.route("/deck/<int:deck_id>/test")
 @login_required
 def test_start(deck_id):
@@ -1911,6 +1954,8 @@ def test_start(deck_id):
     session["test_deck"] = deck_id
     session["test_stats"] = {"correct": 0, "wrong": 0}
     session["test_answers"] = []  # Spisok {card_id, chosen, correct, is_correct}
+    session["test_scope"] = {"type": "deck", "id": deck_id, "name": deck["name"]}
+    session["test_started_at"] = datetime.utcnow().isoformat()
     import random as _r
     session["test_seed"] = _r.randint(1, 10**9)
     return redirect(url_for("test_view"))
@@ -2043,6 +2088,37 @@ def test_answer():
     if is_last:
         is_perfect = (stats["wrong"] == 0 and stats["correct"] > 0)
         new_unlocks += ach_mod.award_test_completed(conn2, user["id"], perfect=is_perfect)
+
+        # === Zapis' v istoriyu testov ===
+        try:
+            scope = session.get("test_scope") or {}
+            scope_type = scope.get("type") or ("deck" if session.get("test_deck") else "deck")
+            scope_id = scope.get("id") or session.get("test_deck") or 0
+            scope_name = scope.get("name") or ""
+            total_q_h = stats["correct"] + stats["wrong"]
+            score_pct_h = (stats["correct"] / total_q_h * 100) if total_q_h else 0
+            started_at = session.get("test_started_at") or ""
+            duration_sec = 0
+            if started_at:
+                try:
+                    started_dt = datetime.fromisoformat(started_at.replace("Z", ""))
+                    duration_sec = max(0, int((datetime.utcnow() - started_dt).total_seconds()))
+                except Exception:
+                    duration_sec = 0
+            conn2.execute("""
+                INSERT INTO test_attempts
+                (user_id, scope_type, scope_id, scope_name, total_q, correct, wrong, score_pct, duration_sec, is_perfect, started_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user["id"], scope_type, scope_id, scope_name,
+                total_q_h, stats["correct"], stats["wrong"],
+                round(score_pct_h, 2), duration_sec,
+                1 if is_perfect else 0,
+                started_at,
+            ))
+        except Exception as e:
+            print(f"[test_history] failed: {e}")
+
         # === Esli eto byl ekzamen tseli — proveryaem rezul'tat ===
         exam_goal_id = session.pop("test_exam_goal_id", None)
         if exam_goal_id:
@@ -2162,6 +2238,8 @@ def category_test_start(category_id):
     session["test_category_name"] = cat["name"]
     session["test_stats"] = {"correct": 0, "wrong": 0}
     session["test_answers"] = []
+    session["test_scope"] = {"type": "category", "id": category_id, "name": cat["name"]}
+    session["test_started_at"] = datetime.utcnow().isoformat()
     import random as _r
     session["test_seed"] = _r.randint(1, 10**9)
     return redirect(url_for("test_view"))

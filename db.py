@@ -657,6 +657,28 @@ def init_db():
             PRIMARY KEY(user_id, date)
         )
     """)
+
+    # === ISTORIYA TESTOV: kazhdaya popytka kak strochka ===
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS test_attempts (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id      INTEGER NOT NULL,
+            scope_type   TEXT NOT NULL,        -- 'deck' / 'category'
+            scope_id     INTEGER NOT NULL,
+            scope_name   TEXT,                 -- nazvanie kolody / kategorii (chtoby ne JOIN-it')
+            total_q      INTEGER NOT NULL,
+            correct      INTEGER NOT NULL,
+            wrong        INTEGER NOT NULL,
+            score_pct    REAL NOT NULL,
+            duration_sec INTEGER DEFAULT 0,
+            is_perfect   INTEGER DEFAULT 0,
+            started_at   TEXT,
+            finished_at  TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_test_attempts_user ON test_attempts(user_id, finished_at DESC)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_test_attempts_scope ON test_attempts(scope_type, scope_id, finished_at DESC)")
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")

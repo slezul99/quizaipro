@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}История тестов · QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+
+  <div class="mb-6">
+    <a href="{% if scope_type == 'deck' %}/deck/{{ scope_id }}{% elif scope_type == 'category' %}/categories{% else %}/dashboard{% endif %}"
+       class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+      <span>←</span> {{ t('back') }}
+    </a>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-3">
+      <span class="text-4xl">📊</span>
+      <span>История тестов</span>
+    </h1>
+    {% if scope_label %}
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      {% if scope_type == 'deck' %}📚 Колода:{% else %}📁 Категория:{% endif %}
+      <b class="text-slate-700 dark:text-slate-200">{{ scope_label }}</b>
+    </p>
+    {% endif %}
+  </div>
+
+  {% if summary.total > 0 %}
+  <!-- Aggregated stats -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+    <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Всего</div>
+      <div class="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{{ summary.total }}</div>
+    </div>
+    <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400">⭐ Идеальные</div>
+      <div class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{{ summary.perfect }}</div>
+    </div>
+    <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-indigo-600 dark:text-indigo-400">Средний %</div>
+      <div class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">{{ summary.avg_score }}%</div>
+    </div>
+    <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-amber-600 dark:text-amber-400">🏆 Лучший</div>
+      <div class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{{ summary.best_score|round|int }}%</div>
+    </div>
+    <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">⏱ Времени</div>
+      <div class="text-2xl font-extrabold text-slate-700 dark:text-slate-200 mt-1">{{ summary.total_time_min }} мин</div>
+    </div>
+  </div>
+
+  <!-- Attempts list -->
+  <div class="rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
+      Последние попытки (до 100)
+    </div>
+    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+      {% for a in attempts %}
+      {% set score_color = 'emerald' if a.score_pct >= 80 else ('indigo' if a.score_pct >= 60 else ('amber' if a.score_pct >= 40 else 'rose')) %}
+      <div class="px-5 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+        <!-- Score circle -->
+        <div class="w-12 h-12 rounded-full flex flex-col items-center justify-center flex-shrink-0
+                    {% if score_color == 'emerald' %}bg-emerald-100 dark:bg-emerald-900/40
+                    {% elif score_color == 'indigo' %}bg-indigo-100 dark:bg-indigo-900/40
+                    {% elif score_color == 'amber' %}bg-amber-100 dark:bg-amber-900/40
+                    {% else %}bg-rose-100 dark:bg-rose-900/40{% endif %}">
+          <div class="text-sm font-extrabold leading-none
+                      {% if score_color == 'emerald' %}text-emerald-700 dark:text-emerald-300
+                      {% elif score_color == 'indigo' %}text-indigo-700 dark:text-indigo-300
+                      {% elif score_color == 'amber' %}text-amber-700 dark:text-amber-300
+                      {% else %}text-rose-700 dark:text-rose-300{% endif %}">
+            {{ a.score_pct|round|int }}%
+          </div>
+        </div>
+        <!-- Detail -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-900 dark:text-slate-100 truncate">
+              {% if a.scope_type == 'category' %}📁{% else %}📚{% endif %} {{ a.scope_name or '—' }}
+            </span>
+            {% if a.is_perfect %}<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-emerald-100 font-bold">⭐ 100%</span>{% endif %}
+          </div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <span class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ a.correct }}</span> /
+            <span class="text-rose-600 dark:text-rose-400 font-semibold">{{ a.wrong }}</span>
+            из {{ a.total_q }}
+            {% if a.duration_sec %} · ⏱ {{ (a.duration_sec / 60)|round(1) }} мин{% endif %}
+          </div>
+        </div>
+        <!-- Date -->
+        <div class="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
+          {{ a.finished_at|tashkent('%d.%m %H:%M') }}
+        </div>
+        <!-- Action -->
+        {% if a.scope_type == 'deck' %}
+        <a href="/deck/{{ a.scope_id }}/test?count={{ a.total_q }}&shuffle=1"
+           class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition whitespace-nowrap">
+          ↻ Заново
+        </a>
+        {% else %}
+        <a href="/category/{{ a.scope_id }}/test?count={{ a.total_q }}"
+           class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition whitespace-nowrap">
+          ↻ Заново
+        </a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-12 text-center">
+    <div class="text-6xl mb-3">📊</div>
+    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">Ещё нет тестов</h3>
+    <p class="text-sm text-slate-500 dark:text-slate-400">Пройдите свой первый тест — здесь появится история результатов</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
