@@ -49,6 +49,88 @@
       </div>
     </div>
 
+    <!-- ============== 📋 PLAN NA SEGODNYA ============== -->
+    {% if total > 0 %}
+    {% set plan_flash = (due if due > 0 else daily_goal) %}
+    {% set plan_tests = ((daily_goal // 10) if daily_goal >= 10 else 1) %}
+    {% set plan_duels = 2 %}
+    {% set plan_live = 1 %}
+    {% set plan_minutes = (daily_goal * 1.5) | round | int %}
+    <div class="glass-premium mb-6 slide-up" style="animation-delay:.21s">
+      <div class="flex items-center gap-2 mb-3 text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
+        <span class="text-base">📋</span>
+        <span>{{ t('plan_today_title') }}</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {% set first_deck_id = (decks[0].id if decks else 0) %}
+        <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/flashcards{% else %}/dashboard{% endif %}"
+           class="plan-card plan-flash">
+          <div class="plan-icon">🃏</div>
+          <div class="plan-num">{{ plan_flash }}</div>
+          <div class="plan-label">Flashcards</div>
+        </a>
+        <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/test?count=10&shuffle=1{% else %}/dashboard{% endif %}"
+           class="plan-card plan-test">
+          <div class="plan-icon">📝</div>
+          <div class="plan-num">{{ plan_tests }} {{ t('plan_tests') }}</div>
+          <div class="plan-label">~{{ plan_tests * 10 }} {{ t('plan_questions') }}</div>
+        </a>
+        <a href="/duels" class="plan-card plan-duel">
+          <div class="plan-icon">⚔️</div>
+          <div class="plan-num">{{ plan_duels }}</div>
+          <div class="plan-label">{{ t('plan_duels') }}</div>
+        </a>
+        <a href="/live/join" class="plan-card plan-live">
+          <div class="plan-icon">🎮</div>
+          <div class="plan-num">{{ plan_live }}</div>
+          <div class="plan-label">live test</div>
+        </a>
+      </div>
+      <div class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+        ⏱️ {{ t('plan_approx') }} <span class="font-bold text-slate-700 dark:text-slate-200">{{ plan_minutes }} {{ t('plan_minutes') }}</span>
+      </div>
+    </div>
+
+    <style>
+      .plan-card {
+        display: flex; flex-direction: column; align-items: center;
+        padding: 12px 10px;
+        border-radius: 14px;
+        background: rgba(99, 102, 241, 0.06);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        text-decoration: none;
+        transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+      }
+      .plan-card:hover {
+        transform: translateY(-2px);
+        background: rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.35);
+      }
+      .plan-icon { font-size: 26px; margin-bottom: 4px; }
+      .plan-num {
+        font-size: 1.05rem; font-weight: 800;
+        color: #4f46e5;
+      }
+      .plan-label {
+        font-size: 11px; color: #64748b; font-weight: 500;
+        margin-top: 2px;
+      }
+      html.dark .plan-card { background: rgba(99,102,241,0.10); border-color: rgba(99,102,241,0.25); }
+      html.dark .plan-card:hover { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.45); }
+      html.dark .plan-num { color: #a5b4fc; }
+      html.dark .plan-label { color: #94a3b8; }
+      /* Tsvet aktsentov dlya kazhdogo tipа */
+      .plan-flash .plan-num { color: #6366f1; }
+      .plan-test  .plan-num { color: #10b981; }
+      .plan-duel  .plan-num { color: #f59e0b; }
+      .plan-live  .plan-num { color: #ec4899; }
+      html.dark .plan-flash .plan-num { color: #a5b4fc; }
+      html.dark .plan-test  .plan-num { color: #6ee7b7; }
+      html.dark .plan-duel  .plan-num { color: #fbbf24; }
+      html.dark .plan-live  .plan-num { color: #f9a8d4; }
+    </style>
+    {% endif %}
+
     <!-- DAILY GOAL -->
     <div class="glass-premium mb-6 slide-up" style="animation-delay:.22s"
       x-data="{
