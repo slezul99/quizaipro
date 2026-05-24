@@ -163,6 +163,14 @@
   .fc-5 { top:48%; left:-4%; width:180px; transform: translateZ(20px) rotateY(20deg) rotateX(0deg); animation: fc-float-5 12s ease-in-out infinite; opacity:0.85; }
   .fc-6 { top:50%; right:-2%; width:190px; transform: translateZ(30px) rotateY(-18deg) rotateX(2deg); animation: fc-float-6 13s ease-in-out infinite; opacity:0.85; }
 
+  /* Mobile: skryvaem dekorativnye plavayushchie karty (oni meshayut chitaty hero) */
+  @media (max-width: 768px) {
+    .float-card,
+    .fc-1, .fc-2, .fc-3, .fc-4, .fc-5, .fc-6 {
+      display: none !important;
+    }
+  }
+
   @keyframes fc-float-1 { 0%,100%{transform:translateZ(60px) translateY(0) rotateY(8deg) rotateX(-4deg);} 50%{transform:translateZ(60px) translateY(-18px) rotateY(10deg) rotateX(-6deg);} }
   @keyframes fc-float-2 { 0%,100%{transform:translateZ(40px) translateY(0) rotateY(-12deg) rotateX(-2deg);} 50%{transform:translateZ(40px) translateY(20px) rotateY(-14deg) rotateX(-4deg);} }
   @keyframes fc-float-3 { 0%,100%{transform:translateZ(80px) translateY(0) rotateY(15deg) rotateX(6deg);} 50%{transform:translateZ(80px) translateY(-22px) rotateY(13deg) rotateX(8deg);} }
