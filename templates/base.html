@@ -1543,95 +1543,16 @@
 {% endblock %}
 
 {% if current_user and not current_user.get('welcome_shown', 1) %}
-<!-- Welcome modal — pokazyvaem 1 raz novomu polzovatelyu -->
-<div x-data="welcomeModal()" x-init="init()" x-show="open" x-cloak x-transition
-  class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-  @click.self="dismiss()">
-  <div class="glass-strong rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-7 scale-in"
-    style="background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(238,242,255,0.98));">
-    <div class="flex justify-between items-start mb-3">
-      <div>
-        <div class="text-5xl mb-2">👋</div>
-        <h2 class="h-display text-3xl text-slate-900">{{ t('welcome_title') }}</h2>
-      </div>
-      <button @click="dismiss()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
-    </div>
-
-    <!-- Steps -->
-    <div class="space-y-3 mb-5">
-      <template x-for="(step, i) in steps" :key="i">
-        <div class="rounded-2xl p-4 transition"
-          :class="i === current ? 'bg-indigo-50 border-2 border-indigo-300' : 'bg-white/60 border border-gray-200'">
-          <div class="flex items-start gap-3">
-            <div class="text-2xl flex-shrink-0" x-text="step.icon"></div>
-            <div class="flex-1 min-w-0">
-              <div class="font-bold text-slate-900" x-text="step.title"></div>
-              <div class="text-sm text-slate-700 mt-0.5" x-text="step.desc"></div>
-              <a x-show="i === current && step.link" :href="step.link"
-                class="inline-block mt-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
-                <span x-text="step.cta || {{ t('u_start_btn')|tojson }}"></span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </template>
-    </div>
-
-    <!-- Nav -->
-    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-      <button @click="prev()" :disabled="current === 0"
-        :class="current === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'"
-        class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700">← {{ t('hp_back')|replace('← ','') }}</button>
-      <div class="flex gap-1.5">
-        <template x-for="(s, i) in steps" :key="i">
-          <div class="w-2 h-2 rounded-full transition"
-            :class="i === current ? 'bg-indigo-600 w-6' : (i < current ? 'bg-indigo-300' : 'bg-gray-200')"></div>
-        </template>
-      </div>
-      <button x-show="current < steps.length - 1" @click="next()"
-        class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold">{{ t('hp_next')|replace(' →','') }} →</button>
-      <button x-show="current >= steps.length - 1" @click="dismiss()"
-        class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold">✓ {{ t('u_start_using_btn')|default('Start using') }}</button>
-    </div>
-
-    <div class="text-center mt-4">
-      <button @click="dismiss()" class="text-xs text-slate-500 hover:text-slate-700 underline">
-        {{ t('skip_welcome') }}
-      </button>
-    </div>
-  </div>
-</div>
-
+<!-- Welcome modal otklyuchen — vmesto nego avto-otmetka, chtoby ne pokazivat'sya kazhdyy raz.
+     Polnyy interaktivnyy tour zhivet v /help. -->
 <script>
-function welcomeModal() {
-  return {
-    open: true,
-    current: 0,
-    steps: {{ welcome_steps_json|safe }},
-
-    init() {
-      // Blokiruem skrol fona poka modal otkryt
-      document.body.classList.add('modal-open');
-    },
-
-    next() {
-      if (this.current < this.steps.length - 1) this.current++;
-    },
-    prev() {
-      if (this.current > 0) this.current--;
-    },
-    async dismiss() {
-      this.open = false;
-      // Vozvraschaem skrol
-      document.body.classList.remove('modal-open');
-      try {
-        const fd = new FormData();
-        fd.append('_csrf', '{{ csrf_token() }}');
-        await fetch('/api/welcome/dismiss', { method: 'POST', body: fd });
-      } catch(e) {}
-    },
-  };
-}
+(function(){
+  try {
+    var fd = new FormData();
+    fd.append('_csrf', '{{ csrf_token() }}');
+    fetch('/api/welcome/dismiss', { method: 'POST', body: fd });
+  } catch(e) {}
+})();
 </script>
 {% endif %}
 

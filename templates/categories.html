@@ -16,7 +16,7 @@
         <h1 class="section-h">{{ t('categories') }}</h1>
         <p class="section-sub">{{ t('cat_sub') }}</p>
       </div>
-      <button @click="showNew = true; parentId = null; parentName = ''" class="btn-premium">+ {{ t('categories') }}</button>
+      <button @click="showNew = true; parentId = null; parentName = ''" class="btn-premium" data-tour="new-category-btn">+ {{ t('categories') }}</button>
     </div>
 
     <!-- Roots -->
@@ -129,4 +129,78 @@
     </form>
   </div>
 </div>
+
+<!-- Interaktivny tour: zapuskaetsya pri ?tour=categories v URL -->
+<link rel="stylesheet" href="/static/tour/tour.css">
+<script src="/static/tour/tour.js"></script>
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tour') !== 'categories') return;
+
+  var lang = '{{ lang }}' || 'ru';
+  var i18n_pack = {
+    ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
+    en: { next: 'Next', back: 'Back', skip: 'Skip', finish: '✓ Done', step: 'Step' },
+    uz: { next: 'Keyingi', back: 'Orqaga', skip: 'O\'tkazib yuborish', finish: '✓ Tayyor', step: 'Qadam' },
+  };
+  QTour.setI18n(i18n_pack[lang] || i18n_pack.ru);
+
+  var steps = [
+    {
+      floating: true,
+      title: {{ t('tour_cat_intro_t')|tojson }},
+      body:  {{ t('tour_cat_intro_b')|tojson }},
+    },
+    {
+      selector: '[data-tour="new-category-btn"]',
+      title: {{ t('tour_cat_create_t')|tojson }},
+      body:  {{ t('tour_cat_create_b')|tojson }},
+      side: 'bottom',
+    },
+    {
+      floating: true,
+      title: {{ t('tour_cat_subs_t')|tojson }},
+      body:  {{ t('tour_cat_subs_b')|tojson }},
+    },
+    {
+      floating: true,
+      title: {{ t('tour_cat_done_t')|tojson }},
+      body:  {{ t('tour_cat_done_b')|tojson }},
+    },
+  ];
+
+  function start() {
+    QTour.start(steps, {
+      onComplete: function() {
+        try {
+          var fd = new FormData();
+          fd.append('_csrf', '{{ csrf_token() }}');
+          fd.append('stage', 'categories');
+          fetch('/api/tour/complete', { method: 'POST', body: fd });
+        } catch(e) {}
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+      onSkip: function() {
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    setTimeout(start, 200);
+  }
+})();
+</script>
+
 {% endblock %}

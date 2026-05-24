@@ -16,11 +16,11 @@
       <p class="section-sub">{{ t('u_load_cards_from') }}</p>
     </div>
 
-    <form method="POST" action="/import" enctype="multipart/form-data" class="glass-premium space-y-5">
+    <form method="POST" action="/import" enctype="multipart/form-data" class="glass-premium space-y-5" data-tour="import-form">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <div>
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('import_help') }}</label>
-        <input type="file" name="file" accept=".txt,.csv,.tsv,.docx,.pdf,.xlsx,.xls" class="input-premium" style="padding: 8px 12px;">
+        <input type="file" name="file" accept=".txt,.csv,.tsv,.docx,.pdf,.xlsx,.xls" class="input-premium" style="padding: 8px 12px;" data-tour="import-file">
         <div class="mt-2 p-3 rounded-xl text-xs" style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05)); border: 1px solid rgba(99,102,241,0.2);">
           <p class="text-slate-700 dark:text-slate-200 leading-relaxed">
             <b>📊 Excel:</b> {{ t('u_excel_format_hint') }}<br>
@@ -28,6 +28,29 @@
             <span class="text-slate-600 dark:text-slate-300">{{ t('u_vision_filter_note') }}</span>
             <br><span class="text-slate-500 dark:text-slate-400 text-[11px]">{{ t('u_vision_quota_note') }}</span>
           </p>
+        </div>
+
+        <!-- Demo fayly dlya skachivaniya — chtoby polzovatel' uvidel format -->
+        <div class="mt-3 p-3 rounded-xl border border-emerald-300/40 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-900/10" data-tour="demo-files">
+          <div class="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-1.5">
+            <span class="text-base">💡</span>
+            {{ t('u_try_demo_files') }}
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="/static/demo_examples/demo_test.xlsx" download
+               class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center gap-1">
+              📊 demo_test.xlsx
+            </a>
+            <a href="/static/demo_examples/demo_terms.xlsx" download
+               class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center gap-1">
+              📚 demo_terms.xlsx
+            </a>
+            <a href="/static/demo_examples/demo.txt" download
+               class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center gap-1">
+              📄 demo.txt
+            </a>
+          </div>
+          <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">{{ t('u_demo_files_hint') }}</div>
         </div>
       </div>
 
@@ -120,4 +143,79 @@
     </details>
   </div>
 </div>
+
+<!-- Interaktivny tour: zapuskaetsya pri ?tour=import v URL -->
+<link rel="stylesheet" href="/static/tour/tour.css">
+<script src="/static/tour/tour.js"></script>
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tour') !== 'import') return;
+
+  var lang = '{{ lang }}' || 'ru';
+  var i18n_pack = {
+    ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
+    en: { next: 'Next', back: 'Back', skip: 'Skip', finish: '✓ Done', step: 'Step' },
+    uz: { next: 'Keyingi', back: 'Orqaga', skip: 'O\'tkazib yuborish', finish: '✓ Tayyor', step: 'Qadam' },
+  };
+  QTour.setI18n(i18n_pack[lang] || i18n_pack.ru);
+
+  var steps = [
+    {
+      floating: true,
+      title: {{ t('tour_import_intro_t')|tojson }},
+      body:  {{ t('tour_import_intro_b')|tojson }},
+    },
+    {
+      selector: '[data-tour="demo-files"]',
+      title: {{ t('tour_import_demo_t')|tojson }},
+      body:  {{ t('tour_import_demo_b')|tojson }},
+      side: 'bottom',
+    },
+    {
+      selector: '[data-tour="import-file"]',
+      title: {{ t('tour_import_file_t')|tojson }},
+      body:  {{ t('tour_import_file_b')|tojson }},
+      side: 'bottom',
+    },
+    {
+      floating: true,
+      title: {{ t('tour_import_done_t')|tojson }},
+      body:  {{ t('tour_import_done_b')|tojson }},
+    },
+  ];
+
+  function start() {
+    QTour.start(steps, {
+      onComplete: function() {
+        try {
+          var fd = new FormData();
+          fd.append('_csrf', '{{ csrf_token() }}');
+          fd.append('stage', 'import');
+          fetch('/api/tour/complete', { method: 'POST', body: fd });
+        } catch(e) {}
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+      onSkip: function() {
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    setTimeout(start, 200);
+  }
+})();
+</script>
+
 {% endblock %}
