@@ -391,7 +391,6 @@ function deckEditor() {
         {% endif %}
         {% else %}
         <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}">{{ t('dk_btn_test') }}</button>
-        <a href="/deck/{{ deck['id'] }}/flashcards" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border-color: rgba(99,102,241,0.4);" title="{{ t('dk_btn_flashcards_title') }}">{{ t('dk_btn_flashcards') }}</a>
         <a href="/test/history?scope_type=deck&scope_id={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(217,70,239,0.1)); color: #7c3aed; border-color: rgba(168,85,247,0.4);" title="История тестов по этой колоде">📊 История</a>
         {% if can_edit %}
         <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
