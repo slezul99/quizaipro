@@ -1908,6 +1908,49 @@ def test_history():
     )
 
 
+@app.route("/test/history/<int:attempt_id>")
+@login_required
+def test_attempt_detail(attempt_id):
+    """Detalnyy prosmotr odnoy popytki testa: kazhdyy vopros, otvet polzovatelya, pravil'nyy otvet."""
+    user = current_user()
+    conn = db.get_conn()
+    attempt = conn.execute(
+        "SELECT * FROM test_attempts WHERE id=? AND user_id=?",
+        (attempt_id, user["id"])
+    ).fetchone()
+    if not attempt:
+        conn.close(); abort(404)
+    answers = conn.execute(
+        "SELECT * FROM test_attempt_answers WHERE attempt_id=? ORDER BY position",
+        (attempt_id,)
+    ).fetchall()
+    conn.close()
+
+    # Parsing variantov MCQ dlya kazhdogo voprosa (kak v deck.html)
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$")
+    answers_parsed = []
+    for a in answers:
+        ad = dict(a)
+        source = (ad.get("note") or "").strip() or (ad.get("back") or "")
+        opts = []
+        for line in source.split("\n"):
+            m = _opt_re.match(line.strip())
+            if m:
+                opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+        if not opts and ad.get("back"):
+            for line in ad["back"].split("\n"):
+                m = _opt_re.match(line.strip())
+                if m:
+                    opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+        ad["options"] = opts
+        answers_parsed.append(ad)
+
+    return render_template("test_attempt_detail.html",
+        attempt=dict(attempt),
+        answers=answers_parsed,
+    )
+
+
 @app.route("/deck/<int:deck_id>/test")
 @login_required
 def test_start(deck_id):
@@ -2116,6 +2159,36 @@ def test_answer():
                 1 if is_perfect else 0,
                 started_at,
             ))
+            attempt_id = conn2.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+
+            # === Sokhranyaem detali kazhdogo otveta dlya prosmotra istorii ===
+            session_answers = session.get("test_answers", [])
+            if session_answers and attempt_id:
+                # Beryom snapshot kart na moment testa
+                card_ids_in_test = [a["card_id"] for a in session_answers]
+                if card_ids_in_test:
+                    placeholders = ",".join(["?"] * len(card_ids_in_test))
+                    cards_rows = conn2.execute(
+                        f"SELECT id, front, back, COALESCE(note,'') AS note FROM cards WHERE id IN ({placeholders})",
+                        card_ids_in_test
+                    ).fetchall()
+                    cards_map = {c["id"]: dict(c) for c in cards_rows}
+
+                    for pos, ans in enumerate(session_answers, 1):
+                        card = cards_map.get(ans["card_id"], {})
+                        conn2.execute("""
+                            INSERT INTO test_attempt_answers
+                            (attempt_id, position, card_id, front, back, note, chosen, correct, is_correct)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            attempt_id, pos, ans["card_id"],
+                            card.get("front", "[karta udalena]"),
+                            card.get("back", ""),
+                            card.get("note", ""),
+                            ans.get("chosen", ""),
+                            ans.get("correct", ""),
+                            1 if ans.get("is_correct") else 0,
+                        ))
         except Exception as e:
             print(f"[test_history] failed: {e}")
 

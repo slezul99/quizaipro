@@ -53,7 +53,7 @@
     <div class="divide-y divide-slate-100 dark:divide-slate-700">
       {% for a in attempts %}
       {% set score_color = 'emerald' if a.score_pct >= 80 else ('indigo' if a.score_pct >= 60 else ('amber' if a.score_pct >= 40 else 'rose')) %}
-      <div class="px-5 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+      <a href="/test/history/{{ a.id }}" class="block px-5 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition group">
         <!-- Score circle -->
         <div class="w-12 h-12 rounded-full flex flex-col items-center justify-center flex-shrink-0
                     {% if score_color == 'emerald' %}bg-emerald-100 dark:bg-emerald-900/40
@@ -71,7 +71,7 @@
         <!-- Detail -->
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-semibold text-slate-900 dark:text-slate-100 truncate">
+            <span class="font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-300">
               {% if a.scope_type == 'category' %}📁{% else %}📚{% endif %} {{ a.scope_name or '—' }}
             </span>
             {% if a.is_perfect %}<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-emerald-100 font-bold">⭐ 100%</span>{% endif %}
@@ -87,19 +87,21 @@
         <div class="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
           {{ a.finished_at|tashkent('%d.%m %H:%M') }}
         </div>
-        <!-- Action -->
+        <!-- Restart button (separate link, stop propagation) -->
         {% if a.scope_type == 'deck' %}
         <a href="/deck/{{ a.scope_id }}/test?count={{ a.total_q }}&shuffle=1"
+           onclick="event.stopPropagation()"
            class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition whitespace-nowrap">
           ↻ Заново
         </a>
         {% else %}
         <a href="/category/{{ a.scope_id }}/test?count={{ a.total_q }}"
+           onclick="event.stopPropagation()"
            class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition whitespace-nowrap">
           ↻ Заново
         </a>
         {% endif %}
-      </div>
+      </a>
       {% endfor %}
     </div>
   </div>

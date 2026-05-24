@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Детали теста · QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-8">
+
+  <a href="/test/history{% if attempt.scope_type %}?scope_type={{ attempt.scope_type }}&scope_id={{ attempt.scope_id }}{% endif %}"
+     class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
+    <span>←</span> К истории
+  </a>
+
+  <!-- Zagolovok -->
+  {% set sc = (attempt.score_pct or 0)|round|int %}
+  {% set color = 'emerald' if sc >= 80 else ('indigo' if sc >= 60 else ('amber' if sc >= 40 else 'rose')) %}
+  <div class="rounded-2xl p-5 mb-6 border-2
+              {% if color == 'emerald' %}bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-500/40
+              {% elif color == 'indigo' %}bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-500/40
+              {% elif color == 'amber' %}bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-500/40
+              {% else %}bg-rose-50 dark:bg-rose-900/20 border-rose-300 dark:border-rose-500/40{% endif %}">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-3">
+          <span class="text-3xl">📊</span>
+          <span>{% if attempt.scope_type == 'category' %}📁{% else %}📚{% endif %} {{ attempt.scope_name or '—' }}</span>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          {{ attempt.finished_at|tashkent('%d.%m.%Y %H:%M') }}
+          {% if attempt.duration_sec %} · ⏱ {{ (attempt.duration_sec / 60)|round(1) }} мин{% endif %}
+        </p>
+      </div>
+      <div class="text-right">
+        <div class="text-4xl font-black
+                    {% if color == 'emerald' %}text-emerald-600 dark:text-emerald-400
+                    {% elif color == 'indigo' %}text-indigo-600 dark:text-indigo-400
+                    {% elif color == 'amber' %}text-amber-600 dark:text-amber-400
+                    {% else %}text-rose-600 dark:text-rose-400{% endif %}">
+          {{ sc }}%
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ attempt.correct }}</span>
+          /
+          <span class="text-rose-600 dark:text-rose-400 font-bold">{{ attempt.wrong }}</span>
+          из {{ attempt.total_q }}
+          {% if attempt.is_perfect %} · ⭐ <b>Идеально</b>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if not answers %}
+  <!-- Net detaley (popytka iz pred-eshchego prilozheniya) -->
+  <div class="rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-8 text-center">
+    <div class="text-5xl mb-3">📋</div>
+    <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Детали этой попытки не сохранены</h3>
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      Эта попытка прошла до того, как мы стали сохранять детали ответов.<br>
+      Все новые тесты будут отображаться полностью.
+    </p>
+  </div>
+  {% else %}
+
+  <!-- Spisok voprosov -->
+  <div class="space-y-4">
+    {% for a in answers %}
+    {% set is_ok = a.is_correct == 1 %}
+    <div class="rounded-2xl border-2 overflow-hidden
+                {% if is_ok %}bg-white dark:bg-slate-800/70 border-emerald-300 dark:border-emerald-500/40
+                {% else %}bg-rose-50/40 dark:bg-rose-900/15 border-rose-300 dark:border-rose-500/40{% endif %}">
+
+      <!-- Vopros -->
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0
+                      {% if is_ok %}bg-emerald-200 text-emerald-800 dark:bg-emerald-700 dark:text-emerald-100
+                      {% else %}bg-rose-200 text-rose-800 dark:bg-rose-700 dark:text-rose-100{% endif %}">
+            {% if is_ok %}✓{% else %}✗{% endif %}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">
+              Вопрос {{ a.position }}
+            </div>
+            <div class="text-base font-semibold text-slate-900 dark:text-slate-100 whitespace-pre-line">{{ a.front }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Varianty otvetov (esli MCQ) -->
+      {% if a.options %}
+      <div class="px-5 py-3 space-y-1.5">
+        {% for opt in a.options %}
+        {% set is_chosen = (a.chosen and a.chosen|upper == opt.letter) %}
+        {% set is_correct_letter = (a.correct and a.correct|upper == opt.letter) %}
+        <div class="flex items-start gap-2 px-3 py-2 rounded-lg text-sm transition
+                    {% if is_correct_letter %}bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-600
+                    {% elif is_chosen and not is_correct_letter %}bg-rose-100 dark:bg-rose-900/40 border border-rose-300 dark:border-rose-600
+                    {% else %}bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700{% endif %}">
+          <div class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0
+                      {% if is_correct_letter %}bg-emerald-500 text-white
+                      {% elif is_chosen and not is_correct_letter %}bg-rose-500 text-white
+                      {% else %}bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300{% endif %}">
+            {{ opt.letter }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-slate-800 dark:text-slate-100">{{ opt.text }}</div>
+            <div class="flex flex-wrap gap-1 mt-1">
+              {% if is_chosen %}
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-bold
+                          {% if is_correct_letter %}bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100
+                          {% else %}bg-rose-200 dark:bg-rose-800 text-rose-900 dark:text-rose-100{% endif %}">
+                Ваш ответ
+              </span>
+              {% endif %}
+              {% if is_correct_letter %}
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">
+                ✓ Правильный
+              </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <!-- Net razmechennyh variantov — pokazhem prosto otvety -->
+      <div class="px-5 py-3 space-y-2 text-sm">
+        <div class="flex items-start gap-2">
+          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 w-32 flex-shrink-0 pt-0.5">Ваш ответ:</span>
+          <span class="flex-1 px-2 py-1 rounded
+                       {% if is_ok %}bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200
+                       {% else %}bg-rose-100 dark:bg-rose-900/40 text-rose-900 dark:text-rose-200{% endif %}">
+            {{ a.chosen or '—' }}
+          </span>
+        </div>
+        {% if not is_ok %}
+        <div class="flex items-start gap-2">
+          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 w-32 flex-shrink-0 pt-0.5">Правильный:</span>
+          <span class="flex-1 px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200">
+            {{ a.correct or a.back or '—' }}
+          </span>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Repeat button -->
+  <div class="mt-6 text-center">
+    {% if attempt.scope_type == 'deck' %}
+    <a href="/deck/{{ attempt.scope_id }}/test?count={{ attempt.total_q }}&shuffle=1"
+       class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition">
+      ↻ Пройти тест ещё раз
+    </a>
+    {% elif attempt.scope_type == 'category' %}
+    <a href="/category/{{ attempt.scope_id }}/test?count={{ attempt.total_q }}"
+       class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition">
+      ↻ Пройти тест ещё раз
+    </a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

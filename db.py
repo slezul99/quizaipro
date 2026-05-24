@@ -679,6 +679,25 @@ def init_db():
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_test_attempts_user ON test_attempts(user_id, finished_at DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_test_attempts_scope ON test_attempts(scope_type, scope_id, finished_at DESC)")
+
+    # === Detali otvetov v ramkakh kazhdoy popytki testa ===
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS test_attempt_answers (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            attempt_id   INTEGER NOT NULL,
+            position     INTEGER NOT NULL,        -- 1, 2, 3...
+            card_id      INTEGER,                 -- mozhet byt' NULL esli karta udalena
+            front        TEXT NOT NULL,           -- snapshot voprosa (na sluchay esli karta izmenitsya)
+            back         TEXT NOT NULL,           -- snapshot pravil'nogo otveta
+            note         TEXT,                    -- snapshot variantov MCQ
+            chosen       TEXT,                    -- chto vybral polzovatel' (bukva A/B/C/...)
+            correct      TEXT,                    -- pravil'naya bukva
+            is_correct   INTEGER NOT NULL,        -- 1 / 0
+            FOREIGN KEY(attempt_id) REFERENCES test_attempts(id) ON DELETE CASCADE,
+            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE SET NULL
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_test_answers_attempt ON test_attempt_answers(attempt_id, position)")
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")
