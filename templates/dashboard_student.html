@@ -201,10 +201,10 @@
     <!-- ACTIONS -->
     {% if current_user.role == 'individual' %}
     <div class="flex gap-3 mb-8 flex-wrap slide-up" style="animation-delay:.3s">
-      <button @click="showNew = true" class="btn-premium">{{ t('new_deck_btn') }}</button>
-      <a href="/import" class="btn-premium-ghost">{{ t('import_file') }}</a>
+      <button @click="showNew = true" class="btn-premium" data-tour="new-deck-btn">{{ t('new_deck_btn') }}</button>
+      <a href="/import" class="btn-premium-ghost" data-tour="import-btn">{{ t('import_file') }}</a>
       {% if ai_available %}
-      <a href="/ai" class="btn-premium-ghost">{{ t('ai_generation') }}</a>
+      <a href="/ai" class="btn-premium-ghost" data-tour="ai-btn">{{ t('ai_generation') }}</a>
       {% endif %}
     </div>
     {% endif %}
@@ -280,12 +280,12 @@
 
   <!-- New deck modal -->
   <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
-    <form method="POST" action="/deck/new" class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
+    <form method="POST" action="/deck/new" class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;" data-tour="new-deck-modal">
       <h2 class="section-h" style="font-size: 1.7rem;">{{ t('new_deck') }}</h2>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">{{ t('create_deck_set') }}</p>
       <div class="flex gap-3 mb-4">
         <input name="icon" maxlength="2" value="📚" class="input-premium" style="width: 70px; text-align: center; font-size: 28px; padding: 6px;">
-        <input name="name" required placeholder="{{ t('deck_name_label') }}" class="input-premium" style="flex: 1;">
+        <input name="name" required placeholder="{{ t('deck_name_label') }}" class="input-premium" style="flex: 1;" data-tour="new-deck-name">
       </div>
       <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">📁 {{ t('category_label') }}</label>
       <select name="category_id" class="input-premium mb-5">
@@ -344,4 +344,142 @@
     </div>
   </div>
 </div>
+
+<!-- Interaktivny tour: zapuskaetsya pri ?tour=basic v URL -->
+<link rel="stylesheet" href="/static/tour/tour.css">
+<script src="/static/tour/tour.js"></script>
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tour') !== 'basic') return;
+
+  // Lokalizatsiya
+  var lang = '{{ lang }}' || 'ru';
+  var i18n_pack = {
+    ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
+    en: { next: 'Next', back: 'Back', skip: 'Skip', finish: '✓ Done', step: 'Step' },
+    uz: { next: 'Keyingi', back: 'Orqaga', skip: 'O\'tkazib yuborish', finish: '✓ Tayyor', step: 'Qadam' },
+  };
+  QTour.setI18n(i18n_pack[lang] || i18n_pack.ru);
+
+  var tour_steps_pack = {
+    ru: [
+      {
+        floating: true,
+        title: '👋 Добро пожаловать в QuizAIPro',
+        body: 'Сейчас за 5 минут покажу как создать свою первую колоду и пройти тест. Можно прервать в любой момент кнопкой ×.',
+      },
+      {
+        selector: '[data-tour="new-deck-btn"]',
+        title: 'Создаём колоду',
+        body: 'Колода — это набор карточек по одной теме. Например "Английский для начинающих" или "История 8 класс". Нажмите эту кнопку, чтобы создать первую колоду.',
+        side: 'bottom',
+        waitForClick: true,
+        clickHint: 'Нажмите "+ Новая колода"',
+        afterClickDelayMs: 400,
+      },
+      {
+        selector: '[data-tour="new-deck-modal"]',
+        title: 'Введите название',
+        body: 'Введите название колоды и иконку. Например "Английский 📘". Категорию можно не выбирать.',
+        side: 'right',
+      },
+      {
+        floating: true,
+        title: '🎉 Колода создана',
+        body: 'Отлично! После сохранения вас перебросит на страницу колоды. Там можно добавить вопросы вручную или импортировать из файла.<br><br>На этом первая часть тура заканчивается. Следующие части (импорт, категории) скоро появятся.',
+      },
+    ],
+    en: [
+      {
+        floating: true,
+        title: '👋 Welcome to QuizAIPro',
+        body: 'Quick 5-minute walkthrough on creating your first deck and taking a test. You can stop anytime with the × button.',
+      },
+      {
+        selector: '[data-tour="new-deck-btn"]',
+        title: 'Create a deck',
+        body: 'A deck is a set of cards on one topic. For example "English Beginner" or "History grade 8". Click this button to create your first deck.',
+        side: 'bottom',
+        waitForClick: true,
+        clickHint: 'Click "+ New Deck"',
+        afterClickDelayMs: 400,
+      },
+      {
+        selector: '[data-tour="new-deck-modal"]',
+        title: 'Name your deck',
+        body: 'Enter the deck name and icon. Like "English 📘". Category is optional.',
+        side: 'right',
+      },
+      {
+        floating: true,
+        title: '🎉 Deck created',
+        body: 'After saving you\'ll go to the deck page. There you can add questions manually or import from a file.<br><br>This is the end of part 1. More tour parts (import, categories) coming soon.',
+      },
+    ],
+    uz: [
+      {
+        floating: true,
+        title: '👋 QuizAIPro ga xush kelibsiz',
+        body: '5 daqiqada birinchi koloda yaratish va testdan oʻtishni koʻrsataman. Istalgan vaqt × tugmasi orqali toʻxtatishingiz mumkin.',
+      },
+      {
+        selector: '[data-tour="new-deck-btn"]',
+        title: 'Koloda yaratamiz',
+        body: 'Koloda — bir mavzudagi kartalar toʻplami. Masalan "Ingliz tili boshlovchilar uchun" yoki "Tarix 8-sinf". Birinchi kolodani yaratish uchun ushbu tugmani bosing.',
+        side: 'bottom',
+        waitForClick: true,
+        clickHint: '"+ Yangi koloda" ni bosing',
+        afterClickDelayMs: 400,
+      },
+      {
+        selector: '[data-tour="new-deck-modal"]',
+        title: 'Nomini kiriting',
+        body: 'Koloda nomini va ikonkasini kiriting. Masalan "Ingliz tili 📘". Kategoriyani tanlash shart emas.',
+        side: 'right',
+      },
+      {
+        floating: true,
+        title: '🎉 Koloda yaratildi',
+        body: 'Saqlangandan keyin koloda sahifasiga oʻtasiz. U yerda savollarni qoʻlda qoʻshish yoki fayldan import qilish mumkin.<br><br>1-qism shu yerda tugaydi. Keyingi qismlar (import, kategoriyalar) tez orada qoʻshiladi.',
+      },
+    ],
+  };
+
+  function start() {
+    var steps = tour_steps_pack[lang] || tour_steps_pack.ru;
+    QTour.start(steps, {
+      onComplete: function() {
+        // Otmechaem prokhozhdeniye basic-tour'a
+        try {
+          var fd = new FormData();
+          fd.append('_csrf', '{{ csrf_token() }}');
+          fd.append('stage', 'basic');
+          fetch('/api/tour/complete', { method: 'POST', body: fd });
+        } catch(e) {}
+        // Ubirayem ?tour iz URL
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+      onSkip: function() {
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    setTimeout(start, 200);
+  }
+})();
+</script>
+
 {% endblock %}
