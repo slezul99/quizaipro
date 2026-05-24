@@ -140,6 +140,25 @@
       </div>
     </div>
 
+    <!-- Tour stages -->
+    <div class="grid sm:grid-cols-3 gap-3 mb-6">
+      <a href="/tour/basic" class="glass-premium hover:border-indigo-400 transition group" style="padding: 1rem; text-decoration:none;">
+        <div class="text-2xl mb-1.5">📚</div>
+        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_basic_t') }}</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('tour_stage_basic_b') }}</div>
+      </a>
+      <a href="/tour/import" class="glass-premium hover:border-indigo-400 transition group" style="padding: 1rem; text-decoration:none;">
+        <div class="text-2xl mb-1.5">📥</div>
+        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_import_t') }}</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('tour_stage_import_b') }}</div>
+      </a>
+      <a href="/tour/categories" class="glass-premium hover:border-indigo-400 transition group" style="padding: 1rem; text-decoration:none;">
+        <div class="text-2xl mb-1.5">📁</div>
+        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_cat_t') }}</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('tour_stage_cat_b') }}</div>
+      </a>
+    </div>
+
     <!-- Step Tabs -->
     <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
       <template x-for="(s, i) in steps" :key="i">

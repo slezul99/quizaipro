@@ -1,0 +1,5 @@
+How much is 7 * 8? | 56 | Multiplication table
+Capital of Uzbekistan? | Tashkent | Geography
+What year is it now? | 2026 | Current year
+Largest planet in solar system? | Jupiter | Astronomy
+H2O is the chemical formula for? | Water | Chemistry

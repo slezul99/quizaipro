@@ -823,9 +823,9 @@ def tour_launcher(stage):
     if stage == "basic":
         return redirect(url_for("dashboard") + "?tour=basic")
     if stage == "import":
-        return redirect(url_for("dashboard") + "?tour=import")
+        return redirect("/import?tour=import")
     if stage == "categories":
-        return redirect(url_for("categories_list") + "?tour=categories")
+        return redirect("/categories?tour=categories")
     return redirect(url_for("dashboard"))
 
 
