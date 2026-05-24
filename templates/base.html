@@ -119,14 +119,21 @@
 <style>
   /* ============ BASE ============ */
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; min-height: 100%; }
   body {
     font-family: 'Inter', sans-serif;
     color: #0a1838;
     background: #87ceeb;
     overflow-x: hidden;
     transition: background-color 0.4s ease, color 0.4s ease;
+    /* Sticky footer: body — flex kolonka, main rastyagivaetsya */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
+  body > main { flex: 1 0 auto; }
+  body > footer { flex-shrink: 0; }
+  body > header { flex-shrink: 0; }
   [x-cloak] { display: none !important; }
 
   /* === DARK MODE === */
