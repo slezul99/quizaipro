@@ -793,6 +793,42 @@ def api_welcome_restart():
     return jsonify({"ok": True})
 
 
+@app.route("/api/tour/complete", methods=["POST"])
+@login_required
+def api_tour_complete():
+    """Otmechaem chto polzovatel' proshyol konkretnyy etap tour'a.
+    Stages: basic / import / categories
+    """
+    user = current_user()
+    stage = (request.form.get("stage") or "").strip().lower()
+    if stage not in ("basic", "import", "categories"):
+        return jsonify({"ok": False, "error": "invalid stage"}), 400
+    column = f"tour_{stage}_done"
+    conn = db.get_conn()
+    try:
+        conn.execute(f"ALTER TABLE users ADD COLUMN {column} INTEGER DEFAULT 0")
+    except Exception:
+        pass
+    conn.execute(f"UPDATE users SET {column}=1 WHERE id=?", (user["id"],))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True, "stage": stage})
+
+
+@app.route("/tour/<stage>")
+@login_required
+def tour_launcher(stage):
+    """Launcher dlya tour'a — perenapravlyaet na nuzhnuyu stranitsu s ?tour=stage parametrom.
+    Eto chtoby tour zapuskalsya iz /help i drugih mest universal'no.
+    """
+    if stage == "basic":
+        return redirect(url_for("dashboard") + "?tour=basic")
+    if stage == "import":
+        return redirect(url_for("dashboard") + "?tour=import")
+    if stage == "categories":
+        return redirect(url_for("categories_list") + "?tour=categories")
+    return redirect(url_for("dashboard"))
+
+
 @app.route("/api/install-demo-decks", methods=["POST"])
 @login_required
 def api_install_demo_decks():
