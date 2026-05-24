@@ -1966,10 +1966,20 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // === Lite Mode floating toggle button ===
-// Pokazyvaem v pravom nizhnem uglu chtoby polzovatel' mog peresklyuchit' kogda hochet
+// Pokazyvaem TOL'KO na mobile / planshetakh — na desktope ne nuzhno
 (function(){
+  function isMobileDevice(){
+    // 1) touch-screen + uzkiy ekran ILI 2) mobile user-agent
+    var hasCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var smallScreen = window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
+    var ua = (navigator.userAgent || '').toLowerCase();
+    var mobileUA = /android|iphone|ipad|ipod|mobile|tablet|opera mini/.test(ua);
+    return mobileUA || (hasCoarsePointer && smallScreen);
+  }
+
   function makeBtn(){
     if (document.getElementById('lite-mode-fab')) return;
+    if (!isMobileDevice()) return;  // na desktope ne pokazyvaem
     var btn = document.createElement('button');
     btn.id = 'lite-mode-fab';
     btn.type = 'button';
