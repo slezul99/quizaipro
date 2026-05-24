@@ -133,10 +133,12 @@
     if (!target || s.floating) {
       // No target -> floating center tooltip
       STATE.spotlight.style.display = 'none';
+      STATE.overlay.classList.add('qtour-floating-mode');
       tip.classList.add('qtour-tooltip-floating');
       requestAnimationFrame(() => tip.classList.add('qtour-visible'));
     } else {
       STATE.targetEl = target;
+      STATE.overlay.classList.remove('qtour-floating-mode');
       tip.classList.remove('qtour-tooltip-floating');
 
       // Scroll target into view
@@ -155,17 +157,13 @@
           nextBtn.style.cursor = 'not-allowed';
 
           _targetClickHandler = function(e){
-            // Don't prevent — let it work
-            // But move to next step after small delay
-            setTimeout(() => {
-              if (s.afterClickDelayMs && s.afterClickDelayMs > 0) {
-                setTimeout(next, s.afterClickDelayMs);
-              } else {
-                next();
-              }
-            }, 200);
+            // Don't prevent — let it work naturally
+            // Move to next step after small delay (chtoby Alpine uspel obrabotat')
+            var delay = (s.afterClickDelayMs && s.afterClickDelayMs > 0) ? s.afterClickDelayMs : 400;
+            setTimeout(next, delay);
           };
-          target.addEventListener('click', _targetClickHandler, { once: true, capture: true });
+          // capture: false chtoby native handlers (Alpine, etc.) srabotali pervymi
+          target.addEventListener('click', _targetClickHandler, { once: true });
         } else {
           nextBtn.disabled = false;
           nextBtn.style.opacity = '';

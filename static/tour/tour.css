@@ -1,17 +1,22 @@
 /* === QuizAIPro Interactive Tour === */
 /* Lightweight, no dependencies. Works with dark mode. */
 
-/* Overlay zatemnyayet vse krome podsvechennogo elementa */
+/* Overlay zatemnyayet vse krome podsvechennogo elementa.
+   pointer-events: none chtoby NE blokirovat' kliki na podsvechennye knopki.
+   Tooltip i ego close-knopka imeyut svoi pointer-events: auto. */
 .qtour-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   z-index: 9990;
-  pointer-events: auto;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 .qtour-overlay.qtour-active { opacity: 1; }
+
+/* V floating-mode (net tselevogo elementa) sami 'lovim' kliki na overlay'e dlya skip */
+.qtour-overlay.qtour-floating-mode { pointer-events: auto; }
 
 /* Vyrez vokrug podsvechennogo elementa cherez box-shadow */
 .qtour-spotlight {
