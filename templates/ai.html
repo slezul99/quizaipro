@@ -32,7 +32,22 @@
 
       <div x-show="kind === 'topic'" x-transition>
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('ai_topic_label') }}</label>
-        <input name="topic" placeholder="{{ t('ai_topic_ph') }}" class="input-premium">
+        <input name="topic" id="ai-topic-input" placeholder="{{ t('ai_topic_ph') }}" class="input-premium">
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          <span class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ t('ai_demo_try') }}:</span>
+          {% set demo_topics_pack = {
+            'ru': ['История СССР', 'Основы Python', 'Past Simple в английском', 'Биология клетки', 'Анатомия человека'],
+            'en': ['World War II', 'Python basics', 'Past Simple tense', 'Cell biology', 'Human anatomy'],
+            'uz': ['Oʻzbekiston tarixi', 'Python asoslari', 'Past Simple ingliz tilida', 'Hujayra biologiyasi', 'Inson anatomiyasi'],
+          } %}
+          {% for topic in demo_topics_pack.get(lang, demo_topics_pack['ru']) %}
+          <button type="button" onclick="document.getElementById('ai-topic-input').value = this.dataset.topic; document.getElementById('ai-topic-input').focus()"
+                  data-topic="{{ topic }}"
+                  class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-medium border border-indigo-200 dark:border-indigo-700/50 transition">
+            {{ topic }}
+          </button>
+          {% endfor %}
+        </div>
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mt-3 mb-2">{{ t('ai_diff_label') }}</label>
         <select name="difficulty" class="input-premium">
           <option value="easy">{{ t('ai_diff_easy') }}</option>

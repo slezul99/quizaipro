@@ -768,7 +768,21 @@ def auth_google_callback():
 def help_page():
     """Stranitsa pomoshchi — kak polzovatsya saytom."""
     lang = session.get("lang", "ru")
-    return render_template("help.html", help_data=help_content.get(lang))
+    user = current_user()
+    # Progress prokhozhdeniya tour'ov (dobavleny pozzhe — koloncki mogut otsutstvovat')
+    tour_progress = {"basic": False, "import": False, "categories": False}
+    try:
+        conn = db.get_conn()
+        row = conn.execute(
+            "SELECT COALESCE(tour_basic_done,0) AS b, COALESCE(tour_import_done,0) AS i, COALESCE(tour_categories_done,0) AS c FROM users WHERE id=?",
+            (user["id"],)
+        ).fetchone()
+        conn.close()
+        if row:
+            tour_progress = {"basic": bool(row["b"]), "import": bool(row["i"]), "categories": bool(row["c"])}
+    except Exception:
+        pass  # kolonok eshche net (do migratsii)
+    return render_template("help.html", help_data=help_content.get(lang), tour_progress=tour_progress)
 
 
 @app.route("/api/welcome/dismiss", methods=["POST"])
@@ -818,13 +832,34 @@ def api_tour_complete():
 @login_required
 def tour_launcher(stage):
     """Launcher dlya tour'a — perenapravlyaet na nuzhnuyu stranitsu s ?tour=stage parametrom.
-    Eto chtoby tour zapuskalsya iz /help i drugih mest universal'no.
+    Etapy zablokirovany do prokhozhdeniya predyduschih.
     """
+    user = current_user()
+    # Proveryaem progress
+    progress = {"basic": False, "import": False, "categories": False}
+    try:
+        conn = db.get_conn()
+        row = conn.execute(
+            "SELECT COALESCE(tour_basic_done,0) AS b, COALESCE(tour_import_done,0) AS i, COALESCE(tour_categories_done,0) AS c FROM users WHERE id=?",
+            (user["id"],)
+        ).fetchone()
+        conn.close()
+        if row:
+            progress = {"basic": bool(row["b"]), "import": bool(row["i"]), "categories": bool(row["c"])}
+    except Exception:
+        pass
+
     if stage == "basic":
         return redirect(url_for("dashboard") + "?tour=basic")
     if stage == "import":
+        if not progress["basic"]:
+            flash("Сначала пройдите этап 'Основы'", "info")
+            return redirect(url_for("dashboard") + "?tour=basic")
         return redirect("/import?tour=import")
     if stage == "categories":
+        if not progress["import"]:
+            flash("Сначала пройдите этап 'Импорт'", "info")
+            return redirect("/import?tour=import")
         return redirect("/categories?tour=categories")
     return redirect(url_for("dashboard"))
 

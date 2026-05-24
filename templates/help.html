@@ -142,19 +142,43 @@
 
     <!-- Tour stages -->
     <div class="grid sm:grid-cols-3 gap-3 mb-6">
-      <a href="/tour/basic" class="glass-premium hover:border-indigo-400 transition group" style="padding: 1rem; text-decoration:none;">
+      {# Etap 1: vsegda otkryt #}
+      <a href="/tour/basic" class="glass-premium hover:border-indigo-400 transition group relative" style="padding: 1rem; text-decoration:none;">
+        {% if tour_progress.basic %}
+        <span class="absolute top-2 right-2 text-emerald-500 text-xs font-bold">✓</span>
+        {% endif %}
         <div class="text-2xl mb-1.5">📚</div>
         <div class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_basic_t') }}</div>
         <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('tour_stage_basic_b') }}</div>
       </a>
-      <a href="/tour/import" class="glass-premium hover:border-indigo-400 transition group" style="padding: 1rem; text-decoration:none;">
+      {# Etap 2: razblokirvan posle Etap 1 #}
+      {% set s2_unlocked = tour_progress.basic %}
+      <a href="{% if s2_unlocked %}/tour/import{% else %}/tour/basic{% endif %}"
+         class="glass-premium transition group relative {% if not s2_unlocked %}opacity-60{% else %}hover:border-indigo-400{% endif %}"
+         style="padding: 1rem; text-decoration:none;"
+         {% if not s2_unlocked %}title="{{ t('tour_locked_hint') }}"{% endif %}>
+        {% if tour_progress['import'] %}
+        <span class="absolute top-2 right-2 text-emerald-500 text-xs font-bold">✓</span>
+        {% elif not s2_unlocked %}
+        <span class="absolute top-2 right-2 text-slate-400 text-xs">🔒</span>
+        {% endif %}
         <div class="text-2xl mb-1.5">📥</div>
-        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_import_t') }}</div>
+        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 {% if s2_unlocked %}group-hover:text-indigo-600 dark:group-hover:text-indigo-300{% endif %}">{{ t('tour_stage_import_t') }}</div>
         <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('tour_stage_import_b') }}</div>
       </a>
-      <a href="/tour/categories" class="glass-premium hover:border-indigo-400 transition group" style="padding: 1rem; text-decoration:none;">
+      {# Etap 3: razblokirvan posle Etap 2 #}
+      {% set s3_unlocked = tour_progress['import'] %}
+      <a href="{% if s3_unlocked %}/tour/categories{% elif s2_unlocked %}/tour/import{% else %}/tour/basic{% endif %}"
+         class="glass-premium transition group relative {% if not s3_unlocked %}opacity-60{% else %}hover:border-indigo-400{% endif %}"
+         style="padding: 1rem; text-decoration:none;"
+         {% if not s3_unlocked %}title="{{ t('tour_locked_hint') }}"{% endif %}>
+        {% if tour_progress.categories %}
+        <span class="absolute top-2 right-2 text-emerald-500 text-xs font-bold">✓</span>
+        {% elif not s3_unlocked %}
+        <span class="absolute top-2 right-2 text-slate-400 text-xs">🔒</span>
+        {% endif %}
         <div class="text-2xl mb-1.5">📁</div>
-        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_cat_t') }}</div>
+        <div class="font-bold text-sm text-slate-900 dark:text-slate-100 {% if s3_unlocked %}group-hover:text-indigo-600 dark:group-hover:text-indigo-300{% endif %}">{{ t('tour_stage_cat_t') }}</div>
         <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('tour_stage_cat_b') }}</div>
       </a>
     </div>
