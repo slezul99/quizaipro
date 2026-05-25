@@ -6311,9 +6311,9 @@ def gemini_health_check():
     }).encode("utf-8")
 
     for model_url in [
-        ai_gen.API_URL_VISION_PRIMARY,    # gemini-2.0-flash (1500 RPD)
-        ai_gen.API_URL_VISION_FALLBACK,   # gemini-2.5-flash (250 RPD)
-        ai_gen.API_URL,                    # gemini-2.0-flash-lite (default text)
+        ai_gen.API_URL_VISION_PRIMARY,    # gemini-3.5-flash (latest)
+        ai_gen.API_URL_VISION_FALLBACK,   # gemini-2.5-flash (fallback)
+        ai_gen.API_URL,                    # gemini-3.5-flash (default text)
     ]:
         model_name = model_url.split("/models/")[-1].split(":")[0]
         url = f"{model_url}?key={key}"

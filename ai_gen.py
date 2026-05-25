@@ -14,19 +14,18 @@ BASE = Path(__file__).resolve().parent
 KEY_FILE = BASE / "gemini_key.txt"
 
 API_URL = ("https://generativelanguage.googleapis.com/v1beta/models/"
-           "gemini-2.5-flash-lite:generateContent")
+           "gemini-3.5-flash:generateContent")
 # Fallback model esli osnovnaya zabita (rate limit)
 API_URL_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
                     "gemini-2.5-flash:generateContent")
 # Vision URLs.
-# Posle dekabrskogo 2025 urezaniya kvot Google:
-# - gemini-2.0-flash:        limit 0 (ubrali iz free tier!)
-# - gemini-2.0-flash-lite:   limit 0 (ubrali!)
-# - gemini-2.5-flash-lite:   1000 RPD (samyy luchshiy free tier)
-# - gemini-2.5-flash:        250 RPD
-# - gemini-2.5-pro:          100 RPD
+# Maj 2026: Gemini 3.5 Flash uzhe v free tier, podderzhivaet vision
+# (text+image+video+audio+pdf, 1M context, 65k output).
+# - gemini-3.5-flash:        primary (samaya posledniaya, mnogofunkcional'naya)
+# - gemini-2.5-flash:        fallback (proverennyy backup, 250 RPD free)
+# - gemini-2.5-flash-lite:   ekstrennyy backup (1000 RPD free, lite versiya)
 API_URL_VISION_PRIMARY = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                          "gemini-2.5-flash-lite:generateContent")
+                          "gemini-3.5-flash:generateContent")
 API_URL_VISION_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
                            "gemini-2.5-flash:generateContent")
 
@@ -423,7 +422,7 @@ _last_gemini_error = ""
 def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = None) -> str | None:
     """Otdelnyy zapros k Gemini Vision s nabor kartinok. Vozvrashchaet raw text otveta.
     prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT).
-    Probuet snachala gemini-2.0-flash (1500 RPD), potom gemini-2.5-flash (250 RPD)."""
+    Probuet snachala gemini-3.5-flash (samaya posledniaya), potom gemini-2.5-flash (fallback)."""
     global _last_gemini_error
     key = _key()
     if not key:
@@ -682,7 +681,7 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
         if "429" in gemini_err or "RESOURCE_EXHAUSTED" in gemini_err.upper() or "quota" in gemini_err.lower():
             raise RuntimeError(
                 "🚫 Дневной лимит Gemini AI исчерпан. "
-                "Free tier: gemini-2.5-flash-lite — 1000 запросов/день, gemini-2.5-flash — 250/день. "
+                "Free tier: gemini-3.5-flash и gemini-2.5-flash имеют дневные квоты. "
                 "Квота сбрасывается в полночь по Pacific Time (=11:00 утра в Ташкенте). "
                 "Для production-нагрузки нужен paid tier (~$0.10 за PDF). "
                 f"\n\nПодробности от Google: {gemini_err[:300]}"
