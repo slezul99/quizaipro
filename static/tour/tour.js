@@ -135,6 +135,9 @@
       STATE.spotlight.style.display = 'none';
       STATE.overlay.classList.add('qtour-floating-mode');
       tip.classList.add('qtour-tooltip-floating');
+      // Clear inline positioning from previous targeted step (otherwise it overrides CSS center)
+      tip.style.left = '';
+      tip.style.top = '';
       requestAnimationFrame(() => tip.classList.add('qtour-visible'));
     } else {
       STATE.targetEl = target;
