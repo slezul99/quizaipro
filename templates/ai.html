@@ -10,7 +10,11 @@
     </a>
 
     <div class="section-header left mb-6">
-      <span class="section-badge"><span class="badge-dot"></span>{{ t('ai_badge') }}</span>
+      <span class="section-badge">
+        <span class="badge-dot"></span>
+        <img src="/static/tutor-avatar.png" alt="AI" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:3px;">
+        AI
+      </span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
       <h1 class="section-h">{{ t('ai_h') }}</h1>
       <p class="section-sub">{{ t('ai_sub_pre') }} <b>{{ used }}</b>/{{ limit }} {{ t('ai_sub_post') }}</p>
@@ -105,7 +109,10 @@
       </div>
       {% endif %}
 
-      <button type="submit" class="btn-premium w-full justify-center">{{ t('ai_submit') }}</button>
+      <button type="submit" class="btn-premium w-full justify-center">
+        <img src="/static/tutor-avatar.png" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:6px;">
+        {{ t('ai_submit')|replace('🤖 ', '') }}
+      </button>
     </form>
 
     <div class="mt-6 glass-premium" style="padding: 1.5rem;">
