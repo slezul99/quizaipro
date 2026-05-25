@@ -83,10 +83,21 @@
   }
 
   let _targetClickHandler = null;
+  let _boostedEl = null;
+  let _targetOriginalZ = null;
+  let _targetOriginalPos = null;
   function cleanupTargetListener() {
     if (STATE.targetEl && _targetClickHandler) {
       STATE.targetEl.removeEventListener('click', _targetClickHandler, true);
       _targetClickHandler = null;
+    }
+    // Restore z-index/position changes on the boosted element (could be modal parent)
+    if (_boostedEl) {
+      if (_targetOriginalZ !== null) _boostedEl.style.zIndex = _targetOriginalZ;
+      if (_targetOriginalPos !== null) _boostedEl.style.position = _targetOriginalPos;
+      _boostedEl = null;
+      _targetOriginalZ = null;
+      _targetOriginalPos = null;
     }
     STATE.waitingForClick = false;
     STATE.targetEl = null;
@@ -143,11 +154,35 @@
       STATE.targetEl = target;
       STATE.overlay.classList.remove('qtour-floating-mode');
       tip.classList.remove('qtour-tooltip-floating');
+      tip.style.left = '';
+      tip.style.top = '';
+
+      // Esli element nahoditsya vnutri Alpine modali (z-50, fixed) — povisaem ego nad tour overlay
+      // Ishchem blizhayshey roditelya s class fixed inset-0 (modalka)
+      var modalParent = target.closest('.fixed.inset-0');
+      var elToBoost = modalParent || target;
+      _boostedEl = elToBoost;
+      _targetOriginalZ = elToBoost.style.zIndex || '';
+      _targetOriginalPos = elToBoost.style.position || '';
+      elToBoost.style.zIndex = '9995'; // mezhdu overlay (9990) i tooltip (9999)
+      // Esli ne fixed/absolute — sdelaem relative chtoby z-index podeystvoval
+      var cs = window.getComputedStyle(elToBoost);
+      if (cs.position === 'static') {
+        elToBoost.style.position = 'relative';
+      }
 
       // Scroll target into view
       target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
-      setTimeout(() => {
+      // Esli element imeet razmer 0 (Alpine modali eshe ne otrenderena) — zhdem chut dolshe
+      var attemptsLeft = 6;
+      var positionRetry = function() {
+        var r = target.getBoundingClientRect();
+        if ((r.width === 0 || r.height === 0) && attemptsLeft > 0) {
+          attemptsLeft--;
+          setTimeout(positionRetry, 100);
+          return;
+        }
         positionSpotlightAndTooltip(target, s);
         tip.classList.add('qtour-visible');
 
@@ -172,7 +207,8 @@
           nextBtn.style.opacity = '';
           nextBtn.style.cursor = '';
         }
-      }, 350); // wait scroll to settle
+      };
+      setTimeout(positionRetry, 350); // wait scroll to settle
     }
   }
 

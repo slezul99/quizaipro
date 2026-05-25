@@ -782,7 +782,13 @@ def help_page():
             tour_progress = {"basic": bool(row["b"]), "import": bool(row["i"]), "categories": bool(row["c"])}
     except Exception:
         pass  # kolonok eshche net (do migratsii)
-    return render_template("help.html", help_data=help_content.get(lang), tour_progress=tour_progress)
+    help_payload = help_content.get(lang)
+    return render_template(
+        "help.html",
+        help_data=help_payload,
+        help_payload=help_payload,
+        tour_progress=tour_progress,
+    )
 
 
 @app.route("/api/welcome/dismiss", methods=["POST"])
@@ -1345,6 +1351,8 @@ def deck_new():
     name = request.form.get("name", "").strip() or "Без названия"
     icon = request.form.get("icon", "").strip()[:2] or "📚"
     category_id = request.form.get("category_id", type=int)
+    # Tour-flag: prokidyvayem dal'she chtoby tour mog prodolzhitsya na deck-stranitse
+    tour_flag = (request.form.get("tour") or "").strip()
     conn = db.get_conn()
     if user["org_id"]:
         cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
@@ -1354,7 +1362,10 @@ def deck_new():
                           (user["id"], category_id, name, icon))
     deck_id = cur.lastrowid
     conn.commit(); conn.close()
-    return redirect(url_for("deck_view", deck_id=deck_id))
+    target = url_for("deck_view", deck_id=deck_id)
+    if tour_flag == "basic":
+        target += "?tour=basic-deck"
+    return redirect(target)
 
 
 @app.route("/deck/<int:deck_id>")

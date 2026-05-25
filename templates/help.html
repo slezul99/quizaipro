@@ -1,495 +1,204 @@
 {% extends "base.html" %}
+{% block extra_head %}
+<link rel="stylesheet" href="/static/help.css">
+{% endblock %}
+
 {% block content %}
 {% from "_icons.html" import icon %}
-{% set HP = {
-  'install_demo': t('hp_install_demo'),
-  'installing': t('hp_installing'),
-  'installed': t('hp_installed'),
-  'restart_tour': t('hp_restart_tour'),
-  'step_n': t('hp_step_n'),
-  'step_of': t('hp_step_of'),
-  'useful': t('hp_useful'),
-  'try_now': t('hp_try_now'),
-  'back': t('hp_back'),
-  'next': t('hp_next'),
-  'done': t('hp_done'),
-  'error': t('hp_error'),
-  'unknown': t('hp_unknown'),
-  'steps': [
-    {
-      'short': t('hp_s1_short'),
-      'emoji': '📚',
-      'color': 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-      'title': t('hp_s1_title'),
-      'desc': t('hp_s1_desc'),
-      'walkthrough': [
-        {'text': t('hp_s1_w1')},
-        {'text': t('hp_s1_w2')},
-        {'text': t('hp_s1_w3')},
-        {'text': t('hp_s1_w4')},
-      ],
-      'tip': t('hp_s1_tip'),
-      'tryIt': {
-        'text': t('hp_s1_try'),
-        'buttons': [{'url': '/dashboard', 'label': t('hp_s1_try_btn')}]
-      }
-    },
-    {
-      'short': t('hp_s2_short'),
-      'emoji': '✏️',
-      'color': 'linear-gradient(135deg, #10b981, #059669)',
-      'title': t('hp_s2_title'),
-      'desc': t('hp_s2_desc'),
-      'walkthrough': [
-        {'text': t('hp_s2_w1')},
-        {'text': t('hp_s2_w2')},
-        {'text': t('hp_s2_w3')},
-        {'text': t('hp_s2_w4')},
-      ],
-      'tip': t('hp_s2_tip'),
-      'tryIt': {
-        'text': t('hp_s2_try'),
-        'buttons': [
-          {'url': '/import', 'label': t('hp_s2_try_imp')},
-          {'url': '/ai', 'label': t('hp_s2_try_ai')},
-        ]
-      }
-    },
-    {
-      'short': t('hp_s3_short'),
-      'emoji': '🎓',
-      'color': 'linear-gradient(135deg, #f59e0b, #f97316)',
-      'title': t('hp_s3_title'),
-      'desc': t('hp_s3_desc'),
-      'walkthrough': [
-        {'text': t('hp_s3_w1')},
-        {'text': t('hp_s3_w2')},
-        {'text': t('hp_s3_w3')},
-        {'text': t('hp_s3_w4')},
-      ],
-      'tip': t('hp_s3_tip'),
-      'tryIt': {
-        'text': t('hp_s3_try'),
-        'buttons': [{'url': '/dashboard', 'label': t('hp_s3_try_btn')}]
-      }
-    },
-    {
-      'short': t('hp_s4_short'),
-      'emoji': '🔥',
-      'color': 'linear-gradient(135deg, #ec4899, #be185d)',
-      'title': t('hp_s4_title'),
-      'desc': t('hp_s4_desc'),
-      'walkthrough': [
-        {'text': t('hp_s4_w1')},
-        {'text': t('hp_s4_w2')},
-        {'text': t('hp_s4_w3')},
-        {'text': t('hp_s4_w4')},
-        {'text': t('hp_s4_w5')},
-      ],
-      'tip': t('hp_s4_tip'),
-      'tryIt': {
-        'text': t('hp_s4_try'),
-        'buttons': [
-          {'url': '/goals', 'label': t('hp_s4_try_goals')},
-          {'url': '/achievements', 'label': t('hp_s4_try_ach')},
-        ]
-      }
-    },
-  ],
-  'faq': [
-    {'q': t('hp_faq1_q'), 'a': t('hp_faq1_a')},
-    {'q': t('hp_faq2_q'), 'a': t('hp_faq2_a')},
-    {'q': t('hp_faq3_q'), 'a': t('hp_faq3_a')},
-    {'q': t('hp_faq4_q'), 'a': t('hp_faq4_a')},
-    {'q': t('hp_faq5_q'), 'a': t('hp_faq5_a')},
-    {'q': t('hp_faq6_q'), 'a': t('hp_faq6_a')},
-  ]
-} %}
-<script>
-  // Peredayem perevody cherez global'nuyu peremennuyu — bezopasno otnositel'no kavychek/HTML-entities
-  window.__HP_DATA = {{ HP|tojson }};
-</script>
-<style>
-  /* === Help page: clean mobile UI === */
-  .hp-wrap { max-width: 64rem; margin: 0 auto; padding: 1.5rem; }
-  .hp-quick {
-    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-    background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(236,72,153,0.08));
-    border: 1.5px solid rgba(139,92,246,0.4);
-  }
-  .hp-quick-icon { font-size: 3rem; flex-shrink: 0; line-height: 1; }
-  .hp-quick-text { flex: 1 1 200px; min-width: 0; }
-  .hp-quick-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  .hp-quick-actions .btn-premium,
-  .hp-quick-actions .btn-premium-ghost { min-width: 180px; font-size: 14px; }
 
-  .hp-stages { display: grid; gap: 0.75rem; grid-template-columns: repeat(3, 1fr); margin-bottom: 1.5rem; }
-  .hp-stage { padding: 1rem; text-decoration: none; position: relative; transition: all 0.2s; }
-  .hp-stage-emoji { font-size: 1.5rem; margin-bottom: 0.375rem; line-height: 1; }
-  .hp-stage-t { font-weight: 700; font-size: 0.875rem; line-height: 1.3; }
-  .hp-stage-b { font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem; line-height: 1.3; }
-  .hp-stage-mark { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.75rem; font-weight: 700; }
+<div class="hp-page" x-data="helpApp()" x-cloak>
 
-  .hp-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
-  .hp-tabs::-webkit-scrollbar { height: 4px; }
-  .hp-tabs::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 4px; }
-  .hp-tab {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 10px 16px; border-radius: 1rem; font-weight: 700; font-size: 0.875rem;
-    white-space: nowrap; transition: all 0.2s; border: 1.5px solid transparent;
-    cursor: pointer;
-  }
-  .hp-tab-num {
-    width: 1.75rem; height: 1.75rem; border-radius: 9999px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 900; flex-shrink: 0;
-  }
-  .hp-tab-active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: 0 4px 12px -2px rgba(99,102,241,0.4); }
-  .hp-tab-active .hp-tab-num { background: rgba(255,255,255,0.25); color: white; }
-  .hp-tab-idle { background: rgba(255,255,255,0.78); backdrop-filter: blur(12px); color: #334155; border-color: rgba(99,102,241,0.15); }
-  .hp-tab-idle .hp-tab-num { background: rgba(99,102,241,0.12); color: #4f46e5; }
-  html.dark .hp-tab-idle { background: rgba(30,41,75,0.6); color: #cbd5e1; border-color: rgba(99,102,241,0.2); }
-  html.dark .hp-tab-idle .hp-tab-num { background: rgba(99,102,241,0.25); color: #c4b5fd; }
+  <!-- ========= HERO ========= -->
+  <div class="hp-hero">
+    <div class="hp-hero-badge">{{ t('hp_badge') }}</div>
+    <h1>{{ t('hp_h') }}</h1>
+    <p>{{ t('hp_sub') }}</p>
+  </div>
 
-  .hp-step-card { padding: 2rem; }
-  .hp-step-head { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .hp-step-icon {
-    width: 3.5rem; height: 3.5rem; border-radius: 1rem;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; flex-shrink: 0; color: white; box-shadow: 0 4px 14px -3px rgba(0,0,0,0.18);
-  }
-  .hp-step-meta { flex: 1; min-width: 0; }
-  .hp-step-eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: #6366f1; margin-bottom: 0.25rem; }
-  html.dark .hp-step-eyebrow { color: #a5b4fc; }
-  .hp-step-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.4rem; line-height: 1.2; }
-  .hp-step-desc { color: #475569; font-size: 0.95rem; line-height: 1.55; }
-  html.dark .hp-step-desc { color: #cbd5e1; }
-
-  .hp-walk { display: flex; flex-direction: column; gap: 0.625rem; margin-bottom: 1.25rem; }
-  .hp-walk-row {
-    display: flex; align-items: flex-start; gap: 0.75rem;
-    padding: 0.875rem 1rem; border-radius: 1rem;
-    background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.18);
-  }
-  html.dark .hp-walk-row { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.25); }
-  .hp-walk-num {
-    width: 1.75rem; height: 1.75rem; border-radius: 9999px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 900; flex-shrink: 0; margin-top: 0.1rem;
-  }
-  .hp-walk-text { flex: 1; min-width: 0; font-size: 0.9rem; line-height: 1.5; color: #1e293b; }
-  html.dark .hp-walk-text { color: #f1f5f9; }
-
-  .hp-tip, .hp-try {
-    padding: 1rem 1.125rem; border-radius: 1rem; margin-bottom: 1.25rem;
-    display: flex; gap: 0.75rem; align-items: flex-start;
-  }
-  .hp-tip {
-    background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.06));
-    border: 1.5px solid rgba(245,158,11,0.3);
-  }
-  .hp-try {
-    background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(52,211,153,0.06));
-    border: 1.5px solid rgba(16,185,129,0.3);
-    flex-direction: column;
-  }
-  .hp-try-row { display: flex; gap: 0.75rem; align-items: flex-start; }
-  .hp-callout-icon { font-size: 1.4rem; flex-shrink: 0; line-height: 1; }
-  .hp-callout-eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 0.25rem; }
-  .hp-tip .hp-callout-eyebrow { color: #b45309; }
-  .hp-try .hp-callout-eyebrow { color: #047857; }
-  html.dark .hp-tip .hp-callout-eyebrow { color: #fcd34d; }
-  html.dark .hp-try .hp-callout-eyebrow { color: #6ee7b7; }
-  .hp-callout-text { font-size: 0.875rem; line-height: 1.5; color: #334155; }
-  html.dark .hp-callout-text { color: #e2e8f0; }
-  .hp-try-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .hp-try-buttons .btn-premium { font-size: 13px; padding: 9px 18px; }
-
-  .hp-nav { display: flex; justify-content: space-between; gap: 0.5rem; padding-top: 1rem; border-top: 1px solid rgba(99,102,241,0.18); }
-  html.dark .hp-nav { border-top-color: rgba(99,102,241,0.25); }
-
-  .hp-faq-row { padding: 0 !important; }
-  .hp-faq-q {
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-    gap: 0.75rem; padding: 0.875rem 1rem; text-align: left; cursor: pointer;
-    background: transparent; border: none; font: inherit;
-  }
-  .hp-faq-q-text { font-weight: 700; color: #0f172a; font-size: 0.95rem; line-height: 1.3; }
-  html.dark .hp-faq-q-text { color: #f1f5f9; }
-  .hp-faq-chev { color: #6366f1; transition: transform 0.2s; flex-shrink: 0; }
-  .hp-faq-a { padding: 0 1rem 1rem; font-size: 0.875rem; color: #475569; line-height: 1.55; }
-  html.dark .hp-faq-a { color: #cbd5e1; }
-
-  .hp-contact { padding: 2rem; text-align: center; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.08)); }
-  .hp-contact-icon { font-size: 3rem; margin-bottom: 0.75rem; line-height: 1; }
-  .hp-contact-h { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #0f172a; }
-  html.dark .hp-contact-h { color: #f1f5f9; }
-  .hp-contact-sub { font-size: 0.875rem; color: #475569; margin-bottom: 1rem; }
-  html.dark .hp-contact-sub { color: #cbd5e1; }
-  .hp-contact-buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; }
-  .hp-contact-buttons .btn-premium,
-  .hp-contact-buttons .btn-premium-ghost { font-size: 14px; }
-
-  /* === MOBILE === */
-  @media (max-width: 640px) {
-    .hp-wrap { padding: 1rem 0.75rem; }
-    /* Quick action banner — stack vertikalno, knopki 100% shir */
-    .hp-quick { flex-direction: column; align-items: stretch; text-align: center; gap: 0.75rem; padding: 1.25rem !important; }
-    .hp-quick-icon { font-size: 2.5rem; margin: 0 auto; }
-    .hp-quick-actions { flex-direction: column; gap: 0.5rem; width: 100%; }
-    .hp-quick-actions .btn-premium,
-    .hp-quick-actions .btn-premium-ghost { width: 100%; min-width: 0; min-height: 44px; }
-    /* Etapy: 1 v ryadu */
-    .hp-stages { grid-template-columns: 1fr; gap: 0.5rem; margin-bottom: 1.25rem; }
-    .hp-stage { display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem !important; }
-    .hp-stage-emoji { font-size: 1.75rem; margin-bottom: 0; }
-    .hp-stage-t { font-size: 0.95rem; }
-    .hp-stage-b { font-size: 0.75rem; }
-    .hp-stage-mark { top: 50%; right: 0.75rem; transform: translateY(-50%); font-size: 1rem; }
-    /* Tabs kompaktnee */
-    .hp-tabs { gap: 0.375rem; margin: -0.5rem -0.75rem 1rem; padding: 0 0.75rem 0.5rem; }
-    .hp-tab { padding: 8px 12px; font-size: 0.8rem; gap: 0.4rem; }
-    .hp-tab-num { width: 1.5rem; height: 1.5rem; font-size: 0.7rem; }
-    /* Step card */
-    .hp-step-card { padding: 1.25rem !important; }
-    .hp-step-head { gap: 0.75rem; margin-bottom: 1rem; }
-    .hp-step-icon { width: 3rem; height: 3rem; font-size: 1.25rem; border-radius: 0.875rem; }
-    .hp-step-title { font-size: 1.15rem !important; }
-    .hp-step-desc { font-size: 0.875rem; }
-    /* Walkthrough */
-    .hp-walk-row { padding: 0.75rem 0.875rem; gap: 0.625rem; }
-    .hp-walk-num { width: 1.5rem; height: 1.5rem; font-size: 0.7rem; }
-    .hp-walk-text { font-size: 0.85rem; }
-    /* Tip / Try */
-    .hp-tip, .hp-try { padding: 0.875rem 1rem; }
-    .hp-callout-text { font-size: 0.85rem; }
-    .hp-try-buttons { width: 100%; }
-    .hp-try-buttons .btn-premium { flex: 1 1 calc(50% - 0.25rem); min-width: 0; text-align: center; padding: 10px 12px; }
-    /* Nav */
-    .hp-nav { gap: 0.5rem; }
-    .hp-nav .btn-premium, .hp-nav .btn-premium-ghost { flex: 1; min-width: 0; padding: 10px 14px; font-size: 13px; }
-    /* FAQ */
-    .hp-faq-q { padding: 0.875rem 0.875rem; }
-    .hp-faq-q-text { font-size: 0.9rem; }
-    .hp-faq-a { padding: 0 0.875rem 0.875rem; font-size: 0.85rem; }
-    /* Contact */
-    .hp-contact { padding: 1.5rem 1.25rem !important; }
-    .hp-contact-icon { font-size: 2.5rem; }
-    .hp-contact-h { font-size: 1.1rem; }
-    .hp-contact-buttons { flex-direction: column; }
-    .hp-contact-buttons .btn-premium,
-    .hp-contact-buttons .btn-premium-ghost { width: 100%; padding: 11px 14px; min-height: 44px; }
-  }
-
-  @media (max-width: 380px) {
-    .hp-step-title { font-size: 1.05rem !important; }
-    .hp-stage-emoji { font-size: 1.5rem; }
-    .hp-stage-t { font-size: 0.875rem; }
-    .hp-tab { padding: 7px 10px; font-size: 0.75rem; }
-  }
-</style>
-<div class="hp-wrap relative" x-data="helpPage(window.__HP_DATA)">
-  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
-  <div class="deco-blob deco-blob-2" style="bottom:300px; left:-150px;"></div>
-
-  <div class="relative z-10">
-    <!-- Hero -->
-    <div class="section-header mb-6">
-      <span class="section-badge"><span class="badge-dot"></span>{{ t('hp_badge') }}</span>
-      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">{{ t('hp_h') }}</h1>
-      <p class="section-sub">{{ t('hp_sub') }}</p>
+  <!-- ========= QUICK START BANNER ========= -->
+  <div class="hp-banner">
+    <div class="hp-banner-icon">🚀</div>
+    <div class="hp-banner-text">
+      <div class="hp-banner-title">{{ t('hp_quick_h') }}</div>
+      <div class="hp-banner-sub">{{ t('hp_quick_sub') }}</div>
     </div>
+    <div class="hp-banner-actions">
+      <a href="/tour/basic" class="hp-btn hp-btn-primary">🚀 {{ t('hp_run_tour') }}</a>
+      <button @click="installDemo()" :disabled="installing || installed" type="button" class="hp-btn hp-btn-ghost">
+        <span x-show="!installing && !installed">📚 {{ t('hp_install_demo') }}</span>
+        <span x-show="installing">⏳ {{ t('hp_installing') }}</span>
+        <span x-show="installed">✓ {{ t('hp_installed') }}</span>
+      </button>
+    </div>
+  </div>
 
-    <!-- Quick action banner -->
-    <div class="glass-premium hp-quick mb-6">
-      <div class="hp-quick-icon">🚀</div>
-      <div class="hp-quick-text">
-        <div class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">{{ t('hp_quick_h') }}</div>
-        <div class="text-sm text-slate-600 dark:text-slate-300">{{ t('hp_quick_sub') }}</div>
+  <!-- ========= 3 ETAPA TURA (linear progression) ========= -->
+  <h2 class="hp-section-title">
+    <span class="hp-section-title-emoji">🎯</span>
+    {{ t('hp_stages_h') }}
+  </h2>
+
+  <div class="hp-stages">
+    {# Этап 1 — всегда открыт #}
+    <a href="/tour/basic" class="hp-stage {% if tour_progress.basic %}done{% endif %}">
+      <div class="hp-stage-emoji">📚</div>
+      <div class="hp-stage-meta">
+        <div class="hp-stage-title">{{ t('tour_stage_basic_t') }}</div>
+        <div class="hp-stage-desc">{{ t('tour_stage_basic_b') }}</div>
       </div>
-      <div class="hp-quick-actions">
-        <a href="/tour/basic" class="btn-premium">🚀 {{ t('hp_run_tour') }}</a>
-        <button @click="installDemo()" :disabled="installing" type="button" class="btn-premium-ghost">
-          <span x-text="installed ? L.installed : (installing ? L.installing : L.install_demo)">{{ t('hp_install_demo') }}</span>
-        </button>
+      <div class="hp-stage-mark">{% if tour_progress.basic %}✓{% else %}1{% endif %}</div>
+    </a>
+
+    {# Этап 2 — после первого #}
+    {% set s2_unlocked = tour_progress.basic %}
+    <a href="{% if s2_unlocked %}/tour/import{% else %}/tour/basic{% endif %}"
+       class="hp-stage {% if tour_progress['import'] %}done{% elif not s2_unlocked %}locked{% endif %}"
+       {% if not s2_unlocked %}title="{{ t('tour_locked_hint') }}"{% endif %}>
+      <div class="hp-stage-emoji">📥</div>
+      <div class="hp-stage-meta">
+        <div class="hp-stage-title">{{ t('tour_stage_import_t') }}</div>
+        <div class="hp-stage-desc">{{ t('tour_stage_import_b') }}</div>
       </div>
-    </div>
+      <div class="hp-stage-mark">{% if tour_progress['import'] %}✓{% elif not s2_unlocked %}🔒{% else %}2{% endif %}</div>
+    </a>
 
-    <!-- Tour stages -->
-    <div class="hp-stages">
-      {# Etap 1 #}
-      <a href="/tour/basic" class="glass-premium hp-stage hover:border-indigo-400 group">
-        {% if tour_progress.basic %}
-        <span class="hp-stage-mark text-emerald-500">✓</span>
-        {% endif %}
-        <div class="hp-stage-emoji">📚</div>
-        <div class="hp-stage-meta">
-          <div class="hp-stage-t text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{{ t('tour_stage_basic_t') }}</div>
-          <div class="hp-stage-b text-slate-500 dark:text-slate-400">{{ t('tour_stage_basic_b') }}</div>
-        </div>
-      </a>
-      {# Etap 2 #}
-      {% set s2_unlocked = tour_progress.basic %}
-      <a href="{% if s2_unlocked %}/tour/import{% else %}/tour/basic{% endif %}"
-         class="glass-premium hp-stage group {% if not s2_unlocked %}opacity-60{% else %}hover:border-indigo-400{% endif %}"
-         {% if not s2_unlocked %}title="{{ t('tour_locked_hint') }}"{% endif %}>
-        {% if tour_progress['import'] %}
-        <span class="hp-stage-mark text-emerald-500">✓</span>
-        {% elif not s2_unlocked %}
-        <span class="hp-stage-mark text-slate-400">🔒</span>
-        {% endif %}
-        <div class="hp-stage-emoji">📥</div>
-        <div class="hp-stage-meta">
-          <div class="hp-stage-t text-slate-900 dark:text-slate-100 {% if s2_unlocked %}group-hover:text-indigo-600 dark:group-hover:text-indigo-300{% endif %}">{{ t('tour_stage_import_t') }}</div>
-          <div class="hp-stage-b text-slate-500 dark:text-slate-400">{{ t('tour_stage_import_b') }}</div>
-        </div>
-      </a>
-      {# Etap 3 #}
-      {% set s3_unlocked = tour_progress['import'] %}
-      <a href="{% if s3_unlocked %}/tour/categories{% elif s2_unlocked %}/tour/import{% else %}/tour/basic{% endif %}"
-         class="glass-premium hp-stage group {% if not s3_unlocked %}opacity-60{% else %}hover:border-indigo-400{% endif %}"
-         {% if not s3_unlocked %}title="{{ t('tour_locked_hint') }}"{% endif %}>
-        {% if tour_progress.categories %}
-        <span class="hp-stage-mark text-emerald-500">✓</span>
-        {% elif not s3_unlocked %}
-        <span class="hp-stage-mark text-slate-400">🔒</span>
-        {% endif %}
-        <div class="hp-stage-emoji">📁</div>
-        <div class="hp-stage-meta">
-          <div class="hp-stage-t text-slate-900 dark:text-slate-100 {% if s3_unlocked %}group-hover:text-indigo-600 dark:group-hover:text-indigo-300{% endif %}">{{ t('tour_stage_cat_t') }}</div>
-          <div class="hp-stage-b text-slate-500 dark:text-slate-400">{{ t('tour_stage_cat_b') }}</div>
-        </div>
-      </a>
-    </div>
+    {# Этап 3 — после второго #}
+    {% set s3_unlocked = tour_progress['import'] %}
+    <a href="{% if s3_unlocked %}/tour/categories{% elif s2_unlocked %}/tour/import{% else %}/tour/basic{% endif %}"
+       class="hp-stage {% if tour_progress.categories %}done{% elif not s3_unlocked %}locked{% endif %}"
+       {% if not s3_unlocked %}title="{{ t('tour_locked_hint') }}"{% endif %}>
+      <div class="hp-stage-emoji">📁</div>
+      <div class="hp-stage-meta">
+        <div class="hp-stage-title">{{ t('tour_stage_cat_t') }}</div>
+        <div class="hp-stage-desc">{{ t('tour_stage_cat_b') }}</div>
+      </div>
+      <div class="hp-stage-mark">{% if tour_progress.categories %}✓{% elif not s3_unlocked %}🔒{% else %}3{% endif %}</div>
+    </a>
+  </div>
 
-    <!-- Step Tabs -->
-    <div class="hp-tabs">
-      <template x-for="(s, i) in steps" :key="i">
-        <button @click="active = i" type="button"
-          :class="active === i ? 'hp-tab-active' : 'hp-tab-idle'"
-          class="hp-tab">
-          <span class="hp-tab-num" x-text="i + 1"></span>
-          <span x-text="s.short"></span>
-        </button>
-      </template>
-    </div>
+  <!-- ========= ВСЕ ВОЗМОЖНОСТИ САЙТА (раскрывающиеся темы) ========= -->
+  <h2 class="hp-section-title">
+    <span class="hp-section-title-emoji">📖</span>
+    {{ t('hp_topics_h') }}
+  </h2>
 
-    <!-- Active step content -->
-    <template x-for="(s, i) in steps" :key="i">
-      <div x-show="active === i" x-transition class="glass-premium hp-step-card">
-        <div class="hp-step-head">
-          <div class="hp-step-icon" :style="`background: ${s.color};`">
-            <span x-text="s.emoji"></span>
+  <div class="hp-topics">
+    <template x-for="(topic, idx) in topics" :key="idx">
+      <div class="hp-topic" :class="{ open: openTopic === idx }">
+        <button @click="openTopic = openTopic === idx ? null : idx" type="button" class="hp-topic-head">
+          <div class="hp-topic-icon" :style="`background: ${topic.color};`">
+            <span x-text="topic.emoji"></span>
           </div>
-          <div class="hp-step-meta">
-            <div class="hp-step-eyebrow">
-              {{ t('hp_step_n') }} <span x-text="i + 1"></span> {{ t('hp_step_of') }} <span x-text="steps.length"></span>
+          <div class="hp-topic-meta">
+            <div class="hp-topic-title" x-text="topic.title"></div>
+            <div class="hp-topic-sub" x-text="topic.sub"></div>
+          </div>
+          <div class="hp-topic-chev">▾</div>
+        </button>
+
+        <div x-show="openTopic === idx" x-collapse class="hp-topic-body">
+          <!-- intro -->
+          <div class="hp-topic-body-intro" x-html="topic.intro"></div>
+
+          <!-- steps -->
+          <div class="hp-steps">
+            <template x-for="(step, j) in topic.steps" :key="j">
+              <div class="hp-step">
+                <div class="hp-step-num" x-text="j + 1"></div>
+                <div class="hp-step-text" x-html="step"></div>
+              </div>
+            </template>
+          </div>
+
+          <!-- tip -->
+          <template x-if="topic.tip">
+            <div class="hp-callout hp-callout-tip">
+              <div class="hp-callout-icon">💡</div>
+              <div>
+                <div class="hp-callout-eyebrow" x-text="L.useful"></div>
+                <div class="hp-callout-text" x-html="topic.tip"></div>
+              </div>
             </div>
-            <h2 class="hp-step-title text-slate-900 dark:text-slate-100" x-text="s.title"></h2>
-            <p class="hp-step-desc" x-text="s.desc"></p>
-          </div>
-        </div>
+          </template>
 
-        <!-- Walkthrough -->
-        <div class="hp-walk">
-          <template x-for="(step, j) in s.walkthrough" :key="j">
-            <div class="hp-walk-row">
-              <div class="hp-walk-num" x-text="j + 1"></div>
-              <div class="hp-walk-text" x-html="step.text"></div>
+          <!-- try-it block с кнопками -->
+          <template x-if="topic.actions && topic.actions.length">
+            <div class="hp-callout hp-callout-try">
+              <div class="hp-callout-row">
+                <div class="hp-callout-icon">🎯</div>
+                <div>
+                  <div class="hp-callout-eyebrow" x-text="L.try_now"></div>
+                  <div class="hp-callout-text" x-text="topic.actionText || L.try_now_default"></div>
+                </div>
+              </div>
+              <div class="hp-try-buttons">
+                <template x-for="btn in topic.actions" :key="btn.url">
+                  <a :href="btn.url" class="hp-btn hp-btn-primary hp-btn-sm" x-text="btn.label"></a>
+                </template>
+              </div>
             </div>
           </template>
         </div>
-
-        <!-- Tip -->
-        <template x-if="s.tip">
-          <div class="hp-tip">
-            <div class="hp-callout-icon">💡</div>
-            <div>
-              <div class="hp-callout-eyebrow">{{ t('hp_useful') }}</div>
-              <div class="hp-callout-text" x-html="s.tip"></div>
-            </div>
-          </div>
-        </template>
-
-        <!-- Try it -->
-        <template x-if="s.tryIt">
-          <div class="hp-try">
-            <div class="hp-try-row">
-              <div class="hp-callout-icon">🎯</div>
-              <div>
-                <div class="hp-callout-eyebrow">{{ t('hp_try_now') }}</div>
-                <div class="hp-callout-text" x-html="s.tryIt.text"></div>
-              </div>
-            </div>
-            <div class="hp-try-buttons">
-              <template x-for="btn in s.tryIt.buttons" :key="btn.url">
-                <a :href="btn.url" class="btn-premium" x-text="btn.label"></a>
-              </template>
-            </div>
-          </div>
-        </template>
-
-        <!-- Navigation -->
-        <div class="hp-nav">
-          <button @click="active = Math.max(0, active - 1)" :disabled="active === 0"
-            :class="active === 0 ? 'opacity-30 cursor-not-allowed' : ''"
-            class="btn-premium-ghost">{{ t('hp_back') }}</button>
-          <button x-show="active < steps.length - 1" @click="active++" class="btn-premium">{{ t('hp_next') }}</button>
-          <a x-show="active === steps.length - 1" href="/dashboard" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">{{ t('hp_done') }}</a>
-        </div>
       </div>
     </template>
+  </div>
 
-    <!-- FAQ -->
-    <div class="mt-8">
-      <div class="section-header left mb-4">
-        <span class="section-badge"><span class="badge-dot"></span>{{ t('hp_faq_badge') }}</span>
-        <h2 class="section-h" style="font-size: 1.5rem;">{{ t('hp_faq_h') }}</h2>
-      </div>
-      <div class="space-y-2" x-data="{ openFaq: null }">
-        <template x-for="(f, i) in faq" :key="i">
-          <div class="glass-premium hp-faq-row">
-            <button @click="openFaq = openFaq === i ? null : i" type="button" class="hp-faq-q">
-              <span class="hp-faq-q-text" x-text="f.q"></span>
-              <span class="hp-faq-chev" :class="openFaq === i ? 'rotate-180' : ''">▾</span>
-            </button>
-            <div x-show="openFaq === i" x-collapse class="hp-faq-a" x-html="f.a"></div>
-          </div>
-        </template>
-      </div>
-    </div>
+  <!-- ========= FAQ ========= -->
+  <h2 class="hp-section-title">
+    <span class="hp-section-title-emoji">❓</span>
+    {{ t('hp_faq_h') }}
+  </h2>
 
-    <!-- Contact -->
-    <div class="glass-premium hp-contact mt-8">
-      <div class="hp-contact-icon">💌</div>
-      <h3 class="hp-contact-h">{{ t('hp_contact_h') }}</h3>
-      <p class="hp-contact-sub">{{ t('hp_contact_sub') }}</p>
-      <div class="hp-contact-buttons mb-3">
-        <a href="/support" class="btn-premium">{{ t('hp_chat_support') }}</a>
+  <div class="hp-faq">
+    <template x-for="(f, i) in faq" :key="i">
+      <div class="hp-faq-item" :class="{ open: openFaq === i }">
+        <button @click="openFaq = openFaq === i ? null : i" type="button" class="hp-faq-q">
+          <span class="hp-faq-q-text" x-text="f.q"></span>
+          <span class="hp-faq-chev">▾</span>
+        </button>
+        <div x-show="openFaq === i" x-collapse class="hp-faq-a" x-html="f.a"></div>
       </div>
-      <div class="hp-contact-buttons mb-3">
-        <a href="https://t.me/Slezul" target="_blank" class="btn-premium-ghost">📨 Telegram @Slezul</a>
-        <a href="https://t.me/Aza_Dev0320" target="_blank" class="btn-premium-ghost">📨 Telegram @Aza_Dev0320</a>
-      </div>
-      <div class="hp-contact-buttons">
-        <a href="tel:+998998018184" class="btn-premium-ghost">📱 +998 99 801-81-84</a>
-        <a href="tel:+998998129499" class="btn-premium-ghost">📱 +998 99 812-94-99</a>
-      </div>
+    </template>
+  </div>
+
+  <!-- ========= КОНТАКТЫ ========= -->
+  <div class="hp-contact">
+    <div class="hp-contact-icon">💌</div>
+    <h3 class="hp-contact-h">{{ t('hp_contact_h') }}</h3>
+    <p class="hp-contact-sub">{{ t('hp_contact_sub') }}</p>
+    <div class="hp-contact-row">
+      <a href="/support" class="hp-btn hp-btn-primary">💬 {{ t('hp_chat_support') }}</a>
     </div>
+    <div class="hp-contact-row">
+      <a href="https://t.me/Slezul" target="_blank" rel="noopener" class="hp-btn hp-btn-ghost">📨 Telegram @Slezul</a>
+      <a href="https://t.me/Aza_Dev0320" target="_blank" rel="noopener" class="hp-btn hp-btn-ghost">📨 Telegram @Aza_Dev0320</a>
+    </div>
+    <div class="hp-contact-row">
+      <a href="tel:+998998018184" class="hp-btn hp-btn-ghost">📱 +998 99 801-81-84</a>
+      <a href="tel:+998998129499" class="hp-btn hp-btn-ghost">📱 +998 99 812-94-99</a>
+    </div>
+  </div>
+
+  <!-- Toast после установки демо -->
+  <div x-show="installed" x-transition class="hp-toast">
+    ✓ <span x-text="L.installed"></span>
   </div>
 </div>
 
 <script>
-function helpPage(data) {
+  window.__HELP_DATA = {{ help_payload|tojson }};
+</script>
+<script>
+function helpApp() {
   return {
-    active: 0,
+    openTopic: null,
+    openFaq: null,
     installing: false,
     installed: false,
-    L: data,
-    steps: data.steps,
-    faq: data.faq,
+    L: window.__HELP_DATA.labels,
+    topics: window.__HELP_DATA.topics,
+    faq: window.__HELP_DATA.faq,
+
     async installDemo() {
       if (this.installing || this.installed) return;
       this.installing = true;
@@ -500,7 +209,7 @@ function helpPage(data) {
         const json = await r.json();
         if (json.ok) {
           this.installed = true;
-          setTimeout(() => { window.location = '/dashboard'; }, 800);
+          setTimeout(() => { window.location = '/dashboard'; }, 1200);
         } else {
           alert(this.L.error + ': ' + (json.error || this.L.unknown));
           this.installing = false;
@@ -509,17 +218,7 @@ function helpPage(data) {
         alert(this.L.error + ': ' + e.message);
         this.installing = false;
       }
-    },
-    async restartTour() {
-      try {
-        const fd = new FormData();
-        fd.append('_csrf', '{{ csrf_token() }}');
-        await fetch('/api/welcome/restart', { method: 'POST', body: fd });
-        window.location = '/dashboard';
-      } catch (e) {
-        alert(this.L.error + ': ' + e.message);
-      }
-    },
+    }
   };
 }
 </script>

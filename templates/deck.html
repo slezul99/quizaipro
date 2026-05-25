@@ -390,7 +390,7 @@ function deckEditor() {
         <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
         {% endif %}
         {% else %}
-        <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}">{{ t('dk_btn_test') }}</button>
+        <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}" data-tour="deck-test-btn">{{ t('dk_btn_test') }}</button>
         <a href="/test/history?scope_type=deck&scope_id={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(217,70,239,0.1)); color: #7c3aed; border-color: rgba(168,85,247,0.4);" title="История тестов по этой колоде">📊 История</a>
         {% if can_edit %}
         <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
@@ -419,8 +419,8 @@ function deckEditor() {
           <span x-show="!deck.is_public">{{ t('dk_btn_publish') }}</span>
           <span x-show="deck.is_public">{{ t('dk_btn_published') }}</span>
         </button>
-        <button @click="addCard()" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="{{ t('dk_btn_addcard_title') }}">{{ t('dk_btn_addcard') }}</button>
-        <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_import_title') }}">{{ t('dk_btn_import') }}</a>
+        <button @click="addCard()" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="{{ t('dk_btn_addcard_title') }}" data-tour="deck-add-card">{{ t('dk_btn_addcard') }}</button>
+        <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_import_title') }}" data-tour="deck-import-btn">{{ t('dk_btn_import') }}</a>
         {% endif %}
       </div>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">{{ t('u_click_to_mark_correct') }}</p>
@@ -873,5 +873,79 @@ function deckEditor() {
 
     render();
   })();
+</script>
+
+<!-- Tur prodolzhenie posle sozdaniya kolody (basic-deck flow) -->
+<link rel="stylesheet" href="/static/tour/tour.css">
+<script src="/static/tour/tour.js"></script>
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tour') !== 'basic-deck') return;
+
+  var lang = '{{ lang }}' || 'ru';
+  var i18n_pack = {
+    ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
+    en: { next: 'Next', back: 'Back', skip: 'Skip', finish: '✓ Done', step: 'Step' },
+    uz: { next: 'Keyingi', back: 'Orqaga', skip: 'O\'tkazib yuborish', finish: '✓ Tayyor', step: 'Qadam' },
+  };
+  QTour.setI18n(i18n_pack[lang] || i18n_pack.ru);
+
+  var packs = {
+    ru: [
+      { floating: true, title: '🎉 Колода создана!', body: 'Отлично, первая колода готова. Теперь добавим в неё вопросы. Есть три способа: вручную, импорт из файла или AI-генерация.' },
+      { selector: '[data-tour="deck-add-card"]', title: '➕ Добавьте карточку вручную', body: 'Нажмите эту кнопку, чтобы создать первую карточку. Появится новая строка где можно ввести вопрос и ответ.', side: 'bottom' },
+      { selector: '[data-tour="deck-import-btn"]', title: '📥 Или импортируйте из файла', body: 'Если у вас уже есть готовый список вопросов в .txt, .docx, .pdf или Excel — нажмите "Импорт" чтобы загрузить сразу всю колоду.', side: 'bottom' },
+      { selector: '[data-tour="deck-test-btn"]', title: '📝 Запустите тест', body: 'Когда добавите хотя бы 4 карточки — нажмите "Тест" чтобы проверить себя. Можно выбрать сколько вопросов и перемешать их.', side: 'bottom' },
+      { floating: true, title: '✅ Первый этап пройден', body: 'Вы освоили основу: создание колоды, добавление карточек и запуск теста. На странице "Помощь" откроется второй этап — Импорт. Удачи!' },
+    ],
+    en: [
+      { floating: true, title: '🎉 Deck created!', body: 'Great, your first deck is ready. Now let\'s add questions. Three ways: manually, import from file, or AI generation.' },
+      { selector: '[data-tour="deck-add-card"]', title: '➕ Add a card manually', body: 'Click this button to create your first card. A new row appears where you can type the question and answer.', side: 'bottom' },
+      { selector: '[data-tour="deck-import-btn"]', title: '📥 Or import from file', body: 'If you already have a list of questions in .txt, .docx, .pdf or Excel — click "Import" to load the whole deck at once.', side: 'bottom' },
+      { selector: '[data-tour="deck-test-btn"]', title: '📝 Start a test', body: 'Once you add at least 4 cards — click "Test" to check yourself. You can pick how many questions and shuffle them.', side: 'bottom' },
+      { floating: true, title: '✅ Stage 1 complete', body: 'You\'ve learned the basics: creating a deck, adding cards, and starting a test. The second stage — Import — will unlock on the Help page. Good luck!' },
+    ],
+    uz: [
+      { floating: true, title: '🎉 Koloda yaratildi!', body: 'Ajoyib, birinchi kolodangiz tayyor. Endi savollar qoʻshamiz. Uch yoʻl: qoʻlda, fayldan import yoki AI-generatsiya.' },
+      { selector: '[data-tour="deck-add-card"]', title: '➕ Qoʻlda karta qoʻshish', body: 'Birinchi kartani yaratish uchun bu tugmani bosing. Yangi qator paydo boʻladi, u yerda savol va javobni kiritishingiz mumkin.', side: 'bottom' },
+      { selector: '[data-tour="deck-import-btn"]', title: '📥 Yoki fayldan import', body: '.txt, .docx, .pdf yoki Excel\'da tayyor savollar roʻyxati bor boʻlsa — butun kolodani bir martda yuklash uchun "Import" ni bosing.', side: 'bottom' },
+      { selector: '[data-tour="deck-test-btn"]', title: '📝 Testni boshlang', body: 'Kamida 4 ta karta qoʻshganingizdan keyin — oʻzingizni sinash uchun "Test" ni bosing. Nechta savol va aralashtirishni tanlashingiz mumkin.', side: 'bottom' },
+      { floating: true, title: '✅ 1-bosqich tugadi', body: 'Asosiy narsani oʻrgandingiz: koloda yaratish, karta qoʻshish va test boshlash. Ikkinchi bosqich — Import — Yordam sahifasida ochiladi. Omad!' },
+    ],
+  };
+
+  function start() {
+    var steps = packs[lang] || packs.ru;
+    QTour.start(steps, {
+      onComplete: function() {
+        try {
+          var fd = new FormData();
+          fd.append('_csrf', '{{ csrf_token() }}');
+          fd.append('stage', 'basic');
+          fetch('/api/tour/complete', { method: 'POST', body: fd });
+        } catch(e) {}
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+      onSkip: function() {
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('tour');
+          history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        } catch(e) {}
+      },
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    setTimeout(start, 250);
+  }
+})();
 </script>
 {% endblock %}

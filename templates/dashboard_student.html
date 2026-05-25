@@ -281,6 +281,9 @@
   <!-- New deck modal -->
   <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showNew = false" x-cloak>
     <form method="POST" action="/deck/new" class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;" data-tour="new-deck-modal">
+      {% if request.args.get('tour') == 'basic' %}
+      <input type="hidden" name="tour" value="basic">
+      {% endif %}
       <h2 class="section-h" style="font-size: 1.7rem;">{{ t('new_deck') }}</h2>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">{{ t('create_deck_set') }}</p>
       <div class="flex gap-3 mb-4">
