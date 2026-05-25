@@ -401,7 +401,7 @@ function deckEditor() {
         <button type="button" @click="aiFindAnswers()" :disabled="aiFinding"
                 class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px; background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #4f46e5; border-color: rgba(99,102,241,0.4);"
                 title="{{ t('dk_btn_ai_answers_title') }}">
-          <span x-show="!aiFinding">🤖 {{ t('dk_btn_ai_answers') }}</span>
+          <span x-show="!aiFinding"><img src="/static/tutor-avatar.png" alt="AI" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:4px;"> {{ t('dk_btn_ai_answers') }}</span>
           <span x-show="aiFinding">⏳ {{ t('dk_btn_ai_answers_finding') }}</span>
         </button>
         <div class="relative" x-data="{ pdfMenu: false }">

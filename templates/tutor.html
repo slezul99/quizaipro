@@ -41,7 +41,7 @@
         {% if is_super_admin %}
         <div class="relative" x-data="{ open: false }">
           <button @click="open = !open" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/60 border border-indigo-200/50 dark:border-indigo-700/40 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 transition">
-            <span>🤖</span>
+            <span><img src="/static/tutor-avatar.png" alt="AI" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;"></span>
             <span x-text="provider === 'deepseek' ? 'DeepSeek' : provider === 'gemini' ? 'Gemini' : 'Авто'"></span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-60"><polyline points="6 9 12 15 18 9"/></svg>
           </button>

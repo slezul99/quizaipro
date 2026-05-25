@@ -9,8 +9,8 @@
     {% if job.status == 'pending' or job.status == 'running' %}
     <!-- WORKING STATE — server-side rendered (Alpine ne mojhet glyuchit) -->
     <div class="text-center">
-      <div class="text-7xl mb-5 inline-block">
-        <span class="inline-block animate-bounce">🤖</span>
+      <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden ring-4 ring-amber-200/40 dark:ring-amber-700/30 shadow-lg">
+        <img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover animate-bounce">
       </div>
       <h1 class="section-h">{{ t('vp_h') }}</h1>
       <p class="text-slate-600 dark:text-slate-300 mt-2 mb-8">{{ t('vp_sub') }}</p>
