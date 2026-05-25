@@ -48,7 +48,7 @@
 
         <!-- Messages -->
         <template x-for="(m, i) in messages" :key="i">
-          <div class="tutor-msg flex gap-3" :class="m.role === 'user' ? 'flex-row-reverse' : ''">
+          <div class="tutor-msg flex gap-3" :class="m.role === 'user' ? 'flex-row-reverse' : ''" x-show="m.role === 'user' || m.content">
             <div class="flex-shrink-0 text-xl w-10 h-10 rounded-full flex items-center justify-center shadow-md"
               :class="m.role === 'user' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' : 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40'">
               <span x-text="m.role === 'user' ? '👤' : '🤖'"></span>
@@ -61,8 +61,8 @@
           </div>
         </template>
 
-        <!-- Typing -->
-        <div x-show="loading" class="tutor-msg flex gap-3">
+        <!-- Typing — pokazyvaem tolko poka ne prishel pervyy chunk -->
+        <div x-show="loading && messages.length > 0 && !messages[messages.length - 1].content" class="tutor-msg flex gap-3">
           <div class="flex-shrink-0 text-xl w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40">🤖</div>
           <div class="bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 rounded-2xl p-4 typing-dots text-amber-600 dark:text-amber-300">
             <span></span><span></span><span></span>
@@ -114,21 +114,46 @@ function tutorApp() {
       if (!this.newMsg.trim() || this.loading) return;
       const text = this.newMsg.trim();
       this.messages.push({ role: 'user', content: text });
+      // Srazu dobavlyaem pustoe AI-soobshchenie chtoby zapolnyat ego streamom
+      this.messages.push({ role: 'assistant', content: '' });
       this.newMsg = '';
       this.loading = true;
       this.$nextTick(() => this.scrollBottom());
       try {
         const fd = new FormData();
         fd.append('message', text);
+        fd.append('stream', '1');
         const r = await fetch('/api/tutor/ask', { method: 'POST', body: fd });
-        const data = await r.json();
-        if (data.ok) {
-          this.messages.push({ role: 'assistant', content: data.answer });
-        } else {
-          this.messages.push({ role: 'assistant', content: '⚠️ ' + (data.msg || TU_T.error) });
+        if (!r.ok) {
+          // Server vernul JSON s oshibkoy
+          const data = await r.json().catch(() => ({}));
+          this.messages[this.messages.length - 1].content = '⚠️ ' + (data.msg || TU_T.error);
+          this.loading = false;
+          this.$nextTick(() => this.scrollBottom());
+          return;
+        }
+        if (!r.body) {
+          this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.net_error;
+          this.loading = false;
+          return;
+        }
+        // Chitaem stream chunkami
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          this.messages[this.messages.length - 1].content = buffer;
+          this.$nextTick(() => this.scrollBottom());
+        }
+        // Esli pusto — pokazem fallback message
+        if (!buffer.trim()) {
+          this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.error;
         }
       } catch (e) {
-        this.messages.push({ role: 'assistant', content: TU_T.net_error });
+        this.messages[this.messages.length - 1].content = TU_T.net_error;
       }
       this.loading = false;
       this.$nextTick(() => this.scrollBottom());

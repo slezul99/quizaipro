@@ -12,6 +12,7 @@ from urllib import error as urlerr
 
 BASE = Path(__file__).resolve().parent
 KEY_FILE = BASE / "gemini_key.txt"
+DEEPSEEK_KEY_FILE = BASE / "deepseek_key.txt"
 
 API_URL = ("https://generativelanguage.googleapis.com/v1beta/models/"
            "gemini-3.5-flash:generateContent")
@@ -29,6 +30,12 @@ API_URL_VISION_PRIMARY = ("https://generativelanguage.googleapis.com/v1beta/mode
 API_URL_VISION_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
                            "gemini-2.5-flash:generateContent")
 
+# === DeepSeek API (OpenAI-sovmestimyy endpoint) ===
+# Ispolzuetsya tolko dlya tekstovogo chata (AI Tutor).
+# Vision i generatsia kolod ostalis na Gemini.
+DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+DEEPSEEK_MODEL = "deepseek-v4-flash"  # bystryy + deshyovyy, $0.14/$0.28 za 1M tokens
+
 
 def _key():
     # 1. ENV variable (production na Railway)
@@ -39,6 +46,20 @@ def _key():
     if KEY_FILE.exists():
         return KEY_FILE.read_text(encoding="utf-8").strip()
     return ""
+
+
+def _deepseek_key():
+    """DeepSeek API klyuch. ENV var DEEPSEEK_API_KEY (Railway) ili lokal'nyy fayl."""
+    env_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if env_key:
+        return env_key
+    if DEEPSEEK_KEY_FILE.exists():
+        return DEEPSEEK_KEY_FILE.read_text(encoding="utf-8").strip()
+    return ""
+
+
+def is_deepseek_available() -> bool:
+    return bool(_deepseek_key())
 
 
 def is_available() -> bool:
@@ -899,10 +920,11 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
 
 
 
-def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> str | None:
-    """AI-tutor: chat-bot kotoryy znayet o tekuschey kolode i mozhet podrobno ob'yasnyat'."""
-    if not is_available():
-        return None
+def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> tuple[str, list]:
+    """Stroit system prompt + soobshcheniya v formate ChatML.
+    Vozvrashchaet (system_text, messages_list).
+    Eta zhe struktura ispolzuetsya dlya DeepSeek i kak full prompt dlya Gemini.
+    """
     history = history or []
     lang_prompt = {
         "ru": "русском",
@@ -924,14 +946,119 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     if deck_context:
         system_prompt += f"\n\nКОНТЕКСТ КОЛОДЫ:\n{deck_context[:1500]}"
 
-    parts = [system_prompt + "\n\nИстория диалога:"]
+    messages = []
     for h in history[-6:]:
-        role = "Студент" if h["role"] == "user" else "Репетитор"
-        parts.append(f"{role}: {h['content']}")
-    parts.append(f"Студент: {user_message}")
-    parts.append("Репетитор:")
+        role = "user" if h["role"] == "user" else "assistant"
+        messages.append({"role": role, "content": h["content"]})
+    messages.append({"role": "user", "content": user_message})
 
-    full_prompt = "\n".join(parts)
+    return system_prompt, messages
+
+
+def _deepseek_chat_call(system_prompt: str, messages: list, max_tokens: int = 800, temperature: float = 0.6, stream: bool = False, timeout: int = 60):
+    """Vyzyvayet DeepSeek API (OpenAI-sovmestimyy format).
+
+    Esli stream=False -> vozvrashchaet str (text) ili None.
+    Esli stream=True  -> vozvrashchaet generator strok-chunkov.
+    """
+    key = _deepseek_key()
+    if not key:
+        return None if not stream else iter(())
+
+    body = {
+        "model": DEEPSEEK_MODEL,
+        "messages": [{"role": "system", "content": system_prompt}, *messages],
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "stream": stream,
+    }
+    data = json.dumps(body).encode("utf-8")
+    req = urlreq.Request(
+        DEEPSEEK_API_URL,
+        data=data,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {key}",
+            "Accept": "text/event-stream" if stream else "application/json",
+        },
+    )
+
+    if not stream:
+        try:
+            with urlreq.urlopen(req, timeout=timeout) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            text = payload["choices"][0]["message"]["content"]
+            return text.strip() if text else None
+        except urlerr.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")[:300]
+            except Exception:
+                pass
+            print(f"[DeepSeek] HTTP {e.code}: {err_body}")
+            return None
+        except Exception as e:
+            print(f"[DeepSeek] {type(e).__name__}: {e}")
+            return None
+
+    # Streaming rezhim — chitaem SSE-chunki
+    def _gen():
+        try:
+            resp = urlreq.urlopen(req, timeout=timeout)
+            for raw_line in resp:
+                line = raw_line.decode("utf-8", errors="replace").strip()
+                if not line or not line.startswith("data:"):
+                    continue
+                payload_str = line[5:].strip()
+                if payload_str == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(payload_str)
+                    delta = obj.get("choices", [{}])[0].get("delta", {})
+                    chunk = delta.get("content")
+                    if chunk:
+                        yield chunk
+                except Exception:
+                    continue
+        except urlerr.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")[:300]
+            except Exception:
+                pass
+            print(f"[DeepSeek stream] HTTP {e.code}: {err_body}")
+        except Exception as e:
+            print(f"[DeepSeek stream] {type(e).__name__}: {e}")
+
+    return _gen()
+
+
+def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> str | None:
+    """AI-tutor: chat-bot kotoryy znayet o tekuschey kolode i mozhet podrobno ob'yasnyat'.
+
+    Probuyet snachala DeepSeek (deshevle, bystree), potom fallback na Gemini.
+    """
+    system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
+
+    # 1. DeepSeek pervym (osnovnoy provider dlya Tutor'a)
+    if is_deepseek_available():
+        text = _deepseek_chat_call(system_prompt, messages, max_tokens=800, temperature=0.6)
+        if text:
+            return text
+        print("[AI tutor] DeepSeek failed, falling back to Gemini")
+
+    # 2. Gemini fallback
+    if not is_available():
+        return None
+
+    full_prompt_parts = [system_prompt, "\n\nИстория диалога:"]
+    for m in messages[:-1]:
+        role = "Студент" if m["role"] == "user" else "Репетитор"
+        full_prompt_parts.append(f"{role}: {m['content']}")
+    full_prompt_parts.append(f"Студент: {messages[-1]['content']}")
+    full_prompt_parts.append("Репетитор:")
+    full_prompt = "\n".join(full_prompt_parts)
 
     key = _key()
     if not key:
@@ -945,7 +1072,6 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     }
     data = json.dumps(body).encode("utf-8")
 
-    # Probuyem 2 modeli: snachala flash-lite (besplatno), potom flash (na sluchay rate-limit)
     for url_template in (API_URL, API_URL_FALLBACK):
         url = f"{url_template}?key={key}"
         req = urlreq.Request(url, data=data, method="POST",
@@ -956,12 +1082,39 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
             return payload["candidates"][0]["content"]["parts"][0]["text"].strip()
         except urlerr.HTTPError as e:
             if e.code == 429:
-                # Rate limit — perehodim k fallback
-                print(f"[AI tutor] {url_template.split('/models/')[1][:30]} → 429, пробуем fallback")
+                print(f"[AI tutor Gemini] {url_template.split('/models/')[1][:30]} → 429, пробуем fallback")
                 continue
-            print(f"[AI tutor] HTTP {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}")
+            print(f"[AI tutor Gemini] HTTP {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}")
             return None
         except Exception as e:
-            print(f"[AI tutor] {type(e).__name__}: {e}")
+            print(f"[AI tutor Gemini] {type(e).__name__}: {e}")
             return None
     return None
+
+
+def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru"):
+    """Streaming-versiya tutor'a. Yield-it text chunki po mere generatsii.
+
+    Probuyet snachala DeepSeek (s native streaming),
+    pri provale — Gemini (otdaem ves otvet srazu odnim chunkom kak fallback).
+    """
+    system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
+
+    # 1. DeepSeek streaming
+    if is_deepseek_available():
+        gen = _deepseek_chat_call(system_prompt, messages, max_tokens=800, temperature=0.6, stream=True)
+        any_chunk = False
+        try:
+            for chunk in gen:
+                any_chunk = True
+                yield chunk
+        except Exception as e:
+            print(f"[AI tutor stream] DeepSeek gen error: {e}")
+        if any_chunk:
+            return
+        print("[AI tutor stream] DeepSeek empty, fallback to Gemini")
+
+    # 2. Gemini fallback (NE streaming — otdaem celikom)
+    text = chat_tutor(user_message, deck_context, history, lang)
+    if text:
+        yield text

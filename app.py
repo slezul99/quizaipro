@@ -4714,8 +4714,13 @@ def tutor_page():
 @app.route("/api/tutor/ask", methods=["POST"])
 @login_required
 def api_tutor_ask():
-    """AI-tutor otvechayet na vopros polzovatelya."""
-    if not ai_gen.is_available():
+    """AI-tutor otvechayet na vopros polzovatelya.
+
+    Esli telo zaprosa imeet stream=1 — vozvraschaem stream chunkov (text/plain).
+    Inache — JSON {ok, answer} kak ranshe (legacy).
+    """
+    # Hotya by odin provider dolzhen byt' nastroen (DeepSeek ili Gemini)
+    if not (ai_gen.is_available() or ai_gen.is_deepseek_available()):
         return jsonify({"error": "ai_unavailable", "msg": "AI не настроен"}), 503
     user = current_user()
     message = request.form.get("message", "").strip()[:1000]
@@ -4741,16 +4746,45 @@ def api_tutor_ask():
             deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
         conn.close()
 
+    lang = session.get("lang", "ru")
+    want_stream = request.form.get("stream") == "1"
+
+    if want_stream:
+        # Stream: yield chunks po mere generatsii (DeepSeek native, Gemini fallback)
+        from flask import Response
+        def _stream():
+            full = []
+            try:
+                for chunk in ai_gen.chat_tutor_stream(
+                    message,
+                    deck_context=deck_context,
+                    history=history,
+                    lang=lang,
+                ):
+                    full.append(chunk)
+                    yield chunk
+            except Exception as e:
+                print(f"[/api/tutor/ask stream] {type(e).__name__}: {e}")
+            # Posle zaversheniya — sokhranyaem v sessiyu
+            answer_text = "".join(full).strip()
+            if answer_text:
+                hist = session.get("tutor_history", [])
+                hist.append({"role": "user", "content": message})
+                hist.append({"role": "assistant", "content": answer_text})
+                session["tutor_history"] = hist[-20:]
+
+        return Response(_stream(), mimetype="text/plain; charset=utf-8")
+
+    # Non-stream (legacy)
     answer = ai_gen.chat_tutor(
         message,
         deck_context=deck_context,
         history=history,
-        lang=session.get("lang", "ru")
+        lang=lang,
     )
     if not answer:
         return jsonify({"error": "ai_failed", "msg": "AI не отвечает. Попробуйте позже."}), 500
 
-    # Sokhranyaem v istoriyu (do 20 reshchey)
     history.append({"role": "user", "content": message})
     history.append({"role": "assistant", "content": answer})
     session["tutor_history"] = history[-20:]
