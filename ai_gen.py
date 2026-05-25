@@ -936,11 +936,12 @@ def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list
 Помоги студенту понять материал, ответь на вопрос на {lang_prompt} языке.
 
 ПРАВИЛА:
-- Отвечай 3-7 короткими предложениями
-- Используй простой язык, примеры
-- Если просят примеры — дай 2-3 разных
-- Будь дружелюбным, но не льстивым
+- Если пользователь явно просит "10 фактов", "5 примеров", "список", "подробно" — давай столько, сколько просят, в полном объёме (можно с markdown списками)
+- Если просто вопрос на понимание — отвечай чётко и по делу, обычно 3-7 предложений
+- Используй простой язык и примеры
 - Без вступлений вроде "Конечно!" — сразу к сути
+- Адаптируй длину под запрос: коротко на короткие вопросы, развёрнуто на запросы списков и подробных объяснений
+- Markdown разрешён (списки, **жирный**, заголовки)
 """
 
     if deck_context:
@@ -1046,7 +1047,7 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
 
     # 1. DeepSeek pervym (esli ne forced gemini)
     if use_deepseek and not use_gemini_only:
-        text = _deepseek_chat_call(system_prompt, messages, max_tokens=800, temperature=0.6)
+        text = _deepseek_chat_call(system_prompt, messages, max_tokens=2500, temperature=0.7)
         if text:
             return text
         if provider == "deepseek":
@@ -1072,8 +1073,8 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     body = {
         "contents": [{"parts": [{"text": full_prompt}]}],
         "generationConfig": {
-            "temperature": 0.6,
-            "maxOutputTokens": 800,
+            "temperature": 0.7,
+            "maxOutputTokens": 2500,
         },
     }
     data = json.dumps(body).encode("utf-8")
@@ -1110,7 +1111,7 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
 
     # 1. DeepSeek streaming
     if use_deepseek and not use_gemini_only:
-        gen = _deepseek_chat_call(system_prompt, messages, max_tokens=800, temperature=0.6, stream=True)
+        gen = _deepseek_chat_call(system_prompt, messages, max_tokens=2500, temperature=0.7, stream=True)
         any_chunk = False
         try:
             for chunk in gen:
