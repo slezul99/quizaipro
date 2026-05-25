@@ -1181,7 +1181,6 @@
     background: rgba(15, 23, 41, 0.98) !important;
     border-top-color: rgba(99,102,241,0.3) !important;
   }
-
   /* ============ MOBILE ADAPTATION ============ */
   /* Modali na malen'kih ekranah — umen'shennyy padding, allow scroll */
   @media (max-width: 640px) {
@@ -1339,7 +1338,9 @@
 {% if current_user %}
 {% from "_icons.html" import icon %}
 <header class="sticky top-0 z-40 nav-blur">
-  <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center" x-data="{ mobileMenu: false }">
+  <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center"
+       x-data="{ mobileMenu: false }"
+       x-init="$watch('mobileMenu', v => { document.body.style.overflow = v ? 'hidden' : ''; })">
     <a href="/dashboard" class="brand-logo">
       <span class="brand-logo-icon">{{ icon('brain', 22) }}</span>
       <span class="brand-logo-text">{{ t('app_name') }}</span>
@@ -1470,8 +1471,9 @@
 
     <!-- Mobile menu -->
     <div x-show="mobileMenu" x-transition x-cloak
-      class="absolute top-full left-0 right-0 md:hidden shadow-2xl"
-      style="background: rgba(255,255,255,0.98); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(99,102,241,0.15);">
+      class="fixed top-[56px] left-0 right-0 bottom-0 md:hidden shadow-2xl overflow-y-auto z-50"
+      style="background: rgba(255,255,255,0.98); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(99,102,241,0.15);"
+      @click="if ($event.target.tagName === 'A' || $event.target.closest('a')) { mobileMenu = false; }">
       <div class="max-w-7xl mx-auto px-6 py-4 space-y-1">
         <a href="/dashboard" class="mob-link indigo">{{ icon('dashboard', 19) }} <span>{{ t('nav_dashboard') }}</span></a>
         <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
