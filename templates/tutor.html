@@ -27,7 +27,33 @@
         <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.3rem); margin-top: 0.5rem;">{{ t('tu_h') }}</h1>
         <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ t('tu_sub') }}</p>
       </div>
-      <button @click="clearHistory()" class="btn-premium-danger">{{ t('tu_clear') }}</button>
+      <div class="flex items-center gap-2">
+        {% if is_super_admin %}
+        <div class="relative" x-data="{ open: false }">
+          <button @click="open = !open" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/60 border border-indigo-200/50 dark:border-indigo-700/40 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 transition">
+            <span>🤖</span>
+            <span x-text="provider === 'deepseek' ? 'DeepSeek' : provider === 'gemini' ? 'Gemini' : 'Авто'"></span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-60"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div x-show="open" @click.outside="open = false" x-transition x-cloak class="absolute right-0 top-full mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden z-30">
+            <div class="px-3 py-2 text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200/30 dark:border-slate-700/30">Модель (admin)</div>
+            <button @click="provider = ''; open = false" class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between" :class="provider === '' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
+              <span>⚡ Авто</span>
+              <span class="text-[10px] text-slate-400" x-show="provider === ''">✓</span>
+            </button>
+            <button @click="provider = 'deepseek'; open = false" {% if not deepseek_available %}disabled{% endif %} class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between disabled:opacity-40 disabled:cursor-not-allowed" :class="provider === 'deepseek' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
+              <span>🌊 DeepSeek V4 {% if not deepseek_available %}<span class="text-[9px] text-red-500">(нет ключа)</span>{% endif %}</span>
+              <span class="text-[10px] text-slate-400" x-show="provider === 'deepseek'">✓</span>
+            </button>
+            <button @click="provider = 'gemini'; open = false" class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between" :class="provider === 'gemini' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
+              <span>✨ Gemini 3.5</span>
+              <span class="text-[10px] text-slate-400" x-show="provider === 'gemini'">✓</span>
+            </button>
+          </div>
+        </div>
+        {% endif %}
+        <button @click="clearHistory()" class="btn-premium-danger">{{ t('tu_clear') }}</button>
+      </div>
     </div>
 
     <div class="glass-premium flex flex-col" style="height: calc(100vh - 220px); min-height: 500px; padding: 0;">
@@ -57,6 +83,11 @@
               <div class="rounded-2xl p-4 markdown shadow-sm"
                 :class="m.role === 'user' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white' : 'bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 text-slate-800 dark:text-slate-100'"
                 x-text="m.content"></div>
+              {% if is_super_admin %}
+              <div x-show="m.role === 'assistant' && m.provider" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1 px-2 font-mono">
+                <span x-text="m.provider === 'deepseek' ? '🌊 DeepSeek V4' : '✨ Gemini 3.5'"></span>
+              </div>
+              {% endif %}
             </div>
           </div>
         </template>
@@ -100,6 +131,7 @@ function tutorApp() {
     messages: [],
     newMsg: '',
     loading: false,
+    provider: localStorage.getItem('tutor_provider') || '',
     suggestions: [
       {{ t('tu_sug_1')|tojson }},
       {{ t('tu_sug_2')|tojson }},
@@ -108,7 +140,10 @@ function tutorApp() {
       {{ t('tu_sug_5')|tojson }},
     ],
 
-    init() { this.scrollBottom(); },
+    init() {
+      this.scrollBottom();
+      this.$watch('provider', (v) => { localStorage.setItem('tutor_provider', v); });
+    },
 
     async send() {
       if (!this.newMsg.trim() || this.loading) return;
@@ -123,6 +158,7 @@ function tutorApp() {
         const fd = new FormData();
         fd.append('message', text);
         fd.append('stream', '1');
+        if (this.provider) fd.append('provider', this.provider);
         const r = await fetch('/api/tutor/ask', { method: 'POST', body: fd });
         if (!r.ok) {
           // Server vernul JSON s oshibkoy
@@ -132,6 +168,9 @@ function tutorApp() {
           this.$nextTick(() => this.scrollBottom());
           return;
         }
+        // Pokazhem kakaya modeli srabotala (vidno v console + na last message)
+        const usedProvider = r.headers.get('X-AI-Provider') || 'gemini';
+        this.messages[this.messages.length - 1].provider = usedProvider;
         if (!r.body) {
           this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.net_error;
           this.loading = false;

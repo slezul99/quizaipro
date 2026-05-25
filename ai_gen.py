@@ -1034,21 +1034,27 @@ def _deepseek_chat_call(system_prompt: str, messages: list, max_tokens: int = 80
     return _gen()
 
 
-def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> str | None:
+def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "") -> str | None:
     """AI-tutor: chat-bot kotoryy znayet o tekuschey kolode i mozhet podrobno ob'yasnyat'.
 
-    Probuyet snachala DeepSeek (deshevle, bystree), potom fallback na Gemini.
+    provider: "" (avto: DeepSeek -> Gemini fallback), "deepseek", "gemini" — yavnyy vybor.
     """
     system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
 
-    # 1. DeepSeek pervym (osnovnoy provider dlya Tutor'a)
-    if is_deepseek_available():
+    use_deepseek = (provider == "deepseek") or (provider == "" and is_deepseek_available())
+    use_gemini_only = provider == "gemini"
+
+    # 1. DeepSeek pervym (esli ne forced gemini)
+    if use_deepseek and not use_gemini_only:
         text = _deepseek_chat_call(system_prompt, messages, max_tokens=800, temperature=0.6)
         if text:
             return text
+        if provider == "deepseek":
+            # Yavno vybran DeepSeek — ne fallback na Gemini
+            return None
         print("[AI tutor] DeepSeek failed, falling back to Gemini")
 
-    # 2. Gemini fallback
+    # 2. Gemini fallback / yavno vybran
     if not is_available():
         return None
 
@@ -1092,16 +1098,18 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     return None
 
 
-def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru"):
+def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = ""):
     """Streaming-versiya tutor'a. Yield-it text chunki po mere generatsii.
 
-    Probuyet snachala DeepSeek (s native streaming),
-    pri provale — Gemini (otdaem ves otvet srazu odnim chunkom kak fallback).
+    provider: "" (avto), "deepseek" (tolko DeepSeek), "gemini" (tolko Gemini).
     """
     system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
 
+    use_deepseek = (provider == "deepseek") or (provider == "" and is_deepseek_available())
+    use_gemini_only = provider == "gemini"
+
     # 1. DeepSeek streaming
-    if is_deepseek_available():
+    if use_deepseek and not use_gemini_only:
         gen = _deepseek_chat_call(system_prompt, messages, max_tokens=800, temperature=0.6, stream=True)
         any_chunk = False
         try:
@@ -1112,9 +1120,11 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
             print(f"[AI tutor stream] DeepSeek gen error: {e}")
         if any_chunk:
             return
+        if provider == "deepseek":
+            return  # Yavno DeepSeek — ne fallback
         print("[AI tutor stream] DeepSeek empty, fallback to Gemini")
 
     # 2. Gemini fallback (NE streaming — otdaem celikom)
-    text = chat_tutor(user_message, deck_context, history, lang)
+    text = chat_tutor(user_message, deck_context, history, lang, provider="gemini")
     if text:
         yield text

@@ -4708,7 +4708,12 @@ def marketplace_clone(deck_id):
 @login_required
 def tutor_page():
     """AI-tutor chat — student spravlivaet AI o lyubom voprose."""
-    return render_template("tutor.html")
+    user = current_user()
+    return render_template(
+        "tutor.html",
+        is_super_admin=is_super_admin(user),
+        deepseek_available=ai_gen.is_deepseek_available(),
+    )
 
 
 @app.route("/api/tutor/ask", methods=["POST"])
@@ -4748,10 +4753,26 @@ def api_tutor_ask():
 
     lang = session.get("lang", "ru")
     want_stream = request.form.get("stream") == "1"
+    # Super-admin override: provider=deepseek|gemini (ignored dlya obychnyh polzovateley)
+    provider_override = (request.form.get("provider") or "").strip().lower()
+    if provider_override not in ("deepseek", "gemini"):
+        provider_override = ""
+    if provider_override and not is_super_admin(user):
+        provider_override = ""
 
     if want_stream:
         # Stream: yield chunks po mere generatsii (DeepSeek native, Gemini fallback)
         from flask import Response
+
+        # Opredelyaem kakoy provider zapustitsya pervym (dlya header'a)
+        used_provider = "gemini"
+        if provider_override == "deepseek":
+            used_provider = "deepseek"
+        elif provider_override == "gemini":
+            used_provider = "gemini"
+        elif ai_gen.is_deepseek_available():
+            used_provider = "deepseek"
+
         def _stream():
             full = []
             try:
@@ -4760,6 +4781,7 @@ def api_tutor_ask():
                     deck_context=deck_context,
                     history=history,
                     lang=lang,
+                    provider=provider_override,
                 ):
                     full.append(chunk)
                     yield chunk
@@ -4773,7 +4795,9 @@ def api_tutor_ask():
                 hist.append({"role": "assistant", "content": answer_text})
                 session["tutor_history"] = hist[-20:]
 
-        return Response(_stream(), mimetype="text/plain; charset=utf-8")
+        return Response(_stream(), mimetype="text/plain; charset=utf-8", headers={
+            "X-AI-Provider": used_provider,
+        })
 
     # Non-stream (legacy)
     answer = ai_gen.chat_tutor(
@@ -4781,6 +4805,7 @@ def api_tutor_ask():
         deck_context=deck_context,
         history=history,
         lang=lang,
+        provider=provider_override,
     )
     if not answer:
         return jsonify({"error": "ai_failed", "msg": "AI не отвечает. Попробуйте позже."}), 500
