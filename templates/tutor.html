@@ -66,7 +66,9 @@
       <div x-ref="msgs" class="flex-1 overflow-y-auto scrollbar p-5 space-y-4">
         <!-- Welcome -->
         <div x-show="messages.length === 0" class="text-center py-10">
-          <div class="text-7xl mb-4">🤖</div>
+          <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden ring-4 ring-amber-200/40 dark:ring-amber-700/30 shadow-lg">
+            <img src="/static/tutor-avatar.png" alt="AI Tutor" class="w-full h-full object-cover">
+          </div>
           <h3 class="section-h" style="font-size: 1.5rem;">{{ t('tu_welcome_h') }}</h3>
           <p class="text-slate-600 dark:text-slate-300 max-w-md mx-auto text-sm mb-6 mt-2">
             {{ t('tu_welcome_sub') }}
@@ -81,9 +83,14 @@
         <!-- Messages -->
         <template x-for="(m, i) in messages" :key="i">
           <div class="tutor-msg flex gap-3" :class="m.role === 'user' ? 'flex-row-reverse' : ''" x-show="m.role === 'user' || m.content">
-            <div class="flex-shrink-0 text-xl w-10 h-10 rounded-full flex items-center justify-center shadow-md"
-              :class="m.role === 'user' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' : 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40'">
-              <span x-text="m.role === 'user' ? '👤' : '🤖'"></span>
+            <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shadow-md ring-2 ring-white/60 dark:ring-slate-700/60"
+              :class="m.role === 'user' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' : 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40'">
+              <template x-if="m.role === 'user'">
+                <span class="text-xl">👤</span>
+              </template>
+              <template x-if="m.role !== 'user'">
+                <img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover">
+              </template>
             </div>
             <div class="max-w-[80%]">
               <div class="rounded-2xl p-4 markdown shadow-sm"
@@ -100,7 +107,9 @@
 
         <!-- Typing — pokazyvaem tolko poka ne prishel pervyy chunk -->
         <div x-show="loading && messages.length > 0 && !messages[messages.length - 1].content" class="tutor-msg flex gap-3">
-          <div class="flex-shrink-0 text-xl w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40">🤖</div>
+          <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 ring-2 ring-white/60 dark:ring-slate-700/60">
+            <img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover">
+          </div>
           <div class="bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 rounded-2xl p-4 typing-dots text-amber-600 dark:text-amber-300">
             <span></span><span></span><span></span>
           </div>
