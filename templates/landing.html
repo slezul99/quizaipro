@@ -207,6 +207,58 @@
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #06b6d4 100%);
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
+
+  /* === Hero Logo Block (main title replacement) === */
+  .hero-logo-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 3vw, 36px);
+    margin-bottom: 2.5rem;
+    flex-wrap: nowrap;
+  }
+  .hero-logo-icon {
+    height: clamp(90px, 13vw, 170px);
+    width: clamp(90px, 13vw, 170px);
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: drop-shadow(0 8px 28px rgba(99,102,241,0.35));
+  }
+  .hero-logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .hero-logo-name {
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    color: #0f172a;
+  }
+  .hero-logo-ai {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-logo-sub {
+    font-size: clamp(0.7rem, 1.5vw, 1.05rem);
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    padding-left: 3px;
+  }
+  @media (max-width: 640px) {
+    .hero-logo-block { gap: 12px; }
+    .hero-logo-icon { height: 70px; width: 70px; }
+    .hero-logo-name { font-size: clamp(2.4rem, 11vw, 4rem); }
+    .hero-logo-sub { font-size: 0.6rem; letter-spacing: 0.22em; }
+  }
+
   .hero-sub {
     font-size: clamp(1.1rem, 1.8vw, 1.35rem); color: #64748b;
     max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.65;
@@ -364,40 +416,12 @@
   <div class="hero-noise"></div>
 
   <div class="hero-text">
-    <!-- Site Logo — wide hero banner -->
-    <div class="reveal" style="margin-bottom: 2.5rem; width:100%; max-width:720px; margin-left:auto; margin-right:auto;">
-      <div style="
-        display:flex; align-items:center; justify-content:center; gap:28px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,243,255,0.92) 100%);
-        backdrop-filter:blur(24px);
-        border:1.5px solid rgba(255,255,255,0.95);
-        border-radius:28px;
-        padding:28px 48px;
-        box-shadow: 0 12px 48px rgba(99,102,241,0.18), 0 2px 8px rgba(0,0,0,0.04);
-        width:100%;
-      ">
-        <!-- Icon -->
-        <img src="/static/logo-org.png" alt="QuizAIPro icon"
-             style="height:90px; width:90px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 4px 16px rgba(99,102,241,0.3));">
-        <!-- Text -->
-        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
-          <div style="
-            font-size: clamp(2.8rem, 6vw, 4.2rem);
-            font-weight: 900;
-            letter-spacing: -0.04em;
-            line-height: 1;
-            font-family: 'Space Grotesk','Inter',sans-serif;
-            color: #0f172a;
-          ">Quiz<span style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 60%,#06b6d4 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">AI</span>Pro</div>
-          <div style="
-            font-size: clamp(0.7rem, 1.4vw, 0.9rem);
-            font-weight: 700;
-            letter-spacing: 0.28em;
-            color: #94a3b8;
-            text-transform: uppercase;
-            padding-left: 3px;
-          ">AI-POWERED LEARNING</div>
-        </div>
+    <!-- Site Logo — main hero title (replaces text title) -->
+    <div class="reveal hero-logo-block">
+      <img src="/static/logo-org.png" alt="QuizAIPro icon" class="hero-logo-icon">
+      <div class="hero-logo-text">
+        <div class="hero-logo-name">Quiz<span class="hero-logo-ai">AI</span>Pro</div>
+        <div class="hero-logo-sub">AI-POWERED LEARNING</div>
       </div>
     </div>
 
@@ -405,10 +429,6 @@
       <span class="dot"></span>
       {{ t('lp_hero_tag') }}
     </div>
-    <h1 class="reveal hero-title">
-      {{ t('lp_hero_title_1') }}<br>
-      <span class="hero-title-accent">{{ t('lp_hero_title_2') }}</span>
-    </h1>
     <p class="reveal hero-sub">{{ t('lp_hero_sub_html') | safe }}</p>
 
     <!-- AI Chat Input (Tavily style) -->
