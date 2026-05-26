@@ -4739,6 +4739,41 @@ def tutor_page():
     )
 
 
+@app.route("/api/tutor/guest-ask", methods=["POST"])
+def api_tutor_guest_ask():
+    """AI-tutor dlya gostey na landing page — bez autentifikatsii, ogranicheno."""
+    if not (ai_gen.is_available() or ai_gen.is_deepseek_available()):
+        return jsonify({"error": "ai_unavailable"}), 503
+
+    message = request.form.get("message", "").strip()[:500]
+    if not message:
+        return jsonify({"error": "empty"}), 400
+
+    # Rate limit po IP — 5 zaprosov v minutu
+    ip = request.remote_addr or "unknown"
+    if not rate_limit(f"tutor_guest:{ip}", max_attempts=5, window_seconds=60):
+        return jsonify({"error": "rate_limit", "msg": "Слишком много запросов. Зарегистрируйтесь для полного доступа."}), 429
+
+    lang = session.get("lang", "ru")
+
+    from flask import Response
+    def _stream():
+        try:
+            for chunk in ai_gen.chat_tutor_stream(
+                message,
+                deck_context="",
+                history=[],
+                lang=lang,
+                provider="",
+            ):
+                yield chunk
+        except Exception as e:
+            print(f"[guest-ask] {e}")
+            yield "\n\n[Зарегистрируйтесь для полного доступа к AI репетитору]"
+
+    return Response(_stream(), mimetype="text/plain; charset=utf-8")
+
+
 @app.route("/api/tutor/ask", methods=["POST"])
 @login_required
 def api_tutor_ask():

@@ -208,24 +208,27 @@
   }
   @keyframes dash { to { stroke-dashoffset: -240; } }
 
-  .hero-text { position: relative; z-index: 3; text-align: center; padding: 8rem 1rem 2rem; }
+  .hero-text { position: relative; z-index: 3; text-align: center; padding: 7rem 1rem 3rem; }
   .hero-title {
-    font-size: clamp(2.8rem, 7vw, 5.5rem);
-    font-weight: 800;
+    font-size: clamp(2.6rem, 6.5vw, 5rem);
+    font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 1.05;
-    background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 60%, #6366f1 100%);
+    color: #0f172a;
+    margin-bottom: 1.25rem;
+  }
+  .hero-title-accent {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #06b6d4 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 1.5rem;
   }
   .hero-sub {
-    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
     color: #475569;
-    max-width: 640px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.5;
+    max-width: 580px;
+    margin: 0 auto 2rem;
+    line-height: 1.55;
   }
   .hero-tag {
     display: inline-flex; align-items: center; gap: 8px;
@@ -562,6 +565,151 @@
     font-size: 15px;
   }
 
+  /* === Hero AI Chat Box (Tavily style) === */
+  .hero-chat-wrap {
+    max-width: 680px;
+    margin: 0 auto 0.5rem;
+  }
+  .hero-chat-box {
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(200,190,175,0.5);
+    border-radius: 20px;
+    box-shadow: 0 8px 40px -12px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .hero-chat-box:focus-within {
+    border-color: rgba(99,102,241,0.4);
+    box-shadow: 0 12px 50px -12px rgba(99,102,241,0.3), 0 0 0 3px rgba(99,102,241,0.08);
+  }
+  .hero-chat-messages {
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 16px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hero-msg {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .hero-msg-user {
+    flex-direction: row-reverse;
+  }
+  .hero-msg-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .hero-msg-user .hero-msg-avatar {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+  }
+  .hero-msg-ai .hero-msg-avatar {
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    font-size: 15px;
+  }
+  .hero-msg-bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .hero-msg-user .hero-msg-bubble {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .hero-msg-ai .hero-msg-bubble {
+    background: #f8f7f4;
+    color: #1a1a2e;
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(200,190,175,0.3);
+  }
+  .hero-chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+  .hero-chat-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    color: #1a1a2e;
+    font-family: inherit;
+    padding: 4px 0;
+  }
+  .hero-chat-input::placeholder { color: #94a3b8; }
+  .hero-chat-send {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .hero-chat-send:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(99,102,241,0.4); }
+  .hero-chat-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 14px 12px;
+  }
+  .hero-chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(99,102,241,0.2);
+    background: rgba(99,102,241,0.05);
+    color: #4f46e5;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .hero-chip:hover {
+    background: rgba(99,102,241,0.12);
+    border-color: rgba(99,102,241,0.4);
+    transform: translateY(-1px);
+  }
+  .hero-chat-note {
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+  .hero-typing {
+    display: flex; gap: 4px; align-items: center; padding: 4px 0;
+  }
+  .hero-typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #94a3b8;
+    animation: typing-dot 1.2s ease-in-out infinite;
+  }
+  .hero-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .hero-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing-dot {
+    0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+  @media (max-width: 640px) {
+    .hero-chips { gap: 5px; }
+    .hero-chip { font-size: 11px; padding: 5px 10px; }
+  }
+
   .pill-feature {
     display: inline-flex;
     align-items: center;
@@ -594,24 +742,9 @@
   <a href="/set-lang/uz" class="{% if lang == 'uz' %}active{% endif %}">UZ</a>
 </div>
 
-<!-- ============== HERO ============== -->
+<!-- ============== HERO (Tavily style) ============== -->
 <section class="hero-wrap">
-  <div class="hero-grid"></div>
   <div class="hero-noise"></div>
-
-  <svg class="neural-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-    <defs>
-      <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0"/>
-        <stop offset="50%" stop-color="#6366f1" stop-opacity="0.5"/>
-        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path class="neural-line" d="M100,200 Q400,100 700,300 T1100,250"/>
-    <path class="neural-line" d="M150,500 Q500,400 800,600 T1100,500"/>
-    <path class="neural-line" d="M50,650 Q350,550 600,400 T1150,350"/>
-    <path class="neural-line" d="M200,150 Q500,250 750,150 T1100,200"/>
-  </svg>
 
   <div class="hero-text">
     <div class="reveal hero-tag">
@@ -619,55 +752,52 @@
       {{ t('lp_hero_tag') }}
     </div>
     <h1 class="reveal hero-title">
-      {{ t('lp_hero_title_1') }}<br>{{ t('lp_hero_title_2') }}
+      {{ t('lp_hero_title_1') }}<br>
+      <span class="hero-title-accent">{{ t('lp_hero_title_2') }}</span>
     </h1>
     <p class="reveal hero-sub">{{ t('lp_hero_sub_html') | safe }}</p>
-    <div class="reveal flex gap-3 justify-center flex-wrap">
-      <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_btn_start') }}</a>
-      <a href="#try-it" class="btn-hero btn-hero-ghost">{{ t('lp_btn_try') }}</a>
+
+    <!-- AI Chat Input (Tavily style) -->
+    <div class="reveal hero-chat-wrap" id="hero-chat-wrap">
+      <div class="hero-chat-box" id="hero-chat-box">
+        <!-- Messages area (hidden initially) -->
+        <div class="hero-chat-messages" id="hero-chat-messages" style="display:none;"></div>
+
+        <!-- Input row -->
+        <div class="hero-chat-input-row">
+          <input
+            type="text"
+            id="hero-chat-input"
+            class="hero-chat-input"
+            placeholder="{{ t('lp_ai_placeholder') if t('lp_ai_placeholder') != 'lp_ai_placeholder' else 'Спроси что-нибудь об учёбе...' }}"
+            autocomplete="off"
+            maxlength="500"
+          />
+          <button class="hero-chat-send" id="hero-chat-send" onclick="heroAskAI()" title="Отправить">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+
+        <!-- Suggestion chips -->
+        <div class="hero-chips" id="hero-chips">
+          <button class="hero-chip" onclick="heroChip(this)">📄 Как импортировать PDF?</button>
+          <button class="hero-chip" onclick="heroChip(this)">🧠 Что такое интервальное повторение?</button>
+          <button class="hero-chip" onclick="heroChip(this)">⚔️ Как вызвать на дуэль?</button>
+          <button class="hero-chip" onclick="heroChip(this)">🎯 Как поставить цель обучения?</button>
+          <button class="hero-chip" onclick="heroChip(this)">📊 Где смотреть статистику?</button>
+          <button class="hero-chip" onclick="heroChip(this)">🏆 Как работают достижения?</button>
+        </div>
+      </div>
+      <p class="hero-chat-note">
+        <a href="/register" style="color:#6366f1; font-weight:600;">{{ t('lp_btn_start') }}</a>
+        {{ t('lp_ai_note') if t('lp_ai_note') != 'lp_ai_note' else '— чтобы сохранять историю и учиться с AI' }}
+      </p>
     </div>
-  </div>
 
-  <div class="stage" id="stage">
-    <div class="stage-3d" id="stage3d">
-      <div class="float-card fc-1">
-        <div class="q">{{ t('lp_fc1_cat') }}</div>
-        <div class="a">{{ t('lp_fc1_q') }}</div>
-        <span class="pill" style="background:#dbeafe; color:#1e40af;">{{ t('lp_fc1_pill') }}</span>
-      </div>
-      <div class="float-card fc-2">
-        <div class="q">{{ t('lp_fc2_cat') }}</div>
-        <div class="a">{{ t('lp_fc2_q') }}</div>
-        <span class="pill" style="background:#fce7f3; color:#9f1239;">{{ t('lp_fc2_pill') }}</span>
-      </div>
-      <div class="float-card fc-3">
-        <div class="q">{{ t('lp_fc3_cat') }}</div>
-        <div class="a">{{ t('lp_fc3_q') }}</div>
-        <span class="pill" style="background:#fef3c7; color:#92400e;">{{ t('lp_fc3_pill') }}</span>
-      </div>
-      <div class="float-card fc-4">
-        <div class="q">{{ t('lp_fc4_cat') }}</div>
-        <div class="a">{{ t('lp_fc4_q') }}</div>
-        <span class="pill" style="background:#d1fae5; color:#065f46;">{{ t('lp_fc4_pill') }}</span>
-      </div>
-      <div class="float-card fc-5">
-        <div class="q">{{ t('lp_fc5_cat') }}</div>
-        <div class="a">{{ t('lp_fc5_q') }}</div>
-      </div>
-      <div class="float-card fc-6">
-        <div class="q">{{ t('lp_fc6_cat') }}</div>
-        <div class="a">{{ t('lp_fc6_q') }}</div>
-      </div>
-
-      <div class="particle p1"></div>
-      <div class="particle p2"></div>
-      <div class="particle p3"></div>
-      <div class="particle p4"></div>
-      <div class="particle p5"></div>
-
-      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
-        <div class="brain-orb"></div>
-      </div>
+    <!-- CTA buttons -->
+    <div class="reveal flex gap-3 justify-center flex-wrap mt-6">
+      <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_btn_start') }}</a>
+      <a href="#features" class="btn-hero btn-hero-ghost">{{ t('lp_btn_try') }}</a>
     </div>
   </div>
 </section>
@@ -1163,18 +1293,129 @@
   }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-  // Mouse parallax on 3D stage
-  const stage = document.getElementById('stage3d');
-  if (stage && window.matchMedia('(min-width: 768px)').matches) {
-    const hero = document.querySelector('.hero-wrap');
-    hero.addEventListener('mousemove', e => {
-      const r = hero.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      stage.style.transform = `rotateY(${x * 8}deg) rotateX(${-y * 6}deg)`;
-    });
-    hero.addEventListener('mouseleave', () => {
-      stage.style.transform = 'rotateY(0) rotateX(0)';
+  // Mouse parallax on 3D stage (removed — no stage3d anymore)
+
+  // ===== Hero AI Chat =====
+  var heroChatMessages = document.getElementById('hero-chat-messages');
+  var heroChatInput = document.getElementById('hero-chat-input');
+  var heroChatSend = document.getElementById('hero-chat-send');
+  var heroChips = document.getElementById('hero-chips');
+
+  function heroChip(btn) {
+    heroChatInput.value = btn.textContent.replace(/^[^\s]+\s/, '').trim();
+    heroAskAI();
+  }
+
+  function heroAddMsg(text, role) {
+    heroChatMessages.style.display = 'flex';
+    var msg = document.createElement('div');
+    msg.className = 'hero-msg hero-msg-' + role;
+    var avatar = document.createElement('div');
+    avatar.className = 'hero-msg-avatar';
+    avatar.textContent = role === 'user' ? 'Я' : '✦';
+    var bubble = document.createElement('div');
+    bubble.className = 'hero-msg-bubble';
+    bubble.textContent = text;
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    heroChatMessages.appendChild(msg);
+    heroChatMessages.scrollTop = heroChatMessages.scrollHeight;
+    return bubble;
+  }
+
+  function heroShowTyping() {
+    heroChatMessages.style.display = 'flex';
+    var msg = document.createElement('div');
+    msg.className = 'hero-msg hero-msg-ai';
+    msg.id = 'hero-typing-msg';
+    var avatar = document.createElement('div');
+    avatar.className = 'hero-msg-avatar';
+    avatar.textContent = '✦';
+    var bubble = document.createElement('div');
+    bubble.className = 'hero-msg-bubble';
+    bubble.innerHTML = '<div class="hero-typing"><span></span><span></span><span></span></div>';
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    heroChatMessages.appendChild(msg);
+    heroChatMessages.scrollTop = heroChatMessages.scrollHeight;
+  }
+
+  function heroRemoveTyping() {
+    var t = document.getElementById('hero-typing-msg');
+    if (t) t.remove();
+  }
+
+  async function heroAskAI() {
+    var q = heroChatInput.value.trim();
+    if (!q) return;
+    heroChatInput.value = '';
+    heroChatSend.disabled = true;
+    // Hide chips after first message
+    if (heroChips) heroChips.style.display = 'none';
+    heroAddMsg(q, 'user');
+    heroShowTyping();
+
+    try {
+      var fd = new FormData();
+      fd.append('message', q);
+      var resp = await fetch('/api/tutor/guest-ask', { method: 'POST', body: fd });
+      heroRemoveTyping();
+      if (resp.ok) {
+        var reader = resp.body.getReader();
+        var decoder = new TextDecoder();
+        var bubble = null;
+        var fullText = '';
+        while (true) {
+          var _ref = await reader.read();
+          if (_ref.done) break;
+          var chunk = decoder.decode(_ref.value, { stream: true });
+          // Plain text stream — parse SSE data: lines
+          var lines = chunk.split('\n');
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            var token = '';
+            if (line.startsWith('data: ')) {
+              var d = line.slice(6);
+              if (d === '[DONE]') continue;
+              try { token = JSON.parse(d).token || JSON.parse(d).text || ''; } catch(e) { token = d; }
+            } else if (line && !line.startsWith(':')) {
+              token = line;
+            }
+            if (token) {
+              if (!bubble) {
+                var msg = document.createElement('div');
+                msg.className = 'hero-msg hero-msg-ai';
+                var av = document.createElement('div');
+                av.className = 'hero-msg-avatar';
+                av.textContent = '✦';
+                bubble = document.createElement('div');
+                bubble.className = 'hero-msg-bubble';
+                msg.appendChild(av);
+                msg.appendChild(bubble);
+                heroChatMessages.appendChild(msg);
+              }
+              fullText += token;
+              bubble.textContent = fullText;
+              heroChatMessages.scrollTop = heroChatMessages.scrollHeight;
+            }
+          }
+        }
+        if (!bubble) heroAddMsg('Зарегистрируйтесь для полного доступа →', 'ai');
+      } else {
+        heroAddMsg('Зарегистрируйтесь для доступа к AI репетитору →', 'ai');
+      }
+    } catch(e) {
+      heroRemoveTyping();
+      heroAddMsg('Зарегистрируйтесь для доступа к AI репетитору →', 'ai');
+    }
+    heroChatSend.disabled = false;
+    heroChatInput.focus();
+  }
+
+  // Enter key
+  if (heroChatInput) {
+    heroChatInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); heroAskAI(); }
     });
   }
 </script>
