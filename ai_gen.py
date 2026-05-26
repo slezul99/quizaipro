@@ -921,41 +921,32 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
 
 
 def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> tuple[str, list]:
-    """Stroit system prompt + soobshcheniya v formate ChatML.
-    Vozvrashchaet (system_text, messages_list).
-    Eta zhe struktura ispolzuetsya dlya DeepSeek i kak full prompt dlya Gemini.
-    """
+    """Stroit system prompt + soobshcheniya v formate ChatML."""
     history = history or []
-    lang_prompt = {
-        "ru": "русском",
-        "en": "English",
-        "uz": "узбекском",
-    }.get(lang, "русском")
 
-    system_prompt = f"""Ты — дружелюбный AI-репетитор в приложении QuizPro для изучения с карточками.
-Помоги студенту понять материал, ответь на вопрос на {lang_prompt} языке.
+    # Opredelyaem yazyk otveta
+    lang_instruction = {
+        "ru": "Отвечай на русском языке.",
+        "en": "Reply in English.",
+        "uz": "O'zbek tilida javob ber.",
+    }.get(lang, "Отвечай на русском языке.")
 
-ПРАВИЛА:
-- Если пользователь явно просит "10 фактов", "5 примеров", "список", "подробно" — давай столько, сколько просят, в полном объёме (можно с markdown списками)
-- Если просто вопрос на понимание — отвечай чётко и по делу, обычно 3-7 предложений
-- Используй простой язык и примеры
-- Без вступлений вроде "Конечно!" — сразу к сути
-- Адаптируй длину под запрос: коротко на короткие вопросы, развёрнуто на запросы списков и подробных объяснений
-- Markdown разрешён (списки, **жирный**, заголовки)
-- ВАЖНО: Помни контекст всего разговора. Если пользователь уже назвал тему (например, "английский язык"), не спрашивай её снова.
-"""
+    # Minimal'nyy, ne ogranichivayushchiy system prompt — kak u DeepSeek/ChatGPT
+    system_prompt = f"""Ты — умный и полезный AI-ассистент в приложении QuizPro (платформа для изучения с карточками).
+
+{lang_instruction}
+
+Отвечай естественно и полно — как умный друг, который хорошо разбирается в теме. Не ограничивай себя в длине ответа: если вопрос требует подробного объяснения — объясни подробно, если короткого — отвечай кратко. Используй markdown для структурирования (списки, **жирный**, заголовки, `код`) когда это улучшает читаемость. Не начинай с "Конечно!" или похожих вступлений — сразу к делу."""
 
     if deck_context:
-        system_prompt += f"\n\nКОНТЕКСТ КОЛОДЫ:\n{deck_context[:1500]}"
+        system_prompt += f"\n\nКонтекст текущей колоды пользователя (карточки которые он изучает):\n{deck_context[:2000]}"
 
-    # Esli istoriya dlinnaya — dobavlyaem pervoe soobshchenie kak "nachalnaya tema"
-    # chtoby AI ne zabyl s chego nachinalsya razgovor
+    # Esli istoriya dlinnaya — dobavlyaem pervoe soobshchenie kak kontekst temy
     if len(history) > 10:
         first_user = next((h["content"] for h in history if h["role"] == "user"), None)
         if first_user:
-            system_prompt += f"\n\nНАЧАЛО РАЗГОВОРА (контекст темы):\nСтудент начал с вопроса: «{first_user[:300]}»\nПомни эту тему на протяжении всего диалога."
+            system_prompt += f"\n\nКонтекст: в начале разговора пользователь спросил: «{first_user[:400]}» — учитывай эту тему в ответах."
 
-    # Berem poslednie 20 soobshcheniy (vmesto 6) — bolshe konteksta
     messages = []
     for h in history[-20:]:
         role = "user" if h["role"] == "user" else "assistant"
@@ -1056,7 +1047,7 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
 
     # 1. DeepSeek pervym (esli ne forced gemini)
     if use_deepseek and not use_gemini_only:
-        text = _deepseek_chat_call(system_prompt, messages, max_tokens=2500, temperature=0.7)
+        text = _deepseek_chat_call(system_prompt, messages, max_tokens=4000, temperature=0.7)
         if text:
             return text
         if provider == "deepseek":
@@ -1083,7 +1074,7 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
         "contents": [{"parts": [{"text": full_prompt}]}],
         "generationConfig": {
             "temperature": 0.7,
-            "maxOutputTokens": 2500,
+            "maxOutputTokens": 4000,
         },
     }
     data = json.dumps(body).encode("utf-8")
@@ -1120,7 +1111,7 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
 
     # 1. DeepSeek streaming
     if use_deepseek and not use_gemini_only:
-        gen = _deepseek_chat_call(system_prompt, messages, max_tokens=2500, temperature=0.7, stream=True)
+        gen = _deepseek_chat_call(system_prompt, messages, max_tokens=4000, temperature=0.7, stream=True)
         any_chunk = False
         try:
             for chunk in gen:
