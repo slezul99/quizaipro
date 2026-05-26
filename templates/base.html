@@ -256,114 +256,56 @@
   html.dark .glass-strong a { color: #e2e8f0; }
 
   /* ============ ANIME SKY (Makoto Shinkai vibe) ============ */
+  /* ===== PREMIUM LIGHT BACKGROUND (Tavily / Linear style) ===== */
   .gradient-bg {
     min-height: 100vh;
     background:
-      /* Solntse v verhnem pravom uglu — glow */
-      radial-gradient(circle at 88% 8%, rgba(255, 251, 220, 0.85), rgba(255,240,180,0.4) 8%, transparent 22%),
-      /* Vneshniy glow ot solntsa (god rays effekt) */
-      radial-gradient(circle at 88% 8%, rgba(255, 230, 180, 0.3), transparent 45%),
-      /* Tonkiy oranzh-rozovyy ot zakata na gorizonte */
-      radial-gradient(ellipse 100% 30% at 50% 100%, rgba(255, 200, 220, 0.15), transparent 60%),
-      /* Otrazhennyy svet v sredine */
-      radial-gradient(ellipse 70% 50% at 50% 40%, rgba(255, 255, 255, 0.15), transparent 70%),
-      /* Glubokoye anime-nebo: cyan → glubokiy goluboy */
-      linear-gradient(180deg,
-        #4eb1e8 0%,
-        #6bc4ee 18%,
-        #8fd5f3 38%,
-        #b5e3f7 60%,
-        #d6effa 82%,
-        #f0f7fc 100%);
+      /* Subtle teal glow top-left */
+      radial-gradient(ellipse 80% 50% at -10% -10%, rgba(180, 220, 210, 0.35), transparent 60%),
+      /* Warm cream glow top-right */
+      radial-gradient(ellipse 60% 40% at 110% 0%, rgba(230, 220, 200, 0.3), transparent 55%),
+      /* Base: warm off-white / cream */
+      linear-gradient(160deg, #f0ede8 0%, #f7f4ef 40%, #faf8f4 70%, #f5f2ec 100%);
     position: relative;
   }
 
-  /* Mnogosloynye pushistye oblaka */
+  /* Subtle noise texture overlay for premium feel */
   .gradient-bg::before {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
+    /* Very soft ambient blobs — not clouds, just depth */
     background:
-      /* Verkh-levo: bol'shoye pushistoye oblako */
-      radial-gradient(ellipse 380px 110px at 8% 14%, rgba(255,255,255,0.95), transparent 55%),
-      radial-gradient(ellipse 240px 90px at 18% 22%, rgba(255,255,255,0.85), transparent 60%),
-      radial-gradient(ellipse 180px 70px at 3% 8%, rgba(255,255,255,0.75), transparent 60%),
-      radial-gradient(ellipse 220px 75px at 22% 6%, rgba(255,255,255,0.7), transparent 60%),
-      /* Verkh-pravo (vokrug solntsa) */
-      radial-gradient(ellipse 280px 95px at 78% 16%, rgba(255,255,255,0.92), transparent 55%),
-      radial-gradient(ellipse 200px 75px at 95% 22%, rgba(255,253,240,0.85), transparent 60%),
-      /* Sredina-levo */
-      radial-gradient(ellipse 320px 100px at 12% 48%, rgba(255,255,255,0.7), transparent 60%),
-      radial-gradient(ellipse 180px 65px at 25% 52%, rgba(255,255,255,0.6), transparent 65%),
-      /* Sredina-pravo */
-      radial-gradient(ellipse 300px 95px at 88% 45%, rgba(255,255,255,0.75), transparent 60%),
-      radial-gradient(ellipse 200px 70px at 75% 50%, rgba(255,255,255,0.55), transparent 65%),
-      /* Niz: tonkiye dalokiye oblaka u gorizonta */
-      radial-gradient(ellipse 500px 80px at 30% 80%, rgba(255,255,255,0.55), transparent 70%),
-      radial-gradient(ellipse 450px 70px at 70% 78%, rgba(255,255,255,0.6), transparent 70%),
-      radial-gradient(ellipse 350px 60px at 50% 92%, rgba(255,255,255,0.5), transparent 70%);
-    filter: blur(1.5px);
+      radial-gradient(ellipse 700px 500px at 15% 20%, rgba(160, 210, 200, 0.12), transparent 70%),
+      radial-gradient(ellipse 600px 400px at 85% 80%, rgba(210, 195, 175, 0.15), transparent 70%),
+      radial-gradient(ellipse 500px 350px at 50% 50%, rgba(255, 255, 255, 0.2), transparent 80%);
   }
 
-  /* God rays — solnechnyy lensflare effekt */
-  .gradient-bg::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background:
-      /* Diagonal'nyye luchi sveta ot solntsa */
-      linear-gradient(217deg,
-        rgba(255, 248, 220, 0.18) 0%,
-        rgba(255, 248, 220, 0.10) 12%,
-        transparent 30%),
-      linear-gradient(225deg,
-        rgba(255, 248, 220, 0.12) 0%,
-        transparent 25%),
-      linear-gradient(232deg,
-        rgba(255, 248, 220, 0.08) 0%,
-        transparent 22%);
-    mix-blend-mode: overlay;
-  }
+  .gradient-bg::after { display: none; }
 
   main { position: relative; z-index: 1; }
 
-  /* Plyvushchie oblaka — animatsiya */
-  .orb {
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.5) 40%, transparent 70%);
-    filter: blur(8px);
-    animation: cloud-drift 50s linear infinite;
-  }
-  .orb-1 { width: 280px; height: 100px; top: 15%; left: -20%; animation-duration: 70s; }
-  .orb-2 { width: 220px; height: 80px; top: 38%; left: -25%; animation-duration: 55s; animation-delay: -15s; }
-  .orb-3 { width: 320px; height: 110px; top: 60%; left: -30%; animation-duration: 80s; animation-delay: -30s; }
-  @keyframes cloud-drift {
-    from { transform: translateX(0); }
-    to   { transform: translateX(140vw); }
-  }
+  /* Orbs hidden — no clouds */
+  .orb { display: none !important; }
 
-  /* ============ GLASS — svetlee na sinem nebe ============ */
+  /* ============ GLASS — on cream bg ============ */
   .glass {
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    color: #0a1838;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 40px -8px rgba(108, 181, 232, 0.3);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(200, 190, 175, 0.4);
+    color: #1a1a2e;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 8px 32px -8px rgba(100, 90, 70, 0.12);
   }
   .glass-strong {
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(30px) saturate(200%);
-    -webkit-backdrop-filter: blur(30px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.95);
-    color: #0a1838;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(200, 190, 175, 0.35);
+    color: #1a1a2e;
+    box-shadow: 0 4px 24px -8px rgba(100, 90, 70, 0.1);
   }
   .glass-dark {
     background: rgba(10, 24, 56, 0.85);
@@ -372,12 +314,13 @@
     color: #f8fafc;
   }
 
-  /* ============ NAV — svetlyy proztrachnyy ============ */
+  /* ============ NAV — cream bg ============ */
   .nav-blur {
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    background: rgba(255, 255, 255, 0.65);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: saturate(150%) blur(16px);
+    -webkit-backdrop-filter: saturate(150%) blur(16px);
+    background: rgba(250, 248, 244, 0.88);
+    border-bottom: 1px solid rgba(200, 190, 175, 0.3);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
   }
 
   /* ============ BUTTONS ============ */
@@ -706,17 +649,17 @@
 
   /* ============ PREMIUM CARDS ============ */
   .glass-premium {
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    color: #0a1838;
-    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(200, 190, 175, 0.35);
+    color: #1a1a2e;
+    border-radius: 20px;
     padding: 2rem;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 40px -8px rgba(108, 181, 232, 0.3);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 4px 20px -6px rgba(100, 90, 70, 0.1);
   }
   html.dark .glass-premium {
     background: rgba(30, 41, 75, 0.65);
@@ -728,29 +671,29 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(99,102,241,0.06), transparent 50%, rgba(236,72,153,0.04));
+    background: linear-gradient(135deg, rgba(99,102,241,0.04), transparent 50%, rgba(236,72,153,0.02));
     opacity: 0;
-    transition: opacity 0.4s;
+    transition: opacity 0.3s;
     pointer-events: none;
   }
   .glass-premium:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 30px 60px -20px rgba(99,102,241,0.25);
-    border-color: rgba(99,102,241,0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px -12px rgba(99,102,241,0.15);
+    border-color: rgba(99,102,241,0.2);
   }
   .glass-premium:hover::before { opacity: 1; }
 
   .stat-card {
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(200, 190, 175, 0.35);
     border-radius: 20px;
     padding: 1.25rem 1.5rem;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 8px 24px -8px rgba(108, 181, 232, 0.25);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 4px 16px -6px rgba(100, 90, 70, 0.08);
   }
   html.dark .stat-card {
     background: rgba(30, 41, 75, 0.65);
@@ -1079,11 +1022,11 @@
   }
 
   .nav-blur {
-    backdrop-filter: saturate(180%) blur(24px);
-    -webkit-backdrop-filter: saturate(180%) blur(24px);
-    background: rgba(255, 255, 255, 0.75);
-    border-bottom: 1px solid rgba(99, 102, 241, 0.12);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 4px 20px -8px rgba(99,102,241,0.1);
+    backdrop-filter: saturate(150%) blur(16px);
+    -webkit-backdrop-filter: saturate(150%) blur(16px);
+    background: rgba(250, 248, 244, 0.88);
+    border-bottom: 1px solid rgba(200, 190, 175, 0.3);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
   }
 
   .brand-logo {
