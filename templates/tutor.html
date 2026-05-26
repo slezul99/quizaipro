@@ -20,63 +20,132 @@
   .markdown li { line-height: 1.55; }
   .markdown strong { font-weight: 700; }
   .markdown h2, .markdown h3, .markdown h4 { line-height: 1.3; }
+
+  /* Sidebar */
+  .tutor-sidebar { width: 240px; flex-shrink: 0; }
+  .tutor-conv-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; transition: all 0.15s;
+    border: 1px solid transparent;
+    color: var(--text-muted, #64748b);
+  }
+  .tutor-conv-item:hover { background: rgba(99,102,241,0.07); color: var(--text, #0f172a); }
+  html.dark .tutor-conv-item:hover { background: rgba(99,102,241,0.15); color: #f1f5f9; }
+  .tutor-conv-item.active {
+    background: rgba(99,102,241,0.1); color: #4f46e5;
+    border-color: rgba(99,102,241,0.25);
+    font-weight: 600;
+  }
+  html.dark .tutor-conv-item.active { background: rgba(99,102,241,0.2); color: #c4b5fd; }
+  .tutor-conv-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tutor-conv-actions { display: none; gap: 2px; }
+  .tutor-conv-item:hover .tutor-conv-actions,
+  .tutor-conv-item.active .tutor-conv-actions { display: flex; }
+  .tutor-conv-btn {
+    padding: 2px 5px; border-radius: 5px; font-size: 11px;
+    background: transparent; border: none; cursor: pointer;
+    color: inherit; opacity: 0.6; transition: opacity 0.15s;
+  }
+  .tutor-conv-btn:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+  html.dark .tutor-conv-btn:hover { background: rgba(255,255,255,0.1); }
+
+  @media (max-width: 768px) {
+    .tutor-sidebar { display: none; }
+    .tutor-sidebar.open { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 50; width: 100%; max-width: 300px; padding: 1rem; }
+  }
 </style>
 {% endblock %}
 {% block content %}
-<div class="relative max-w-5xl mx-auto px-4 py-6" x-data="tutorApp()" x-init="init()">
-  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
+{% from "_icons.html" import icon %}
+<div class="relative" x-data="tutorApp()" x-init="init()" style="height: calc(100vh - 80px); display: flex; gap: 0;">
 
-  <div class="relative z-10">
-    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-      <div>
+  <!-- ===== SIDEBAR ===== -->
+  <div class="tutor-sidebar glass-premium flex flex-col mr-4" style="padding: 0.75rem; max-height: 100%;">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-2 px-1">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ t('nav_ai_tutor') }}</span>
+      <button @click="newConv()" class="btn-premium-ghost" style="padding: 4px 10px; font-size: 12px;">+ {{ t('tu_new') }}</button>
+    </div>
+
+    <!-- Search -->
+    <div class="relative mb-2">
+      <input x-model="search" placeholder="{{ t('tu_search') }}"
+        class="input-premium w-full" style="padding: 6px 10px 6px 28px; font-size: 12px;">
+      <svg class="absolute left-2 top-1/2 -translate-y-1/2 opacity-40" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </div>
+
+    <!-- List -->
+    <div class="flex-1 overflow-y-auto space-y-0.5 pr-0.5">
+      <template x-if="convsLoading">
+        <div class="text-xs text-slate-400 text-center py-4">{{ t('tu_loading') }}</div>
+      </template>
+      <template x-if="!convsLoading && filteredConvs.length === 0">
+        <div class="text-xs text-slate-400 text-center py-4 leading-relaxed">{{ t('tu_no_chats') }}</div>
+      </template>
+      <template x-for="c in filteredConvs" :key="c.id">
+        <div class="tutor-conv-item" :class="activeConvId === c.id ? 'active' : ''" @click="openConv(c.id)">
+          <span class="tutor-conv-title" x-text="c.title"></span>
+          <div class="tutor-conv-actions">
+            <button class="tutor-conv-btn" @click.stop="pinConv(c)" :title="c.pinned ? '{{ t('tu_unpin') }}' : '{{ t('tu_pin') }}'">
+              <span x-text="c.pinned ? '📌' : '📍'"></span>
+            </button>
+            <button class="tutor-conv-btn" @click.stop="renameConv(c)" title="{{ t('tu_rename') }}">✏️</button>
+            <button class="tutor-conv-btn" @click.stop="deleteConv(c.id)" title="{{ t('tu_delete') }}">🗑️</button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CHAT ===== -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Topbar -->
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
         <span class="section-badge">
           <span class="badge-dot"></span>
-          <img src="/static/tutor-avatar.png" alt="AI" style="width:18px;height:18px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:2px;">
+          <img src="/static/tutor-avatar.png" alt="AI" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:3px;">
           AI
         </span>
-        <h1 class="section-h" style="font-size: clamp(1.7rem, 3vw, 2.3rem); margin-top: 0.5rem;">{{ t('tu_h') }}</h1>
-        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ t('tu_sub') }}</p>
+        <h1 class="section-h" style="font-size: clamp(1.3rem, 2.5vw, 1.8rem); margin: 0;">{{ t('tu_h') }}</h1>
       </div>
       <div class="flex items-center gap-2">
         {% if is_super_admin %}
         <div class="relative" x-data="{ open: false }">
           <button @click="open = !open" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/60 border border-indigo-200/50 dark:border-indigo-700/40 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 transition">
-            <span><img src="/static/tutor-avatar.png" alt="AI" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;"></span>
+            <img src="/static/tutor-avatar.png" alt="AI" style="width:14px;height:14px;border-radius:50%;object-fit:cover;">
             <span x-text="provider === 'deepseek' ? 'DeepSeek' : provider === 'gemini' ? 'Gemini' : 'Авто'"></span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-60"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <div x-show="open" @click.outside="open = false" x-transition x-cloak class="absolute right-0 top-full mt-2 w-52 glass-strong rounded-xl shadow-xl overflow-hidden z-30">
+          <div x-show="open" @click.outside="open = false" x-transition x-cloak class="absolute right-0 top-full mt-2 w-44 glass-strong rounded-xl shadow-xl overflow-hidden z-30">
             <div class="px-3 py-2 text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200/30 dark:border-slate-700/30">Модель (admin)</div>
             <button @click="provider = ''; open = false" class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between" :class="provider === '' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
-              <span>⚡ Авто</span>
-              <span class="text-[10px] text-slate-400" x-show="provider === ''">✓</span>
+              <span>⚡ Авто</span><span class="text-[10px] text-slate-400" x-show="provider === ''">✓</span>
             </button>
-            <button @click="provider = 'deepseek'; open = false" {% if not deepseek_available %}disabled{% endif %} class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between disabled:opacity-40 disabled:cursor-not-allowed" :class="provider === 'deepseek' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
-              <span>🌊 DeepSeek V4 {% if not deepseek_available %}<span class="text-[9px] text-red-500">(нет ключа)</span>{% endif %}</span>
-              <span class="text-[10px] text-slate-400" x-show="provider === 'deepseek'">✓</span>
+            <button @click="provider = 'deepseek'; open = false" {% if not deepseek_available %}disabled{% endif %} class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between disabled:opacity-40" :class="provider === 'deepseek' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
+              <span>🌊 DeepSeek V4</span><span class="text-[10px] text-slate-400" x-show="provider === 'deepseek'">✓</span>
             </button>
             <button @click="provider = 'gemini'; open = false" class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center justify-between" :class="provider === 'gemini' ? 'bg-indigo-50 dark:bg-indigo-900/30 font-semibold' : ''">
-              <span>✨ Gemini 3.5</span>
-              <span class="text-[10px] text-slate-400" x-show="provider === 'gemini'">✓</span>
+              <span>✨ Gemini 3.5</span><span class="text-[10px] text-slate-400" x-show="provider === 'gemini'">✓</span>
             </button>
           </div>
         </div>
         {% endif %}
-        <button @click="clearHistory()" class="btn-premium-danger">{{ t('tu_clear') }}</button>
+        <button @click="clearHistory()" class="btn-premium-danger" style="font-size: 12px; padding: 6px 12px;">{{ t('tu_clear') }}</button>
       </div>
     </div>
 
-    <div class="glass-premium flex flex-col" style="height: calc(100vh - 220px); min-height: 500px; padding: 0;">
-      <div x-ref="msgs" class="flex-1 overflow-y-auto scrollbar p-5 space-y-4">
+    <!-- Chat window -->
+    <div class="glass-premium flex flex-col flex-1 min-h-0" style="padding: 0; overflow: hidden;">
+      <div x-ref="msgs" class="flex-1 overflow-y-auto p-4 space-y-4">
         <!-- Welcome -->
-        <div x-show="messages.length === 0" class="text-center py-10">
-          <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden ring-4 ring-amber-200/40 dark:ring-amber-700/30 shadow-lg">
+        <div x-show="messages.length === 0" class="text-center py-8">
+          <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden ring-4 ring-amber-200/40 dark:ring-amber-700/30 shadow-lg">
             <img src="/static/tutor-avatar.png" alt="AI Tutor" class="w-full h-full object-cover">
           </div>
-          <h3 class="section-h" style="font-size: 1.5rem;">{{ t('tu_welcome_h') }}</h3>
-          <p class="text-slate-600 dark:text-slate-300 max-w-md mx-auto text-sm mb-6 mt-2">
-            {{ t('tu_welcome_sub') }}
-          </p>
+          <h3 class="section-h" style="font-size: 1.4rem;">{{ t('tu_welcome_h') }}</h3>
+          <p class="text-slate-600 dark:text-slate-300 max-w-md mx-auto text-sm mb-5 mt-2">{{ t('tu_welcome_sub') }}</p>
           <div class="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
             <template x-for="s in suggestions" :key="s">
               <button @click="newMsg = s; send()" class="text-xs bg-white/70 dark:bg-slate-800/40 border border-indigo-200/50 dark:border-indigo-700/40 hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 px-3 py-1.5 rounded-full transition font-semibold text-slate-700 dark:text-slate-200" x-text="s"></button>
@@ -87,17 +156,13 @@
         <!-- Messages -->
         <template x-for="(m, i) in messages" :key="i">
           <div class="tutor-msg flex gap-3" :class="m.role === 'user' ? 'flex-row-reverse' : ''" x-show="m.role === 'user' || m.content">
-            <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shadow-md ring-2 ring-white/60 dark:ring-slate-700/60"
-              :class="m.role === 'user' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' : 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40'">
-              <template x-if="m.role === 'user'">
-                <span class="text-xl">👤</span>
-              </template>
-              <template x-if="m.role !== 'user'">
-                <img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover">
-              </template>
+            <div class="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shadow-md"
+              :class="m.role === 'user' ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : ''">
+              <template x-if="m.role === 'user'"><span class="text-white text-base">👤</span></template>
+              <template x-if="m.role !== 'user'"><img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover"></template>
             </div>
             <div class="max-w-[80%]">
-              <div class="rounded-2xl p-4 markdown shadow-sm"
+              <div class="rounded-2xl p-3.5 markdown shadow-sm text-sm"
                 :class="m.role === 'user' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white' : 'bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 text-slate-800 dark:text-slate-100'"
                 x-html="m.role === 'assistant' ? renderMd(m.content) : escapeHtml(m.content)"></div>
               {% if is_super_admin %}
@@ -109,35 +174,28 @@
           </div>
         </template>
 
-        <!-- Typing — pokazyvaem tolko poka ne prishel pervyy chunk -->
+        <!-- Typing -->
         <div x-show="loading && messages.length > 0 && !messages[messages.length - 1].content" class="tutor-msg flex gap-3">
-          <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 ring-2 ring-white/60 dark:ring-slate-700/60">
-            <img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover">
-          </div>
-          <div class="bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 rounded-2xl p-4 typing-dots text-amber-600 dark:text-amber-300">
+          <div class="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden"><img src="/static/tutor-avatar.png" alt="AI" class="w-full h-full object-cover"></div>
+          <div class="bg-white/80 dark:bg-slate-800/70 border border-amber-200/50 dark:border-amber-700/40 rounded-2xl p-3.5 typing-dots text-amber-600 dark:text-amber-300">
             <span></span><span></span><span></span>
           </div>
         </div>
       </div>
 
+      <!-- Input -->
       <form @submit.prevent="send()" class="border-t border-slate-200/40 dark:border-slate-700/40 p-3 flex gap-2">
         <textarea x-model="newMsg" @keydown.enter.prevent="if (!$event.shiftKey) send()"
           rows="1" :disabled="loading"
           placeholder="{{ t('tu_input_ph') }}"
-          class="input-premium" style="flex: 1; padding: 10px 14px; resize: none;"></textarea>
+          class="input-premium flex-1" style="padding: 10px 14px; resize: none;"></textarea>
         <button type="submit" :disabled="!newMsg.trim() || loading"
           :class="(!newMsg.trim() || loading) ? 'opacity-40 cursor-not-allowed' : ''"
           class="btn-premium" style="padding: 10px 18px;">→</button>
       </form>
     </div>
-
-    {% if not ai_available %}
-    <div class="mt-4 glass-premium text-center text-sm text-amber-700 dark:text-amber-200" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(255,255,255,0.85)); border-color: rgba(245,158,11,0.4); padding: 1rem;">
-      {{ t('tu_unavail') }}
-    </div>
-    {% endif %}
-  </div>
-</div>
+  </div><!-- end main -->
+</div><!-- end root -->
 
 <script>
 const TU_T = {
@@ -147,6 +205,7 @@ const TU_T = {
 };
 function tutorApp() {
   return {
+    // Chat
     messages: [],
     newMsg: '',
     loading: false,
@@ -158,73 +217,89 @@ function tutorApp() {
       {{ t('tu_sug_4')|tojson }},
       {{ t('tu_sug_5')|tojson }},
     ],
+    // History sidebar
+    convs: [],
+    convsLoading: false,
+    activeConvId: null,
+    search: '',
 
-    init() {
+    get filteredConvs() {
+      const q = this.search.toLowerCase();
+      return this.convs.filter(c => !q || c.title.toLowerCase().includes(q));
+    },
+
+    async init() {
       this.scrollBottom();
-      this.$watch('provider', (v) => { localStorage.setItem('tutor_provider', v); });
+      this.$watch('provider', v => localStorage.setItem('tutor_provider', v));
+      await this.loadConvs();
     },
 
-    escapeHtml(s) {
-      if (!s) return '';
-      return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    async loadConvs() {
+      this.convsLoading = true;
+      try {
+        const r = await fetch('/api/tutor/conversations');
+        const d = await r.json();
+        if (d.conversations) this.convs = d.conversations;
+      } finally { this.convsLoading = false; }
     },
 
-    // Lyogkaya markdown-renderer: **bold**, *italic*, `code`, lists, headings, line breaks
-    renderMd(s) {
-      if (!s) return '';
-      let h = this.escapeHtml(s);
+    async openConv(id) {
+      if (this.activeConvId === id) return;
+      this.activeConvId = id;
+      this.messages = [];
+      try {
+        const r = await fetch(`/api/tutor/conversations/${id}`);
+        const d = await r.json();
+        if (d.messages) {
+          this.messages = d.messages.map(m => ({ role: m.role, content: m.content }));
+          this.$nextTick(() => this.scrollBottom());
+        }
+        // Sinhroniziruyem sessiyu s otkrytym chatom
+        const fd = new FormData();
+        fd.append('conv_id', id);
+        await fetch('/api/tutor/set-conv', { method: 'POST', body: fd });
+      } catch(e) {}
+    },
 
-      // Headings (## Заголовок)
-      h = h.replace(/^###\s+(.+)$/gm, '<h4 class="font-bold mt-2 mb-1 text-base">$1</h4>');
-      h = h.replace(/^##\s+(.+)$/gm, '<h3 class="font-bold mt-3 mb-1 text-lg">$1</h3>');
-      h = h.replace(/^#\s+(.+)$/gm, '<h2 class="font-bold mt-3 mb-1 text-xl">$1</h2>');
+    async newConv() {
+      this.activeConvId = null;
+      this.messages = [];
+      // Sbrasyvayem sessiyu
+      const fd = new FormData();
+      await fetch('/api/tutor/clear', { method: 'POST', body: fd });
+    },
 
-      // Bold **text**
-      h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      // Italic *text*
-      h = h.replace(/(^|[^\*])\*([^\*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
-      // Inline code `text`
-      h = h.replace(/`([^`\n]+)`/g, '<code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
-
-      // Numbered lists (1. text)
-      h = h.replace(/(?:^|\n)((?:\d+\.\s.+(?:\n|$))+)/g, (match, block) => {
-        const items = block.trim().split(/\n/).map(line => {
-          const m = line.match(/^\d+\.\s(.+)$/);
-          return m ? `<li class="ml-5 mb-1">${m[1]}</li>` : line;
-        }).join('');
-        return `<ol class="list-decimal my-2 space-y-1">${items}</ol>`;
+    async pinConv(c) {
+      await fetch(`/api/tutor/conversations/${c.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pinned: !c.pinned })
       });
-      // Bullet lists (- text or • text)
-      h = h.replace(/(?:^|\n)((?:[-•]\s.+(?:\n|$))+)/g, (match, block) => {
-        const items = block.trim().split(/\n/).map(line => {
-          const m = line.match(/^[-•]\s(.+)$/);
-          return m ? `<li class="ml-5 mb-1">${m[1]}</li>` : line;
-        }).join('');
-        return `<ul class="list-disc my-2 space-y-1">${items}</ul>`;
+      await this.loadConvs();
+    },
+
+    async renameConv(c) {
+      const t = window.prompt('{{ t("tu_rename_prompt") }}', c.title);
+      if (!t || t === c.title) return;
+      await fetch(`/api/tutor/conversations/${c.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: t })
       });
+      await this.loadConvs();
+    },
 
-      // Paragraph breaks: double newlines -> paragraph spacing
-      h = h.replace(/\n\n+/g, '</p><p class="mt-2">');
-      // Single newlines -> <br> (no chto inside <li>/<h*>/<ol>/<ul> we already handled them)
-      // Avoid wrapping in <p> if already has block tags
-      if (!/^<(h\d|ol|ul|p)/.test(h.trim())) {
-        h = '<p>' + h + '</p>';
-      }
-      h = h.replace(/(?<!>)\n(?!<)/g, '<br>');
-
-      return h;
+    async deleteConv(id) {
+      if (!confirm('{{ t("tu_delete_confirm") }}')) return;
+      await fetch(`/api/tutor/conversations/${id}`, { method: 'DELETE' });
+      if (this.activeConvId === id) { this.activeConvId = null; this.messages = []; }
+      await this.loadConvs();
     },
 
     async send() {
       if (!this.newMsg.trim() || this.loading) return;
       const text = this.newMsg.trim();
       this.messages.push({ role: 'user', content: text });
-      // Srazu dobavlyaem pustoe AI-soobshchenie chtoby zapolnyat ego streamom
       this.messages.push({ role: 'assistant', content: '' });
       this.newMsg = '';
       this.loading = true;
@@ -236,22 +311,22 @@ function tutorApp() {
         if (this.provider) fd.append('provider', this.provider);
         const r = await fetch('/api/tutor/ask', { method: 'POST', body: fd });
         if (!r.ok) {
-          // Server vernul JSON s oshibkoy
           const data = await r.json().catch(() => ({}));
           this.messages[this.messages.length - 1].content = '⚠️ ' + (data.msg || TU_T.error);
           this.loading = false;
-          this.$nextTick(() => this.scrollBottom());
           return;
         }
-        // Pokazhem kakaya modeli srabotala (vidno v console + na last message)
         const usedProvider = r.headers.get('X-AI-Provider') || 'gemini';
-        this.messages[this.messages.length - 1].provider = usedProvider;
-        if (!r.body) {
-          this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.net_error;
-          this.loading = false;
-          return;
+        const convId = r.headers.get('X-Conv-Id');
+        if (convId) {
+          const cid = parseInt(convId);
+          if (this.activeConvId !== cid) {
+            this.activeConvId = cid;
+            await this.loadConvs();
+          }
         }
-        // Chitaem stream chunkami
+        this.messages[this.messages.length - 1].provider = usedProvider;
+        if (!r.body) { this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.net_error; this.loading = false; return; }
         const reader = r.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -262,10 +337,9 @@ function tutorApp() {
           this.messages[this.messages.length - 1].content = buffer;
           this.$nextTick(() => this.scrollBottom());
         }
-        // Esli pusto — pokazem fallback message
-        if (!buffer.trim()) {
-          this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.error;
-        }
+        if (!buffer.trim()) this.messages[this.messages.length - 1].content = '⚠️ ' + TU_T.error;
+        // Obnovlyaem sidebar
+        await this.loadConvs();
       } catch (e) {
         this.messages[this.messages.length - 1].content = TU_T.net_error;
       }
@@ -278,12 +352,41 @@ function tutorApp() {
       const fd = new FormData();
       await fetch('/api/tutor/clear', { method: 'POST', body: fd });
       this.messages = [];
+      this.activeConvId = null;
     },
 
     scrollBottom() {
       const el = this.$refs.msgs;
       if (el) el.scrollTop = el.scrollHeight;
-    }
+    },
+
+    escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    },
+
+    renderMd(s) {
+      if (!s) return '';
+      let h = this.escapeHtml(s);
+      h = h.replace(/^###\s+(.+)$/gm,'<h4 class="font-bold mt-2 mb-1 text-base">$1</h4>');
+      h = h.replace(/^##\s+(.+)$/gm,'<h3 class="font-bold mt-3 mb-1 text-lg">$1</h3>');
+      h = h.replace(/^#\s+(.+)$/gm,'<h2 class="font-bold mt-3 mb-1 text-xl">$1</h2>');
+      h = h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+      h = h.replace(/(^|[^\*])\*([^\*\n]+)\*(?!\*)/g,'$1<em>$2</em>');
+      h = h.replace(/`([^`\n]+)`/g,'<code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
+      h = h.replace(/(?:^|\n)((?:\d+\.\s.+(?:\n|$))+)/g,(match,block)=>{
+        const items=block.trim().split(/\n/).map(line=>{const m=line.match(/^\d+\.\s(.+)$/);return m?`<li class="ml-5 mb-1">${m[1]}</li>`:line;}).join('');
+        return `<ol class="list-decimal my-2 space-y-1">${items}</ol>`;
+      });
+      h = h.replace(/(?:^|\n)((?:[-•]\s.+(?:\n|$))+)/g,(match,block)=>{
+        const items=block.trim().split(/\n/).map(line=>{const m=line.match(/^[-•]\s(.+)$/);return m?`<li class="ml-5 mb-1">${m[1]}</li>`:line;}).join('');
+        return `<ul class="list-disc my-2 space-y-1">${items}</ul>`;
+      });
+      h = h.replace(/\n\n+/g,'</p><p class="mt-2">');
+      if (!/^<(h\d|ol|ul|p)/.test(h.trim())) h = '<p>' + h + '</p>';
+      h = h.replace(/(?<!>)\n(?!<)/g,'<br>');
+      return h;
+    },
   };
 }
 </script>

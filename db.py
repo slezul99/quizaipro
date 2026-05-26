@@ -698,6 +698,35 @@ def init_db():
         )
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_test_answers_attempt ON test_attempt_answers(attempt_id, position)")
+
+    # === TUTOR CHAT HISTORY ===
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS tutor_conversations (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id      INTEGER NOT NULL,
+            title        TEXT NOT NULL DEFAULT 'Новый чат',
+            pinned       INTEGER DEFAULT 0,
+            created_at   TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at   TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_tutor_conv_user ON tutor_conversations(user_id, updated_at)")
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS tutor_messages (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversation_id INTEGER NOT NULL,
+            user_id         INTEGER NOT NULL,
+            role            TEXT NOT NULL CHECK(role IN ('user','assistant')),
+            content         TEXT NOT NULL,
+            created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(conversation_id) REFERENCES tutor_conversations(id) ON DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_tutor_msg_conv ON tutor_messages(conversation_id, created_at)")
+
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")

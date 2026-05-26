@@ -4773,6 +4773,10 @@ def api_tutor_ask():
         elif ai_gen.is_deepseek_available():
             used_provider = "deepseek"
 
+        # Poluchaem ili sozdaem chat v DB
+        conv_id = _tutor_get_or_create_conv(user["id"], message)
+        _tutor_save_message(conv_id, user["id"], "user", message)
+
         def _stream():
             full = []
             try:
@@ -4787,16 +4791,18 @@ def api_tutor_ask():
                     yield chunk
             except Exception as e:
                 print(f"[/api/tutor/ask stream] {type(e).__name__}: {e}")
-            # Posle zaversheniya — sokhranyaem v sessiyu
+            # Posle zaversheniya — sokhranyaem v sessiyu i DB
             answer_text = "".join(full).strip()
             if answer_text:
                 hist = session.get("tutor_history", [])
                 hist.append({"role": "user", "content": message})
                 hist.append({"role": "assistant", "content": answer_text})
                 session["tutor_history"] = hist[-40:]
+                _tutor_save_message(conv_id, user["id"], "assistant", answer_text)
 
         return Response(_stream(), mimetype="text/plain; charset=utf-8", headers={
             "X-AI-Provider": used_provider,
+            "X-Conv-Id": str(conv_id),
         })
 
     # Non-stream (legacy)
@@ -4820,7 +4826,163 @@ def api_tutor_ask():
 @login_required
 def api_tutor_clear():
     session.pop("tutor_history", None)
+    session.pop("tutor_conv_id", None)
     return jsonify({"ok": True})
+
+
+@app.route("/api/tutor/set-conv", methods=["POST"])
+@login_required
+def api_tutor_set_conv():
+    """Sinhronizirovat sessiyu s otkrytym chatom."""
+    user = current_user()
+    conv_id = request.form.get("conv_id", type=int)
+    if not conv_id:
+        return jsonify({"error": "no_id"}), 400
+    conn = db.get_conn()
+    row = conn.execute(
+        "SELECT id FROM tutor_conversations WHERE id=? AND user_id=?",
+        (conv_id, user["id"])
+    ).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"error": "not_found"}), 404
+    # Zagruzhaem istoriyu iz DB v sessiyu
+    conn = db.get_conn()
+    msgs = conn.execute(
+        "SELECT role, content FROM tutor_messages WHERE conversation_id=? ORDER BY created_at ASC",
+        (conv_id,)
+    ).fetchall()
+    conn.close()
+    session["tutor_conv_id"] = conv_id
+    session["tutor_history"] = [{"role": m["role"], "content": m["content"]} for m in msgs][-40:]
+    return jsonify({"ok": True})
+
+
+# ===================== TUTOR CHAT HISTORY =====================
+
+@app.route("/api/tutor/conversations", methods=["GET"])
+@login_required
+def api_tutor_conversations():
+    """Spisok vsekh tutor-chatov polzovatelya."""
+    user = current_user()
+    conn = db.get_conn()
+    rows = conn.execute("""
+        SELECT id, title, pinned, created_at, updated_at
+        FROM tutor_conversations
+        WHERE user_id = ?
+        ORDER BY pinned DESC, updated_at DESC
+        LIMIT 200
+    """, (user["id"],)).fetchall()
+    conn.close()
+    return jsonify({"conversations": [dict(r) for r in rows]})
+
+
+@app.route("/api/tutor/conversations", methods=["POST"])
+@login_required
+def api_tutor_conversations_create():
+    """Sozdat novyy tutor-chat."""
+    user = current_user()
+    title = (request.json or {}).get("title", "Новый чат")[:80]
+    conn = db.get_conn()
+    cur = conn.execute(
+        "INSERT INTO tutor_conversations (user_id, title) VALUES (?, ?)",
+        (user["id"], title)
+    )
+    conv_id = cur.lastrowid
+    conn.commit(); conn.close()
+    return jsonify({"id": conv_id, "title": title})
+
+
+@app.route("/api/tutor/conversations/<int:conv_id>", methods=["GET"])
+@login_required
+def api_tutor_conversation_get(conv_id):
+    """Poluchit chat + vse soobshcheniya."""
+    user = current_user()
+    conn = db.get_conn()
+    conv = conn.execute(
+        "SELECT * FROM tutor_conversations WHERE id=? AND user_id=?",
+        (conv_id, user["id"])
+    ).fetchone()
+    if not conv:
+        conn.close(); return jsonify({"error": "not_found"}), 404
+    msgs = conn.execute(
+        "SELECT id, role, content, created_at FROM tutor_messages WHERE conversation_id=? ORDER BY created_at ASC",
+        (conv_id,)
+    ).fetchall()
+    conn.close()
+    return jsonify({"conversation": dict(conv), "messages": [dict(m) for m in msgs]})
+
+
+@app.route("/api/tutor/conversations/<int:conv_id>", methods=["PATCH"])
+@login_required
+def api_tutor_conversation_patch(conv_id):
+    """Pereimenovat / pin."""
+    user = current_user()
+    data = request.json or {}
+    updates = []
+    params = []
+    if "title" in data:
+        updates.append("title=?"); params.append(str(data["title"])[:80])
+    if "pinned" in data:
+        updates.append("pinned=?"); params.append(1 if data["pinned"] else 0)
+    if not updates:
+        return jsonify({"error": "nothing"}), 400
+    params += [conv_id, user["id"]]
+    conn = db.get_conn()
+    conn.execute(f"UPDATE tutor_conversations SET {', '.join(updates)} WHERE id=? AND user_id=?", params)
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/tutor/conversations/<int:conv_id>", methods=["DELETE"])
+@login_required
+def api_tutor_conversation_delete(conv_id):
+    """Udalit chat."""
+    user = current_user()
+    conn = db.get_conn()
+    conn.execute("DELETE FROM tutor_conversations WHERE id=? AND user_id=?", (conv_id, user["id"]))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+
+def _tutor_save_message(conv_id: int, user_id: int, role: str, content: str):
+    """Sohranit soobshchenie i obnovit updated_at chata."""
+    conn = db.get_conn()
+    conn.execute(
+        "INSERT INTO tutor_messages (conversation_id, user_id, role, content) VALUES (?,?,?,?)",
+        (conv_id, user_id, role, content)
+    )
+    conn.execute(
+        "UPDATE tutor_conversations SET updated_at=CURRENT_TIMESTAMP WHERE id=?",
+        (conv_id,)
+    )
+    conn.commit(); conn.close()
+
+
+def _tutor_get_or_create_conv(user_id: int, first_message: str) -> int:
+    """Vozvrashchaet ID tekushchego chata iz sessii ili sozdaet novyy."""
+    conv_id = session.get("tutor_conv_id")
+    if conv_id:
+        # Proverka chto chat prinadlezit polzovatelyu
+        conn = db.get_conn()
+        row = conn.execute(
+            "SELECT id FROM tutor_conversations WHERE id=? AND user_id=?",
+            (conv_id, user_id)
+        ).fetchone()
+        conn.close()
+        if row:
+            return conv_id
+    # Sozdaem novyy chat
+    title = first_message.strip()[:60] or "Новый чат"
+    conn = db.get_conn()
+    cur = conn.execute(
+        "INSERT INTO tutor_conversations (user_id, title) VALUES (?,?)",
+        (user_id, title)
+    )
+    conv_id = cur.lastrowid
+    conn.commit(); conn.close()
+    session["tutor_conv_id"] = conv_id
+    return conv_id
 
 
 @app.route("/api/explain-card", methods=["POST"])
