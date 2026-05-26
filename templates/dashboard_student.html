@@ -1,140 +1,96 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="relative max-w-7xl mx-auto px-6 py-10" x-data="{ showNew: false, showTest: null }">
-  <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
-  <div class="deco-blob deco-blob-2" style="top:300px; left:-150px;"></div>
+<div class="relative max-w-6xl mx-auto px-5 py-8 md:py-10" x-data="{ showNew: false, showTest: null }">
 
   <div class="relative z-10">
-    <!-- HERO -->
-    <div class="section-header left mb-8">
-      <span class="section-badge"><span class="badge-dot"></span>📊 Dashboard</span>
-      <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
-      <h1 class="section-h">
+    <!-- HERO: minimal greeting -->
+    <div class="mb-6 md:mb-8">
+      <h1 class="dash-h1">
         {% if current_user.role == 'individual' %}
-        {{ t('hello') }}, {{ current_user.username }}
+          {{ t('hello') }}, <span class="dash-name">{{ current_user.username }}</span>
         {% else %}
-        {{ t('user_centre') }}
+          {{ t('user_centre') }}
         {% endif %}
       </h1>
-      <p class="section-sub">
+      <p class="dash-sub">
         {% if due > 0 %}
-        {{ t('to_review_today') }}: <b class="text-indigo-600 dark:text-indigo-300">{{ due }}</b> {{ t('questions_today') }} 🔥
+          {{ t('to_review_today') }}: <b class="text-indigo-600 dark:text-indigo-300">{{ due }}</b> {{ t('questions_today') }}
         {% else %}
-        {{ t('all_learned') }}
+          {{ t('all_learned') }}
         {% endif %}
       </p>
     </div>
 
-    <!-- STAT CARDS -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="stat-card stat-blue slide-up" style="animation-delay:.05s">
-        <div class="text-2xl mb-2">📚</div>
-        <div class="stat-value">{{ total }}</div>
-        <div class="stat-label">{{ t('total_questions') }}</div>
+    <!-- ============ 4 PRIMARY ACTIONS (above the fold) ============ -->
+    <div class="primary-grid mb-8">
+      <!-- Import -->
+      <a href="/import" class="primary-card primary-import">
+        <div class="primary-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="primary-title">{{ t('nav_import') }}</div>
+        <div class="primary-desc">PDF · DOCX · TXT</div>
+      </a>
+
+      <!-- Study -->
+      {% set first_deck_id = (decks[0].id if decks else 0) %}
+      <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/flashcards{% else %}/dashboard{% endif %}" class="primary-card primary-study">
+        <div class="primary-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg>
+        </div>
+        <div class="primary-title">Study</div>
+        <div class="primary-desc">{% if due > 0 %}{{ due }} {{ t('to_review_short') }}{% else %}Flashcards{% endif %}</div>
+      </a>
+
+      <!-- AI Tutor -->
+      {% if ai_available %}
+      <a href="/tutor" class="primary-card primary-tutor">
+        <div class="primary-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="primary-title">AI Tutor</div>
+        <div class="primary-desc">Personal AI</div>
+      </a>
+      {% else %}
+      <a href="/ai" class="primary-card primary-tutor">
+        <div class="primary-icon">✨</div>
+        <div class="primary-title">{{ t('nav_ai_gen') }}</div>
+        <div class="primary-desc">AI generation</div>
+      </a>
+      {% endif %}
+
+      <!-- Marketplace -->
+      <a href="/marketplace" class="primary-card primary-market">
+        <div class="primary-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="primary-title">{{ t('nav_marketplace') }}</div>
+        <div class="primary-desc">Discover decks</div>
+      </a>
+    </div>
+
+    <!-- ============ COMPACT STATS ROW ============ -->
+    <div class="stats-row mb-6">
+      <div class="stat-mini">
+        <div class="stat-mini-val">{{ total }}</div>
+        <div class="stat-mini-label">{{ t('total_questions') }}</div>
       </div>
-      <div class="stat-card stat-emerald slide-up" style="animation-delay:.1s">
-        <div class="text-2xl mb-2">✓</div>
-        <div class="stat-value">{{ learned }}</div>
-        <div class="stat-label">{{ t('studied') }}</div>
+      <div class="stat-mini">
+        <div class="stat-mini-val">{{ learned }}</div>
+        <div class="stat-mini-label">{{ t('studied') }}</div>
       </div>
-      <div class="stat-card stat-orange slide-up" style="animation-delay:.15s">
-        <div class="text-2xl mb-2">↻</div>
-        <div class="stat-value">{{ due }}</div>
-        <div class="stat-label">{{ t('to_review_short') }}</div>
+      <div class="stat-mini">
+        <div class="stat-mini-val">{{ due }}</div>
+        <div class="stat-mini-label">{{ t('to_review_short') }}</div>
       </div>
-      <div class="stat-card stat-purple slide-up" style="animation-delay:.2s">
-        <div class="text-2xl mb-2">⚡</div>
-        <div class="stat-value">{{ total_reviews }}</div>
-        <div class="stat-label">{{ t('all_attempts') }}</div>
+      <div class="stat-mini">
+        <div class="stat-mini-val">{{ total_reviews }}</div>
+        <div class="stat-mini-label">{{ t('all_attempts') }}</div>
       </div>
     </div>
 
-    <!-- ============== 📋 PLAN NA SEGODNYA ============== -->
-    {% if total > 0 %}
-    {% set plan_flash = (due if due > 0 else daily_goal) %}
-    {% set plan_tests = ((daily_goal // 10) if daily_goal >= 10 else 1) %}
-    {% set plan_duels = 2 %}
-    {% set plan_live = 1 %}
-    {% set plan_minutes = (daily_goal * 1.5) | round | int %}
-    <div class="glass-premium mb-6 slide-up" style="animation-delay:.21s">
-      <div class="flex items-center gap-2 mb-3 text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
-        <span class="text-base">📋</span>
-        <span>{{ t('plan_today_title') }}</span>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {% set first_deck_id = (decks[0].id if decks else 0) %}
-        <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/flashcards{% else %}/dashboard{% endif %}"
-           class="plan-card plan-flash">
-          <div class="plan-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg>
-          </div>
-          <div class="plan-num">{{ plan_flash }}</div>
-          <div class="plan-label">Flashcards</div>
-        </a>
-        <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/test?count=10&shuffle=1{% else %}/dashboard{% endif %}"
-           class="plan-card plan-test">
-          <div class="plan-icon">📝</div>
-          <div class="plan-num">{{ plan_tests }} {{ t('plan_tests') }}</div>
-          <div class="plan-label">~{{ plan_tests * 10 }} {{ t('plan_questions') }}</div>
-        </a>
-        <a href="/duels" class="plan-card plan-duel">
-          <div class="plan-icon">⚔️</div>
-          <div class="plan-num">{{ plan_duels }}</div>
-          <div class="plan-label">{{ t('plan_duels') }}</div>
-        </a>
-        <a href="/live/join" class="plan-card plan-live">
-          <div class="plan-icon">🎮</div>
-          <div class="plan-num">{{ plan_live }}</div>
-          <div class="plan-label">live test</div>
-        </a>
-      </div>
-      <div class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
-        ⏱️ {{ t('plan_approx') }} <span class="font-bold text-slate-700 dark:text-slate-200">{{ plan_minutes }} {{ t('plan_minutes') }}</span>
-      </div>
-    </div>
-
-    <style>
-      .plan-card {
-        display: flex; flex-direction: column; align-items: center;
-        padding: 12px 10px;
-        border-radius: 14px;
-        background: rgba(99, 102, 241, 0.06);
-        border: 1px solid rgba(99, 102, 241, 0.15);
-        text-decoration: none;
-        transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-      }
-      .plan-card:hover {
-        transform: translateY(-2px);
-        background: rgba(99, 102, 241, 0.12);
-        border-color: rgba(99, 102, 241, 0.35);
-      }
-      .plan-icon { font-size: 26px; margin-bottom: 4px; }
-      .plan-num {
-        font-size: 1.05rem; font-weight: 800;
-        color: #4f46e5;
-      }
-      .plan-label {
-        font-size: 11px; color: #64748b; font-weight: 500;
-        margin-top: 2px;
-      }
-      html.dark .plan-card { background: rgba(99,102,241,0.10); border-color: rgba(99,102,241,0.25); }
-      html.dark .plan-card:hover { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.45); }
-      html.dark .plan-num { color: #a5b4fc; }
-      html.dark .plan-label { color: #94a3b8; }
-      /* Tsvet aktsentov dlya kazhdogo tipа */
-      .plan-flash .plan-num { color: #6366f1; }
-      .plan-test  .plan-num { color: #10b981; }
-      .plan-duel  .plan-num { color: #f59e0b; }
-      .plan-live  .plan-num { color: #ec4899; }
-      html.dark .plan-flash .plan-num { color: #a5b4fc; }
-      html.dark .plan-test  .plan-num { color: #6ee7b7; }
-      html.dark .plan-duel  .plan-num { color: #fbbf24; }
-      html.dark .plan-live  .plan-num { color: #f9a8d4; }
-    </style>
-    {% endif %}
-
-    <!-- DAILY GOAL -->
-    <div class="glass-premium mb-6 slide-up" style="animation-delay:.22s"
+    <!-- ============ DAILY GOAL (compact) ============ -->
+    <div class="goal-card mb-6"
       x-data="{
         goal: {{ daily_goal }},
         done: {{ today_reviews }},
@@ -150,80 +106,104 @@
           if (r.ok) { this.goal = this.newGoal; this.editing = false; }
         }
       }">
-      <div class="flex justify-between items-start mb-3 flex-wrap gap-2">
-        <div>
-          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            🎯 {{ t('today_goal') }}
-            <span x-show="isDone" class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t('today_done_label') }}</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ t('today_goal_desc') }}</p>
-        </div>
+      <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
         <div class="flex items-center gap-2">
+          <span class="text-xl">🎯</span>
+          <span class="font-bold text-slate-900 dark:text-slate-100">{{ t('today_goal') }}</span>
+          <span x-show="isDone" class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 rounded-full font-semibold">✓</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
           <template x-if="!editing">
             <div class="flex items-center gap-2">
-              <span class="text-base text-slate-700 dark:text-slate-200">
-                <span class="font-bold text-indigo-600 dark:text-indigo-300" x-text="done"></span> / <span x-text="goal"></span>
-              </span>
-              <button @click="editing = true; newGoal = goal" class="text-xs text-indigo-600 dark:text-indigo-300 hover:underline font-semibold">{{ t('today_change') }}</button>
+              <span><span class="font-bold text-indigo-600 dark:text-indigo-300" x-text="done"></span> / <span x-text="goal"></span></span>
+              <button @click="editing = true; newGoal = goal" class="text-xs text-slate-400 hover:text-indigo-600 transition" title="{{ t('today_change') }}">⚙</button>
             </div>
           </template>
           <template x-if="editing">
-            <div class="flex items-center gap-2">
-              <input type="number" x-model.number="newGoal" min="1" max="500" class="input-premium" style="width: 80px; padding: 6px; text-align: center; font-weight: 700;">
-              <button @click="save()" class="btn-premium" style="font-size: 12px; padding: 6px 14px;">OK</button>
-              <button @click="editing = false" class="text-xs text-slate-500 dark:text-slate-400 px-2">×</button>
+            <div class="flex items-center gap-1.5">
+              <input type="number" x-model.number="newGoal" min="1" max="500" class="input-premium" style="width: 70px; padding: 4px 6px; text-align: center; font-weight: 700; font-size: 13px;">
+              <button @click="save()" class="btn-premium" style="font-size: 11px; padding: 4px 10px;">OK</button>
+              <button @click="editing = false" class="text-slate-400 px-1">×</button>
             </div>
           </template>
         </div>
       </div>
-      <div class="progress-bar h-3"><div :style="`width: ${pct}%`"></div></div>
-      <div class="flex justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
-        <span x-show="!isDone">{{ t('today_remaining') }}: <span class="font-bold text-orange-600 dark:text-orange-300" x-text="goal - done"></span></span>
-        <span x-show="isDone" class="text-emerald-600 dark:text-emerald-300 font-bold">{{ t('today_great_job') }}</span>
-        <span x-text="pct + '%'"></span>
-      </div>
+      <div class="progress-bar h-2"><div :style="`width: ${pct}%`"></div></div>
     </div>
 
+    <!-- ============ MORE: Plan / Progress (collapsed by default) ============ -->
     {% if total > 0 %}
-    <div class="glass-premium mb-8 slide-up" style="animation-delay:.25s">
-      <div class="flex justify-between mb-3">
-        <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">📈 {{ t('overall_progress') }}</span>
-        <span class="font-bold text-indigo-600 dark:text-indigo-300 text-lg">{{ ((learned / total * 100) | round(1)) }}%</span>
+    <details class="more-section mb-8">
+      <summary class="more-summary">
+        <span>{{ t('plan_today_title') }} · {{ t('overall_progress') }}</span>
+        <span class="more-chevron">▾</span>
+      </summary>
+      <div class="more-body">
+        {% set plan_flash = (due if due > 0 else daily_goal) %}
+        {% set plan_tests = ((daily_goal // 10) if daily_goal >= 10 else 1) %}
+        {% set plan_minutes = (daily_goal * 1.5) | round | int %}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/flashcards{% else %}/dashboard{% endif %}" class="plan-card plan-flash">
+            <div class="plan-icon">📖</div>
+            <div class="plan-num">{{ plan_flash }}</div>
+            <div class="plan-label">Flashcards</div>
+          </a>
+          <a href="{% if first_deck_id %}/deck/{{ first_deck_id }}/test?count=10&shuffle=1{% else %}/dashboard{% endif %}" class="plan-card plan-test">
+            <div class="plan-icon">📝</div>
+            <div class="plan-num">{{ plan_tests }} {{ t('plan_tests') }}</div>
+            <div class="plan-label">~{{ plan_tests * 10 }} {{ t('plan_questions') }}</div>
+          </a>
+          <a href="/duels" class="plan-card plan-duel">
+            <div class="plan-icon">⚔️</div>
+            <div class="plan-num">2</div>
+            <div class="plan-label">{{ t('plan_duels') }}</div>
+          </a>
+          <a href="/live/join" class="plan-card plan-live">
+            <div class="plan-icon">🎮</div>
+            <div class="plan-num">1</div>
+            <div class="plan-label">live test</div>
+          </a>
+        </div>
+        <div class="text-center text-xs text-slate-500 dark:text-slate-400 mb-4">
+          ⏱️ {{ t('plan_approx') }} <span class="font-bold text-slate-700 dark:text-slate-200">{{ plan_minutes }} {{ t('plan_minutes') }}</span>
+        </div>
+        <div class="goal-card" style="margin:0;">
+          <div class="flex justify-between mb-2">
+            <span class="font-semibold text-sm text-slate-700 dark:text-slate-200">📈 {{ t('overall_progress') }}</span>
+            <span class="font-bold text-indigo-600 dark:text-indigo-300 text-sm">{{ ((learned / total * 100) | round(1)) }}%</span>
+          </div>
+          <div class="progress-bar h-2"><div style="width: {{ (learned / total * 100) }}%"></div></div>
+        </div>
       </div>
-      <div class="progress-bar h-3"><div style="width: {{ (learned / total * 100) }}%"></div></div>
-      <div class="flex justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
-        <span>{{ t('start_progress') }}</span>
-        <span>{{ t('full_progress') }}</span>
-      </div>
-    </div>
+    </details>
     {% endif %}
 
-    <!-- ACTIONS -->
-    {% if current_user.role == 'individual' %}
-    <div class="flex gap-3 mb-8 flex-wrap slide-up" style="animation-delay:.3s">
-      <button @click="showNew = true" class="btn-premium" data-tour="new-deck-btn">{{ t('new_deck_btn') }}</button>
-      <a href="/import" class="btn-premium-ghost" data-tour="import-btn">{{ t('import_file') }}</a>
+    <!-- ============ ACTIONS BAR (compact, only individuals) ============ -->
+    {% if current_user.role == 'individual' and decks %}
+    <div class="flex gap-2 mb-6 flex-wrap">
+      <button @click="showNew = true" class="btn-premium" data-tour="new-deck-btn" style="font-size: 13px; padding: 8px 14px;">+ {{ t('new_deck_btn') }}</button>
+      <a href="/import" class="btn-premium-ghost" data-tour="import-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('import_file') }}</a>
       {% if ai_available %}
-      <a href="/ai" class="btn-premium-ghost" data-tour="ai-btn">{{ t('ai_generation') }}</a>
+      <a href="/ai" class="btn-premium-ghost" data-tour="ai-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('ai_generation') }}</a>
       {% endif %}
     </div>
     {% endif %}
 
-    <!-- DECKS -->
+    <!-- ============ DECKS BY CATEGORY (preserved) ============ -->
     {% if by_category %}
     {% for cat_name, cat_data in by_category.items() %}
-    <div class="mb-10 slide-up" style="animation-delay:.35s">
-      <h2 class="text-2xl font-bold mb-5 flex items-center gap-3 text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
-        <span class="text-3xl">{{ cat_data.icon }}</span>
+    <div class="mb-10">
+      <h2 class="text-xl md:text-2xl font-bold mb-4 flex items-center gap-3 text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
+        <span class="text-2xl md:text-3xl">{{ cat_data.icon }}</span>
         {{ cat_name }}
-        <span class="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 ml-2">{{ cat_data.decks|length }}</span>
+        <span class="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded-full font-bold">{{ cat_data.decks|length }}</span>
       </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for d in cat_data.decks %}
         {% set pct = (d.learned_count / d.card_count * 100) if d.card_count else 0 %}
-        <div class="glass-premium relative" style="padding: 1.5rem;">
-          <div class="flex items-start justify-between mb-3">
-            <div class="text-4xl">{{ d.icon }}</div>
+        <div class="deck-mini">
+          <div class="flex items-start justify-between mb-2">
+            <div class="text-3xl">{{ d.icon }}</div>
             {% if current_user.role in ['admin','teacher','individual'] %}
             <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('{{ t('delete_deck_confirm') }}')">
               <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 text-base transition" title="{{ t('btn_delete') }}">✕</button>
@@ -231,27 +211,24 @@
             {% endif %}
           </div>
           <a href="/deck/{{ d.id }}" class="block">
-            <h3 class="text-xl font-bold mb-1.5 text-slate-900 dark:text-slate-100">{{ d.name }}</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ d.card_count }} {{ t('test_card_count_word') }} · {{ d.due_count }} {{ t('to_review') }}</p>
+            <h3 class="text-base md:text-lg font-bold mb-1 text-slate-900 dark:text-slate-100 leading-tight">{{ d.name }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">{{ d.card_count }} {{ t('test_card_count_word') }} · {{ d.due_count }} {{ t('to_review') }}</p>
           </a>
-          <div class="mb-4">
-            <div class="flex justify-between mb-1.5 text-xs text-slate-500 dark:text-slate-400">
-              <span class="font-semibold">{{ t('studied') }}</span>
+          <div class="mb-3">
+            <div class="flex justify-between mb-1 text-xs text-slate-500 dark:text-slate-400">
+              <span>{{ t('studied') }}</span>
               <span class="font-bold text-slate-700 dark:text-slate-200">{{ pct|round(0)|int }}%</span>
             </div>
-            <div class="progress-bar"><div style="width: {{ pct }}%"></div></div>
+            <div class="progress-bar h-1.5"><div style="width: {{ pct }}%"></div></div>
           </div>
           <div class="flex gap-2">
             {% if (d.deck_type or 'mcq') == 'terms' %}
-            <a href="/deck/{{ d.id }}/flashcards" class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 13px; padding: 9px 14px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-3px;margin-right:6px;"><rect x="3" y="6" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg>
-              Flashcards
-            </a>
+            <a href="/deck/{{ d.id }}/flashcards" class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 12px; padding: 7px 10px;">📖 Flashcards</a>
             {% else %}
             <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
-              class="flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %} rounded-xl text-sm font-bold text-white text-center transition" style="padding: 9px 12px; background: linear-gradient(135deg, #10b981, #059669);">📝 {{ t('btn_test') }}</button>
+              class="flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %} rounded-xl text-xs font-bold text-white text-center transition" style="padding: 7px 10px; background: linear-gradient(135deg, #10b981, #059669);">📝 {{ t('btn_test') }}</button>
             {% endif %}
-            <a href="/deck/{{ d.id }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 12px;" title="{{ t('settings_short') }}">⚙</a>
+            <a href="/deck/{{ d.id }}" class="btn-premium-ghost" style="font-size: 12px; padding: 7px 10px;" title="{{ t('settings_short') }}">⚙</a>
           </div>
         </div>
         {% endfor %}
@@ -259,12 +236,12 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="text-center py-16 glass-premium scale-in">
-      <div class="text-7xl mb-6 pulse-soft">📚</div>
-      <h3 class="section-h" style="font-size: 1.7rem;">{{ t('create_first_deck') }}</h3>
-      <p class="text-slate-600 dark:text-slate-300 mb-8 max-w-md mx-auto mt-3">{{ t('no_decks_text2') }}</p>
+    <div class="text-center py-14 glass-premium">
+      <div class="text-6xl mb-5">📚</div>
+      <h3 class="text-xl md:text-2xl font-bold mb-2">{{ t('create_first_deck') }}</h3>
+      <p class="text-slate-600 dark:text-slate-300 mb-6 max-w-md mx-auto text-sm">{{ t('no_decks_text2') }}</p>
       {% if current_user.role == 'individual' %}
-      <div class="flex gap-3 justify-center flex-wrap">
+      <div class="flex gap-2 justify-center flex-wrap">
         <button @click="showNew = true" class="btn-premium">{{ t('new_deck_btn') }}</button>
         <a href="/import" class="btn-premium-ghost">{{ t('import_file') }}</a>
         {% if ai_available %}
@@ -315,7 +292,6 @@
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
         <span x-text="showTest?.name"></span> · {{ t('all_total') }} <span x-text="showTest?.total" class="font-bold text-indigo-600 dark:text-indigo-300"></span> {{ t('test_card_count_word') }}
       </p>
-
       <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('how_many_questions') }}</label>
       <div class="grid grid-cols-4 gap-2 mb-3">
         <template x-for="n in [10, 25, 50, 100]" :key="n">
@@ -324,14 +300,12 @@
             class="py-3 rounded-xl border-2 font-bold transition disabled:opacity-30 disabled:cursor-not-allowed" x-text="n"></button>
         </template>
       </div>
-
       <label class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 block mb-2">{{ t('custom_number') }}</label>
       <div class="flex items-center gap-3 mb-4">
         <input type="number" x-model.number="count" :max="showTest?.total" min="1"
           class="input-premium" style="flex: 1; font-size: 17px; font-weight: 700; text-align: center;">
         <button type="button" @click="count = showTest?.total" class="btn-premium-ghost" style="font-size: 12px; padding: 8px 14px;">{{ t('all_btn') }}</button>
       </div>
-
       <label class="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/40 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
         <input type="checkbox" x-model="shuffle" class="w-5 h-5 accent-indigo-600">
         <span class="text-sm">
@@ -339,7 +313,6 @@
           <span class="block text-xs text-slate-500 dark:text-slate-400">{{ t('shuffle_desc') }}</span>
         </span>
       </label>
-
       <div class="flex gap-2 justify-end">
         <button type="button" @click="showTest = null" class="btn-premium-ghost">{{ t('cancel') }}</button>
         <a :href="`/deck/${showTest?.id}/test?count=${count}&shuffle=${shuffle ? 1 : 0}`" class="btn-premium" style="background: linear-gradient(135deg, #10b981, #059669);">▶ {{ t('start') }}</a>
@@ -347,6 +320,203 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* ===== Modern, focused dashboard ===== */
+  .dash-h1 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #0f172a;
+    line-height: 1.15;
+  }
+  html.dark .dash-h1 { color: #f1f5f9; }
+  .dash-name {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .dash-sub {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+  html.dark .dash-sub { color: #94a3b8; }
+
+  /* 4 primary cards — clean, premium */
+  .primary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (min-width: 768px) {
+    .primary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  }
+  .primary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    text-decoration: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    min-height: 120px;
+  }
+  .primary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  .primary-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    color: #fff;
+  }
+  .primary-import .primary-icon { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+  .primary-study  .primary-icon { background: linear-gradient(135deg, #10b981, #059669); }
+  .primary-tutor  .primary-icon { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  .primary-market .primary-icon { background: linear-gradient(135deg, #f97316, #ea580c); }
+  .primary-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+  .primary-desc {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  html.dark .primary-card {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(148, 163, 184, 0.15);
+  }
+  html.dark .primary-title { color: #f1f5f9; }
+  html.dark .primary-desc { color: #94a3b8; }
+
+  /* Compact stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  @media (min-width: 768px) { .stats-row { gap: 12px; } }
+  .stat-mini {
+    background: rgba(99, 102, 241, 0.04);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat-mini-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #4f46e5;
+    line-height: 1;
+  }
+  .stat-mini-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  html.dark .stat-mini { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.2); }
+  html.dark .stat-mini-val { color: #a5b4fc; }
+  html.dark .stat-mini-label { color: #94a3b8; }
+
+  /* Goal card compact */
+  .goal-card {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  html.dark .goal-card {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(148, 163, 184, 0.15);
+  }
+
+  /* Deck mini cards */
+  .deck-mini {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    border-radius: 16px;
+    padding: 16px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .deck-mini:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px rgba(99, 102, 241, 0.2);
+  }
+  html.dark .deck-mini {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(148, 163, 184, 0.15);
+  }
+
+  /* Plan cards (in expandable More section) */
+  .plan-card {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 10px;
+    border-radius: 14px;
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    text-decoration: none;
+    transition: transform 0.18s ease;
+  }
+  .plan-card:hover { transform: translateY(-2px); }
+  .plan-icon { font-size: 24px; margin-bottom: 4px; }
+  .plan-num { font-size: 1rem; font-weight: 800; color: #4f46e5; }
+  .plan-label { font-size: 11px; color: #64748b; font-weight: 500; }
+  html.dark .plan-card { background: rgba(99,102,241,0.10); border-color: rgba(99,102,241,0.25); }
+  html.dark .plan-num { color: #a5b4fc; }
+  html.dark .plan-label { color: #94a3b8; }
+  .plan-flash .plan-num { color: #6366f1; }
+  .plan-test  .plan-num { color: #10b981; }
+  .plan-duel  .plan-num { color: #f59e0b; }
+  .plan-live  .plan-num { color: #ec4899; }
+
+  /* "More" collapsible section */
+  .more-section {
+    background: rgba(99, 102, 241, 0.03);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+    border-radius: 14px;
+    padding: 0;
+  }
+  .more-summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    list-style: none;
+  }
+  .more-summary::-webkit-details-marker { display: none; }
+  .more-chevron { transition: transform 0.2s ease; }
+  details[open] .more-chevron { transform: rotate(180deg); }
+  .more-body { padding: 0 16px 16px; }
+  html.dark .more-section { background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.18); }
+
+  /* Mobile tighten */
+  @media (max-width: 640px) {
+    .primary-card { padding: 14px; min-height: 110px; }
+    .primary-icon { width: 38px; height: 38px; }
+    .primary-title { font-size: 0.95rem; }
+    .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
 
 <!-- Interaktivny tour: zapuskaetsya pri ?tour=basic v URL -->
 <link rel="stylesheet" href="/static/tour/tour.css">
@@ -356,7 +526,6 @@
   var params = new URLSearchParams(window.location.search);
   if (params.get('tour') !== 'basic') return;
 
-  // Lokalizatsiya
   var lang = '{{ lang }}' || 'ru';
   var i18n_pack = {
     ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
@@ -367,85 +536,22 @@
 
   var tour_steps_pack = {
     ru: [
-      {
-        floating: true,
-        title: '👋 Добро пожаловать в QuizAIPro',
-        body: 'Сейчас за 5 минут покажу как создать свою первую колоду и пройти тест. Можно прервать в любой момент кнопкой ×.',
-      },
-      {
-        selector: '[data-tour="new-deck-btn"]',
-        title: 'Создаём колоду',
-        body: 'Колода — это набор карточек по одной теме. Например "Английский для начинающих" или "История 8 класс". Нажмите эту кнопку, чтобы создать первую колоду.',
-        side: 'bottom',
-        waitForClick: true,
-        clickHint: 'Нажмите "+ Новая колода"',
-        afterClickDelayMs: 400,
-      },
-      {
-        selector: '[data-tour="new-deck-modal"]',
-        title: 'Введите название',
-        body: 'Введите название колоды и иконку. Например "Английский 📘". Категорию можно не выбирать.',
-        side: 'right',
-      },
-      {
-        floating: true,
-        title: '🎉 Колода создана',
-        body: 'Отлично! После сохранения вас перебросит на страницу колоды. Там можно добавить вопросы вручную или импортировать из файла.<br><br>На этом первая часть тура заканчивается. Следующие части (импорт, категории) скоро появятся.',
-      },
+      { floating: true, title: '👋 Добро пожаловать в QuizAIPro', body: 'Сейчас за 5 минут покажу как создать свою первую колоду и пройти тест.' },
+      { selector: '[data-tour="new-deck-btn"]', title: 'Создаём колоду', body: 'Колода — это набор карточек по одной теме.', side: 'bottom', waitForClick: true, clickHint: 'Нажмите "+ Новая колода"', afterClickDelayMs: 400 },
+      { selector: '[data-tour="new-deck-modal"]', title: 'Введите название', body: 'Введите название колоды и иконку.', side: 'right' },
+      { floating: true, title: '🎉 Колода создана', body: 'Отлично! Теперь можно добавить вопросы вручную или импортировать из файла.' },
     ],
     en: [
-      {
-        floating: true,
-        title: '👋 Welcome to QuizAIPro',
-        body: 'Quick 5-minute walkthrough on creating your first deck and taking a test. You can stop anytime with the × button.',
-      },
-      {
-        selector: '[data-tour="new-deck-btn"]',
-        title: 'Create a deck',
-        body: 'A deck is a set of cards on one topic. For example "English Beginner" or "History grade 8". Click this button to create your first deck.',
-        side: 'bottom',
-        waitForClick: true,
-        clickHint: 'Click "+ New Deck"',
-        afterClickDelayMs: 400,
-      },
-      {
-        selector: '[data-tour="new-deck-modal"]',
-        title: 'Name your deck',
-        body: 'Enter the deck name and icon. Like "English 📘". Category is optional.',
-        side: 'right',
-      },
-      {
-        floating: true,
-        title: '🎉 Deck created',
-        body: 'After saving you\'ll go to the deck page. There you can add questions manually or import from a file.<br><br>This is the end of part 1. More tour parts (import, categories) coming soon.',
-      },
+      { floating: true, title: '👋 Welcome to QuizAIPro', body: 'Quick 5-minute walkthrough on creating your first deck.' },
+      { selector: '[data-tour="new-deck-btn"]', title: 'Create a deck', body: 'A deck is a set of cards on one topic.', side: 'bottom', waitForClick: true, clickHint: 'Click "+ New Deck"', afterClickDelayMs: 400 },
+      { selector: '[data-tour="new-deck-modal"]', title: 'Name your deck', body: 'Enter the deck name and icon.', side: 'right' },
+      { floating: true, title: '🎉 Deck created', body: 'You can add questions manually or import from a file.' },
     ],
     uz: [
-      {
-        floating: true,
-        title: '👋 QuizAIPro ga xush kelibsiz',
-        body: '5 daqiqada birinchi koloda yaratish va testdan oʻtishni koʻrsataman. Istalgan vaqt × tugmasi orqali toʻxtatishingiz mumkin.',
-      },
-      {
-        selector: '[data-tour="new-deck-btn"]',
-        title: 'Koloda yaratamiz',
-        body: 'Koloda — bir mavzudagi kartalar toʻplami. Masalan "Ingliz tili boshlovchilar uchun" yoki "Tarix 8-sinf". Birinchi kolodani yaratish uchun ushbu tugmani bosing.',
-        side: 'bottom',
-        waitForClick: true,
-        clickHint: '"+ Yangi koloda" ni bosing',
-        afterClickDelayMs: 400,
-      },
-      {
-        selector: '[data-tour="new-deck-modal"]',
-        title: 'Nomini kiriting',
-        body: 'Koloda nomini va ikonkasini kiriting. Masalan "Ingliz tili 📘". Kategoriyani tanlash shart emas.',
-        side: 'right',
-      },
-      {
-        floating: true,
-        title: '🎉 Koloda yaratildi',
-        body: 'Saqlangandan keyin koloda sahifasiga oʻtasiz. U yerda savollarni qoʻlda qoʻshish yoki fayldan import qilish mumkin.<br><br>1-qism shu yerda tugaydi. Keyingi qismlar (import, kategoriyalar) tez orada qoʻshiladi.',
-      },
+      { floating: true, title: '👋 QuizAIPro ga xush kelibsiz', body: '5 daqiqada birinchi koloda yaratishni koʻrsataman.' },
+      { selector: '[data-tour="new-deck-btn"]', title: 'Koloda yaratamiz', body: 'Koloda — bir mavzudagi kartalar toʻplami.', side: 'bottom', waitForClick: true, clickHint: '"+ Yangi koloda" ni bosing', afterClickDelayMs: 400 },
+      { selector: '[data-tour="new-deck-modal"]', title: 'Nomini kiriting', body: 'Koloda nomini va ikonkasini kiriting.', side: 'right' },
+      { floating: true, title: '🎉 Koloda yaratildi', body: 'Endi savollarni qoʻshish mumkin.' },
     ],
   };
 
@@ -453,14 +559,12 @@
     var steps = tour_steps_pack[lang] || tour_steps_pack.ru;
     QTour.start(steps, {
       onComplete: function() {
-        // Otmechaem prokhozhdeniye basic-tour'a
         try {
           var fd = new FormData();
           fd.append('_csrf', '{{ csrf_token() }}');
           fd.append('stage', 'basic');
           fetch('/api/tour/complete', { method: 'POST', body: fd });
         } catch(e) {}
-        // Ubirayem ?tour iz URL
         try {
           var url = new URL(window.location.href);
           url.searchParams.delete('tour');

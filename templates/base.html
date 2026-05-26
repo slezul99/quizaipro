@@ -1352,70 +1352,60 @@
       <span id="mob-icon-close" style="display:none">{{ icon('x', 22) }}</span>
     </button>
 
-    <!-- Desktop menu -->
+    <!-- Desktop menu — uproshchennaya navigatsiya: 4 osnovnyh + "Eshche" -->
     <div class="hidden md:flex items-center gap-1.5">
-      <a href="/dashboard" class="nav-link hidden lg:flex">
-        {{ icon('dashboard', 18) }}<span>{{ t('nav_dashboard') }}</span>
+      <!-- Glavnye 4 deystviya -->
+      {% if current_user.role in ['admin','teacher','individual'] %}
+      <a href="/import" class="nav-link" title="{{ t('nav_import') }}">
+        {{ icon('upload', 18) }}<span class="hidden lg:inline">{{ t('nav_import') }}</span>
       </a>
+      {% if ai_available %}
+      <a href="/tutor" class="nav-link" title="AI Tutor">
+        {{ icon('lightbulb', 18) }}<span class="hidden lg:inline">AI Tutor</span>
+      </a>
+      {% endif %}
+      <a href="/marketplace" class="nav-link" title="{{ t('nav_marketplace') }}">
+        {{ icon('globe', 18) }}<span class="hidden lg:inline">{{ t('nav_marketplace') }}</span>
+      </a>
+      {% endif %}
+
       <a href="/search" class="nav-icon-btn" title="{{ t('search') }}">{{ icon('search', 19) }}</a>
 
       {% if current_user.role in ['admin','teacher','individual'] %}
-      <!-- Sotsial'noe dropdown -->
+      <!-- "Eshche" — vse vtorichnoe sgruppirovano -->
       <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="nav-link">
-          {{ icon('chat', 18) }}
-          <span class="hidden lg:inline">{{ t('nav_social') }}</span>
+        <button @click="open = !open" class="nav-link" title="{{ t('plan_today_title') if false else 'More' }}">
+          {{ icon('list', 18) }}
+          <span class="hidden lg:inline">Ещё</span>
           {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-indigo-200/40">
+          class="absolute right-0 mt-2 w-64 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-indigo-200/40">
+          <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-800/30">{{ t('nav_learn') }}</div>
+          <a href="/categories" class="dd-item emerald">{{ icon('folder', 17) }} <span>{{ t('nav_categories') }}</span></a>
+          {% if ai_available %}
+          <a href="/ai" class="dd-item emerald">{{ icon('sparkles', 17) }} <span>{{ t('nav_ai_gen') }}</span></a>
+          {% endif %}
+          <a href="/stats" class="dd-item emerald">{{ icon('chart', 17) }} <span>{{ t('nav_stats') }}</span></a>
+          <a href="/test/history" class="dd-item emerald">📊 <span>История тестов</span></a>
+          <a href="/goals" class="dd-item emerald">{{ icon('target', 17) }} <span>{{ t('nav_goals') }}</span></a>
+          <a href="/achievements" class="dd-item emerald">{{ icon('trophy', 17) }} <span>{{ t('nav_achievements') }}</span></a>
+
+          <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700/40">{{ t('nav_games') }}</div>
+          <a href="/duels" class="dd-item pink">{{ icon('sword', 17) }} <span>{{ t('nav_duels') }}</span></a>
+          <a href="/tournaments" class="dd-item pink">{{ icon('trophy', 17) }} <span>{{ t('nav_tournaments') }}</span></a>
+          <a href="/live/join" class="dd-item pink">{{ icon('key', 17) }} <span>{{ t('nav_live_join') }}</span></a>
+          {% if current_user.role in ['admin','teacher','individual'] %}
+          <a href="/live/create" class="dd-item pink">{{ icon('gamepad', 17) }} <span>{{ t('nav_live_create') }}</span></a>
+          {% endif %}
+          <a href="/live/history" class="dd-item pink">{{ icon('list', 17) }} <span>{{ t('nav_live_history') }}</span></a>
+
+          <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700/40">{{ t('nav_social') }}</div>
           <a href="/chats" class="dd-item indigo">{{ icon('chat', 17) }} <span>{{ t('nav_chats') }}</span></a>
           <a href="/channels" class="dd-item indigo">{{ icon('channel', 17) }} <span>{{ t('nav_channels') }}</span></a>
           <a href="/friends" class="dd-item indigo">{{ icon('users', 17) }} <span>{{ t('nav_friends') }}</span></a>
           <a href="/study-groups" class="dd-item indigo">{{ icon('graduation', 17) }} <span>{{ t('nav_study_groups') }}</span></a>
-          <a href="/marketplace" class="dd-item indigo dd-divider">{{ icon('globe', 17) }} <span>{{ t('nav_marketplace') }}</span></a>
           <a href="/leaderboard" class="dd-item indigo">{{ icon('trophy', 17) }} <span>{{ t('nav_leaderboard') }}</span></a>
-        </div>
-      </div>
-
-      <!-- Igry dropdown -->
-      <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="nav-link">
-          {{ icon('gamepad', 18) }}
-          <span class="hidden lg:inline">{{ t('nav_games') }}</span>
-          {{ icon('chevron-down', 14, 'opacity-60') }}
-        </button>
-        <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-pink-200/40">
-          <a href="/duels" class="dd-item pink">{{ icon('sword', 17) }} <span>{{ t('nav_duels') }}</span></a>
-          <a href="/tournaments" class="dd-item pink">{{ icon('trophy', 17) }} <span>{{ t('nav_tournaments') }}</span></a>
-          {% if current_user.role in ['admin','teacher','individual'] %}
-          <a href="/live/create" class="dd-item pink dd-divider">{{ icon('gamepad', 17) }} <span>{{ t('nav_live_create') }}</span></a>
-          {% endif %}
-          <a href="/live/join" class="dd-item pink">{{ icon('key', 17) }} <span>{{ t('nav_live_join') }}</span></a>
-          <a href="/live/history" class="dd-item pink">{{ icon('list', 17) }} <span>{{ t('nav_live_history') }}</span></a>
-        </div>
-      </div>
-
-      <!-- Uchеba dropdown -->
-      <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="nav-link">
-          {{ icon('book', 18) }}
-          <span class="hidden lg:inline">{{ t('nav_learn') }}</span>
-          {{ icon('chevron-down', 14, 'opacity-60') }}
-        </button>
-        <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-emerald-200/40">
-          <a href="/categories" class="dd-item emerald">{{ icon('folder', 17) }} <span>{{ t('nav_categories') }}</span></a>
-          <a href="/import" class="dd-item emerald">{{ icon('upload', 17) }} <span>{{ t('nav_import') }}</span></a>
-          {% if ai_available %}
-          <a href="/ai" class="dd-item emerald dd-divider">{{ icon('sparkles', 17) }} <span>{{ t('nav_ai_gen') }}</span></a>
-          <a href="/tutor" class="dd-item emerald">{{ icon('lightbulb', 17) }} <span>{{ t('nav_ai_tutor') }}</span></a>
-          {% endif %}
-          <a href="/stats" class="dd-item emerald dd-divider">{{ icon('chart', 17) }} <span>{{ t('nav_stats') }}</span></a>
-          <a href="/test/history" class="dd-item emerald">📊 <span>История тестов</span></a>
-          <a href="/goals" class="dd-item emerald">{{ icon('target', 17) }} <span>{{ t('nav_goals') }}</span></a>
-          <a href="/achievements" class="dd-item emerald">{{ icon('trophy', 17) }} <span>{{ t('nav_achievements') }}</span></a>
         </div>
       </div>
       {% endif %}
