@@ -4,6 +4,11 @@
 {% block meta_description %}QuizAIPro — умная платформа подготовки к экзаменам с AI. Создавайте флешкарты, тесты, дуэли и live-сессии. AI извлекает вопросы из PDF за минуты. Бесплатно, на русском, узбекском и английском.{% endblock %}
 
 {% block extra_head %}
+<!-- Google Fonts: Plus Jakarta Sans (rounded bold like on logo) + Space Grotesk -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+
 <!-- Structured data: Schema.org JSON-LD dlya rich snippets v Google -->
 <script type="application/ld+json">
 {
@@ -213,50 +218,65 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(16px, 3vw, 36px);
+    gap: clamp(20px, 3.5vw, 48px);
     margin-bottom: 2.5rem;
     flex-wrap: nowrap;
+    padding: 0 1rem;
   }
   .hero-logo-icon {
-    height: clamp(90px, 13vw, 170px);
-    width: clamp(90px, 13vw, 170px);
+    height: clamp(110px, 16vw, 220px);
+    width: clamp(110px, 16vw, 220px);
     object-fit: contain;
     flex-shrink: 0;
-    filter: drop-shadow(0 8px 28px rgba(99,102,241,0.35));
+    filter: drop-shadow(0 12px 40px rgba(99,102,241,0.4));
+    animation: logo-float 6s ease-in-out infinite;
+  }
+  @keyframes logo-float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.02); }
   }
   .hero-logo-text {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 8px;
   }
   .hero-logo-name {
-    font-size: clamp(3.5rem, 9vw, 8rem);
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    line-height: 0.95;
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: clamp(4rem, 11vw, 10rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+    font-family: 'Plus Jakarta Sans', 'Space Grotesk', 'Inter', sans-serif;
     color: #0f172a;
+    white-space: nowrap;
   }
   .hero-logo-ai {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #06b6d4 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-weight: 800;
   }
   .hero-logo-sub {
-    font-size: clamp(0.7rem, 1.5vw, 1.05rem);
-    font-weight: 700;
-    letter-spacing: 0.28em;
+    font-size: clamp(0.75rem, 1.6vw, 1.25rem);
+    font-weight: 600;
+    letter-spacing: 0.32em;
     color: #94a3b8;
     text-transform: uppercase;
-    padding-left: 3px;
+    padding-left: 4px;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   }
-  @media (max-width: 640px) {
-    .hero-logo-block { gap: 12px; }
-    .hero-logo-icon { height: 70px; width: 70px; }
-    .hero-logo-name { font-size: clamp(2.4rem, 11vw, 4rem); }
-    .hero-logo-sub { font-size: 0.6rem; letter-spacing: 0.22em; }
+  @media (max-width: 768px) {
+    .hero-logo-block { gap: 14px; }
+    .hero-logo-icon { height: 80px; width: 80px; }
+    .hero-logo-name { font-size: clamp(2.6rem, 12vw, 4.5rem); }
+    .hero-logo-sub { font-size: 0.65rem; letter-spacing: 0.24em; }
+  }
+  @media (max-width: 480px) {
+    .hero-logo-block { gap: 10px; }
+    .hero-logo-icon { height: 64px; width: 64px; }
+    .hero-logo-name { font-size: 2.4rem; }
+    .hero-logo-sub { font-size: 0.55rem; letter-spacing: 0.2em; }
   }
 
   .hero-sub {
