@@ -4709,6 +4709,29 @@ def marketplace_clone(deck_id):
 def tutor_page():
     """AI-tutor chat — student spravlivaet AI o lyubom voprose."""
     user = current_user()
+
+    # Avtomaticheski vosstanavlivaem poslednyuyu besedu iz DB esli sessiya pustaya
+    if not session.get("tutor_conv_id"):
+        try:
+            conn = db.get_conn()
+            last_conv = conn.execute(
+                "SELECT id FROM tutor_conversations WHERE user_id=? ORDER BY updated_at DESC LIMIT 1",
+                (user["id"],)
+            ).fetchone()
+            if last_conv:
+                conv_id = last_conv["id"]
+                msgs = conn.execute(
+                    "SELECT role, content FROM tutor_messages WHERE conversation_id=? ORDER BY created_at ASC",
+                    (conv_id,)
+                ).fetchall()
+                conn.close()
+                session["tutor_conv_id"] = conv_id
+                session["tutor_history"] = [{"role": m["role"], "content": m["content"]} for m in msgs][-40:]
+            else:
+                conn.close()
+        except Exception as e:
+            print(f"[tutor_page] restore session error: {e}")
+
     return render_template(
         "tutor.html",
         is_super_admin=is_super_admin(user),
@@ -4721,8 +4744,7 @@ def tutor_page():
 def api_tutor_ask():
     """AI-tutor otvechayet na vopros polzovatelya.
 
-    Esli telo zaprosa imeet stream=1 — vozvraschaem stream chunkov (text/plain).
-    Inache — JSON {ok, answer} kak ranshe (legacy).
+    Istoriya vsegda gruzitsya iz DB (ne iz sessii) — nadezhno pri lyubom razmere.
     """
     # Hotya by odin provider dolzhen byt' nastroen (DeepSeek ili Gemini)
     if not (ai_gen.is_available() or ai_gen.is_deepseek_available()):
@@ -4736,29 +4758,38 @@ def api_tutor_ask():
     if not rate_limit(f"tutor:{user['id']}", max_attempts=15, window_seconds=60):
         return jsonify({"error": "rate_limit", "msg": "Слишком много запросов. Подождите минуту."}), 429
 
-    # Istoriya iz sessii
-    history = session.get("tutor_history", [])
-
-    # Kontekst — esli polzovatel' ukazal kolod
-    deck_context = ""
-    deck_id = request.form.get("deck_id", type=int)
-    if deck_id:
-        conn = db.get_conn()
-        cards = conn.execute("""
-            SELECT front, back FROM cards WHERE deck_id=? LIMIT 20
-        """, (deck_id,)).fetchall()
-        if cards:
-            deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
-        conn.close()
-
     lang = session.get("lang", "ru")
     want_stream = request.form.get("stream") == "1"
-    # Super-admin override: provider=deepseek|gemini (ignored dlya obychnyh polzovateley)
     provider_override = (request.form.get("provider") or "").strip().lower()
     if provider_override not in ("deepseek", "gemini"):
         provider_override = ""
     if provider_override and not is_super_admin(user):
         provider_override = ""
+
+    # Poluchaem ili sozdaem chat v DB
+    conv_id = _tutor_get_or_create_conv(user["id"], message)
+
+    # Kontekst kolody
+    deck_context = ""
+    deck_id = request.form.get("deck_id", type=int)
+    if deck_id:
+        conn = db.get_conn()
+        cards = conn.execute("SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (deck_id,)).fetchall()
+        if cards:
+            deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
+        conn.close()
+
+    # VSEGDA gruzim istoriyu iz DB — nadezhno, ne zavisit ot razmera cookie
+    conn = db.get_conn()
+    db_msgs = conn.execute(
+        "SELECT role, content FROM tutor_messages WHERE conversation_id=? ORDER BY created_at ASC",
+        (conv_id,)
+    ).fetchall()
+    conn.close()
+    history = [{"role": m["role"], "content": m["content"]} for m in db_msgs]
+
+    # Sohranim user-soobshchenie v DB
+    _tutor_save_message(conv_id, user["id"], "user", message)
 
     if want_stream:
         # Stream: yield chunks po mere generatsii (DeepSeek native, Gemini fallback)
@@ -4791,13 +4822,9 @@ def api_tutor_ask():
                     yield chunk
             except Exception as e:
                 print(f"[/api/tutor/ask stream] {type(e).__name__}: {e}")
-            # Posle zaversheniya — sokhranyaem v sessiyu i DB
+            # Posle zaversheniya — sokhranyaem tolko v DB (ne v sessiyu — cookie limit)
             answer_text = "".join(full).strip()
             if answer_text:
-                hist = session.get("tutor_history", [])
-                hist.append({"role": "user", "content": message})
-                hist.append({"role": "assistant", "content": answer_text})
-                session["tutor_history"] = hist[-40:]
                 _tutor_save_message(conv_id, user["id"], "assistant", answer_text)
 
         return Response(_stream(), mimetype="text/plain; charset=utf-8", headers={
@@ -4969,9 +4996,17 @@ def _tutor_get_or_create_conv(user_id: int, first_message: str) -> int:
             "SELECT id FROM tutor_conversations WHERE id=? AND user_id=?",
             (conv_id, user_id)
         ).fetchone()
-        conn.close()
         if row:
+            # Esli istoriya v sessii pustaya — podgruzim iz DB
+            if not session.get("tutor_history"):
+                msgs = conn.execute(
+                    "SELECT role, content FROM tutor_messages WHERE conversation_id=? ORDER BY created_at ASC",
+                    (conv_id,)
+                ).fetchall()
+                session["tutor_history"] = [{"role": m["role"], "content": m["content"]} for m in msgs][-40:]
+            conn.close()
             return conv_id
+        conn.close()
     # Sozdaem novyy chat
     title = first_message.strip()[:60] or "Новый чат"
     conn = db.get_conn()
