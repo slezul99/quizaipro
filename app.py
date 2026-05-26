@@ -4793,7 +4793,7 @@ def api_tutor_ask():
                 hist = session.get("tutor_history", [])
                 hist.append({"role": "user", "content": message})
                 hist.append({"role": "assistant", "content": answer_text})
-                session["tutor_history"] = hist[-20:]
+                session["tutor_history"] = hist[-40:]
 
         return Response(_stream(), mimetype="text/plain; charset=utf-8", headers={
             "X-AI-Provider": used_provider,
@@ -4812,7 +4812,7 @@ def api_tutor_ask():
 
     history.append({"role": "user", "content": message})
     history.append({"role": "assistant", "content": answer})
-    session["tutor_history"] = history[-20:]
+    session["tutor_history"] = history[-40:]
     return jsonify({"ok": True, "answer": answer})
 
 
@@ -7330,3 +7330,4 @@ if __name__ == "__main__":
     print(f"  AI:     {'YES' if ai_gen.is_available() else 'NO'}")
     print("=" * 50)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
+

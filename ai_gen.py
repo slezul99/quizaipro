@@ -942,13 +942,22 @@ def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list
 - Без вступлений вроде "Конечно!" — сразу к сути
 - Адаптируй длину под запрос: коротко на короткие вопросы, развёрнуто на запросы списков и подробных объяснений
 - Markdown разрешён (списки, **жирный**, заголовки)
+- ВАЖНО: Помни контекст всего разговора. Если пользователь уже назвал тему (например, "английский язык"), не спрашивай её снова.
 """
 
     if deck_context:
         system_prompt += f"\n\nКОНТЕКСТ КОЛОДЫ:\n{deck_context[:1500]}"
 
+    # Esli istoriya dlinnaya — dobavlyaem pervoe soobshchenie kak "nachalnaya tema"
+    # chtoby AI ne zabyl s chego nachinalsya razgovor
+    if len(history) > 10:
+        first_user = next((h["content"] for h in history if h["role"] == "user"), None)
+        if first_user:
+            system_prompt += f"\n\nНАЧАЛО РАЗГОВОРА (контекст темы):\nСтудент начал с вопроса: «{first_user[:300]}»\nПомни эту тему на протяжении всего диалога."
+
+    # Berem poslednie 20 soobshcheniy (vmesto 6) — bolshe konteksta
     messages = []
-    for h in history[-6:]:
+    for h in history[-20:]:
         role = "user" if h["role"] == "user" else "assistant"
         messages.append({"role": role, "content": h["content"]})
     messages.append({"role": "user", "content": user_message})
