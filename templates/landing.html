@@ -364,18 +364,39 @@
   <div class="hero-noise"></div>
 
   <div class="hero-text">
-    <!-- Site Logo -->
-    <div class="reveal" style="margin-bottom: 2.5rem;">
-      <div style="display:inline-flex; align-items:center; gap:20px; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.9); border-radius:24px; padding:18px 36px; box-shadow:0 8px 40px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.04);">
+    <!-- Site Logo — wide hero banner -->
+    <div class="reveal" style="margin-bottom: 2.5rem; width:100%; max-width:720px; margin-left:auto; margin-right:auto;">
+      <div style="
+        display:flex; align-items:center; justify-content:center; gap:28px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,243,255,0.92) 100%);
+        backdrop-filter:blur(24px);
+        border:1.5px solid rgba(255,255,255,0.95);
+        border-radius:28px;
+        padding:28px 48px;
+        box-shadow: 0 12px 48px rgba(99,102,241,0.18), 0 2px 8px rgba(0,0,0,0.04);
+        width:100%;
+      ">
         <!-- Icon -->
-        <img src="/static/logo-org.png" alt="QuizAIPro"
-             style="height:72px; width:72px; object-fit:contain; flex-shrink:0;">
-        <!-- Text block -->
-        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:2px;">
-          <div style="font-size:clamp(2rem,5vw,3.2rem); font-weight:900; letter-spacing:-0.03em; line-height:1; font-family:'Space Grotesk','Inter',sans-serif; color:#0f172a;">
-            Quiz<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">AI</span>Pro
-          </div>
-          <div style="font-size:clamp(0.65rem,1.2vw,0.8rem); font-weight:700; letter-spacing:0.22em; color:#8b9ab0; text-transform:uppercase; padding-left:2px;">AI-POWERED LEARNING</div>
+        <img src="/static/logo-org.png" alt="QuizAIPro icon"
+             style="height:90px; width:90px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 4px 16px rgba(99,102,241,0.3));">
+        <!-- Text -->
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+          <div style="
+            font-size: clamp(2.8rem, 6vw, 4.2rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            font-family: 'Space Grotesk','Inter',sans-serif;
+            color: #0f172a;
+          ">Quiz<span style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 60%,#06b6d4 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">AI</span>Pro</div>
+          <div style="
+            font-size: clamp(0.7rem, 1.4vw, 0.9rem);
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            color: #94a3b8;
+            text-transform: uppercase;
+            padding-left: 3px;
+          ">AI-POWERED LEARNING</div>
         </div>
       </div>
     </div>
