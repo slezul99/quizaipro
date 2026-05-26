@@ -1178,7 +1178,7 @@
   html.dark .mob-link.red { color: #fca5a5; }
   html.dark .mob-link.red:hover { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
   html.dark [x-show="mobileMenu"] {
-    background: rgba(15, 23, 41, 0.98) !important;
+    background: rgba(15, 23, 41, 0.99) !important;
     border-top-color: rgba(99,102,241,0.3) !important;
   }
   /* ============ MOBILE ADAPTATION ============ */
@@ -1339,8 +1339,7 @@
 {% from "_icons.html" import icon %}
 <header class="sticky top-0 z-40 nav-blur">
   <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center"
-       x-data="{ mobileMenu: false }"
-       x-init="$watch('mobileMenu', v => { document.body.style.overflow = v ? 'hidden' : ''; })">
+       x-data="{ mobileMenu: false }">
     <a href="/dashboard" class="brand-logo">
       <span class="brand-logo-icon">{{ icon('brain', 22) }}</span>
       <span class="brand-logo-text">{{ t('app_name') }}</span>
@@ -1350,7 +1349,7 @@
     </a>
 
     <!-- Mobile burger -->
-    <button @click="mobileMenu = !mobileMenu" class="md:hidden nav-icon-btn">
+    <button @click="mobileMenu = !mobileMenu; document.body.style.overflow = mobileMenu ? 'hidden' : ''" class="md:hidden nav-icon-btn">
       <span x-show="!mobileMenu">{{ icon('menu', 22) }}</span>
       <span x-show="mobileMenu" x-cloak>{{ icon('x', 22) }}</span>
     </button>
@@ -1469,11 +1468,11 @@
       </div>
     </div>
 
-    <!-- Mobile menu -->
-    <div x-show="mobileMenu" x-transition x-cloak
+    <!-- Mobile menu — NO x-transition (causes freeze on iOS/Android with backdrop-filter) -->
+    <div x-show="mobileMenu" x-cloak
       class="fixed top-[56px] left-0 right-0 bottom-0 md:hidden shadow-2xl overflow-y-auto z-50"
-      style="background: rgba(255,255,255,0.98); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(99,102,241,0.15);"
-      @click="if ($event.target.tagName === 'A' || $event.target.closest('a')) { mobileMenu = false; }">
+      style="background: rgba(255,255,255,0.99); border-top: 1px solid rgba(99,102,241,0.15); touch-action: pan-y;"
+      @click="if ($event.target.tagName === 'A' || $event.target.closest('a')) { mobileMenu = false; document.body.style.overflow = ''; }">
       <div class="max-w-7xl mx-auto px-6 py-4 space-y-1">
         <a href="/dashboard" class="mob-link indigo">{{ icon('dashboard', 19) }} <span>{{ t('nav_dashboard') }}</span></a>
         <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
