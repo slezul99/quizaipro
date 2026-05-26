@@ -213,11 +213,12 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
 
-  /* === Hero Logo (raw transparent image, no container styling) === */
+  /* === Hero Logo (icon PNG + custom text) === */
   .hero-logo-block {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: clamp(16px, 2.5vw, 40px);
     margin-bottom: 2.5rem;
     padding: 0;
     width: 100%;
@@ -226,25 +227,60 @@
     box-shadow: none;
     border-radius: 0;
     backdrop-filter: none;
+    flex-wrap: nowrap;
   }
-  .hero-logo-banner {
-    width: 100%;
-    max-width: 1200px;
-    height: auto;
+  .hero-logo-icon {
+    height: clamp(110px, 16vw, 220px);
+    width: auto;
     object-fit: contain;
+    flex-shrink: 0;
     background: transparent;
     border: none;
     box-shadow: none;
-    border-radius: 0;
-    padding: 0;
-    outline: none;
     filter: none;
   }
+  .hero-logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .hero-logo-name {
+    font-size: clamp(4rem, 11vw, 10rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+    font-family: 'Plus Jakarta Sans', 'Space Grotesk', 'Inter', sans-serif;
+    color: #0f172a;
+    white-space: nowrap;
+  }
+  .hero-logo-ai {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+  }
+  .hero-logo-sub {
+    font-size: clamp(0.7rem, 1.5vw, 1.15rem);
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    padding-left: 4px;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  }
   @media (max-width: 768px) {
-    .hero-logo-banner { max-width: 95vw; }
+    .hero-logo-block { gap: 12px; }
+    .hero-logo-icon { height: 80px; }
+    .hero-logo-name { font-size: clamp(2.6rem, 12vw, 4.5rem); }
+    .hero-logo-sub { font-size: 0.65rem; letter-spacing: 0.24em; }
   }
   @media (max-width: 480px) {
-    .hero-logo-banner { max-width: 100vw; }
+    .hero-logo-block { gap: 10px; }
+    .hero-logo-icon { height: 64px; }
+    .hero-logo-name { font-size: 2.4rem; }
+    .hero-logo-sub { font-size: 0.55rem; letter-spacing: 0.2em; }
   }
 
   .hero-sub {
@@ -404,9 +440,13 @@
   <div class="hero-noise"></div>
 
   <div class="hero-text">
-    <!-- Site Logo — full banner image -->
+    <!-- Site Logo — icon (PNG) + custom text with gradient AI -->
     <div class="reveal hero-logo-block">
-      <img src="/static/logo-banner.png?v=6" alt="QuizAIPro" class="hero-logo-banner">
+      <img src="/static/logo-org.png?v=7" alt="QuizAIPro icon" class="hero-logo-icon">
+      <div class="hero-logo-text">
+        <div class="hero-logo-name">Quiz<span class="hero-logo-ai">AI</span>Pro</div>
+        <div class="hero-logo-sub">AI-POWERED LEARNING</div>
+      </div>
     </div>
 
     <div class="reveal hero-tag">
