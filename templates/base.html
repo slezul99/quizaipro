@@ -1466,49 +1466,89 @@
       </div>
     </div>
 
-    <!-- Mobile menu — pure JS, no Alpine, no backdrop-filter -->
-    <div id="mobile-menu"
-      class="fixed left-0 right-0 bottom-0 md:hidden overflow-y-auto z-50"
-      style="top:56px; background:#fff; border-top:1px solid rgba(99,102,241,0.15); display:none;">
-      <div class="max-w-7xl mx-auto px-6 py-4 space-y-1"
-        onclick="if(event.target.tagName==='A'||event.target.closest('a')){closeMobileMenu();}">
-        <a href="/dashboard" class="mob-link indigo">{{ icon('dashboard', 19) }} <span>{{ t('nav_dashboard') }}</span></a>
-        <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
-        <a href="/test/history" class="mob-link indigo">📊 <span>История тестов</span></a>
-        <a href="/goals" class="mob-link indigo">{{ icon('target', 19) }} <span>{{ t('nav_goals') }}</span></a>
-        <a href="/achievements" class="mob-link indigo">{{ icon('trophy', 19) }} <span>{{ t('nav_achievements') }}</span></a>
-        <a href="/help" class="mob-link indigo">{{ icon('help', 19) }} <span>{{ t('nav_help') }}</span></a>
-        <a href="/support" class="mob-link indigo">{{ icon('chat', 19) }} <span>{{ t('sup_badge') }}</span></a>
-        {% if current_user.role in ['admin','teacher','individual'] %}
-        <a href="/live/create" class="mob-link pink">{{ icon('gamepad', 19) }} <span>{{ t('nav_live_create') }}</span></a>
-        {% endif %}
-        <a href="/live/join" class="mob-link pink">{{ icon('key', 19) }} <span>{{ t('nav_live_join') }}</span></a>
-        <a href="/live/history" class="mob-link pink">{{ icon('list', 19) }} <span>{{ t('nav_live_history') }}</span></a>
-        {% if current_user.role in ['admin','teacher','individual'] %}
-        <a href="/categories" class="mob-link emerald">{{ icon('folder', 19) }} <span>{{ t('nav_categories') }}</span></a>
-        <a href="/import" class="mob-link emerald">{{ icon('upload', 19) }} <span>{{ t('nav_import') }}</span></a>
-        {% if ai_available %}
-        <a href="/ai" class="mob-link emerald">{{ icon('sparkles', 19) }} <span>AI</span></a>
-        {% endif %}
-        {% endif %}
-        {% if current_user.role in ['admin','teacher'] %}
-        <a href="/admin/students" class="mob-link indigo">{{ icon('users', 19) }} <span>{{ t('users') }}</span></a>
-        {% endif %}
-        <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 border-t border-indigo-100 dark:border-indigo-700/40 mt-2">
-          {{ icon('flame', 16) }} {{ current_user.streak or 0 }} {{ t('g_left_days') }} · {{ icon('star', 16) }} {{ current_user.xp or 0 }} XP
-        </div>
-        <a href="/logout" class="mob-link red">{{ icon('logout', 19) }} <span>{{ t('logout') }}</span></a>
-      </div>
-    </div>
   </nav>
 </header>
 
+<!-- Mobile menu — vyneseno IZ <header> chtoby ne bylo containing block ot backdrop-filter -->
+<div id="mobile-menu-overlay" onclick="closeMobileMenu()"
+  style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.4); z-index:48;"></div>
+<div id="mobile-menu" class="md:hidden"
+  style="display:none; position:fixed; top:56px; left:0; right:0; bottom:0; z-index:49; background:#fff; overflow-y:auto; -webkit-overflow-scrolling:touch; border-top:1px solid rgba(99,102,241,0.15);">
+  {% if current_user %}
+  <div class="max-w-7xl mx-auto px-5 py-4 space-y-1"
+    onclick="if(event.target.tagName==='A'||event.target.closest('a')){closeMobileMenu();}">
+    <!-- Glavnye 4 deystviya -->
+    <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-2 pb-1">{{ t('nav_dashboard') }}</div>
+    <a href="/dashboard" class="mob-link indigo">{{ icon('dashboard', 19) }} <span>{{ t('nav_dashboard') }}</span></a>
+    {% if current_user.role in ['admin','teacher','individual'] %}
+    <a href="/import" class="mob-link emerald">{{ icon('upload', 19) }} <span>{{ t('nav_import') }}</span></a>
+    {% if ai_available %}
+    <a href="/tutor" class="mob-link emerald">{{ icon('lightbulb', 19) }} <span>{{ t('nav_ai_tutor') }}</span></a>
+    <a href="/ai" class="mob-link emerald">{{ icon('sparkles', 19) }} <span>{{ t('nav_ai_gen') }}</span></a>
+    {% endif %}
+    <a href="/categories" class="mob-link emerald">{{ icon('folder', 19) }} <span>{{ t('nav_categories') }}</span></a>
+    <a href="/marketplace" class="mob-link indigo">{{ icon('globe', 19) }} <span>{{ t('nav_marketplace') }}</span></a>
+    {% endif %}
+
+    <!-- Vtorichnoe -->
+    <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-3 pb-1 border-t border-slate-100 mt-2">{{ t('nav_learn') }}</div>
+    <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
+    <a href="/goals" class="mob-link indigo">{{ icon('target', 19) }} <span>{{ t('nav_goals') }}</span></a>
+    <a href="/achievements" class="mob-link indigo">{{ icon('trophy', 19) }} <span>{{ t('nav_achievements') }}</span></a>
+
+    <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-3 pb-1 border-t border-slate-100 mt-2">{{ t('nav_games') }}</div>
+    <a href="/duels" class="mob-link pink">{{ icon('sword', 19) }} <span>{{ t('nav_duels') }}</span></a>
+    <a href="/tournaments" class="mob-link pink">{{ icon('trophy', 19) }} <span>{{ t('nav_tournaments') }}</span></a>
+    <a href="/live/join" class="mob-link pink">{{ icon('key', 19) }} <span>{{ t('nav_live_join') }}</span></a>
+    {% if current_user.role in ['admin','teacher','individual'] %}
+    <a href="/live/create" class="mob-link pink">{{ icon('gamepad', 19) }} <span>{{ t('nav_live_create') }}</span></a>
+    {% endif %}
+
+    <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-3 pb-1 border-t border-slate-100 mt-2">{{ t('nav_social') }}</div>
+    <a href="/chats" class="mob-link indigo">{{ icon('chat', 19) }} <span>{{ t('nav_chats') }}</span></a>
+    <a href="/channels" class="mob-link indigo">{{ icon('channel', 19) }} <span>{{ t('nav_channels') }}</span></a>
+    <a href="/friends" class="mob-link indigo">{{ icon('users', 19) }} <span>{{ t('nav_friends') }}</span></a>
+    <a href="/study-groups" class="mob-link indigo">{{ icon('graduation', 19) }} <span>{{ t('nav_study_groups') }}</span></a>
+    <a href="/leaderboard" class="mob-link indigo">{{ icon('trophy', 19) }} <span>{{ t('nav_leaderboard') }}</span></a>
+
+    <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-3 pb-1 border-t border-slate-100 mt-2">Akkaunt</div>
+    <a href="/help" class="mob-link indigo">{{ icon('help', 19) }} <span>{{ t('nav_help') }}</span></a>
+    <a href="/support" class="mob-link indigo">{{ icon('chat', 19) }} <span>{{ t('sup_badge') }}</span></a>
+    <a href="/settings" class="mob-link indigo">{{ icon('settings', 19) }} <span>{{ t('nav_settings') }}</span></a>
+    {% if current_user.role in ['admin','teacher'] %}
+    <a href="/admin/students" class="mob-link indigo">{{ icon('users', 19) }} <span>{{ t('users') }}</span></a>
+    {% endif %}
+    {% if is_super_admin %}
+    <a href="/superadmin" class="mob-link indigo">{{ icon('shield', 19) }} <span>Super Admin</span></a>
+    {% endif %}
+
+    <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 border-t border-slate-100 mt-2">
+      {{ icon('flame', 16) }} {{ current_user.streak or 0 }} {{ t('g_left_days') }} · {{ icon('star', 16) }} {{ current_user.xp or 0 }} XP
+    </div>
+    <a href="/logout" class="mob-link red">{{ icon('logout', 19) }} <span>{{ t('logout') }}</span></a>
+  </div>
+  {% endif %}
+</div>
+
 <style>
   html.dark #mobile-menu { background: #0f1729 !important; }
+  html.dark #mobile-menu .border-slate-100 { border-color: rgba(99,102,241,0.2) !important; }
+  /* Otklyuchaem backdrop-filter na nav-blur tolko na mobile (vyzyvaet freeze pri otkrytii menyu) */
+  @media (max-width: 767px) {
+    .nav-blur {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: rgba(255,255,255,0.96) !important;
+    }
+    html.dark .nav-blur {
+      background: rgba(15,23,42,0.96) !important;
+    }
+  }
 </style>
 <script>
 function toggleMobileMenu() {
   var menu = document.getElementById('mobile-menu');
+  var ov = document.getElementById('mobile-menu-overlay');
   var iconOpen = document.getElementById('mob-icon-open');
   var iconClose = document.getElementById('mob-icon-close');
   var isOpen = menu.style.display !== 'none';
@@ -1516,23 +1556,26 @@ function toggleMobileMenu() {
     closeMobileMenu();
   } else {
     menu.style.display = 'block';
+    ov.style.display = 'block';
     iconOpen.style.display = 'none';
     iconClose.style.display = '';
-    document.body.style.overflow = 'hidden';
   }
 }
 function closeMobileMenu() {
   var menu = document.getElementById('mobile-menu');
+  var ov = document.getElementById('mobile-menu-overlay');
   var iconOpen = document.getElementById('mob-icon-open');
   var iconClose = document.getElementById('mob-icon-close');
-  menu.style.display = 'none';
-  iconOpen.style.display = '';
-  iconClose.style.display = 'none';
-  document.body.style.overflow = '';
+  if (menu) menu.style.display = 'none';
+  if (ov) ov.style.display = 'none';
+  if (iconOpen) iconOpen.style.display = '';
+  if (iconClose) iconClose.style.display = 'none';
 }
-// Zakryt pri resize na desktop
 window.addEventListener('resize', function() {
   if (window.innerWidth >= 768) closeMobileMenu();
+});
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeMobileMenu();
 });
 </script>
 {% endif %}
