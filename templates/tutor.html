@@ -52,20 +52,47 @@
 
   @media (max-width: 768px) {
     .tutor-sidebar { display: none; }
-    .tutor-sidebar.open { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 50; width: 100%; max-width: 300px; padding: 1rem; }
+    .tutor-sidebar.open {
+      display: flex; flex-direction: column;
+      position: fixed; inset: 0; z-index: 50;
+      width: 100%; max-width: 300px;
+      padding: 1rem;
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    }
+    html.dark .tutor-sidebar.open {
+      background: rgba(15,23,41,0.98);
+    }
   }
 </style>
 {% endblock %}
 {% block content %}
 {% from "_icons.html" import icon %}
-<div class="relative" x-data="tutorApp()" x-init="init()" style="height: calc(100vh - 80px); display: flex; gap: 0;">
+<div class="relative" x-data="tutorApp()" x-init="init()" style="height: calc(100dvh - 60px); display: flex; gap: 0; overflow: hidden;">
+
+  <!-- Mobile sidebar toggle button -->
+  <button @click="sidebarOpen = !sidebarOpen"
+    class="md:hidden fixed bottom-24 left-4 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white"
+    style="background: linear-gradient(135deg, #6366f1, #8b5cf6);"
+    x-show="!sidebarOpen">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
 
   <!-- ===== SIDEBAR ===== -->
-  <div class="tutor-sidebar glass-premium flex flex-col mr-4" style="padding: 0.75rem; max-height: 100%;">
+  <div class="tutor-sidebar glass-premium flex flex-col mr-4"
+    :class="sidebarOpen ? 'open' : ''"
+    style="padding: 0.75rem; max-height: 100%;">
     <!-- Header -->
     <div class="flex items-center justify-between mb-2 px-1">
       <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ t('nav_ai_tutor') }}</span>
-      <button @click="newConv()" class="btn-premium-ghost" style="padding: 4px 10px; font-size: 12px;">+ {{ t('tu_new') }}</button>
+      <div class="flex items-center gap-1">
+        <button @click="newConv()" class="btn-premium-ghost" style="padding: 4px 10px; font-size: 12px; min-height: 36px;">+ {{ t('tu_new') }}</button>
+        <button @click="sidebarOpen = false" class="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Search -->
@@ -148,7 +175,7 @@
           <p class="text-slate-600 dark:text-slate-300 max-w-md mx-auto text-sm mb-5 mt-2">{{ t('tu_welcome_sub') }}</p>
           <div class="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
             <template x-for="s in suggestions" :key="s">
-              <button @click="newMsg = s; send()" class="text-xs bg-white/70 dark:bg-slate-800/40 border border-indigo-200/50 dark:border-indigo-700/40 hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 px-3 py-1.5 rounded-full transition font-semibold text-slate-700 dark:text-slate-200" x-text="s"></button>
+              <button @click="newMsg = s; send()" class="bg-white/70 dark:bg-slate-800/40 border border-indigo-200/50 dark:border-indigo-700/40 hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 px-4 py-2.5 rounded-full transition font-semibold text-slate-700 dark:text-slate-200" style="font-size: 13px; min-height: 44px;" x-text="s"></button>
             </template>
           </div>
         </div>
@@ -188,10 +215,10 @@
         <textarea x-model="newMsg" @keydown.enter.prevent="if (!$event.shiftKey) send()"
           rows="1" :disabled="loading"
           placeholder="{{ t('tu_input_ph') }}"
-          class="input-premium flex-1" style="padding: 10px 14px; resize: none;"></textarea>
+          class="input-premium flex-1" style="padding: 10px 14px; resize: none; min-height: 44px;"></textarea>
         <button type="submit" :disabled="!newMsg.trim() || loading"
           :class="(!newMsg.trim() || loading) ? 'opacity-40 cursor-not-allowed' : ''"
-          class="btn-premium" style="padding: 10px 18px;">→</button>
+          class="btn-premium" style="padding: 10px 18px; min-height: 44px; min-width: 44px;">→</button>
       </form>
     </div>
   </div><!-- end main -->
@@ -210,6 +237,7 @@ function tutorApp() {
     newMsg: '',
     loading: false,
     provider: localStorage.getItem('tutor_provider') || '',
+    sidebarOpen: window.innerWidth >= 768,
     suggestions: [
       {{ t('tu_sug_1')|tojson }},
       {{ t('tu_sug_2')|tojson }},
