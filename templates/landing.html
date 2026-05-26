@@ -213,70 +213,32 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
 
-  /* === Hero Logo Block (main title replacement) === */
+  /* === Hero Logo Block (main title — full banner image) === */
   .hero-logo-block {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: clamp(20px, 3.5vw, 48px);
+    align-items: center;
     margin-bottom: 2.5rem;
-    flex-wrap: nowrap;
     padding: 0 1rem;
+    width: 100%;
   }
-  .hero-logo-icon {
-    height: clamp(110px, 16vw, 220px);
-    width: clamp(110px, 16vw, 220px);
+  .hero-logo-banner {
+    width: 100%;
+    max-width: 820px;
+    height: auto;
     object-fit: contain;
-    flex-shrink: 0;
-    filter: drop-shadow(0 12px 40px rgba(99,102,241,0.4));
+    filter: drop-shadow(0 12px 40px rgba(99,102,241,0.25));
     animation: logo-float 6s ease-in-out infinite;
   }
   @keyframes logo-float {
     0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-6px) scale(1.02); }
-  }
-  .hero-logo-text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .hero-logo-name {
-    font-size: clamp(4rem, 11vw, 10rem);
-    font-weight: 800;
-    letter-spacing: -0.045em;
-    line-height: 0.92;
-    font-family: 'Plus Jakarta Sans', 'Space Grotesk', 'Inter', sans-serif;
-    color: #0f172a;
-    white-space: nowrap;
-  }
-  .hero-logo-ai {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800;
-  }
-  .hero-logo-sub {
-    font-size: clamp(0.75rem, 1.6vw, 1.25rem);
-    font-weight: 600;
-    letter-spacing: 0.32em;
-    color: #94a3b8;
-    text-transform: uppercase;
-    padding-left: 4px;
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    50% { transform: translateY(-6px) scale(1.015); }
   }
   @media (max-width: 768px) {
-    .hero-logo-block { gap: 14px; }
-    .hero-logo-icon { height: 80px; width: 80px; }
-    .hero-logo-name { font-size: clamp(2.6rem, 12vw, 4.5rem); }
-    .hero-logo-sub { font-size: 0.65rem; letter-spacing: 0.24em; }
+    .hero-logo-banner { max-width: 92vw; }
   }
   @media (max-width: 480px) {
-    .hero-logo-block { gap: 10px; }
-    .hero-logo-icon { height: 64px; width: 64px; }
-    .hero-logo-name { font-size: 2.4rem; }
-    .hero-logo-sub { font-size: 0.55rem; letter-spacing: 0.2em; }
+    .hero-logo-banner { max-width: 96vw; }
   }
 
   .hero-sub {
@@ -436,13 +398,9 @@
   <div class="hero-noise"></div>
 
   <div class="hero-text">
-    <!-- Site Logo — main hero title (replaces text title) -->
+    <!-- Site Logo — full banner image -->
     <div class="reveal hero-logo-block">
-      <img src="/static/logo-org.png?v=2" alt="QuizAIPro icon" class="hero-logo-icon">
-      <div class="hero-logo-text">
-        <div class="hero-logo-name">Quiz<span class="hero-logo-ai">AI</span>Pro</div>
-        <div class="hero-logo-sub">AI-POWERED LEARNING</div>
-      </div>
+      <img src="/static/logo-banner.png?v=3" alt="QuizAIPro" class="hero-logo-banner">
     </div>
 
     <div class="reveal hero-tag">
