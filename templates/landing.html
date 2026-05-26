@@ -198,9 +198,9 @@
 
   .hero-text { position: relative; z-index: 3; text-align: center; padding: 9rem 1.5rem 4rem; }
   .hero-title {
-    font-size: clamp(2.8rem, 6vw, 5.2rem);
-    font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
-    color: #0f172a; margin-bottom: 1.25rem;
+    font-size: clamp(3.2rem, 7vw, 6.5rem);
+    font-weight: 900; letter-spacing: -0.04em; line-height: 1.02;
+    color: #0f172a; margin-bottom: 1.5rem;
     font-family: 'Space Grotesk', 'Inter', sans-serif;
   }
   .hero-title-accent {
@@ -208,32 +208,32 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .hero-sub {
-    font-size: clamp(1rem, 1.4vw, 1.15rem); color: #64748b;
-    max-width: 520px; margin: 0 auto 2.5rem; line-height: 1.6;
+    font-size: clamp(1.1rem, 1.8vw, 1.35rem); color: #64748b;
+    max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.65;
   }
   .hero-tag {
-    display: inline-flex; align-items: center; gap: 8px;
+    display: inline-flex; align-items: center; gap: 10px;
     background: rgba(255,255,255,0.9); border: 1px solid rgba(200,190,175,0.4);
-    padding: 6px 16px; border-radius: 999px;
-    font-size: 13px; color: #64748b; font-weight: 500;
-    margin-bottom: 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 8px 20px; border-radius: 999px;
+    font-size: 14px; color: #64748b; font-weight: 600;
+    margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
-  .hero-tag .dot { width: 7px; height: 7px; background: #10b981; border-radius: 50%; animation: pulse 2s ease-in-out infinite; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+  .hero-tag .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s ease-in-out infinite; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-  .btn-hero { display: inline-flex; align-items: center; gap: 8px; padding: 13px 28px; border-radius: 999px; font-weight: 600; font-size: 15px; transition: all 0.25s cubic-bezier(0.16,1,0.3,1); }
+  .btn-hero { display: inline-flex; align-items: center; gap: 8px; padding: 15px 34px; border-radius: 999px; font-weight: 700; font-size: 16px; transition: all 0.25s cubic-bezier(0.16,1,0.3,1); }
   .btn-hero-primary { background: #0f172a; color: white; box-shadow: 0 4px 16px rgba(15,23,42,0.25); }
   .btn-hero-primary:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,23,42,0.35); }
   .btn-hero-ghost { background: rgba(255,255,255,0.9); border: 1.5px solid rgba(15,23,42,0.12); color: #1e293b; }
   .btn-hero-ghost:hover { background: #fff; transform: translateY(-2px); border-color: rgba(15,23,42,0.25); }
   .stage-3d { display: none; }
 
-  .section { padding: 6rem 1.5rem; position: relative; }
+  .section { padding: 7rem 1.5rem; position: relative; }
   .section-inner { max-width: 1200px; margin: 0 auto; }
   .section-label {
     display: inline-flex; align-items: center; gap: 10px;
-    padding: 10px 24px; border-radius: 999px;
+    padding: 11px 26px; border-radius: 999px;
     text-transform: uppercase; letter-spacing: 0.18em;
-    font-weight: 700; font-size: 13px; margin-bottom: 2rem;
+    font-weight: 700; font-size: 14px; margin-bottom: 2rem;
     background: rgba(255,255,255,0.9); border: 1.5px solid rgba(99,102,241,0.2);
     color: #4f46e5; box-shadow: 0 4px 16px -4px rgba(99,102,241,0.12);
     position: relative; overflow: hidden;
@@ -245,18 +245,20 @@
     background-size: 200% 100%; animation: shine 3.5s ease-in-out infinite; pointer-events: none;
   }
   @keyframes shine { 0%{background-position:200% 0;} 100%{background-position:-100% 0;} }
-  .section-label .lbl-dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#ec4899); box-shadow: 0 0 10px rgba(139,92,246,0.7); animation: pulse-dot 2s ease-in-out infinite; flex-shrink: 0; }
+  .section-label .lbl-dot { width: 9px; height: 9px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#ec4899); box-shadow: 0 0 10px rgba(139,92,246,0.7); animation: pulse-dot 2s ease-in-out infinite; flex-shrink: 0; }
   @keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.5);opacity:0.7;} }
-  .section-title { font-size: clamp(2.4rem, 5vw, 4.5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 1.25rem; color: #0f172a; font-family: 'Space Grotesk','Inter',sans-serif; }
+  .section-title { font-size: clamp(2.8rem, 5.5vw, 5.5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.03; margin-bottom: 1.25rem; color: #0f172a; font-family: 'Space Grotesk','Inter',sans-serif; }
   .section-title .accent { background: linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
   .section-divider { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:1.5rem; }
-  .section-divider .line { height:2px; width:60px; background:linear-gradient(90deg,transparent,#6366f1,transparent); border-radius:2px; }
-  .section-divider .star { color:#8b5cf6; font-size:16px; animation:star-spin 6s linear infinite; }
+  .section-divider .line { height:2px; width:70px; background:linear-gradient(90deg,transparent,#6366f1,transparent); border-radius:2px; }
+  .section-divider .star { color:#8b5cf6; font-size:20px; animation:star-spin 6s linear infinite; }
   @keyframes star-spin { to{transform:rotate(360deg);} }
-  .section-sub { font-size:clamp(1rem,1.5vw,1.2rem); color:#64748b; max-width:680px; margin:0 auto; line-height:1.6; }
-  .feature { background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:20px; padding:2rem; transition:all 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow:0 2px 8px rgba(15,23,42,0.04); }
+  .section-sub { font-size:clamp(1.1rem,1.6vw,1.3rem); color:#64748b; max-width:700px; margin:0 auto; line-height:1.65; }
+  .feature { background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:22px; padding:2.25rem; transition:all 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow:0 2px 8px rgba(15,23,42,0.04); }
   .feature:hover { transform:translateY(-4px); box-shadow:0 16px 40px -12px rgba(99,102,241,0.18); border-color:rgba(99,102,241,0.2); }
-  .feature-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; background:#f8f7f4; margin-bottom:1rem; }
+  .feature h3 { font-size:1.25rem; font-weight:700; margin-bottom:0.5rem; color:#0f172a; }
+  .feature p { font-size:1rem; color:#64748b; line-height:1.6; }
+  .feature-icon { width:64px; height:64px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:32px; background:#f8f7f4; margin-bottom:1.25rem; }
   .reveal { opacity:0; transform:translateY(24px); transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1),transform 0.8s cubic-bezier(0.16,1,0.3,1); }
   .reveal.in { opacity:1; transform:translateY(0); }
   .marquee-track { display:flex; gap:60px; animation:scroll 35s linear infinite; width:max-content; }
@@ -287,13 +289,13 @@
   .demo-progress-bar { height:100%; background:linear-gradient(90deg,#6366f1,#10b981); transition:width 0.4s ease; }
 
   /* === FAQ === */
-  .faq-item { background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:16px; overflow:hidden; transition:all 0.25s; }
+  .faq-item { background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:18px; overflow:hidden; transition:all 0.25s; }
   .faq-item:hover { border-color:rgba(99,102,241,0.2); }
   .faq-item.open { box-shadow:0 8px 24px -8px rgba(99,102,241,0.12); }
-  .faq-q { width:100%; padding:1.2rem 1.5rem; display:flex; align-items:center; justify-content:space-between; text-align:left; font-weight:600; color:#0f172a; font-size:15px; }
-  .faq-chev { transition:transform 0.25s; flex-shrink:0; color:#6366f1; }
+  .faq-q { width:100%; padding:1.4rem 1.75rem; display:flex; align-items:center; justify-content:space-between; text-align:left; font-weight:600; color:#0f172a; font-size:17px; }
+  .faq-chev { transition:transform 0.25s; flex-shrink:0; color:#6366f1; width:22px; height:22px; }
   .faq-item.open .faq-chev { transform:rotate(180deg); }
-  .faq-a { padding:0 1.5rem 1.25rem; color:#64748b; line-height:1.6; font-size:14px; }
+  .faq-a { padding:0 1.75rem 1.5rem; color:#64748b; line-height:1.7; font-size:15px; }
 
   /* === Hero AI Chat Box (Tavily style) === */
   .hero-chat-wrap { max-width:660px; margin:0 auto 1.5rem; }
@@ -642,13 +644,13 @@
     <div class="space-y-4">
       {% for n, title, txt in steps %}
       <div class="reveal feature flex items-center gap-6 flex-col md:flex-row text-center md:text-left">
-        <div class="flex-shrink-0 w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-lg"
+        <div class="flex-shrink-0 w-24 h-24 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg"
           style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); box-shadow: 0 10px 30px -5px rgba(139,92,246,0.4);">
           {{ n }}
         </div>
         <div>
-          <h3 class="text-xl font-bold mb-1 text-slate-900">{{ title }}</h3>
-          <p class="text-slate-700">{{ txt }}</p>
+          <h3 class="text-2xl font-bold mb-2 text-slate-900">{{ title }}</h3>
+          <p class="text-slate-600 text-lg">{{ txt }}</p>
         </div>
       </div>
       {% endfor %}
@@ -674,20 +676,20 @@
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
       <div class="reveal text-center">
-        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">SM-2</div>
-        <p class="text-gray-600 text-sm">{{ t('lp_stat_sm2') }}</p>
+        <div class="text-6xl md:text-8xl font-black bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">SM-2</div>
+        <p class="text-gray-600 text-base">{{ t('lp_stat_sm2') }}</p>
       </div>
       <div class="reveal text-center">
-        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-emerald-500 to-cyan-500 bg-clip-text text-transparent mb-2">AI</div>
-        <p class="text-gray-600 text-sm">{{ t('lp_stat_ai') }}</p>
+        <div class="text-6xl md:text-8xl font-black bg-gradient-to-br from-emerald-500 to-cyan-500 bg-clip-text text-transparent mb-3">AI</div>
+        <p class="text-gray-600 text-base">{{ t('lp_stat_ai') }}</p>
       </div>
       <div class="reveal text-center">
-        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-orange-500 to-pink-500 bg-clip-text text-transparent mb-2">3</div>
-        <p class="text-gray-600 text-sm">{{ t('lp_stat_3l') }}</p>
+        <div class="text-6xl md:text-8xl font-black bg-gradient-to-br from-orange-500 to-pink-500 bg-clip-text text-transparent mb-3">3</div>
+        <p class="text-gray-600 text-base">{{ t('lp_stat_3l') }}</p>
       </div>
       <div class="reveal text-center">
-        <div class="text-5xl md:text-6xl font-black bg-gradient-to-br from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">∞</div>
-        <p class="text-gray-600 text-sm">{{ t('lp_stat_inf') }}</p>
+        <div class="text-6xl md:text-8xl font-black bg-gradient-to-br from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">∞</div>
+        <p class="text-gray-600 text-base">{{ t('lp_stat_inf') }}</p>
       </div>
     </div>
   </div>
@@ -746,7 +748,7 @@
       {{ t('lp_cta_title_1') }}<br>
       <span class="accent">{{ t('lp_cta_title_2') }}</span>
     </h2>
-    <p class="reveal text-xl text-gray-600 mb-10 mt-4">{{ t('lp_cta_sub') }}</p>
+    <p class="reveal text-2xl text-gray-600 mb-10 mt-4">{{ t('lp_cta_sub') }}</p>
     <div class="reveal flex gap-3 justify-center flex-wrap">
       <a href="/register" class="btn-hero btn-hero-primary">{{ t('lp_cta_btn_start') }}</a>
       <a href="/login" class="btn-hero btn-hero-ghost">{{ t('lp_cta_btn_login') }}</a>
