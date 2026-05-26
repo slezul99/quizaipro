@@ -390,12 +390,12 @@
   }
   .primary-desc {
     font-size: 12px;
-    color: #64748b;
-    font-weight: 500;
+    color: #475569;
+    font-weight: 600;
   }
   html.dark .primary-card {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(148, 163, 184, 0.15);
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(148, 163, 184, 0.2);
   }
   html.dark .primary-title { color: #f1f5f9; }
   html.dark .primary-desc { color: #94a3b8; }
@@ -422,9 +422,9 @@
   }
   .stat-mini-label {
     font-size: 11px;
-    color: #64748b;
+    color: #475569;
     margin-top: 4px;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -435,19 +435,21 @@
   /* Goal card compact */
   .goal-card {
     background: #fff;
-    border: 1px solid rgba(15, 23, 42, 0.07);
+    border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 16px;
     padding: 14px 16px;
+    color: #0f172a;
   }
   html.dark .goal-card {
     background: rgba(30, 41, 59, 0.5);
     border-color: rgba(148, 163, 184, 0.15);
+    color: #f1f5f9;
   }
 
   /* Deck mini cards */
   .deck-mini {
     background: #fff;
-    border: 1px solid rgba(15, 23, 42, 0.07);
+    border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 16px;
     padding: 16px;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -460,6 +462,19 @@
     background: rgba(30, 41, 59, 0.5);
     border-color: rgba(148, 163, 184, 0.15);
   }
+  /* Tekst vnutri kartochek — vsegda temniy i chetky */
+  .deck-mini h3 {
+    color: #0f172a !important;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .deck-mini p {
+    color: #475569 !important;
+    font-size: 13px;
+  }
+  html.dark .deck-mini h3 { color: #f1f5f9 !important; }
+  html.dark .deck-mini p { color: #94a3b8 !important; }
 
   /* Plan cards (in expandable More section) */
   .plan-card {
