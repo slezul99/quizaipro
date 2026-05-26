@@ -1180,10 +1180,6 @@
   html.dark .mob-link.emerald:hover { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
   html.dark .mob-link.red { color: #fca5a5; }
   html.dark .mob-link.red:hover { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
-  html.dark [x-show="mobileMenu"] {
-    background: rgba(15, 23, 41, 0.99) !important;
-    border-top-color: rgba(99,102,241,0.3) !important;
-  }
   /* ============ MOBILE ADAPTATION ============ */
   /* Modali na malen'kih ekranah — umen'shennyy padding, allow scroll */
   @media (max-width: 640px) {
@@ -1341,8 +1337,7 @@
 {% if current_user %}
 {% from "_icons.html" import icon %}
 <header class="sticky top-0 z-40 nav-blur">
-  <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center"
-       x-data="{ mobileMenu: false }">
+  <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center" id="main-nav">
     <a href="/dashboard" class="brand-logo">
       <span class="brand-logo-icon">{{ icon('brain', 22) }}</span>
       <span class="brand-logo-text">{{ t('app_name') }}</span>
@@ -1351,10 +1346,10 @@
       {% endif %}
     </a>
 
-    <!-- Mobile burger -->
-    <button @click="mobileMenu = !mobileMenu; document.body.style.overflow = mobileMenu ? 'hidden' : ''" class="md:hidden nav-icon-btn">
-      <span x-show="!mobileMenu">{{ icon('menu', 22) }}</span>
-      <span x-show="mobileMenu" x-cloak>{{ icon('x', 22) }}</span>
+    <!-- Mobile burger — pure JS, no Alpine -->
+    <button id="mob-burger" class="md:hidden nav-icon-btn" aria-label="Menu" onclick="toggleMobileMenu()">
+      <span id="mob-icon-open">{{ icon('menu', 22) }}</span>
+      <span id="mob-icon-close" style="display:none">{{ icon('x', 22) }}</span>
     </button>
 
     <!-- Desktop menu -->
@@ -1471,12 +1466,12 @@
       </div>
     </div>
 
-    <!-- Mobile menu — NO x-transition (causes freeze on iOS/Android with backdrop-filter) -->
-    <div x-show="mobileMenu" x-cloak
-      class="fixed top-[56px] left-0 right-0 bottom-0 md:hidden shadow-2xl overflow-y-auto z-50"
-      style="background: rgba(255,255,255,0.99); border-top: 1px solid rgba(99,102,241,0.15); touch-action: pan-y;"
-      @click="if ($event.target.tagName === 'A' || $event.target.closest('a')) { mobileMenu = false; document.body.style.overflow = ''; }">
-      <div class="max-w-7xl mx-auto px-6 py-4 space-y-1">
+    <!-- Mobile menu — pure JS, no Alpine, no backdrop-filter -->
+    <div id="mobile-menu"
+      class="fixed left-0 right-0 bottom-0 md:hidden overflow-y-auto z-50"
+      style="top:56px; background:#fff; border-top:1px solid rgba(99,102,241,0.15); display:none;">
+      <div class="max-w-7xl mx-auto px-6 py-4 space-y-1"
+        onclick="if(event.target.tagName==='A'||event.target.closest('a')){closeMobileMenu();}">
         <a href="/dashboard" class="mob-link indigo">{{ icon('dashboard', 19) }} <span>{{ t('nav_dashboard') }}</span></a>
         <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
         <a href="/test/history" class="mob-link indigo">📊 <span>История тестов</span></a>
@@ -1507,6 +1502,39 @@
     </div>
   </nav>
 </header>
+
+<style>
+  html.dark #mobile-menu { background: #0f1729 !important; }
+</style>
+<script>
+function toggleMobileMenu() {
+  var menu = document.getElementById('mobile-menu');
+  var iconOpen = document.getElementById('mob-icon-open');
+  var iconClose = document.getElementById('mob-icon-close');
+  var isOpen = menu.style.display !== 'none';
+  if (isOpen) {
+    closeMobileMenu();
+  } else {
+    menu.style.display = 'block';
+    iconOpen.style.display = 'none';
+    iconClose.style.display = '';
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeMobileMenu() {
+  var menu = document.getElementById('mobile-menu');
+  var iconOpen = document.getElementById('mob-icon-open');
+  var iconClose = document.getElementById('mob-icon-close');
+  menu.style.display = 'none';
+  iconOpen.style.display = '';
+  iconClose.style.display = 'none';
+  document.body.style.overflow = '';
+}
+// Zakryt pri resize na desktop
+window.addEventListener('resize', function() {
+  if (window.innerWidth >= 768) closeMobileMenu();
+});
+</script>
 {% endif %}
 
 {% with msgs = get_flashed_messages(with_categories=true) %}
