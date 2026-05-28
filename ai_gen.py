@@ -125,35 +125,95 @@ def _call_gemini(prompt: str, max_tokens: int = 4000) -> str | None:
 
 
 def _parse_cards_json(text: str) -> list[dict]:
-    """Razbiraet otvet AI v list[{front, back, note}]."""
+    """Razbiraet otvet AI v list[{front, back, note}].
+    Podderzhivayet razlichnyye formaty: massiv, {questions:[]}, {cards:[]}, {data:[]}."""
     if not text:
+        print("[AI parse] empty input")
         return []
+    # Log first 300 chars chtoby videt' chto prikhodit
+    print(f"[AI parse] input ({len(text)} chars): {text[:300]}")
     # Snimaem markdown-blocks
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.MULTILINE)
+    data = None
     try:
         data = json.loads(text)
-    except Exception:
+    except Exception as e:
+        print(f"[AI parse] full json failed: {e}")
         # Probuyem nayti JSON-array v tekste
-        m = re.search(r"\[.*\]", text, re.DOTALL)
-        if not m:
-            return []
-        try:
-            data = json.loads(m.group(0))
-        except Exception:
-            return []
-    if isinstance(data, dict) and "questions" in data:
-        data = data["questions"]
-    if not isinstance(data, list):
+        m = re.search(r"\[\s*\{.*?\}\s*\]", text, re.DOTALL)
+        if m:
+            try:
+                data = json.loads(m.group(0))
+                print("[AI parse] recovered array from text")
+            except Exception:
+                pass
+        if data is None:
+            # Probuyem nayti JSON-objekt
+            m2 = re.search(r"\{.*\}", text, re.DOTALL)
+            if m2:
+                try:
+                    data = json.loads(m2.group(0))
+                    print("[AI parse] recovered object from text")
+                except Exception:
+                    pass
+    if data is None:
+        print("[AI parse] could not parse anything")
         return []
+
+    # Esli prishyol diktiy s polem-massivom — izvlekaem
+    if isinstance(data, dict):
+        # Probuyem populyarnyye nazvaniya
+        for k in ("questions", "cards", "data", "items", "result", "results", "flashcards"):
+            if k in data and isinstance(data[k], list):
+                data = data[k]
+                break
+        else:
+            # Esli k=keys vse list — beryom pervyy massiv
+            for v in data.values():
+                if isinstance(v, list) and v and isinstance(v[0], dict):
+                    data = v
+                    break
+
+    if not isinstance(data, list):
+        print(f"[AI parse] not a list, type: {type(data)}")
+        return []
+
     out = []
     for item in data:
         if not isinstance(item, dict):
             continue
-        q = (item.get("question") or item.get("front") or item.get("q") or "").strip()
-        a = (item.get("answer") or item.get("back") or item.get("a") or "").strip()
-        n = (item.get("note") or item.get("explanation") or item.get("explain") or "").strip()
+        # Mnozhestvennye varianty nazvaniy poley
+        q = (
+            item.get("question")
+            or item.get("front")
+            or item.get("q")
+            or item.get("term")
+            or item.get("Q")
+            or ""
+        )
+        a = (
+            item.get("answer")
+            or item.get("back")
+            or item.get("a")
+            or item.get("definition")
+            or item.get("A")
+            or ""
+        )
+        n = (
+            item.get("note")
+            or item.get("explanation")
+            or item.get("explain")
+            or item.get("context")
+            or item.get("hint")
+            or ""
+        )
+        # Stringify esli prishyol ne string
+        q = str(q).strip() if q else ""
+        a = str(a).strip() if a else ""
+        n = str(n).strip() if n else ""
         if q and a:
             out.append({"front": q, "back": a, "note": n})
+    print(f"[AI parse] extracted {len(out)} cards from {len(data) if isinstance(data, list) else 0}")
     return out
 
 
