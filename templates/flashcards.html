@@ -20,7 +20,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 32px;
-    padding: 32px;
+    padding: 28px 24px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -28,7 +28,7 @@
     text-align: center;
     cursor: pointer;
     user-select: none;
-    overflow: hidden;
+    overflow: hidden; /* keep for border-radius clipping only */
   }
   .fc-front {
     background: linear-gradient(135deg, #ffffff 0%, #f1f5ff 50%, #e9eeff 100%);
@@ -76,17 +76,46 @@
     opacity: 0.55;
   }
   .fc-text {
-    font-size: clamp(22px, 4vw, 38px);
-    line-height: 1.3;
+    /* Base font — JS will override via data-len attribute */
+    font-size: clamp(16px, 3.5vw, 32px);
+    line-height: 1.4;
     font-weight: 600;
-    max-width: 90%;
+    max-width: 92%;
+    /* Allow scroll if text is very long */
+    max-height: 55%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.4) transparent;
+    padding: 0 4px;
+  }
+  .fc-text::-webkit-scrollbar { width: 3px; }
+  .fc-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.35); border-radius: 3px; }
+  /* Font size tiers based on text length (set via JS class) */
+  .fc-text.len-xs  { font-size: clamp(22px, 4vw, 38px); }   /* < 60 chars */
+  .fc-text.len-sm  { font-size: clamp(18px, 3.2vw, 30px); } /* 60-120 */
+  .fc-text.len-md  { font-size: clamp(15px, 2.5vw, 24px); } /* 120-220 */
+  .fc-text.len-lg  { font-size: clamp(13px, 2vw, 19px); }   /* 220-400 */
+  .fc-text.len-xl  { font-size: clamp(12px, 1.8vw, 16px); } /* 400+ */
+  @media (max-width: 640px) {
+    .fc-text.len-xs  { font-size: clamp(20px, 5.5vw, 30px); }
+    .fc-text.len-sm  { font-size: clamp(16px, 4.5vw, 24px); }
+    .fc-text.len-md  { font-size: clamp(14px, 3.8vw, 20px); }
+    .fc-text.len-lg  { font-size: clamp(13px, 3.2vw, 17px); }
+    .fc-text.len-xl  { font-size: clamp(12px, 3vw, 15px); }
   }
   .fc-note {
-    margin-top: 18px;
-    font-size: 14px;
+    margin-top: 14px;
+    font-size: clamp(12px, 1.8vw, 15px);
     opacity: 0.85;
     max-width: 90%;
+    max-height: 20%;
+    overflow-y: auto;
     white-space: pre-wrap;
+    line-height: 1.5;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
   }
 
   /* Knopki nav */
@@ -412,6 +441,28 @@ function flashcards() {
             else { this.flipped = false; this.next(); }
           }, 3500);
         }
+      });
+
+      // Auto-scale text on card change
+      this.$watch('idx', () => this._updateTextSize());
+      this.$watch('flipped', () => this._updateTextSize());
+      this.$nextTick(() => this._updateTextSize());
+    },
+
+    // Assign len-* class to .fc-text elements based on text length
+    _updateTextSize() {
+      this.$nextTick(() => {
+        document.querySelectorAll('.fc-text').forEach(el => {
+          const len = (el.textContent || '').length;
+          el.classList.remove('len-xs','len-sm','len-md','len-lg','len-xl');
+          if (len < 60)       el.classList.add('len-xs');
+          else if (len < 120) el.classList.add('len-sm');
+          else if (len < 220) el.classList.add('len-md');
+          else if (len < 400) el.classList.add('len-lg');
+          else                el.classList.add('len-xl');
+          // Scroll back to top when card changes
+          el.scrollTop = 0;
+        });
       });
     },
 

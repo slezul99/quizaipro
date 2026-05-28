@@ -1,4 +1,35 @@
 {% extends "base.html" %}
+{% block extra_head %}
+<style>
+/* === TEST: question box — 3 lines visible, then scroll === */
+.tst-question-box {
+  /* Font adapts to text length via JS, fallback clamp */
+  font-size: clamp(15px, 2.5vw, 22px);
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--color-slate-900, #0f172a);
+  text-align: center;
+  /* Show exactly 3 lines, then scroll */
+  max-height: calc(1.55em * 3 + 0.5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-bottom: 0.75rem;
+  padding: 0 0.25rem;
+  /* Smooth scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.3) transparent;
+}
+.tst-question-box::-webkit-scrollbar { width: 4px; }
+.tst-question-box::-webkit-scrollbar-track { background: transparent; }
+.tst-question-box::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 4px; }
+html.dark .tst-question-box { color: #f1f5f9; }
+
+/* Mobile: slightly smaller */
+@media (max-width: 640px) {
+  .tst-question-box { font-size: clamp(14px, 4vw, 18px); }
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="relative max-w-3xl mx-auto px-6 py-10" x-data="{
     chosen: null,
@@ -93,7 +124,8 @@
       <img src="{{ card.image_url }}" class="max-h-48 rounded-2xl mx-auto shadow-lg">
     </div>
     {% endif %}
-    <div class="text-xl md:text-2xl font-medium leading-relaxed text-center mb-3 text-slate-900 dark:text-slate-100">{{ card.front }}</div>
+    <!-- Question: 3 lines visible, then scrollable. Font adapts to length. -->
+    <div class="tst-question-box">{{ card.front }}</div>
     <div class="text-center mb-6">
       <button type="button" @click="speak('{{ card.front|e }}')"
         class="text-indigo-500 hover:text-indigo-700 text-xs flex items-center gap-1 mx-auto hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-3 py-1.5 rounded-lg transition">
