@@ -635,6 +635,94 @@ def _dedupe_cards(cards: list[dict]) -> list[dict]:
     return out
 
 
+# === KONVERTATSIYA: Test → Flashcards i Flashcards → Test ====================
+
+def convert_tests_to_flashcards(cards: list[dict], lang: str = "ru") -> list[dict]:
+    """Iz testovyh kart (vopros + varianty + pravil'nyy otvet)
+    delaet slovar/term-karty (kratkoye opredelenye/kontekst).
+
+    Vhod: list[{'front': vopros, 'back': otvet (bukva ili tekst), 'note': varianty}]
+    Vyhod: list[{'front': key term, 'back': brief definition, 'note': context}]"""
+    if not cards:
+        return []
+
+    lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
+    lang_name = lang_map.get(lang, "русском")
+
+    # Otpravlyaem vse karty batchom v AI
+    cards_json = json.dumps(cards, ensure_ascii=False, indent=2)
+
+    prompt = f"""Ty — uchitel'.
+Tebe dany testovye voprosy s variantami otvetov. Tvoya zadacha — preobrazovat' kazhdyy vopros
+v slovarnuyu (term-style) kartu dlya zauchivaniya.
+
+Pravila preobrazovaniya:
+1. "front" — klyuchevoy termin, ponyatiye ili kratkiy vopros (NE polnyy testovyy vopros, a ego sut').
+2. "back" — kratkoye opredelenye/otvet odnim-dvumya predlozheniyami (ne bukva, a smysl!).
+3. "note" — kontekst, primer ili dopolnitel'noye obyasneniye.
+4. Yazyk: {lang_name}.
+5. Esli iz testa nelzya izvlech' vnyatnyy slovar' — propusti.
+
+Primer vhoda:
+{{"front": "Kto napisal Voinu i mir?", "back": "B", "note": "A) Pushkin\\nB) Tolstoy\\nC) Dostoyevsky\\nD) Chekhov"}}
+
+Primer vyhoda:
+{{"front": "Voina i mir", "back": "Roman Lva Tolstogo (1869), o nashestvii Napoleona na Rossiyu.", "note": "Klyuchevoye proizvedenie russkoy literatury XIX veka."}}
+
+Vyhod TOL'KO JSON-arrey:
+[{{"front":"...","back":"...","note":"..."}}, ...]
+
+VHODNYE TESTY:
+{cards_json}"""
+
+    raw = _call_gemini(prompt, max_tokens=12000)
+    return _parse_cards_json(raw or "")
+
+
+def convert_flashcards_to_tests(cards: list[dict], lang: str = "ru") -> list[dict]:
+    """Iz slovar/term-kart sozdayot testovye voprosy s 4 variantami.
+    Pravil'nyy otvet — bukva (A/B/C/D), opciya teksta v note kak A) X\\nB) Y..."""
+    if not cards:
+        return []
+
+    lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
+    lang_name = lang_map.get(lang, "русском")
+
+    cards_json = json.dumps(cards, ensure_ascii=False, indent=2)
+
+    prompt = f"""Ty — sostavitel' testov.
+Tebe dany slovarnye karty (termin + opredelenye). Tvoya zadacha — sdelat' iz kazhdoy
+testovyy vopros s 4-mya variantami otveta (pravil'nyy + 3 pravdopodobnyh distraktora).
+
+Pravila:
+1. "front" — testovyy vopros (mozhet byt' "Chto takoe X?" ili kontekstnyy).
+2. "back" — TOL'KO bukva pravil'nogo otveta: "A", "B", "C" ili "D".
+3. "note" — chetyre varianta v formate:
+   "A) tekst varianta\\nB) tekst varianta\\nC) tekst varianta\\nD) tekst varianta"
+4. Distraktory dolzhny byt' pravdopodobnymi, no chetko nepravil'nymi (svyazany s temoy).
+5. Pravil'nyy otvet sluchayno raspredelyay mezhdu A/B/C/D — ne tol'ko A.
+6. Yazyk: {lang_name}.
+
+Primer vhoda:
+{{"front": "Voina i mir", "back": "Roman Tolstogo o Napoleone", "note": "1869 god"}}
+
+Primer vyhoda:
+{{
+  "front": "Kto napisal roman 'Voina i mir'?",
+  "back": "C",
+  "note": "A) Aleksandr Pushkin\\nB) Fyodor Dostoyevskiy\\nC) Lev Tolstoy\\nD) Anton Chekhov"
+}}
+
+Vyhod TOL'KO JSON-arrey:
+[{{"front":"...","back":"A","note":"A) ...\\nB) ...\\nC) ...\\nD) ..."}}, ...]
+
+VHODNYE SLOVARI:
+{cards_json}"""
+
+    raw = _call_gemini(prompt, max_tokens=12000)
+    return _parse_cards_json(raw or "")
+
+
 def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
                         max_pages: int = 30,
                         chunk_size: int = 1,

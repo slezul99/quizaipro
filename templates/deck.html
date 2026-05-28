@@ -90,6 +90,30 @@ function deckEditor() {
         this.aiFinding = false;
         alert(DK_T.ai_error + ': ' + e);
       }
+    },
+    converting: false,
+    async aiConvert(direction) {
+      // direction: 'to_terms' (testy → slovari) | 'to_tests' (slovari → testy)
+      const labels = {
+        to_terms: 'Конвертировать тесты в словари?\\nAI создаст новую колоду со словарями. Расход: 1 AI-генерация.',
+        to_tests: 'Конвертировать словари в тесты?\\nAI создаст новую колоду с 4-вариантными тестами. Расход: 1 AI-генерация.',
+      };
+      if (!confirm(labels[direction] || 'Конвертировать?')) return;
+      this.converting = true;
+      try {
+        const r = await fetch(`/deck/${this.deck.id}/convert/${direction}`, { method: 'POST' });
+        const data = await r.json();
+        this.converting = false;
+        if (!data.ok) {
+          alert('Ошибка: ' + (data.error || 'unknown'));
+          return;
+        }
+        alert(`Создано ${data.count} карт. Открываю новую колоду...`);
+        window.location.href = data.url;
+      } catch (e) {
+        this.converting = false;
+        alert('Ошибка: ' + e);
+      }
     }
   };
 }
@@ -411,6 +435,24 @@ function deckEditor() {
           <span x-show="!aiFinding"><img src="/static/tutor-avatar.png" alt="AI" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:4px;"> {{ t('dk_btn_ai_answers') }}</span>
           <span x-show="aiFinding">⏳ {{ t('dk_btn_ai_answers_finding') }}</span>
         </button>
+        {# AI konvertatsiya: testy → slovari ili slovari → testy.
+           Pokazyvaem podkhodyashchuyu knopku v zavisimosti ot soderzhimogo. #}
+        {% if _mcq > 0 %}
+        <button type="button" @click="aiConvert('to_terms')" :disabled="converting"
+                class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.1)); color: #7c3aed; border-color: rgba(168,85,247,0.4);"
+                title="AI preobrazuet testy v slovarnyye karty (terminy + opredeleniya)">
+          <span x-show="!converting">✨ Test → Slovari</span>
+          <span x-show="converting">⏳ Konvertiruem...</span>
+        </button>
+        {% endif %}
+        {% if _terms > 0 %}
+        <button type="button" @click="aiConvert('to_tests')" :disabled="converting"
+                class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px; background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(20,184,166,0.1)); color: #047857; border-color: rgba(16,185,129,0.4);"
+                title="AI preobrazuet slovari v testy s 4 variantami">
+          <span x-show="!converting">✨ Slovari → Test</span>
+          <span x-show="converting">⏳ Konvertiruem...</span>
+        </button>
+        {% endif %}
         <div class="relative" x-data="{ pdfMenu: false }">
           <button type="button" @click="pdfMenu = !pdfMenu" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_pdf_title') }}">{{ t('dk_btn_pdf') }}</button>
           <div x-show="pdfMenu" @click.outside="pdfMenu = false" x-transition x-cloak class="absolute right-0 mt-2 w-56 glass-strong rounded-2xl shadow-xl overflow-hidden z-30">

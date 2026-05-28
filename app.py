@@ -2937,6 +2937,116 @@ def export_deck_json(deck_id):
     )
 
 
+# === AI KONVERTATSIYA: testy ↔ slovari =======================================
+
+@app.route("/deck/<int:deck_id>/convert/<direction>", methods=["POST"])
+@login_required
+def deck_ai_convert(deck_id, direction):
+    """AI preobrazuet karty:
+      direction='to_terms'  — testy → slovari (term-style)
+      direction='to_tests'  — slovari → testy s 4 variantami
+
+    Stoit 1 AI-generatsiyu (obshchiy schyotchik s /ai)."""
+    user = current_user()
+    if not can_manage_content(user):
+        abort(403)
+    if direction not in ("to_terms", "to_tests"):
+        return jsonify({"ok": False, "error": "invalid direction"}), 400
+    if not ai_gen.is_available():
+        return jsonify({"ok": False, "error": "AI ne nastroen"}), 503
+
+    # Limit AI proverim
+    ok, used, limit = billing.check_ai_limit(user)
+    if not ok:
+        return jsonify({"ok": False, "error": f"Лимит AI достигнут: {used}/{limit}"}), 403
+
+    conn = db.get_conn()
+    deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+    if not deck or not can_view_deck(user, dict(deck)):
+        conn.close(); abort(404)
+
+    cards_raw = conn.execute(
+        "SELECT id, front, back, note FROM cards WHERE deck_id=? ORDER BY id",
+        (deck_id,)
+    ).fetchall()
+    if not cards_raw:
+        conn.close()
+        return jsonify({"ok": False, "error": "В колоде нет карт"}), 400
+
+    # Filtruyem podkhodyashchie karty po napravleniyu
+    src_cards = []
+    if direction == "to_terms":
+        # Beryom tol'ko MCQ-karty (s variantami)
+        for c in cards_raw:
+            if _has_mcq_options((c["note"] or "")):
+                src_cards.append({"front": c["front"], "back": c["back"], "note": c["note"] or ""})
+        if not src_cards:
+            conn.close()
+            return jsonify({"ok": False, "error": "В колоде нет тестовых карт для конвертации"}), 400
+    else:  # to_tests
+        # Beryom tol'ko ne-MCQ karty
+        for c in cards_raw:
+            if not _has_mcq_options((c["note"] or "")):
+                src_cards.append({"front": c["front"], "back": c["back"], "note": c["note"] or ""})
+        if not src_cards:
+            conn.close()
+            return jsonify({"ok": False, "error": "В колоде нет словарных карт для конвертации"}), 400
+
+    # Ogranichivaem batch — chtoby ne perevalit' API limit
+    src_cards = src_cards[:50]
+
+    lang = session.get("lang", "ru")
+    new_deck_name = (request.form.get("new_deck_name") or "").strip()
+    target_kind = "Slovari" if direction == "to_terms" else "Testy"
+    if not new_deck_name:
+        new_deck_name = f"{deck['name']} ({target_kind})"
+
+    try:
+        if direction == "to_terms":
+            new_cards = ai_gen.convert_tests_to_flashcards(src_cards, lang=lang)
+        else:
+            new_cards = ai_gen.convert_flashcards_to_tests(src_cards, lang=lang)
+    except Exception as e:
+        conn.close()
+        return jsonify({"ok": False, "error": f"AI error: {str(e)[:200]}"}), 500
+
+    if not new_cards:
+        conn.close()
+        return jsonify({"ok": False, "error": "AI ne smog konvertirovat'"}), 500
+
+    # Sokhranyaem v novuyu kolodu
+    icon = "🃏" if direction == "to_terms" else "📝"
+    deck_type_new = "terms" if direction == "to_terms" else "mcq"
+    if user["org_id"]:
+        cur = conn.execute(
+            "INSERT INTO decks (org_id, category_id, name, icon, deck_type, created_via) VALUES (?, ?, ?, ?, ?, ?)",
+            (user["org_id"], deck["category_id"], new_deck_name, icon, deck_type_new, "ai_convert")
+        )
+    else:
+        cur = conn.execute(
+            "INSERT INTO decks (owner_id, category_id, name, icon, deck_type, created_via) VALUES (?, ?, ?, ?, ?, ?)",
+            (user["id"], deck["category_id"], new_deck_name, icon, deck_type_new, "ai_convert")
+        )
+    new_deck_id = cur.lastrowid
+    for c in new_cards:
+        conn.execute(
+            "INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+            (new_deck_id, c["front"], c["back"], c.get("note", ""))
+        )
+    conn.commit()
+    conn.close()
+
+    # Schityvaem v obshchiy AI-schyotchik
+    billing.log_ai_usage(user, f"convert_{direction}", len(new_cards))
+
+    return jsonify({
+        "ok": True,
+        "deck_id": new_deck_id,
+        "count": len(new_cards),
+        "url": url_for("deck_view", deck_id=new_deck_id),
+    })
+
+
 @app.route("/deck/<int:deck_id>/ai-find-answers", methods=["POST"])
 @login_required
 def deck_ai_find_answers(deck_id):
