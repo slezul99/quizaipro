@@ -235,18 +235,31 @@ VHODNYE KARTY:
 
 
 def generate_from_text(text: str, count: int = 10, lang: str = "ru",
-                       quality: bool = False) -> list[dict]:
+                       quality: bool = False, output_lang: str = "auto") -> list[dict]:
     """Generiruyet voprosy iz proizvol'nogo teksta.
-    quality=True — dopolnitelnyy proxod cherez AI-kritika (medlenno, no luchshe)."""
-    lang_map = {
-        "ru": "русском", "en": "English", "uz": "oʻzbek tilida",
-    }
-    lang_name = lang_map.get(lang, "русском")
+    quality=True — dopolnitelnyy proxod cherez AI-kritika.
+    output_lang:
+      "auto" / "source"  — sokhranyaet yazyk istochnika (po default)
+      "ru" / "en" / "uz" — perevodit na ukazannyy yazyk
+    """
+    # Esli output_lang ne zadan ili "auto"/"source" — prosim AI sokhranit yazyk istochnika.
+    if output_lang in ("", None, "auto", "source"):
+        lang_instruction = (
+            "Yazyk voprosov i otvetov: TOCHNO TAKOY ZHE kak yazyk ishodnogo teksta. "
+            "Esli ishodnyy tekst na angliyskom — voprosy i otvety na angliyskom. "
+            "Esli na russkom — na russkom. Ne perevodi, ne smeshivay yazyki."
+        )
+    else:
+        lang_map = {
+            "ru": "русском", "en": "English", "uz": "oʻzbek tilida",
+        }
+        lang_name = lang_map.get(output_lang, "русском")
+        lang_instruction = f"Yazyk voprosov i otvetov: {lang_name}. Perevedi pri neobkhodimosti."
 
     prompt = f"""Ty - generator obuchayushchih voprosov dlya zapominaniya.
 
 Iz sleduyushchego TEKSTA sgeneriruy rovno {count} voprosov dlya samoproverki.
-Yazyk voprosov i otvetov: {lang_name}.
+{lang_instruction}
 
 Trebovaniya:
 - Voprosy raznoobraznye (faktologicheskie, terminy, opredeleniya, primery)
@@ -263,17 +276,29 @@ TEKST:
     raw = _call_gemini(prompt, max_tokens=8000)
     cards = _parse_cards_json(raw or "")
     if quality and cards:
-        cards = _critique_and_improve(cards, lang=lang)
+        cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
     return cards
 
 
 def generate_from_topic(topic: str, count: int = 10, lang: str = "ru",
                           difficulty: str = "medium",
-                          quality: bool = False) -> list[dict]:
+                          quality: bool = False, output_lang: str = "auto") -> list[dict]:
     """Generiruyet voprosy po teme.
-    quality=True — dopolnitelnyy proxod cherez AI-kritika."""
-    lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
-    lang_name = lang_map.get(lang, "русском")
+    output_lang:
+      "auto"/"source" — yazyk topika
+      "ru"/"en"/"uz"  — yavno ukazannyy
+    """
+    if output_lang in ("", None, "auto", "source"):
+        lang_instruction = (
+            "Yazyk voprosov i otvetov: TOCHNO TAKOY ZHE kak yazyk temy. "
+            "Esli tema na angliyskom (English topic) — voprosy na angliyskom. "
+            "Ne perevodi, ne smeshivay yazyki."
+        )
+    else:
+        lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
+        lang_name = lang_map.get(output_lang, "русском")
+        lang_instruction = f"Yazyk voprosov i otvetov: {lang_name}."
+
     diff_map = {
         "easy": "uchashchimsya nachal'noy shkoly",
         "medium": "studentam srednego urovnya",
@@ -285,7 +310,7 @@ def generate_from_topic(topic: str, count: int = 10, lang: str = "ru",
 
 Sgeneriruy {count} kachestvennyh voprosov po teme: "{topic}".
 Slozhnost': dlya {diff_name}.
-Yazyk: {lang_name}.
+{lang_instruction}
 
 Trebovaniya:
 - Voprosy raznoobraznye (terminy, ponyatiya, primery, sluchayi primeneniya)
@@ -301,12 +326,12 @@ Vyhod TOL'KO JSON-arrey:
     raw = _call_gemini(prompt, max_tokens=8000)
     cards = _parse_cards_json(raw or "")
     if quality and cards:
-        cards = _critique_and_improve(cards, lang=lang)
+        cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
     return cards
 
 
 def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru",
-                      quality: bool = False) -> list[dict]:
+                      quality: bool = False, output_lang: str = "auto") -> list[dict]:
     """Chitaet PDF i generiruet voprosy.
     Esli tekst.layer pustoy (skan) — avtomaticheski perekhodit na Vision."""
     try:
@@ -321,7 +346,7 @@ def generate_from_pdf(pdf_path: Path, count: int = 10, lang: str = "ru",
         if cards:
             return cards[:count] if count else cards
         return []
-    return generate_from_text(text, count=count, lang=lang, quality=quality)
+    return generate_from_text(text, count=count, lang=lang, quality=quality, output_lang=output_lang)
 
 
 # === VISION: PDF -> kartochki cherez Gemini Vision (dlya skanov i kartinok) ===

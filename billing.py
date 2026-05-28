@@ -58,52 +58,63 @@ def get_active_plan(user: dict) -> str:
 
 
 def check_ai_limit(user: dict) -> tuple[bool, int, int]:
-    """Vozvraschayet (mozhno_li, ispol'zovano_v_mes, limit).
-    Esli u polzovatelya zadan kastomnyy lim (ai_limit_monthly) — beryom ego."""
-    # Super-admin = bezlimit (proverim po hardcoded usernames v app.py)
-    # Beta-tester ili kastomnyy ai_limit_monthly perekrivayet plan
+    """Vozvraschayet (mozhno_li, ispol'zovano, limit).
+    Dlya planov bez nedel'nogo lim — limit = monthly.
+    Dlya planov s 'ai_generations_per_week' — limit = nedel'nyy, ispol'zovano = za 7 dney."""
     custom_monthly = user.get("ai_limit_monthly") if user else None
     custom_daily = user.get("ai_limit_daily") if user else None
     is_beta = user.get("is_beta_tester") if user else False
 
     plan = get_active_plan(user)
-    plan_limit = config.PLANS[plan]["limits"]["ai_generations_per_month"]
+    plan_data = config.PLANS.get(plan, config.PLANS["free"])
+    plan_monthly = plan_data["limits"]["ai_generations_per_month"]
+    plan_weekly = plan_data["limits"].get("ai_generations_per_week")
 
     conn = db.get_conn()
-    month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0).isoformat()
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0).isoformat()
+    now = datetime.utcnow()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0).isoformat()
+    today_start = now.replace(hour=0, minute=0, second=0).isoformat()
+    # Nedelya = posledniе 7 dney (rolling window)
+    from datetime import timedelta as _td
+    week_start = (now - _td(days=7)).isoformat()
 
     if user.get("org_id"):
-        used_month = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
-                               WHERE org_id=? AND created_at >= ?""",
-                            (user["org_id"], month_start)).fetchone()["c"]
-        used_today = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
-                               WHERE org_id=? AND created_at >= ?""",
-                            (user["org_id"], today_start)).fetchone()["c"]
+        scope_field = "org_id"
+        scope_id = user["org_id"]
     else:
-        used_month = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
-                               WHERE user_id=? AND created_at >= ?""",
-                            (user["id"], month_start)).fetchone()["c"]
-        used_today = conn.execute("""SELECT COUNT(*) AS c FROM ai_usage
-                               WHERE user_id=? AND created_at >= ?""",
-                            (user["id"], today_start)).fetchone()["c"]
+        scope_field = "user_id"
+        scope_id = user["id"]
+
+    used_month = conn.execute(
+        f"SELECT COUNT(*) AS c FROM ai_usage WHERE {scope_field}=? AND created_at >= ?",
+        (scope_id, month_start)).fetchone()["c"]
+    used_today = conn.execute(
+        f"SELECT COUNT(*) AS c FROM ai_usage WHERE {scope_field}=? AND created_at >= ?",
+        (scope_id, today_start)).fetchone()["c"]
+    used_week = conn.execute(
+        f"SELECT COUNT(*) AS c FROM ai_usage WHERE {scope_field}=? AND created_at >= ?",
+        (scope_id, week_start)).fetchone()["c"]
     conn.close()
 
-    # Daily lim (esli zadan)
-    if custom_daily is not None:
-        if used_today >= custom_daily:
-            return (False, used_month, custom_monthly if custom_monthly is not None else plan_limit)
+    # Daily lim — esli zadan polzovatelyu yavno
+    if custom_daily is not None and used_today >= custom_daily:
+        return (False, used_month, custom_monthly if custom_monthly is not None else plan_monthly)
 
-    # Monthly: prioritet u kastomnogo lim'a
+    # Custom monthly override
     if custom_monthly is not None:
         return (used_month < custom_monthly, used_month, custom_monthly)
 
-    # Beta-tester (esli kastomnogo lim'a net) = bezlimit
+    # Beta-tester
     if is_beta:
         return (True, used_month, 99999)
 
-    # Default — po planu
-    return (used_month < plan_limit, used_month, plan_limit)
+    # Esli plan ima'eet nedel'nyy limit — proveryaem snachala ego (Pro)
+    if plan_weekly:
+        if used_week >= plan_weekly:
+            return (False, used_week, plan_weekly)
+
+    # Po default — monthly
+    return (used_month < plan_monthly, used_month, plan_monthly)
 
 
 def log_ai_usage(user: dict, kind: str, cards: int = 0):

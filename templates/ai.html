@@ -67,8 +67,22 @@
 
       <div>
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('ai_count_label') }}</label>
-        <input type="number" name="count" value="10" min="1" max="50" class="input-premium">
+        <input type="number" name="count" value="50" min="1" max="50" class="input-premium">
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">{{ t('ai_count_max') }}</p>
+      </div>
+
+      <!-- Yazyk vyhoda kart -->
+      <div>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">🌐 Язык карт</label>
+        <select name="output_lang" class="input-premium">
+          <option value="auto">Как в источнике (по умолчанию)</option>
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+          <option value="uz">Oʻzbek</option>
+        </select>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+          AI сохранит язык исходного материала или переведёт в выбранный.
+        </p>
       </div>
 
       <!-- Quality mode toggle -->

@@ -6696,6 +6696,10 @@ def ai_page():
         new_deck_name = request.form.get("new_deck_name", "").strip()
         category_id = request.form.get("category_id", type=int)
         lang = session.get("lang", "ru")
+        # Vybor yazyka generatsii: "auto" (kak v istochnike) / "ru" / "en" / "uz"
+        output_lang = request.form.get("output_lang", "auto").strip()
+        if output_lang not in ("auto", "source", "ru", "en", "uz"):
+            output_lang = "auto"
         # Quality mode: dvuhproxodnaya generatsiya s AI-kritikom
         quality = request.form.get("quality") == "1"
 
@@ -6712,14 +6716,14 @@ def ai_page():
                 if len(text) < 50:
                     flash("Текст слишком короткий (минимум 50 символов)", "error")
                     return redirect(url_for("ai_page"))
-                cards = ai_gen.generate_from_text(text, count, lang, quality=quality)
+                cards = ai_gen.generate_from_text(text, count, lang, quality=quality, output_lang=output_lang)
             elif kind == "topic":
                 topic = request.form.get("topic", "").strip()
                 difficulty = request.form.get("difficulty", "medium")
                 if len(topic) < 3:
                     flash("Тема слишком короткая (минимум 3 символа)", "error")
                     return redirect(url_for("ai_page"))
-                cards = ai_gen.generate_from_topic(topic, count, lang, difficulty, quality=quality)
+                cards = ai_gen.generate_from_topic(topic, count, lang, difficulty, quality=quality, output_lang=output_lang)
             elif kind == "pdf":
                 file = request.files.get("file")
                 if not file or not file.filename:
@@ -6728,7 +6732,7 @@ def ai_page():
                 fname = secure_filename(file.filename)
                 fpath = UPLOAD / fname
                 file.save(str(fpath))
-                cards = ai_gen.generate_from_pdf(fpath, count, lang, quality=quality)
+                cards = ai_gen.generate_from_pdf(fpath, count, lang, quality=quality, output_lang=output_lang)
                 fpath.unlink(missing_ok=True)
         except Exception as e:
             flash(f"Ошибка AI: {str(e)[:200]}", "error")

@@ -47,18 +47,20 @@ PLANS = {
         "limits": {
             "max_decks": 5,
             "max_cards_per_deck": 50,
-            "ai_generations_per_month": 10,
-            "max_students": 0,   # tol'ko individual'nyy
+            "ai_generations_per_month": 50,
+            "max_students": 0,
         },
     },
     "pro_individual": {
         "name": "Pro (Individual)",
-        "price_usd": 9,
+        "price_usd": 5,
         "stripe_price_id": os.environ.get("STRIPE_PRICE_PRO_IND", ""),
         "limits": {
             "max_decks": 999,
             "max_cards_per_deck": 9999,
-            "ai_generations_per_month": 200,
+            # 200 v nedelyu × ~4.3 nedeli = ~860 v mesyats — okruglyaem do 800
+            "ai_generations_per_month": 800,
+            "ai_generations_per_week": 200,
             "max_students": 0,
         },
     },
