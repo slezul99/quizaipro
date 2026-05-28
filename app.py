@@ -559,6 +559,17 @@ def robots_txt():
     return Response(txt, mimetype="text/plain")
 
 
+@app.route("/favicon.ico")
+def favicon():
+    """Yandex i drugie poiskoviki ishchut favicon po /favicon.ico v korne sayta."""
+    from flask import send_from_directory
+    return send_from_directory(
+        str(Path(__file__).parent / "static"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon"
+    )
+
+
 @app.route("/set-lang/<lang>")
 def set_lang(lang):
     if lang not in ("ru", "en", "uz"): lang = "ru"
