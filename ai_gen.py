@@ -236,41 +236,33 @@ VHODNYE KARTY:
 
 def generate_from_text(text: str, count: int = 10, lang: str = "ru",
                        quality: bool = False, output_lang: str = "auto") -> list[dict]:
-    """Generiruyet voprosy iz proizvol'nogo teksta.
-    quality=True — dopolnitelnyy proxod cherez AI-kritika.
-    output_lang:
-      "auto" / "source"  — sokhranyaet yazyk istochnika (po default)
-      "ru" / "en" / "uz" — perevodit na ukazannyy yazyk
-    """
-    # Esli output_lang ne zadan ili "auto"/"source" — prosim AI sokhranit yazyk istochnika.
+    """Generiruyet voprosy iz proizvol'nogo teksta."""
     if output_lang in ("", None, "auto", "source"):
         lang_instruction = (
-            "Yazyk voprosov i otvetov: TOCHNO TAKOY ZHE kak yazyk ishodnogo teksta. "
-            "Esli ishodnyy tekst na angliyskom — voprosy i otvety na angliyskom. "
-            "Esli na russkom — na russkom. Ne perevodi, ne smeshivay yazyki."
+            "Language of questions and answers: EXACTLY THE SAME as the source text language. "
+            "If the source is in English — write in English. If in Russian — write in Russian. "
+            "Do NOT translate, do NOT mix languages."
         )
     else:
-        lang_map = {
-            "ru": "русском", "en": "English", "uz": "oʻzbek tilida",
-        }
-        lang_name = lang_map.get(output_lang, "русском")
-        lang_instruction = f"Yazyk voprosov i otvetov: {lang_name}. Perevedi pri neobkhodimosti."
+        lang_map = {"ru": "Russian (русский)", "en": "English", "uz": "Uzbek (o'zbek)"}
+        lang_name = lang_map.get(output_lang, "Russian")
+        lang_instruction = f"Language of questions and answers: {lang_name}. Translate if needed."
 
-    prompt = f"""Ty - generator obuchayushchih voprosov dlya zapominaniya.
+    prompt = f"""You are a flashcard generator for self-study.
 
-Iz sleduyushchego TEKSTA sgeneriruy rovno {count} voprosov dlya samoproverki.
+From the TEXT below, generate exactly {count} questions for self-testing.
 {lang_instruction}
 
-Trebovaniya:
-- Voprosy raznoobraznye (faktologicheskie, terminy, opredeleniya, primery)
-- Otvety korotkie i tochnye (1-3 predlozheniya max)
-- "note" - dop. obyasneniye ili kontekst (1 predlozhenie)
-- Ne pridumyvay faktov - tol'ko iz teksta
+Requirements:
+- Varied questions (facts, terms, definitions, examples)
+- Short precise answers (1-3 sentences max)
+- "note" field: additional explanation or context (1 sentence)
+- Only use information from the text, do not invent facts
 
-Vyhod TOL'KO JSON-arrey:
+Output ONLY a JSON array, no markdown, no explanation:
 [{{"question":"...","answer":"...","note":"..."}}, ...]
 
-TEKST:
+TEXT:
 {text[:8000]}"""
 
     raw = _call_gemini(prompt, max_tokens=8000)
@@ -283,44 +275,39 @@ TEKST:
 def generate_from_topic(topic: str, count: int = 10, lang: str = "ru",
                           difficulty: str = "medium",
                           quality: bool = False, output_lang: str = "auto") -> list[dict]:
-    """Generiruyet voprosy po teme.
-    output_lang:
-      "auto"/"source" — yazyk topika
-      "ru"/"en"/"uz"  — yavno ukazannyy
-    """
+    """Generiruyet voprosy po teme."""
     if output_lang in ("", None, "auto", "source"):
         lang_instruction = (
-            "Yazyk voprosov i otvetov: TOCHNO TAKOY ZHE kak yazyk temy. "
-            "Esli tema na angliyskom (English topic) — voprosy na angliyskom. "
-            "Ne perevodi, ne smeshivay yazyki."
+            "Language: SAME as the topic language. "
+            "If topic is in English — answer in English. If in Russian — in Russian."
         )
     else:
-        lang_map = {"ru": "русском", "en": "English", "uz": "oʻzbek tilida"}
-        lang_name = lang_map.get(output_lang, "русском")
-        lang_instruction = f"Yazyk voprosov i otvetov: {lang_name}."
+        lang_map = {"ru": "Russian (русский)", "en": "English", "uz": "Uzbek (o'zbek)"}
+        lang_name = lang_map.get(output_lang, "Russian")
+        lang_instruction = f"Language of questions and answers: {lang_name}."
 
     diff_map = {
-        "easy": "uchashchimsya nachal'noy shkoly",
-        "medium": "studentam srednego urovnya",
-        "hard": "professionalam i ekspertam",
+        "easy": "elementary school students",
+        "medium": "intermediate level students",
+        "hard": "professionals and experts",
     }
     diff_name = diff_map.get(difficulty, diff_map["medium"])
 
-    prompt = f"""Ty - opytnyy prepodavatel'.
+    prompt = f"""You are an experienced teacher.
 
-Sgeneriruy {count} kachestvennyh voprosov po teme: "{topic}".
-Slozhnost': dlya {diff_name}.
+Generate {count} high-quality questions on the topic: "{topic}".
+Difficulty: for {diff_name}.
 {lang_instruction}
 
-Trebovaniya:
-- Voprosy raznoobraznye (terminy, ponyatiya, primery, sluchayi primeneniya)
-- Otvety korotkie (1-3 predlozheniya)
-- Polya:
-  - "question" - vopros
-  - "answer" - korotkiy otvet
-  - "note" - obyasnenie ili rasshirennyy kontekst
+Requirements:
+- Varied questions (terms, concepts, examples, applications)
+- Short answers (1-3 sentences)
+- Fields:
+  - "question" — the question
+  - "answer" — short answer
+  - "note" — explanation or extended context
 
-Vyhod TOL'KO JSON-arrey:
+Output ONLY a JSON array, no markdown:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
     raw = _call_gemini(prompt, max_tokens=8000)
