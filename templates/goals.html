@@ -121,22 +121,26 @@
       <div class="bg-white/70 dark:bg-slate-800/40 rounded-2xl p-4 mb-4 border border-indigo-100 dark:border-indigo-800/40">
         <div class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-2">{{ t('g_plan') }}</div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-sm">
+          {% if g.recommend.has_terms %}
           <div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-2">
             <div class="text-2xl">🃏</div>
             <div class="font-bold text-purple-700 dark:text-purple-300">{{ g.recommend.flashcards }}</div>
             <div class="text-[11px] text-slate-600 dark:text-slate-300">Flashcards</div>
           </div>
+          {% endif %}
+          {% if g.recommend.has_mcq %}
           <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-2">
             <div class="text-2xl">📝</div>
             <div class="font-bold text-emerald-700 dark:text-emerald-300">{{ g.recommend.tests_count }} {% if g.recommend.tests_count == 1 %}{{ t('g_plan_test_one') }}{% else %}{{ t('g_plan_test_few') }}{% endif %}</div>
             <div class="text-[11px] text-slate-600 dark:text-slate-300">~{{ g.recommend.tests_questions }} {{ t('g_plan_test_q') }}</div>
           </div>
-          <div class="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-2 {% if g.solo_mode %}opacity-30{% endif %}">
+          {% endif %}
+          <div class="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-2 {% if g.solo_mode or g.recommend.duels == 0 %}opacity-30{% endif %}">
             <div class="text-2xl">⚔️</div>
             <div class="font-bold text-orange-700 dark:text-orange-300">{{ g.recommend.duels }}</div>
             <div class="text-[11px] text-slate-600 dark:text-slate-300">{% if g.solo_mode %}{{ t('g_plan_off') }}{% else %}{{ t('g_plan_duel') }}{% if g.recommend.duels > 1 %}{{ t('g_plan_duel_pl') }}{% endif %}{% endif %}</div>
           </div>
-          <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-2 {% if g.solo_mode %}opacity-30{% endif %}">
+          <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-2 {% if g.solo_mode or g.recommend.live == 0 %}opacity-30{% endif %}">
             <div class="text-2xl">🎮</div>
             <div class="font-bold text-pink-700 dark:text-pink-300">{{ g.recommend.live }}</div>
             <div class="text-[11px] text-slate-600 dark:text-slate-300">{% if g.solo_mode %}{{ t('g_plan_off') }}{% else %}{{ t('g_plan_live') }}{% endif %}</div>

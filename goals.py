@@ -52,6 +52,63 @@ def collect_card_ids(conn, user, target_type: str, target_id: int) -> list[int]:
     return []
 
 
+# === MCQ/Terms detector — sinhroniziruem s app.py ============================
+import re as _re
+_GOAL_OPT_RE = _re.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", _re.MULTILINE)
+
+
+def count_card_types(conn, target_type: str, target_id: int, user=None) -> tuple[int, int]:
+    """Schitaet (mcq_count, terms_count) po note pole kart.
+    MCQ — eto karta gde v note est' minimum 2 raznye opciya v formate "A) ...".
+    Terms — vse ostal'noe.
+    Vozvrashchaet (mcq, terms)."""
+    cards = []
+    if target_type == "deck":
+        cards = conn.execute(
+            "SELECT note FROM cards WHERE deck_id=?", (target_id,)
+        ).fetchall()
+    elif target_type == "category":
+        cat_ids = [target_id]
+        children = conn.execute(
+            "SELECT id FROM categories WHERE parent_id=?", (target_id,)
+        ).fetchall()
+        cat_ids.extend([c["id"] for c in children])
+        ph = ",".join("?" * len(cat_ids))
+        if user and user.get("org_id"):
+            decks = conn.execute(
+                f"SELECT id FROM decks WHERE org_id=? AND category_id IN ({ph})",
+                (user["org_id"], *cat_ids)
+            ).fetchall()
+        elif user:
+            decks = conn.execute(
+                f"SELECT id FROM decks WHERE owner_id=? AND category_id IN ({ph})",
+                (user["id"], *cat_ids)
+            ).fetchall()
+        else:
+            decks = []
+        if decks:
+            deck_ph = ",".join("?" * len(decks))
+            cards = conn.execute(
+                f"SELECT note FROM cards WHERE deck_id IN ({deck_ph})",
+                [d["id"] for d in decks]
+            ).fetchall()
+
+    mcq = 0
+    terms = 0
+    for c in cards:
+        note = (c["note"] or "").strip()
+        matches = _GOAL_OPT_RE.findall(note)
+        unique = {m.upper() for m in matches}
+        if len(unique) >= 2:
+            mcq += 1
+        else:
+            terms += 1
+    return (mcq, terms)
+
+
+
+
+
 def calculate_quota(total_cards: int, days: int, difficulty: str) -> int:
     """Skol'ko otvetov v den' nado. min 5."""
     mult = DIFFICULTY_REVIEWS.get(difficulty, 2)
@@ -60,51 +117,74 @@ def calculate_quota(total_cards: int, days: int, difficulty: str) -> int:
     return max(5, (total_reviews + days - 1) // days)
 
 
-def recommend_activities(daily_quota: int, difficulty: str, solo_mode: bool = False) -> dict:
-    """Rekomenduyem skol'ko raz v den' chego delat.
-    Vozvrashchaet diktiy {flashcards, tests, duels, live, total_minutes}"""
-    if solo_mode:
-        # Solo: tol'ko Flashcards + Test, bez duely/live
-        return {
-            "flashcards": int(daily_quota * 0.7),
-            "tests_questions": int(daily_quota * 0.3),
-            "duels": 0,
-            "live": 0,
-            "minutes": int(daily_quota * 0.5),  # ~30 sek na otvet v sredem
-            "tests_count": max(1, int(daily_quota * 0.3 / 10)),  # po 10 voprosov v teste
-            "solo_mode": True,
-        }
+def recommend_activities(daily_quota: int, difficulty: str, solo_mode: bool = False,
+                          mcq_count: int = 0, terms_count: int = 0) -> dict:
+    """Rekomendaciya skol'ko raz v den' chego delat'.
 
-    # S sotsial'nymi aktivnostyami
-    if difficulty == "easy":
-        return {
-            "flashcards": int(daily_quota * 0.6),
-            "tests_questions": int(daily_quota * 0.3),
-            "duels": 1,
-            "live": 0,
-            "minutes": int(daily_quota * 0.5),
-            "tests_count": max(1, int(daily_quota * 0.3 / 10)),
-            "solo_mode": False,
-        }
-    if difficulty == "hard":
-        return {
-            "flashcards": int(daily_quota * 0.4),
-            "tests_questions": int(daily_quota * 0.4),
-            "duels": 2,
-            "live": 1,
-            "minutes": int(daily_quota * 0.7),
-            "tests_count": max(2, int(daily_quota * 0.4 / 10)),
-            "solo_mode": False,
-        }
-    # medium
+    Esli mcq_count i terms_count peredany — adaptiruem proporcii pod
+    realnyy sostav kolody/kategorii:
+      - tol'ko mcq → 100% testy, 0 flashcards
+      - tol'ko terms → 100% flashcards, 0 testy
+      - mix → razdelyaem proporcionalno
+
+    Bez peredannyh schyotchikov (legacy vyzov) — staraya logika 50/50."""
+    total_content = (mcq_count or 0) + (terms_count or 0)
+    # Otdelnaya doley dlya socialnyh activitsey (duely + live) v ne-solo rezhime
+    if solo_mode:
+        social_share = 0.0
+    elif difficulty == "easy":
+        social_share = 0.10  # 10% na duely/live
+    elif difficulty == "hard":
+        social_share = 0.20
+    else:
+        social_share = 0.10  # medium
+
+    main_share = 1.0 - social_share  # ostavshaesya doley na karty
+
+    # Ratio mezhdu flashcards i tests na osnove faktov
+    if total_content > 0:
+        terms_ratio = (terms_count or 0) / total_content
+        mcq_ratio = (mcq_count or 0) / total_content
+    else:
+        # Fallback: 50/50 esli ne znaem
+        terms_ratio = 0.5
+        mcq_ratio = 0.5
+
+    # Pravim chistye ekstremumy chtoby cifry byli akkuratnymi
+    flashcards_count = int(daily_quota * main_share * terms_ratio)
+    tests_questions = int(daily_quota * main_share * mcq_ratio)
+
+    # Esli net testov v kolodе — net i kvotorov dlya nih
+    tests_count = 0
+    if mcq_count and tests_questions > 0:
+        tests_count = max(1, tests_questions // 10)
+
+    # Duely / live tol'ko esli est' ili mix ili tol'ko terms — duely i live mogut rabotat na lyubom
+    duels = 0
+    live = 0
+    if not solo_mode and total_content > 0:
+        if difficulty == "easy":
+            duels = 1
+        elif difficulty == "hard":
+            duels = 2
+            live = 1
+        else:
+            duels = 1
+            live = 1
+
     return {
-        "flashcards": int(daily_quota * 0.5),
-        "tests_questions": int(daily_quota * 0.4),
-        "duels": 1,
-        "live": 1,
-        "minutes": int(daily_quota * 0.6),
-        "tests_count": max(1, int(daily_quota * 0.4 / 10)),
-        "solo_mode": False,
+        "flashcards": flashcards_count,
+        "tests_questions": tests_questions,
+        "tests_count": tests_count,
+        "duels": duels,
+        "live": live,
+        "minutes": int(daily_quota * (0.7 if difficulty == "hard" else 0.5 if difficulty == "easy" else 0.6)),
+        "solo_mode": solo_mode,
+        # Meta dlya UI — chtoby skryt' karty kotoryh netu
+        "has_mcq": (mcq_count or 0) > 0,
+        "has_terms": (terms_count or 0) > 0,
+        "mcq_count": mcq_count or 0,
+        "terms_count": terms_count or 0,
     }
 
 
@@ -385,9 +465,17 @@ def get_active_goals_with_progress(conn, user_id: int) -> list[dict]:
         gd["today"] = get_today_progress(conn, user_id, gd)
         gd["overall"] = get_overall_progress(conn, user_id, gd)
         gd["status_info"] = is_behind_schedule(gd, gd["overall"])
+        # Schitaem fakticheski tip kart v target — chtoby rekomendaciya
+        # uchityvala est' li tam testy ili tol'ko slovari
+        user_obj = conn.execute("SELECT id, org_id FROM users WHERE id=?", (user_id,)).fetchone()
+        u_dict = dict(user_obj) if user_obj else None
+        mcq_n, terms_n = count_card_types(conn, gd["target_type"], gd["target_id"], u_dict)
+        gd["mcq_count"] = mcq_n
+        gd["terms_count"] = terms_n
         gd["recommend"] = recommend_activities(
             gd["daily_quota"], gd["difficulty"],
-            solo_mode=bool(gd.get("solo_mode"))
+            solo_mode=bool(gd.get("solo_mode")),
+            mcq_count=mcq_n, terms_count=terms_n,
         )
         # Imya target
         if g["target_type"] == "deck":
