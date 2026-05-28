@@ -406,6 +406,23 @@ def can_view_deck(user, deck):
     return False
 
 
+# === MCQ detection helper ====================================================
+_MCQ_OPTION_RE = re.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", re.MULTILINE)
+
+
+def _has_mcq_options(text: str) -> bool:
+    """Return True if note/back text looks like multiple-choice options.
+    Detects A) B) C) D), 1) 2) 3) 4), А) Б) В) Г) etc.
+    Need at least 2 different option letters/numbers."""
+    if not text:
+        return False
+    matches = _MCQ_OPTION_RE.findall(text)
+    if len(matches) < 2:
+        return False
+    unique = {m.upper() for m in matches}
+    return len(unique) >= 2
+
+
 def _check_goals_daily_completion(conn, user_id):
     """Posle kazhdogo otveta — proveryaem, ne vypolnil li polzovatel' dnevnuyu normu po tselyam.
     Esli da i ranshe ne nachislyali bonus segodnya — daet XP. Vozvraschaet spisok soobshcheniy."""
@@ -929,11 +946,18 @@ def dashboard():
 def _student_dashboard(user):
     conn = db.get_conn()
     now = datetime.utcnow().isoformat()
+    # === SQL-podschet skol'ko v kazhdoy kolode kart MCQ (testov) i terms (slovarey).
+    # MCQ = note soderzhit varianty (LIKE '%A)%' AND LIKE '%B)%' ili A. B.).
+    # Esli mcq_count > 0 — kolodu mozhno v Test, esli terms_count > 0 — vo Flashcards.
+    # Eto pozvolit pokazat' obe knopki esli oba tipa est'.
+    mcq_filter = "(c.note LIKE '%A)%' OR c.note LIKE '%А)%' OR c.note LIKE 'A.%' OR c.note LIKE '1)%')"
     if user["org_id"]:
-        decks = conn.execute("""
+        decks = conn.execute(f"""
             SELECT d.*, c.name AS category_name, c.icon AS category_icon, c.parent_id AS category_parent_id,
                 pc.name AS parent_name, pc.icon AS parent_icon,
                 (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND {mcq_filter}) AS mcq_count,
+                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND NOT {mcq_filter}) AS terms_count,
                 (SELECT COUNT(*) FROM cards crd
                  LEFT JOIN user_card_progress p ON p.card_id=crd.id AND p.user_id=?
                  WHERE crd.deck_id=d.id AND (p.due_at IS NULL OR p.due_at <= ?)) AS due_count,
@@ -946,10 +970,12 @@ def _student_dashboard(user):
             WHERE d.org_id=? ORDER BY pc.name, c.name, d.created_at DESC
         """, (user["id"], now, user["id"], user["org_id"])).fetchall()
     else:
-        decks = conn.execute("""
+        decks = conn.execute(f"""
             SELECT d.*, c.name AS category_name, c.icon AS category_icon, c.parent_id AS category_parent_id,
                 pc.name AS parent_name, pc.icon AS parent_icon,
                 (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND {mcq_filter}) AS mcq_count,
+                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND NOT {mcq_filter}) AS terms_count,
                 (SELECT COUNT(*) FROM cards crd
                  LEFT JOIN user_card_progress p ON p.card_id=crd.id AND p.user_id=?
                  WHERE crd.deck_id=d.id AND (p.due_at IS NULL OR p.due_at <= ?)) AS due_count,
@@ -1414,8 +1440,13 @@ def deck_view(deck_id):
     else:
         cats = conn.execute("SELECT * FROM categories WHERE owner_id=?", (user["id"],)).fetchall()
     conn.close()
+    # Schitaem skol'ko v kolodе MCQ-kart i terms-kart na osnove faktov,
+    # chtoby shablon mog pokazat' obe knopki esli oba tipa est'.
+    mcq_count = sum(1 for c in cards if len(c.get("options") or []) >= 2)
+    terms_count = len(cards) - mcq_count
     return render_template("deck.html", deck=deck, cards=cards, categories=cats,
-                            can_edit=can_manage_content(user))
+                            can_edit=can_manage_content(user),
+                            mcq_count=mcq_count, terms_count=terms_count)
 
 
 @app.route("/deck/<int:deck_id>/edit", methods=["POST"])
@@ -1597,11 +1628,18 @@ def flashcards_view(deck_id):
     if not deck or not can_view_deck(user, dict(deck)):
         conn.close(); abort(404)
 
-    # Tol'ko dlya kolod tipa 'terms' ili esli polzovatel' yavno khochet
+    # Razreshaem flashcards esli est' hot' odna ne-MCQ karta v kolode.
+    # Ranshe blokirovali mcq-koldy, no teper' v odnoy kolodе mogut byt' karty oboikh tipov.
+    cards_check = conn.execute("SELECT note FROM cards WHERE deck_id=?", (deck_id,)).fetchall()
+    has_terms = any(
+        not _has_mcq_options(c["note"] or "")
+        for c in cards_check
+    ) if cards_check else False
     deck_type = (deck["deck_type"] if "deck_type" in deck.keys() else "mcq") or "mcq"
-    if deck_type == "mcq" and not request.args.get("force"):
+    # Esli net ni odnoy terms-karty i deck_type=mcq i ne force — perenapravlyaem
+    if not has_terms and deck_type == "mcq" and not request.args.get("force"):
         conn.close()
-        flash("Эта колода — тест с вариантами. Используйте режим Тест.", "info")
+        flash("В этой колоде нет словарных карт. Используйте режим Тест.", "info")
         return redirect(url_for("deck_view", deck_id=deck_id))
 
     # Filtry: only_favorites, only_difficult

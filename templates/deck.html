@@ -382,19 +382,26 @@ function deckEditor() {
 
       <!-- Action buttons -->
       <div class="flex items-center gap-2 flex-wrap">
-        {% set _dt = deck.deck_type or 'mcq' %}
-        {% if _dt == 'terms' %}
+        {# Logika kak na dashboarde: pokazat' obe knopki esli oba tipa est'.
+           mcq_count i terms_count peredayutsya iz deck_view(). #}
+        {% set _mcq = mcq_count or 0 %}
+        {% set _terms = terms_count or 0 %}
+        {# Fallback dlya pustyh kolod ili migratsii #}
+        {% if _mcq == 0 and _terms == 0 %}
+          {% set _terms = 1 if (deck.deck_type or 'mcq') == 'terms' else 0 %}
+          {% set _mcq = 0 if _terms else 1 %}
+        {% endif %}
+
+        {% if _terms > 0 %}
         <a href="/deck/{{ deck['id'] }}/flashcards" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="{{ t('dk_btn_flashcards_title') }}">{{ t('dk_btn_flashcards') }}</a>
         <a href="/deck/{{ deck['id'] }}/match" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); color: #b45309; border-color: rgba(245,158,11,0.4);" title="{{ t('dk_btn_match_title') }}">{{ t('dk_btn_match') }}</a>
-        {% if can_edit %}
-        <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
         {% endif %}
-        {% else %}
+        {% if _mcq > 0 %}
         <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}" data-tour="deck-test-btn">{{ t('dk_btn_test') }}</button>
         <a href="/test/history?scope_type=deck&scope_id={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(217,70,239,0.1)); color: #7c3aed; border-color: rgba(168,85,247,0.4);" title="История тестов по этой колоде">📊 История</a>
+        {% endif %}
         {% if can_edit %}
         <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
-        {% endif %}
         {% endif %}
         {% if can_edit %}
         <a href="/export/deck/{{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_excel_title') }}">{{ t('dk_btn_excel') }}</a>

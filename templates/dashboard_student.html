@@ -221,10 +221,23 @@
             </div>
             <div class="progress-bar h-1.5"><div style="width: {{ pct }}%"></div></div>
           </div>
-          <div class="flex gap-2">
-            {% if (d.deck_type or 'mcq') == 'terms' %}
+          <div class="flex gap-2 flex-wrap">
+            {# Pokazyvaem knopki na osnove fakticheskogo soderzhimogo:
+               mcq_count > 0  → est' testy → knopka Test
+               terms_count > 0 → est' slovari → knopka Flashcards
+               Esli oba — pokazyvaem oba. #}
+            {% set _mcq = d.mcq_count or 0 %}
+            {% set _terms = d.terms_count or 0 %}
+            {# Fallback na deck_type esli net kart eshchë #}
+            {% if _mcq == 0 and _terms == 0 %}
+              {% set _terms = 1 if (d.deck_type or 'mcq') == 'terms' else 0 %}
+              {% set _mcq = 0 if _terms else 1 %}
+            {% endif %}
+
+            {% if _terms > 0 %}
             <a href="/deck/{{ d.id }}/flashcards" class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 12px; padding: 7px 10px;">📖 Flashcards</a>
-            {% else %}
+            {% endif %}
+            {% if _mcq > 0 %}
             <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
               class="flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %} rounded-xl text-xs font-bold text-white text-center transition" style="padding: 7px 10px; background: linear-gradient(135deg, #10b981, #059669);">📝 {{ t('btn_test') }}</button>
             {% endif %}
