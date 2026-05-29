@@ -467,7 +467,7 @@
             type="text"
             id="hero-chat-input"
             class="hero-chat-input"
-            placeholder="{{ t('lp_ai_placeholder') if t('lp_ai_placeholder') != 'lp_ai_placeholder' else 'Спроси что-нибудь об учёбе...' }}"
+            placeholder="{{ t('lp_ai_placeholder') }}"
             autocomplete="off"
             maxlength="500"
           />
@@ -478,12 +478,12 @@
 
         <!-- Suggestion chips -->
         <div class="hero-chips" id="hero-chips">
-          <button class="hero-chip" onclick="heroChip(this)">📄 Как импортировать PDF?</button>
-          <button class="hero-chip" onclick="heroChip(this)">🧠 Что такое интервальное повторение?</button>
-          <button class="hero-chip" onclick="heroChip(this)">⚔️ Как вызвать на дуэль?</button>
-          <button class="hero-chip" onclick="heroChip(this)">🎯 Как поставить цель обучения?</button>
-          <button class="hero-chip" onclick="heroChip(this)">📊 Где смотреть статистику?</button>
-          <button class="hero-chip" onclick="heroChip(this)">🏆 Как работают достижения?</button>
+          <button class="hero-chip" onclick="heroChip(this)">{{ t('lp_chip_1') }}</button>
+          <button class="hero-chip" onclick="heroChip(this)">{{ t('lp_chip_2') }}</button>
+          <button class="hero-chip" onclick="heroChip(this)">{{ t('lp_chip_3') }}</button>
+          <button class="hero-chip" onclick="heroChip(this)">{{ t('lp_chip_4') }}</button>
+          <button class="hero-chip" onclick="heroChip(this)">{{ t('lp_chip_5') }}</button>
+          <button class="hero-chip" onclick="heroChip(this)">{{ t('lp_chip_6') }}</button>
         </div>
       </div>
       <p class="hero-chat-note"></p>
