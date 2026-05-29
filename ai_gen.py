@@ -308,18 +308,28 @@ def generate_from_text(text: str, count: int = 10, lang: str = "ru",
         lang_name = lang_map.get(output_lang, "Russian")
         lang_instruction = f"Language of questions and answers: {lang_name}. Translate if needed."
 
-    prompt = f"""You are a flashcard generator for self-study.
+    prompt = f"""You are a creative teacher making ENGAGING flashcards from a text.
 
-From the TEXT below, generate exactly {count} questions for self-testing.
+From the TEXT below, generate exactly {count} flashcards for self-testing.
 {lang_instruction}
 
-Requirements:
-- Varied questions (facts, terms, definitions, examples)
-- Short precise answers (1-3 sentences max)
-- "note" field: additional explanation or context (1 sentence)
-- Only use information from the text, do not invent facts
+MAKE CARDS ENGAGING — avoid boring "What is X?" questions. Mix these formats:
+1. 🎯 Direct fact: "What does [term] mean in this context?"
+2. 🔍 Spot it: "Which statement about [topic] is correct?"
+3. 🔄 Apply it: "How would you use [concept] in practice?"
+4. 💡 Why/How: "Why does [fact from text] happen?"
+5. ⚠️ Common mistake: "What's the common misconception about [topic]?"
+6. 🌍 Real example: "Give an example of [concept] from real life"
+7. 🔗 Connect: "How does [A] relate to [B] according to the text?"
 
-Output ONLY a JSON array, no markdown, no explanation:
+Rules:
+- Answer directly first, then explain
+- Use concrete examples from the text
+- Keep it conversational, not textbook-style
+- "note": surprising fact, memory trick, or real-world connection
+- Only use information from the text
+
+Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]
 
 TEXT:
@@ -365,49 +375,61 @@ def generate_from_topic(topic: str, count: int = 10, lang: str = "ru",
     is_language_topic = any(kw.lower() in topic.lower() for kw in lang_topic_keywords)
 
     if is_language_topic:
-        # Special prompt for language learning — practical, with examples
-        prompt = f"""You are an expert language teacher creating flashcards for self-study.
+        prompt = f"""You are a creative language teacher making ENGAGING flashcards that students actually enjoy.
 
 Topic: "{topic}"
 Level: {diff_name}
-Count: generate exactly {count} flashcards.
+Count: exactly {count} flashcards.
 {lang_instruction}
 
-IMPORTANT — Generate PRACTICAL flashcards about the LANGUAGE RULES themselves:
-- Each card must teach ONE specific grammar rule, word, or phrase
-- "question": ask about the rule, usage, or meaning (e.g. "When do we use Present Simple?")
-- "answer": give the rule + 1-2 concrete examples in English (e.g. "For habits and routines. ✓ I go to school every day. ✓ She works at 9am.")
-- "note": add a memory tip, exception, or common mistake to avoid
+MAKE CARDS ENGAGING — use these question formats (mix them!):
+1. 🎯 Rule + real example: "When do we use 'a' vs 'an'?"
+2. 🔍 Spot the mistake: "Find the error: 'She don't like coffee'"
+3. 💬 Real situation: "Your friend says 'I am agree'. Is it correct? Why?"
+4. ✏️ Complete it: "She ___ (not/like) Mondays. (Present Simple)"
+5. 🔄 Transform: "Make this negative: 'He plays football'"
+6. 🌍 Translate naturally: "How do you say 'Я хожу в школу каждый день' in English?"
+7. 🤔 Choose correctly: "Which is right: 'I have 20 years' or 'I am 20 years old'?"
+8. 💡 Why?: "Why do we say 'goes' not 'go' for she/he/it?"
 
-DO NOT generate questions about teaching methods or how to teach.
-Generate questions that a STUDENT would use to test themselves on the language rules.
+Rules for ENGAGING answers:
+- Start with the direct answer (✓ or ✗ or the rule)
+- Add 1-2 real-life examples people actually say
+- Use emojis sparingly to highlight key points
+- Keep it conversational, not textbook-style
 
-Question types to include:
-1. Rule questions: "When do we use [grammar form]?"
-2. Example questions: "Make a sentence with [word/structure]"
-3. Comparison: "What is the difference between [A] and [B]?"
-4. Fill-in: "Complete: She ___ (go) to school every day."
-5. Translation: "Translate: [phrase]"
+"note" field: add a fun memory trick, real-life context, or "common mistake" warning ⚠️
 
-Output ONLY a JSON array, no markdown:
+Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
     else:
-        # General educational prompt
-        prompt = f"""You are an experienced teacher creating flashcards for self-study.
+        prompt = f"""You are a creative teacher making ENGAGING flashcards that students love to study.
 
-Generate exactly {count} high-quality flashcards on the topic: "{topic}".
+Topic: "{topic}"
+Count: exactly {count} flashcards.
 Difficulty: {diff_name}.
 {lang_instruction}
 
-Requirements:
-- Each card tests ONE specific fact, concept, or skill
-- Varied question types: definitions, examples, comparisons, applications
-- "question": clear, specific, testable question
-- "answer": concise answer (1-3 sentences), include examples where helpful
-- "note": memory tip, context, or common mistake to avoid
+MAKE CARDS ENGAGING — avoid boring "What is X?" questions. Use these formats:
+1. 🎯 Practical: "You need to [do something]. What do you use/do?"
+2. 🔍 Scenario: "Imagine you are [situation]. What happens when...?"
+3. ✅ True or False + explain why
+4. 🔄 Compare: "What's the difference between A and B?"
+5. 💡 Why/How: "Why does [phenomenon] happen?"
+6. 🧩 Connect: "How does [concept A] relate to [concept B]?"
+7. ⚠️ Common mistake: "What's wrong with this: [wrong example]?"
+8. 🌍 Real world: "Give a real-life example of [concept]"
 
-Output ONLY a JSON array, no markdown:
+Rules for ENGAGING answers:
+- Be direct and clear — answer first, explain second
+- Use concrete examples, not abstract definitions
+- Add analogies or comparisons when helpful
+- Keep it conversational
+
+"note" field: memory trick, real-world connection, or surprising fact 🤯
+
+Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
     raw = _call_gemini(prompt, max_tokens=8000)
