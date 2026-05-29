@@ -323,6 +323,7 @@
     color: #0f172a;
     white-space: nowrap;
   }
+  html.dark .hero-logo-name { color: #f1f5f9; }
   .hero-logo-ai {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
     -webkit-background-clip: text;
@@ -339,6 +340,7 @@
     padding-left: 4px;
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   }
+  html.dark .hero-logo-sub { color: #64748b; }
   @media (max-width: 768px) {
     .hero-logo-block { gap: 12px; }
     .hero-logo-icon { height: 80px; }
@@ -372,10 +374,45 @@
   .hero-tag .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s ease-in-out infinite; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
   .btn-hero { display: inline-flex; align-items: center; gap: 8px; padding: 15px 34px; border-radius: 999px; font-weight: 700; font-size: 16px; transition: all 0.25s cubic-bezier(0.16,1,0.3,1); }
+  /* Primary button — gradient in dark mode */
   .btn-hero-primary { background: #0f172a; color: white; box-shadow: 0 4px 16px rgba(15,23,42,0.25); }
   .btn-hero-primary:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,23,42,0.35); }
+  html.dark .btn-hero-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+  html.dark .btn-hero-primary:hover { background: linear-gradient(135deg, #4f46e5, #7c3aed); box-shadow: 0 8px 24px rgba(99,102,241,0.5); }
+  /* Ghost button — visible in dark mode */
   .btn-hero-ghost { background: rgba(255,255,255,0.9); border: 1.5px solid rgba(15,23,42,0.12); color: #1e293b; }
   .btn-hero-ghost:hover { background: #fff; transform: translateY(-2px); border-color: rgba(15,23,42,0.25); }
+  html.dark .btn-hero-ghost { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #e2e8f0; }
+  html.dark .btn-hero-ghost:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.35); color: #fff; }
+
+  /* === Global dark mode text fixes === */
+  html.dark .text-gray-600 { color: #94a3b8 !important; }
+  html.dark .text-gray-500 { color: #64748b !important; }
+  html.dark .text-gray-400 { color: #475569 !important; }
+  html.dark .text-slate-600 { color: #94a3b8 !important; }
+  html.dark .text-slate-500 { color: #64748b !important; }
+  html.dark .text-slate-900 { color: #f1f5f9 !important; }
+  html.dark .text-slate-800 { color: #e2e8f0 !important; }
+  html.dark .text-slate-700 { color: #cbd5e1 !important; }
+  /* Section label dark */
+  html.dark .section-label { background: rgba(30,41,75,0.8); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+  /* FAQ dark */
+  html.dark .faq-item { background: rgba(30,41,75,0.7); border-color: rgba(99,102,241,0.2); }
+  html.dark .faq-q { color: #f1f5f9; }
+  html.dark .faq-a { color: #94a3b8; }
+  /* How-it-works steps dark */
+  html.dark .feature { background: rgba(30,41,75,0.7); border-color: rgba(99,102,241,0.2); }
+  html.dark .feature h3 { color: #f1f5f9; }
+  html.dark .feature p { color: #94a3b8; }
+  /* Demo card dark */
+  html.dark .demo-front { background: rgba(30,41,75,0.9); border-color: rgba(99,102,241,0.3); color: #f1f5f9; }
+  html.dark .demo-stat { background: rgba(30,41,75,0.7); border-color: rgba(99,102,241,0.2); }
+  html.dark .demo-q { color: #f1f5f9; }
+  /* CTA section dark */
+  html.dark .text-2xl.text-gray-600 { color: #94a3b8 !important; }
+  /* Footer dark */
+  html.dark footer { border-color: rgba(99,102,241,0.15); }
+  html.dark .footer-phone { background: rgba(30,41,75,0.7); color: #c4b5fd; border-color: rgba(99,102,241,0.4); }
   .stage-3d { display: none; }
 
   .section { padding: 7rem 1.5rem; position: relative; }
