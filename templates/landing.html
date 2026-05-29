@@ -142,6 +142,22 @@
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
   }
+  .lp-theme-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+  }
+  .lp-theme-btn:hover {
+    background: rgba(99,102,241,0.1);
+    transform: scale(1.1);
+  }
+  html.dark .lp-theme-btn:hover { background: rgba(99,102,241,0.2); }
   @media (max-width:768px) {
     .lp-lang { top:12px; right:12px; padding:3px; gap:3px; }
     .lp-lang a { padding:4px 10px; font-size:12px; }
@@ -525,8 +541,26 @@
   <a href="/set-lang/en" class="{% if lang == 'en' %}active{% endif %}">EN</a>
   <a href="/set-lang/uz" class="{% if lang == 'uz' %}active{% endif %}">UZ</a>
   <span class="lp-divider"></span>
+  <button onclick="toggleDarkMode()" class="lp-theme-btn" id="lp-theme-btn" title="Сменить тему">
+    <span id="lp-icon-light">🌙</span>
+    <span id="lp-icon-dark" style="display:none">☀️</span>
+  </button>
+  <span class="lp-divider"></span>
   <a href="/login" class="lp-login-btn">{{ t('nav_login') }}</a>
 </div>
+
+<script>
+  // Sync theme icon on load
+  (function() {
+    var isDark = document.documentElement.classList.contains('dark');
+    if (isDark) {
+      var l = document.getElementById('lp-icon-light');
+      var d = document.getElementById('lp-icon-dark');
+      if (l) l.style.display = 'none';
+      if (d) d.style.display = '';
+    }
+  })();
+</script>
 
 <!-- ============== HERO (Tavily style) ============== -->
 <section class="hero-wrap">
