@@ -347,25 +347,65 @@ def generate_from_topic(topic: str, count: int = 10, lang: str = "ru",
         lang_instruction = f"Language of questions and answers: {lang_name}."
 
     diff_map = {
-        "easy": "elementary school students",
+        "easy": "beginners / elementary level",
         "medium": "intermediate level students",
-        "hard": "professionals and experts",
+        "hard": "advanced students and professionals",
     }
     diff_name = diff_map.get(difficulty, diff_map["medium"])
 
-    prompt = f"""You are an experienced teacher.
+    # Detect if topic is about language learning — special prompt for grammar/vocabulary
+    lang_topic_keywords = [
+        "english", "grammar", "tense", "verb", "noun", "adjective", "adverb",
+        "present", "past", "future", "simple", "continuous", "perfect",
+        "vocabulary", "words", "phrases", "pronunciation", "spelling",
+        "английский", "грамматика", "время", "глагол", "существительное",
+        "ingliz", "grammatika", "fe'l", "ot", "sifat",
+        "beginner", "начинающий", "boshlang'ich",
+    ]
+    is_language_topic = any(kw.lower() in topic.lower() for kw in lang_topic_keywords)
 
-Generate {count} high-quality questions on the topic: "{topic}".
-Difficulty: for {diff_name}.
+    if is_language_topic:
+        # Special prompt for language learning — practical, with examples
+        prompt = f"""You are an expert language teacher creating flashcards for self-study.
+
+Topic: "{topic}"
+Level: {diff_name}
+Count: generate exactly {count} flashcards.
+{lang_instruction}
+
+IMPORTANT — Generate PRACTICAL flashcards about the LANGUAGE RULES themselves:
+- Each card must teach ONE specific grammar rule, word, or phrase
+- "question": ask about the rule, usage, or meaning (e.g. "When do we use Present Simple?")
+- "answer": give the rule + 1-2 concrete examples in English (e.g. "For habits and routines. ✓ I go to school every day. ✓ She works at 9am.")
+- "note": add a memory tip, exception, or common mistake to avoid
+
+DO NOT generate questions about teaching methods or how to teach.
+Generate questions that a STUDENT would use to test themselves on the language rules.
+
+Question types to include:
+1. Rule questions: "When do we use [grammar form]?"
+2. Example questions: "Make a sentence with [word/structure]"
+3. Comparison: "What is the difference between [A] and [B]?"
+4. Fill-in: "Complete: She ___ (go) to school every day."
+5. Translation: "Translate: [phrase]"
+
+Output ONLY a JSON array, no markdown:
+[{{"question":"...","answer":"...","note":"..."}}, ...]"""
+
+    else:
+        # General educational prompt
+        prompt = f"""You are an experienced teacher creating flashcards for self-study.
+
+Generate exactly {count} high-quality flashcards on the topic: "{topic}".
+Difficulty: {diff_name}.
 {lang_instruction}
 
 Requirements:
-- Varied questions (terms, concepts, examples, applications)
-- Short answers (1-3 sentences)
-- Fields:
-  - "question" — the question
-  - "answer" — short answer
-  - "note" — explanation or extended context
+- Each card tests ONE specific fact, concept, or skill
+- Varied question types: definitions, examples, comparisons, applications
+- "question": clear, specific, testable question
+- "answer": concise answer (1-3 sentences), include examples where helpful
+- "note": memory tip, context, or common mistake to avoid
 
 Output ONLY a JSON array, no markdown:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
