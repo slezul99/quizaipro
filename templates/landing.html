@@ -587,16 +587,28 @@
 </div>
 
 <script>
-  // Sync theme icon on load
-  (function() {
+  // Sync theme icon on load and after toggle
+  function _syncLpThemeIcon() {
     var isDark = document.documentElement.classList.contains('dark');
+    var light = document.getElementById('lp-icon-light');
+    var dark = document.getElementById('lp-icon-dark');
+    if (!light || !dark) return;
     if (isDark) {
-      var l = document.getElementById('lp-icon-light');
-      var d = document.getElementById('lp-icon-dark');
-      if (l) l.style.display = 'none';
-      if (d) d.style.display = '';
+      light.style.display = 'none';
+      dark.style.display = '';
+    } else {
+      light.style.display = '';
+      dark.style.display = 'none';
     }
-  })();
+  }
+  // Run on load
+  _syncLpThemeIcon();
+  // Patch toggleDarkMode to also update landing icon
+  var _origToggle = window.toggleDarkMode;
+  window.toggleDarkMode = function() {
+    if (_origToggle) _origToggle();
+    setTimeout(_syncLpThemeIcon, 50);
+  };
 </script>
 
 <!-- ============== HERO (Tavily style) ============== -->
