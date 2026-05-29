@@ -438,11 +438,26 @@
   .faq-item.open .faq-chev { transform:rotate(180deg); }
   .faq-a { padding:0 1.75rem 1.5rem; color:#64748b; line-height:1.7; font-size:15px; }
 
-  /* === Hero AI Chat Box (Tavily style) === */
-  .hero-chat-wrap { max-width:660px; margin:0 auto 1.5rem; }
-  .hero-chat-box { background:#fff; border:1.5px solid rgba(15,23,42,0.1); border-radius:18px; box-shadow:0 2px 8px rgba(15,23,42,0.05),0 16px 48px -16px rgba(99,102,241,0.1); overflow:hidden; transition:border-color 0.2s,box-shadow 0.2s; }
-  html.dark .hero-chat-box { background: rgba(15,23,42,0.9); border-color: rgba(99,102,241,0.3); }
-  .hero-chat-box:focus-within { border-color:rgba(99,102,241,0.45); box-shadow:0 2px 8px rgba(15,23,42,0.05),0 20px 56px -16px rgba(99,102,241,0.18),0 0 0 4px rgba(99,102,241,0.06); }
+  /* === Hero AI Chat — CorpAI mirror style === */
+  .hero-chat-wrap { max-width:660px; margin:0 auto 1.5rem; position:relative; }
+  /* Animated glow border on focus */
+  .hero-chat-wrap::before {
+    content:''; position:absolute; inset:-2px; border-radius:26px;
+    background:linear-gradient(135deg,#f97316,#ec4899,#8b5cf6,#f97316);
+    background-size:300% 300%; opacity:0; transition:opacity 0.4s;
+    pointer-events:none; z-index:0;
+  }
+  .hero-chat-wrap.focused::before { opacity:0.55; animation:hero-glow-shift 4s ease infinite; }
+  @keyframes hero-glow-shift { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+  .hero-chat-box {
+    position:relative; z-index:1;
+    background:rgba(255,255,255,0.82); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    border:1.5px solid rgba(15,23,42,0.1); border-radius:24px;
+    box-shadow:0 4px 24px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.8) inset;
+    overflow:hidden; transition:border-color 0.2s,box-shadow 0.3s;
+  }
+  html.dark .hero-chat-box { background:rgba(15,23,42,0.88); border-color:rgba(99,102,241,0.3); box-shadow:0 4px 24px rgba(0,0,0,0.4); }
+  .hero-chat-wrap.focused .hero-chat-box { border-color:transparent; box-shadow:0 8px 40px rgba(249,115,22,0.12); }
   .hero-chat-messages { max-height:280px; overflow-y:auto; padding:16px 18px 0; display:flex; flex-direction:column; gap:12px; }
   .hero-msg { display:flex; gap:10px; align-items:flex-start; }
   .hero-msg-user { flex-direction:row-reverse; }
@@ -453,14 +468,18 @@
   .hero-msg-user .hero-msg-bubble { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-bottom-right-radius:4px; }
   .hero-msg-ai .hero-msg-bubble { background:#f8f7f4; color:#1a1a2e; border:1px solid rgba(200,190,175,0.35); border-bottom-left-radius:4px; }
   html.dark .hero-msg-ai .hero-msg-bubble { background:rgba(30,41,75,0.9); color:#e2e8f0; border-color:rgba(99,102,241,0.2); }
-  .hero-chat-input-row { display:flex; align-items:center; gap:10px; padding:14px 16px; }
+  .hero-chat-input-row { display:flex; align-items:center; gap:10px; padding:16px 18px; }
   .hero-chat-input { flex:1; border:none; outline:none; background:transparent; font-size:15px; color:#1a1a2e; font-family:inherit; padding:2px 0; }
   html.dark .hero-chat-input { color:#f1f5f9; }
   .hero-chat-input::placeholder { color:#94a3b8; }
-  .hero-chat-send { width:36px; height:36px; border-radius:10px; flex-shrink:0; background:#0f172a; color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.15s,box-shadow 0.15s; }
-  html.dark .hero-chat-send { background:#6366f1; }
-  .hero-chat-send:hover { transform:scale(1.08); box-shadow:0 4px 14px rgba(15,23,42,0.3); }
-  .hero-chat-send:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  /* Send button — gradient when has text */
+  .hero-chat-send { width:36px; height:36px; border-radius:10px; flex-shrink:0; background:#111827; color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s cubic-bezier(0.16,1,0.3,1); }
+  .hero-chat-send.has-text { background:linear-gradient(135deg,#f97316,#ec4899); box-shadow:0 4px 16px rgba(249,115,22,0.4); }
+  .hero-chat-send.has-text:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(249,115,22,0.5); }
+  .hero-chat-send:not(.has-text):hover { background:#374151; transform:scale(1.05); }
+  .hero-chat-send:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; }
+  html.dark .hero-chat-send { background:#374151; }
+  html.dark .hero-chat-send.has-text { background:linear-gradient(135deg,#6366f1,#ec4899); }
   .hero-chips { display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 14px; border-top:1px solid rgba(15,23,42,0.06); padding-top:10px; }
   html.dark .hero-chips { border-top-color:rgba(255,255,255,0.06); }
   .hero-chip { padding:6px 13px; border-radius:999px; border:1px solid rgba(15,23,42,0.1); background:#f8f7f4; color:#475569; font-size:12.5px; font-weight:500; cursor:pointer; transition:all 0.15s; font-family:inherit; white-space:nowrap; }
@@ -529,7 +548,7 @@
     </div>
     <p class="reveal hero-sub">{{ t('lp_hero_sub_html') | safe }}</p>
 
-    <!-- AI Chat Input (Tavily style) -->
+    <!-- AI Chat Input — CorpAI style -->
     <div class="reveal hero-chat-wrap" id="hero-chat-wrap">
       <div class="hero-chat-box" id="hero-chat-box">
         <!-- Messages area (hidden initially) -->
@@ -544,9 +563,10 @@
             placeholder="{{ t('lp_ai_placeholder') }}"
             autocomplete="off"
             maxlength="500"
+            onkeydown="if(event.key==='Enter')heroAskAI()"
           />
           <button class="hero-chat-send" id="hero-chat-send" onclick="heroAskAI()" title="Отправить">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
           </button>
         </div>
 
@@ -1069,10 +1089,27 @@
   var heroChatInput = document.getElementById('hero-chat-input');
   var heroChatSend = document.getElementById('hero-chat-send');
   var heroChips = document.getElementById('hero-chips');
+  var heroChatWrap = document.getElementById('hero-chat-wrap');
+
+  // Glow on focus + send button state
+  heroChatInput.addEventListener('focus', function() { heroChatWrap.classList.add('focused'); });
+  heroChatInput.addEventListener('blur', function() { heroChatWrap.classList.remove('focused'); });
+  heroChatInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      heroChatSend.classList.add('has-text');
+    } else {
+      heroChatSend.classList.remove('has-text');
+    }
+  });
 
   function heroChip(btn) {
-    heroChatInput.value = btn.textContent.replace(/^[^\s]+\s/, '').trim();
-    heroAskAI();
+    // Только вставляем текст в input — пользователь сам нажимает отправить
+    var text = btn.textContent.trim();
+    heroChatInput.value = text;
+    heroChatInput.focus();
+    // Подсвечиваем кнопку отправки
+    heroChatSend.style.transform = 'scale(1.1)';
+    setTimeout(function() { heroChatSend.style.transform = ''; }, 300);
   }
 
   function heroAddMsg(text, role) {
