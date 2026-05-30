@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Поиск — {{ t('nav_marketplace') }} — QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+  <div class="relative z-10">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+      <a href="/marketplace" class="hover:text-indigo-600 dark:hover:text-indigo-300 font-semibold transition">📚 {{ t('nav_marketplace') }}</a>
+      <span>›</span>
+      <span class="text-slate-900 dark:text-slate-100 font-bold">🔍 Поиск</span>
+    </nav>
+
+    <!-- Search form -->
+    <div class="glass-premium p-6 mb-8">
+      <form action="/marketplace/search" method="GET" class="space-y-4">
+        <div class="flex gap-3">
+          <input name="q" value="{{ q }}" placeholder="Поиск по коллекциям..."
+            class="input-premium flex-1 text-base">
+          <button type="submit" class="btn-premium px-8">🔍 Найти</button>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <!-- Subject filter -->
+          <select name="subject" class="input-premium text-sm py-2" style="width:auto;min-width:160px;">
+            <option value="">Все предметы</option>
+            {% for s in subjects %}
+            <option value="{{ s.slug }}" {% if s.slug == subject_slug %}selected{% endif %}>
+              {{ s.icon }} {{ s.title }}
+            </option>
+            {% endfor %}
+          </select>
+          <!-- Level filter -->
+          <select name="level" class="input-premium text-sm py-2" style="width:auto;min-width:140px;">
+            <option value="">Все уровни</option>
+            <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>🟢 Beginner</option>
+            <option value="intermediate" {% if level == 'intermediate' %}selected{% endif %}>🟡 Intermediate</option>
+            <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>🔴 Advanced</option>
+          </select>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results -->
+    {% if collections %}
+    <div class="mb-4 text-sm text-slate-500 dark:text-slate-400 font-semibold">
+      Найдено: {{ collections|length }} коллекций
+      {% if q %} по запросу «{{ q }}»{% endif %}
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for c in collections %}
+      <a href="/collection/{{ c.slug }}"
+        class="group relative rounded-3xl p-6 text-white overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl block"
+        style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
+          style="background: radial-gradient(circle at 30% 0%, white, transparent 60%)"></div>
+        <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full opacity-10" style="background:white;"></div>
+        <div class="relative z-10">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-4xl">{{ c.icon }}</div>
+            {% if c.subj_title %}
+            <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-semibold">{{ c.subj_title }}</span>
+            {% endif %}
+          </div>
+          <h3 class="font-black text-lg leading-tight mb-1">{{ c.title }}</h3>
+          {% if c.desc %}<p class="text-white/70 text-sm line-clamp-2 mb-3">{{ c.desc }}</p>{% endif %}
+          <div class="flex items-center justify-between">
+            <div class="flex gap-2 flex-wrap">
+              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ t('mk_decks_word') }}</span>
+              {% if c.level %}
+              <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">
+                {% if c.level == 'beginner' %}🟢{% elif c.level == 'intermediate' %}🟡{% else %}🔴{% endif %} {{ c.level|capitalize }}
+              </span>
+              {% endif %}
+            </div>
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold group-hover:bg-white/35 transition-all">→</div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% elif q or subject_slug or level %}
+    <div class="text-center py-20 glass-premium">
+      <div class="text-6xl mb-4">🔍</div>
+      <h3 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">Ничего не найдено</h3>
+      <p class="text-slate-500 dark:text-slate-400">Попробуйте другой запрос или уберите фильтры</p>
+      <a href="/marketplace/search" class="btn-premium mt-4 inline-block">Сбросить фильтры</a>
+    </div>
+    {% else %}
+    <div class="text-center py-20 glass-premium">
+      <div class="text-6xl mb-4">📚</div>
+      <p class="text-slate-600 dark:text-slate-300 font-semibold">Введите запрос для поиска</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

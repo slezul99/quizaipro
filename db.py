@@ -834,6 +834,82 @@ def init_db():
     except Exception as e:
         print(f"[DB] Migration has_mcq/has_terms error: {e}")
 
+    # === MARKETPLACE v2: Subjects + Learning Paths ===
+    # mp_subjects — top-level subject cards (English, Math, Programming, ...)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS mp_subjects (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            slug         TEXT UNIQUE NOT NULL,
+            title_ru     TEXT NOT NULL,
+            title_en     TEXT NOT NULL,
+            title_uz     TEXT NOT NULL,
+            desc_ru      TEXT DEFAULT '',
+            desc_en      TEXT DEFAULT '',
+            desc_uz      TEXT DEFAULT '',
+            icon         TEXT DEFAULT '📚',
+            color        TEXT DEFAULT '#6366f1',
+            color2       TEXT DEFAULT '#8b5cf6',
+            sort_order   INTEGER DEFAULT 0,
+            is_active    INTEGER DEFAULT 1,
+            created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_mp_subjects_slug ON mp_subjects(slug)")
+
+    # Add subject_id FK to collections (nullable — old collections stay as-is)
+    try:
+        c.execute("ALTER TABLE collections ADD COLUMN subject_id INTEGER REFERENCES mp_subjects(id) ON DELETE SET NULL")
+    except Exception:
+        pass
+    try:
+        c.execute("ALTER TABLE collections ADD COLUMN subject_slug TEXT DEFAULT ''")
+    except Exception:
+        pass
+    try:
+        c.execute("ALTER TABLE collections ADD COLUMN view_count INTEGER DEFAULT 0")
+    except Exception:
+        pass
+
+    # learning_paths — ordered sequence of collections/decks
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS learning_paths (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            slug         TEXT UNIQUE NOT NULL,
+            subject_id   INTEGER REFERENCES mp_subjects(id) ON DELETE SET NULL,
+            title_ru     TEXT NOT NULL,
+            title_en     TEXT NOT NULL,
+            title_uz     TEXT NOT NULL,
+            desc_ru      TEXT DEFAULT '',
+            desc_en      TEXT DEFAULT '',
+            desc_uz      TEXT DEFAULT '',
+            icon         TEXT DEFAULT '🎯',
+            color        TEXT DEFAULT '#6366f1',
+            color2       TEXT DEFAULT '#8b5cf6',
+            difficulty   TEXT DEFAULT 'beginner',
+            estimated_hours INTEGER DEFAULT 0,
+            sort_order   INTEGER DEFAULT 0,
+            is_active    INTEGER DEFAULT 1,
+            created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_lp_subject ON learning_paths(subject_id)")
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS learning_path_steps (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            path_id        INTEGER NOT NULL REFERENCES learning_paths(id) ON DELETE CASCADE,
+            step_order     INTEGER NOT NULL,
+            step_type      TEXT NOT NULL DEFAULT 'collection',  -- 'collection' | 'deck'
+            collection_id  INTEGER REFERENCES collections(id) ON DELETE CASCADE,
+            deck_id        INTEGER REFERENCES decks(id) ON DELETE CASCADE,
+            title_ru       TEXT DEFAULT '',
+            title_en       TEXT DEFAULT '',
+            title_uz       TEXT DEFAULT '',
+            is_required    INTEGER DEFAULT 1
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_lp_steps_path ON learning_path_steps(path_id, step_order)")
+
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")

@@ -3269,19 +3269,65 @@ def import_deck_json():
 @app.route("/marketplace")
 @login_required
 def marketplace():
-    """Marketplace — tol'ko gotovye kurirovannyye kollektsii."""
+    """Marketplace v2 — Educational Library with Subjects."""
     user = current_user()
     conn = db.get_conn()
-    colls = conn.execute("""
+    lang = session.get("lang", "ru")
+
+    # Subjects
+    subjects_raw = conn.execute("""
+        SELECT s.*,
+            (SELECT COUNT(*) FROM collections c WHERE c.subject_id=s.id AND c.is_active=1) AS coll_count,
+            (SELECT COALESCE(SUM(
+                (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c2.id)
+             ),0) FROM collections c2 WHERE c2.subject_id=s.id AND c2.is_active=1) AS deck_count
+        FROM mp_subjects s WHERE s.is_active=1
+        ORDER BY s.sort_order ASC
+    """).fetchall()
+    subjects = []
+    for s in subjects_raw:
+        d = dict(s)
+        d["title"] = d.get(f"title_{lang}") or d["title_en"]
+        d["desc"]  = d.get(f"desc_{lang}")  or d.get("desc_en", "")
+        subjects.append(d)
+
+    # Featured collections (newest / most decks)
+    featured_raw = conn.execute("""
+        SELECT c.*,
+            s.slug AS subject_slug, s.title_ru AS subj_ru, s.title_en AS subj_en, s.title_uz AS subj_uz,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+        FROM collections c
+        LEFT JOIN mp_subjects s ON s.id=c.subject_id
+        WHERE c.is_active=1
+        ORDER BY c.sort_order ASC, c.id ASC
+        LIMIT 6
+    """).fetchall()
+    featured = []
+    for row in featured_raw:
+        d = dict(row)
+        d["title"] = d.get(f"title_{lang}") or d["title_en"]
+        d["desc"]  = d.get(f"desc_{lang}")  or d.get("desc_en", "")
+        d["subj_title"] = d.get(f"subj_{lang}") or d.get("subj_en", "")
+        featured.append(d)
+
+    # Legacy collections (no subject_id) — keep backward compat
+    legacy_raw = conn.execute("""
         SELECT c.*,
             (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
         FROM collections c
-        WHERE c.is_active=1
+        WHERE c.is_active=1 AND (c.subject_id IS NULL OR c.subject_id=0)
         ORDER BY c.sort_order ASC, c.id ASC
     """).fetchall()
-    collections = [dict(c) for c in colls]
+    legacy = []
+    for row in legacy_raw:
+        d = dict(row)
+        d["title"] = d.get(f"title_{lang}") or d["title_ru"]
+        d["desc"]  = d.get(f"desc_{lang}")  or d.get("desc_ru", "")
+        legacy.append(d)
+
     conn.close()
-    return render_template("marketplace.html", collections=collections)
+    return render_template("marketplace.html",
+                           subjects=subjects, featured=featured, legacy=legacy)
 
 
 @app.route("/collection/<slug>")
@@ -3399,7 +3445,168 @@ def admin_collection_delete(coll_id):
     return redirect(url_for("admin_collections"))
 
 
-@app.route("/search")
+# ─────────────────────────────────────────────────────────────────────────────
+# MARKETPLACE v2 — Subject / Level / Learning Path pages
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.route("/marketplace/subject/<slug>")
+@login_required
+def marketplace_subject(slug):
+    """Subject page: /marketplace/subject/english"""
+    user = current_user()
+    conn = db.get_conn()
+    subj = conn.execute(
+        "SELECT * FROM mp_subjects WHERE slug=? AND is_active=1", (slug,)
+    ).fetchone()
+    if not subj:
+        conn.close(); abort(404)
+    subj = dict(subj)
+    lang = session.get("lang", "ru")
+    subj["title"] = subj.get(f"title_{lang}") or subj["title_en"]
+    subj["desc"]  = subj.get(f"desc_{lang}")  or subj.get("desc_en", "")
+
+    colls_raw = conn.execute("""
+        SELECT c.*,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count,
+            (SELECT COALESCE(SUM(
+                (SELECT COUNT(*) FROM cards WHERE deck_id=cd2.deck_id)
+             ),0) FROM collection_decks cd2 WHERE cd2.collection_id=c.id) AS card_count
+        FROM collections c
+        WHERE c.subject_id=? AND c.is_active=1
+        ORDER BY c.sort_order ASC, c.id ASC
+    """, (subj["id"],)).fetchall()
+
+    colls = []
+    for c_row in colls_raw:
+        d = dict(c_row)
+        d["title"] = d.get(f"title_{lang}") or d["title_en"]
+        d["desc"]  = d.get(f"desc_{lang}")  or d.get("desc_en", "")
+        colls.append(d)
+
+    paths = conn.execute("""
+        SELECT * FROM learning_paths
+        WHERE subject_id=? AND is_active=1
+        ORDER BY sort_order ASC
+    """, (subj["id"],)).fetchall()
+    paths = [dict(p) for p in paths]
+    for p in paths:
+        p["title"] = p.get(f"title_{lang}") or p["title_en"]
+        p["desc"]  = p.get(f"desc_{lang}")  or p.get("desc_en", "")
+
+    conn.close()
+    return render_template("marketplace_subject.html",
+                           subj=subj, collections=colls, paths=paths)
+
+
+@app.route("/marketplace/path/<slug>")
+@login_required
+def marketplace_path(slug):
+    """Learning path page: /marketplace/path/english-a1-path"""
+    user = current_user()
+    conn = db.get_conn()
+    path = conn.execute(
+        "SELECT * FROM learning_paths WHERE slug=? AND is_active=1", (slug,)
+    ).fetchone()
+    if not path:
+        conn.close(); abort(404)
+    path = dict(path)
+    lang = session.get("lang", "ru")
+    path["title"] = path.get(f"title_{lang}") or path["title_en"]
+    path["desc"]  = path.get(f"desc_{lang}")  or path.get("desc_en", "")
+
+    steps_raw = conn.execute("""
+        SELECT s.*,
+            c.slug AS coll_slug, c.title_ru AS coll_title_ru, c.title_en AS coll_title_en,
+            c.title_uz AS coll_title_uz, c.icon AS coll_icon, c.color AS coll_color,
+            c.color2 AS coll_color2,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS coll_deck_count
+        FROM learning_path_steps s
+        LEFT JOIN collections c ON c.id=s.collection_id
+        WHERE s.path_id=?
+        ORDER BY s.step_order ASC
+    """, (path["id"],)).fetchall()
+
+    steps = []
+    for s in steps_raw:
+        sd = dict(s)
+        sd["title"] = sd.get(f"title_{lang}") or sd.get("title_en", "")
+        sd["coll_title"] = sd.get(f"coll_title_{lang}") or sd.get("coll_title_en", "")
+        steps.append(sd)
+
+    # Subject for breadcrumb
+    subj = None
+    if path.get("subject_id"):
+        subj = conn.execute(
+            "SELECT * FROM mp_subjects WHERE id=?", (path["subject_id"],)
+        ).fetchone()
+        if subj:
+            subj = dict(subj)
+            subj["title"] = subj.get(f"title_{lang}") or subj["title_en"]
+
+    conn.close()
+    return render_template("marketplace_path.html", path=path, steps=steps, subj=subj)
+
+
+@app.route("/marketplace/search")
+@login_required
+def marketplace_search():
+    """Search across marketplace collections."""
+    user = current_user()
+    q = request.args.get("q", "").strip()
+    subject_slug = request.args.get("subject", "")
+    level = request.args.get("level", "")
+    lang = session.get("lang", "ru")
+
+    conn = db.get_conn()
+    where_parts = ["c.is_active=1"]
+    params = []
+
+    if q:
+        where_parts.append(
+            "(c.title_ru LIKE ? OR c.title_en LIKE ? OR c.title_uz LIKE ? OR c.tags LIKE ?)"
+        )
+        like = f"%{q}%"
+        params += [like, like, like, like]
+    if subject_slug:
+        where_parts.append("s.slug=?")
+        params.append(subject_slug)
+    if level:
+        where_parts.append("c.level=?")
+        params.append(level)
+
+    where = " AND ".join(where_parts)
+    colls_raw = conn.execute(f"""
+        SELECT c.*,
+            s.slug AS subject_slug, s.title_ru AS subj_ru, s.title_en AS subj_en,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+        FROM collections c
+        LEFT JOIN mp_subjects s ON s.id=c.subject_id
+        WHERE {where}
+        ORDER BY c.sort_order ASC, c.id ASC
+        LIMIT 60
+    """, params).fetchall()
+
+    colls = []
+    for row in colls_raw:
+        d = dict(row)
+        d["title"] = d.get(f"title_{lang}") or d["title_en"]
+        d["desc"]  = d.get(f"desc_{lang}")  or d.get("desc_en", "")
+        d["subj_title"] = d.get(f"subj_{lang}") or d.get("subj_en", "")
+        colls.append(d)
+
+    subjects = conn.execute(
+        "SELECT * FROM mp_subjects WHERE is_active=1 ORDER BY sort_order"
+    ).fetchall()
+    subjects = [dict(s) for s in subjects]
+    for s in subjects:
+        s["title"] = s.get(f"title_{lang}") or s["title_en"]
+
+    conn.close()
+    return render_template("marketplace_search.html",
+                           collections=colls, subjects=subjects,
+                           q=q, subject_slug=subject_slug, level=level)
+
+
 @login_required
 def global_search():
     """Global'nyy poisk: po polzovatelyam, kolod, kanal."""
