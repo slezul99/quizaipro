@@ -20,9 +20,9 @@
       </p>
       <!-- Search bar -->
       <form action="/marketplace/search" method="GET" class="flex gap-2 max-w-xl mx-auto">
-        <input name="q" placeholder="🔍 Поиск по коллекциям..." value=""
+        <input name="q" placeholder="{{ t('mk_search_collections_ph') }}" value=""
           class="input-premium flex-1 text-base">
-        <button type="submit" class="btn-premium px-6">Найти</button>
+        <button type="submit" class="btn-premium px-6">{{ t('mk_search_btn') }}</button>
       </form>
     </div>
 
@@ -30,7 +30,7 @@
     {% if subjects %}
     <div class="mb-14">
       <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-        🎓 Предметы
+        {{ t('mk_subjects_h') }}
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {% for s in subjects %}
@@ -60,7 +60,7 @@
     {% if legacy %}
     <div class="mb-14">
       <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-        📦 Другие коллекции
+        {{ t('mk_other_collections_h') }}
       </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {% for c in legacy %}

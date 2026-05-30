@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Поиск — {{ t('nav_marketplace') }} — QuizAIPro{% endblock %}
+{% block title %}{{ t('mk_search_h') }} — {{ t('nav_marketplace') }} — QuizAIPro{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
   <div class="relative z-10">
@@ -8,21 +8,21 @@
     <nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
       <a href="/marketplace" class="hover:text-indigo-600 dark:hover:text-indigo-300 font-semibold transition">📚 {{ t('nav_marketplace') }}</a>
       <span>›</span>
-      <span class="text-slate-900 dark:text-slate-100 font-bold">🔍 Поиск</span>
+      <span class="text-slate-900 dark:text-slate-100 font-bold">{{ t('mk_search_h') }}</span>
     </nav>
 
     <!-- Search form -->
     <div class="glass-premium p-6 mb-8">
       <form action="/marketplace/search" method="GET" class="space-y-4">
         <div class="flex gap-3">
-          <input name="q" value="{{ q }}" placeholder="Поиск по коллекциям..."
+          <input name="q" value="{{ q }}" placeholder="{{ t('mk_search_collections_short_ph') }}"
             class="input-premium flex-1 text-base">
-          <button type="submit" class="btn-premium px-8">🔍 Найти</button>
+          <button type="submit" class="btn-premium px-8">{{ t('mk_search_find') }}</button>
         </div>
         <div class="flex flex-wrap gap-3">
           <!-- Subject filter -->
           <select name="subject" class="input-premium text-sm py-2" style="width:auto;min-width:160px;">
-            <option value="">Все предметы</option>
+            <option value="">{{ t('mk_all_subjects') }}</option>
             {% for s in subjects %}
             <option value="{{ s.slug }}" {% if s.slug == subject_slug %}selected{% endif %}>
               {{ s.icon }} {{ s.title }}
@@ -31,7 +31,7 @@
           </select>
           <!-- Level filter -->
           <select name="level" class="input-premium text-sm py-2" style="width:auto;min-width:140px;">
-            <option value="">Все уровни</option>
+            <option value="">{{ t('mk_all_levels') }}</option>
             <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>🟢 Beginner</option>
             <option value="intermediate" {% if level == 'intermediate' %}selected{% endif %}>🟡 Intermediate</option>
             <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>🔴 Advanced</option>
@@ -43,8 +43,8 @@
     <!-- Results -->
     {% if collections %}
     <div class="mb-4 text-sm text-slate-500 dark:text-slate-400 font-semibold">
-      Найдено: {{ collections|length }} коллекций
-      {% if q %} по запросу «{{ q }}»{% endif %}
+      {{ t('mk_found') }}: {{ collections|length }} {{ t('mk_collections_count') }}
+      {% if q %} {{ t('mk_search_for') }} «{{ q }}»{% endif %}
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {% for c in collections %}
@@ -81,14 +81,14 @@
     {% elif q or subject_slug or level %}
     <div class="text-center py-20 glass-premium">
       <div class="text-6xl mb-4">🔍</div>
-      <h3 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">Ничего не найдено</h3>
-      <p class="text-slate-500 dark:text-slate-400">Попробуйте другой запрос или уберите фильтры</p>
-      <a href="/marketplace/search" class="btn-premium mt-4 inline-block">Сбросить фильтры</a>
+      <h3 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">{{ t('mk_nothing_found') }}</h3>
+      <p class="text-slate-500 dark:text-slate-400">{{ t('mk_try_other_or_filter') }}</p>
+      <a href="/marketplace/search" class="btn-premium mt-4 inline-block">{{ t('mk_reset_filters') }}</a>
     </div>
     {% else %}
     <div class="text-center py-20 glass-premium">
       <div class="text-6xl mb-4">📚</div>
-      <p class="text-slate-600 dark:text-slate-300 font-semibold">Введите запрос для поиска</p>
+      <p class="text-slate-600 dark:text-slate-300 font-semibold">{{ t('mk_enter_query') }}</p>
     </div>
     {% endif %}
 
