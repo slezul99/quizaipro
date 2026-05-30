@@ -434,25 +434,19 @@ def parse_mcq_textbook(text: str) -> list[dict]:
         re.IGNORECASE
     )
 
-    def _extract_inline_opts(s: str) -> list[tuple[str, str]]:
+    def _extract_inline_opts(s: str, expect_first: str = "A") -> list[tuple[str, str]]:
         """Try to parse 'A text  B text  C text  D text' from one line.
-        Need at least A and B on the line."""
-        # Find all positions of " <letter> " markers
+        Need at least 2 letter markers AND first letter == expect_first.
+        Pass expect_first='C' if continuation line that should start with C."""
         positions = [(m.start(), m.group(1).upper())
                      for m in INLINE_OPTS_RE.finditer(s)]
         if len(positions) < 2:
             return []
-        # Validate: starts with A or near start (within 2 chars of stripped start)
-        # AND letters are sequential (A, B, C, D)
         letters = [p[1] for p in positions]
-        if letters[0] != "A":
+        if letters[0] != expect_first:
             return []
         opts = []
         for j, (pos, letter) in enumerate(positions):
-            # Text starts after letter+space (which is 2 chars: letter + space)
-            text_start = pos + 2  # skip "A " (counted from start of letter, which is at pos+1 if there's a leading space, but match starts at the leading space)
-            # Recompute: re finds " A " — m.start() = position of leading space (or 0)
-            # m.end() = position after letter+space
             m_end = pos + len(positions[j][1]) + 2  # space + letter + space
             text_end = positions[j+1][0] if j+1 < len(positions) else len(s)
             opt_text = s[m_end:text_end].strip()
@@ -496,27 +490,68 @@ def parse_mcq_textbook(text: str) -> list[dict]:
         question = " ".join(question_parts).strip()
 
         # Sobiraem opciya — poprobuem inline ili block
+        # STOP kogda sobrali vse 4 (A,B,C,D) ili dvazhdy popalas' ta zhe bukva
         options = []
+        seen_letters = set()
+        order_letters = ["A", "B", "C", "D"]
         while i < n:
             cur = lines[i]
             if NUM_Q_RE.match(cur):
                 break
+            # Esli uzhe est' A,B,C,D — dovol'no
+            if len(seen_letters) >= 4:
+                break
             cur_s = cur.strip()
-            # Try inline first
-            inline_opts = _extract_inline_opts(" " + cur_s)
+            # Sleduyushchaya ozhidaemaya bukva
+            next_expected = None
+            for L in order_letters:
+                if L not in seen_letters:
+                    next_expected = L
+                    break
+            # Try inline starting with the expected letter (A first time, or C/D for continuation)
+            inline_opts = _extract_inline_opts(" " + cur_s, expect_first=next_expected or "A")
             if inline_opts:
-                options.extend(inline_opts)
+                # Esli pervaya bukva v inline-opcii uzhe est' — eto leakage iz drugogo voprosa
+                first_letter = inline_opts[0][0]
+                if first_letter in seen_letters:
+                    break
+                for letter, opt_text in inline_opts:
+                    if letter not in seen_letters:
+                        options.append((letter, opt_text))
+                        seen_letters.add(letter)
                 i += 1
                 continue
-            # Try block-style "A text"
+            # Try block-style "A text" — but only if the letter matches expected
             opt_m = LETTER_OPT_RE.match(cur)
             if opt_m:
-                options.append((opt_m.group(1).upper(), opt_m.group(2).strip()))
+                letter = opt_m.group(1).upper()
+                # Dublikat bukvy → konets etogo voprosa
+                if letter in seen_letters:
+                    break
+                # Block opcii: text mozhet soderzhat' " D xxx" v konce — eto bag.
+                # Razdelim: poprobuem najti " D " v opt_text esli expected next == D
+                opt_text = opt_m.group(2).strip()
+                # Esli text soderzhit drugie letter-markery (naprimer "have worked  D 'll work")
+                tail_split = INLINE_OPTS_RE.search(" " + opt_text)
+                if tail_split:
+                    tail_letter = tail_split.group(1).upper()
+                    if tail_letter not in seen_letters and tail_letter != letter:
+                        # Razdelyaem
+                        split_pos = tail_split.start()
+                        head_text = (" " + opt_text)[:split_pos].strip()
+                        tail_text = (" " + opt_text)[split_pos + 2 + 1:].strip()  # skip " X "
+                        options.append((letter, head_text))
+                        seen_letters.add(letter)
+                        options.append((tail_letter, tail_text))
+                        seen_letters.add(tail_letter)
+                        i += 1
+                        continue
+                options.append((letter, opt_text))
+                seen_letters.add(letter)
                 i += 1
                 continue
-            # Possible continuation of last option
-            if options and not SKIP_LINE_RE.match(cur_s):
-                # Heuristic: if line is short and doesn't look like new question, append
+            # Possible continuation of last option (no number, no skip-line)
+            if options and not SKIP_LINE_RE.match(cur_s) and not NUM_Q_RE.match(cur):
                 options[-1] = (options[-1][0], options[-1][1] + " " + cur_s)
                 i += 1
                 continue
