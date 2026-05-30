@@ -3206,44 +3206,19 @@ def import_deck_json():
 @app.route("/marketplace")
 @login_required
 def marketplace():
-    """Publichnyy marketplace kolod + tematicheskie kollektsii."""
+    """Marketplace — tol'ko gotovye kurirovannyye kollektsii."""
     user = current_user()
-    search = request.args.get("q", "").strip()
     conn = db.get_conn()
-
-    # === Kollektsii (tol'ko esli net poiska) ===
-    collections = []
-    if not search:
-        colls = conn.execute("""
-            SELECT c.*,
-                (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
-            FROM collections c
-            WHERE c.is_active=1
-            ORDER BY c.sort_order ASC, c.id ASC
-        """).fetchall()
-        for coll in colls:
-            collections.append(dict(coll))
-
-    sql = """
-        SELECT d.*,
-            (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
-            CASE WHEN d.org_id IS NOT NULL
-                 THEN (SELECT name FROM organizations WHERE id=d.org_id)
-                 ELSE (SELECT username FROM users WHERE id=d.owner_id)
-            END AS author,
-            d.owner_id AS author_id
-        FROM decks d
-        WHERE d.is_public = 1
-    """
-    params = []
-    if search:
-        sql += " AND (d.name LIKE ? OR d.description LIKE ?)"
-        params += [f"%{search}%", f"%{search}%"]
-    sql += " ORDER BY d.clones_count DESC, d.created_at DESC LIMIT 100"
-
-    decks = conn.execute(sql, params).fetchall()
+    colls = conn.execute("""
+        SELECT c.*,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+        FROM collections c
+        WHERE c.is_active=1
+        ORDER BY c.sort_order ASC, c.id ASC
+    """).fetchall()
+    collections = [dict(c) for c in colls]
     conn.close()
-    return render_template("marketplace.html", decks=decks, search=search, collections=collections)
+    return render_template("marketplace.html", collections=collections)
 
 
 @app.route("/collection/<slug>")

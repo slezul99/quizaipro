@@ -1,104 +1,81 @@
 {% extends "base.html" %}
+{% block title %}{{ t('nav_marketplace') }} — QuizAIPro{% endblock %}
 {% block content %}
-<div class="relative max-w-7xl mx-auto px-6 py-10">
+<div class="relative max-w-6xl mx-auto px-6 py-10">
   <div class="deco-blob deco-blob-1" style="top:-50px; right:-100px;"></div>
   <div class="deco-blob deco-blob-2" style="bottom:200px; left:-150px;"></div>
 
   <div class="relative z-10">
-    <div class="section-header left mb-8">
+    <!-- Header -->
+    <div class="section-header left mb-10">
       <span class="section-badge"><span class="badge-dot"></span>{{ t('mk_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
       <h1 class="section-h">{{ t('mk_h') }}</h1>
-      <p class="section-sub">{{ t('mk_sub') }}</p>
+      <p class="section-sub">{{ t('mk_collections_sub') if t('mk_collections_sub') != 'mk_collections_sub' else 'Готовые тематические наборы карточек — выбери тему и начни учиться прямо сейчас.' }}</p>
     </div>
 
-    <form method="GET" class="glass-premium mb-6" style="padding: 1.25rem;">
-      <input type="text" name="q" value="{{ search }}" placeholder="{{ t('mk_search_ph') }}" class="input-premium">
-    </form>
+    {% if collections %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for c in collections %}
+      {% set lang = session.get('lang', 'ru') %}
+      {% set title = c['title_' + lang] if c['title_' + lang] else c.title_ru %}
+      {% set desc = c['desc_' + lang] if c['desc_' + lang] else c.desc_ru %}
+      <a href="/collection/{{ c.slug }}"
+        class="group relative rounded-3xl p-7 text-white overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl block"
+        style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">
 
-    <!-- ============ COLLECTIONS ============ -->
-    {% if collections and not search %}
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-5">
-        <div class="section-badge"><span class="badge-dot"></span>✨ {{ t('mk_collections_label') if t('mk_collections_label') != 'mk_collections_label' else 'Готовые коллекции' }}</div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for c in collections %}
-        <a href="/collection/{{ c.slug }}"
-          class="group relative rounded-2xl p-6 text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-          style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">
-          <!-- Glow overlay -->
-          <div class="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300"
-            style="background: radial-gradient(circle at 50% 0%, white, transparent 70%)"></div>
-          <div class="relative z-10">
-            <div class="text-4xl mb-3">{{ c.icon }}</div>
-            {% set lang = session.get('lang', 'ru') %}
-            <h3 class="font-black text-lg leading-tight mb-2">
-              {{ c['title_' + lang] if c['title_' + lang] else c.title_ru }}
-            </h3>
-            {% set desc = c['desc_' + lang] if c['desc_' + lang] else c.desc_ru %}
-            {% if desc %}
-            <p class="text-white/75 text-sm line-clamp-2 mb-3">{{ desc }}</p>
-            {% endif %}
-            <div class="flex items-center justify-between">
-              <span class="text-white/70 text-xs font-semibold">📚 {{ c.deck_count }} колод</span>
+        <!-- Glow overlay on hover -->
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-25 transition-opacity duration-300"
+          style="background: radial-gradient(circle at 30% 0%, white, transparent 60%)"></div>
+
+        <!-- Decorative circle -->
+        <div class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-15"
+          style="background: white;"></div>
+
+        <div class="relative z-10">
+          <div class="text-5xl mb-4">{{ c.icon }}</div>
+          <h3 class="font-black text-xl leading-tight mb-2">{{ title }}</h3>
+          {% if desc %}
+          <p class="text-white/75 text-sm line-clamp-2 mb-4 leading-relaxed">{{ desc }}</p>
+          {% endif %}
+
+          <div class="flex items-center justify-between mt-auto">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">
+                📚 {{ c.deck_count }} {{ 'колод' if lang == 'ru' else ('decks' if lang == 'en' else 'to\'plam') }}
+              </span>
               {% if c.level %}
-              <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-bold">
-                {% if c.level == 'beginner' %}🟢{% elif c.level == 'intermediate' %}🟡{% else %}🔴{% endif %}
-                {{ c.level|capitalize }}
+              <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">
+                {% if c.level == 'beginner' %}🟢 Beginner
+                {% elif c.level == 'intermediate' %}🟡 Intermediate
+                {% elif c.level == 'advanced' %}🔴 Advanced
+                {% else %}{{ c.level }}{% endif %}
               </span>
               {% endif %}
             </div>
+            <!-- Arrow button -->
+            <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-base font-bold group-hover:bg-white/35 group-hover:scale-110 transition-all">→</div>
           </div>
-          <!-- Arrow -->
-          <div class="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm group-hover:bg-white/30 transition">→</div>
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-    <div class="flex items-center gap-4 mb-6">
-      <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
-      <span class="text-xs font-bold uppercase tracking-wider text-slate-400">{{ t('mk_all_decks') if t('mk_all_decks') != 'mk_all_decks' else 'Все публичные колоды' }}</span>
-      <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
-    </div>
-    {% endif %}
-    <!-- ============ END COLLECTIONS ============ -->
 
-    {% if decks %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {% for d in decks %}
-      <div class="glass-premium" style="padding: 1.5rem;">
-        <div class="flex items-start justify-between mb-3">
-          <div class="text-4xl">{{ d.icon }}</div>
-          <div class="text-right text-xs text-slate-500 dark:text-slate-400">
-            <div class="font-bold text-indigo-600 dark:text-indigo-300">📥 {{ d.clones_count }} {{ t('mk_copies') }}</div>
-            {% if d.author_id %}
-            <a href="/u/{{ d.author }}" class="hover:underline font-semibold">{{ d.author }}</a>
-            {% else %}
-            <div class="font-semibold">{{ d.author }}</div>
-            {% endif %}
+          {% if c.tags %}
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            {% for tag in c.tags.split(',')[:3] %}
+            <span class="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-medium">{{ tag.strip() }}</span>
+            {% endfor %}
           </div>
+          {% endif %}
         </div>
-        <h3 class="text-xl font-bold mb-1.5 text-slate-900 dark:text-slate-100">{{ d.name }}</h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ d.card_count }} {{ t('mk_questions') }}</p>
-        {% if d.description %}
-        <p class="text-xs text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">{{ d.description }}</p>
-        {% endif %}
-        <form method="POST" action="/marketplace/clone/{{ d.id }}">
-          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button type="submit" class="btn-premium w-full justify-center">{{ t('mk_add_to_self') }}</button>
-        </form>
-      </div>
+      </a>
       {% endfor %}
     </div>
+
     {% else %}
-    <div class="text-center py-16 glass-premium">
-      <div class="text-7xl mb-4">📦</div>
-      <h3 class="section-h" style="font-size: 1.7rem;">
-        {% if search %}{{ t('mk_nothing_found') }}{% else %}{{ t('mk_empty_h') }}{% endif %}
-      </h3>
-      <p class="text-slate-600 dark:text-slate-300 mt-3">
-        {% if search %}{{ t('mk_try_other') }}{% else %}{{ t('mk_make_public') }}{% endif %}
+    <!-- Empty state -->
+    <div class="text-center py-20 glass-premium">
+      <div class="text-7xl mb-5">📚</div>
+      <h3 class="section-h" style="font-size: 1.7rem;">Коллекции скоро появятся</h3>
+      <p class="text-slate-600 dark:text-slate-300 mt-3 max-w-md mx-auto">
+        Мы готовим качественные тематические наборы карточек. Следите за обновлениями!
       </p>
     </div>
     {% endif %}

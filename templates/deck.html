@@ -475,12 +475,7 @@ function deckEditor() {
         </div>
         <button type="button" @click="cloneDeck()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_clone_title') }}">{{ t('dk_btn_clone') }}</button>
         <a href="/deck/{{ deck['id'] }}/export-json" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="JSON">{{ t('dk_btn_json') }}</a>
-        <button type="button" @click="togglePublic()" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;"
-                :class="deck.is_public ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : ''"
-                title="{{ t('dk_btn_publish_title') }}">
-          <span x-show="!deck.is_public">{{ t('dk_btn_publish') }}</span>
-          <span x-show="deck.is_public">{{ t('dk_btn_published') }}</span>
-        </button>
+        {# Publish button hidden — marketplace shows only curated collections #}
         <button @click="addCard()" class="btn-premium" style="font-size: 13px; padding: 9px 18px;" title="{{ t('dk_btn_addcard_title') }}" data-tour="deck-add-card">{{ t('dk_btn_addcard') }}</button>
         <a href="/import?deck={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 16px;" title="{{ t('dk_btn_import_title') }}" data-tour="deck-import-btn">{{ t('dk_btn_import') }}</a>
         {% endif %}
