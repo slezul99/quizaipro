@@ -114,6 +114,17 @@ def start_ai_gen_job(jid: str, gen_fn, save_fn):
             update_job(jid, cards_done=len(all_cards), cards_total=len(all_cards),
                        progress=75, stage_msg=f"Создано {len(all_cards)} карточек, сохраняем...")
 
+            # === AUTO-FIND ANSWERS: AI opredelyaet pravil'nye otvety ===
+            try:
+                import ai_gen as _ai_gen
+                if _ai_gen.is_available() or _ai_gen.is_deepseek_available():
+                    _job_lang = (get_job(jid) or {}).get("lang", "ru")
+                    update_job(jid, stage_msg="AI проверяет правильные ответы...")
+                    all_cards = _ai_gen.auto_find_answers(all_cards, lang=_job_lang)
+                    update_job(jid, stage_msg=f"Создано {len(all_cards)} карточек, сохраняем...")
+            except Exception as _afa_err:
+                print(f"[ai_gen_jobs] auto_find_answers err (ignorируем): {_afa_err}")
+
             deck_id = save_fn(all_cards)
             update_job(jid, status="done", result_cards=all_cards,
                        result_deck_id=deck_id, progress=100,

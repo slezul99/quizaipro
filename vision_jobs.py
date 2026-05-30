@@ -267,6 +267,17 @@ def run_vision_job(jid: str, save_cards_callback):
 
     update_job(jid, progress=95, cards_found=len(cards))
 
+    # === AUTO-FIND ANSWERS: AI opredelyaet pravil'nye otvety PERED sohraneniem ===
+    import ai_gen as _ai_gen
+    if _ai_gen.is_available() or _ai_gen.is_deepseek_available():
+        try:
+            update_job(jid, stage_msg="AI определяет правильные ответы...")
+            cards = _ai_gen.auto_find_answers(cards, lang=job.get("lang", "ru"))
+            update_job(jid, stage_msg="Сохраняем карточки в базу...")
+        except Exception as _afa_err:
+            print(f"[vision_jobs] auto_find_answers err (ignorируем): {_afa_err}")
+            update_job(jid, stage_msg="Сохраняем карточки в базу...")
+
     # Сохраняем в БД через callback (nuzhen Flask app context)
     try:
         deck_id_created = save_cards_callback(jid, cards)

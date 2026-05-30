@@ -1488,7 +1488,7 @@ def deck_view(deck_id):
         WHERE c.deck_id=? ORDER BY c.id DESC""", (user["id"], deck_id)).fetchall()
     cards = [dict(c) for c in cards_raw]
     # Regex dlya parsa MCQ-vidov: "A) text" / "А) текст" / "A. text"
-    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$")
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]?\s+(.+)$")
     for c in cards:
         c["level"] = sm2.card_level(c)
         c["difficulty"] = sm2.card_difficulty(c)
@@ -2084,7 +2084,7 @@ def test_attempt_detail(attempt_id):
     conn.close()
 
     # Parsing variantov MCQ dlya kazhdogo voprosa (kak v deck.html)
-    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$")
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]?\s+(.+)$")
     answers_parsed = []
     for a in answers:
         ad = dict(a)
@@ -6917,32 +6917,12 @@ def import_page():
                 return redirect(url_for("import_page"))
 
             # AI auto-fill: esli mnogo kart bez otveta (back pust ili = note),
-            # poprosim Gemini opredelit pravil'nye otvety
-            cards_without_answer = [
-                c for c in cards
-                if not c.get("back") or c.get("back") == c.get("note", "")
-            ]
-            if (cards_without_answer and ai_gen.is_available()
-                    and len(cards_without_answer) >= 3):
-                try:
-                    fixed = ai_gen.find_correct_answers(
-                        cards_without_answer, lang=session.get("lang", "ru")
-                    )
-                    # Postroim map: pamyat'-id (index v cards_without_answer) → fix
-                    fix_by_idx = {idx: fix for idx, fix in enumerate(fixed)}
-                    # Vmenim back/note v originalnyh kartah
-                    j = 0
-                    for c in cards:
-                        if not c.get("back") or c.get("back") == c.get("note", ""):
-                            fix = fix_by_idx.get(j, {})
-                            if fix.get("correct_letter") and fix.get("back"):
-                                c["back"] = fix["back"]
-                                if fix.get("note"):
-                                    c["note"] = fix["note"]
-                            j += 1
-                    print(f"[IMPORT] AI auto-filled {sum(1 for f in fixed if f.get('correct_letter'))}/{len(fixed)} answers")
-                except Exception as e:
-                    print(f"[IMPORT] AI answer fill failed: {e}")
+            # poprosim AI opredelit pravil'nye otvety (auto_find_answers: DeepSeek+Gemini)
+            try:
+                if ai_gen.is_available() or ai_gen.is_deepseek_available():
+                    cards = ai_gen.auto_find_answers(cards, lang=session.get("lang", "ru"))
+            except Exception as _afa_err:
+                print(f"[import] auto_find_answers err (ignorируем): {_afa_err}")
         except Exception as e:
             flash(f"Ошибка: {e}", "error"); return redirect(url_for("import_page"))
         conn = db.get_conn()
@@ -7630,7 +7610,7 @@ def superadmin_deck_view(deck_id):
                                        0 AS reviews, 0 AS lapses, NULL AS due_at
         FROM cards c WHERE c.deck_id=? ORDER BY c.id DESC""", (deck_id,)).fetchall()
     cards = [dict(c) for c in cards_raw]
-    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s*(.+)$")
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]?\s+(.+)$")
     for c in cards:
         c["level"] = 0
         c["difficulty"] = 0
@@ -8308,4 +8288,5 @@ if __name__ == "__main__":
     print(f"  AI:     {'YES' if ai_gen.is_available() else 'NO'}")
     print("=" * 50)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
+
 

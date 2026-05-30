@@ -1203,6 +1203,179 @@ def find_correct_answers(cards: list[dict], lang: str = "ru",
     return results
 
 
+def auto_find_answers(cards: list[dict], lang: str = "ru",
+                      batch_size: int = 10) -> list[dict]:
+    """Avtomaticheski opredelyaet pravil'nyy otvet dlya VSEH kart s variantami.
+    Uluchsheniya po sravneniyu s find_correct_answers():
+    - batch_size=10 — DeepSeek stabil'no otvechaet na 10 voprosov
+    - Rasshirennyy regex: 'A tekst' (bez skobki) tozhe raspoznayotsya
+    - True/False karty: T/F tozhe schitayutsya variantami
+    - Normalizatsiya variantov v note: vsegda 'A) tekst' so skobkoy
+    - DeepSeek-first s Gemini fallback
+    - max_tokens=2000 — JSON ne obrezaetsya
+    - Adaptivnyy confidence threshold (0.5 dlya T/F, 0.6 dlya 3 var, 0.7 dlya 4+)
+    """
+    if not cards:
+        return cards
+
+    _OPT_RE = re.compile(r"^\s*([A-Da-dА-Гa-гTF1-4])\s*[\)\.\:\-]?\s+(.+)$", re.IGNORECASE)
+    _TF_RE  = re.compile(r"^\s*(T|F|True|False|Верно|Неверно|Ha|Yo'q)\s*$", re.IGNORECASE)
+
+    def _get_options(c: dict) -> list[str]:
+        """Returns normalized option lines like ['A) text', 'B) text', ...]."""
+        for src in [(c.get("note") or "").strip(), (c.get("back") or "").strip()]:
+            if not src:
+                continue
+            lines = [l.strip() for l in src.split("\n") if l.strip()]
+            # T/F format
+            tf_lines = [l for l in lines if _TF_RE.match(l)]
+            if len(tf_lines) >= 2 and len(tf_lines) == len(lines):
+                normalized = []
+                for l in lines:
+                    u = l.strip().upper()
+                    if u in ("T", "TRUE", "ВЕРНО", "HA"):
+                        normalized.append("T) True")
+                    elif u in ("F", "FALSE", "НЕВЕРНО", "YO'Q"):
+                        normalized.append("F) False")
+                    else:
+                        normalized.append(l)
+                return normalized
+            # Regular MCQ
+            normalized = []
+            for line in lines:
+                m = _OPT_RE.match(line)
+                if m:
+                    normalized.append(f"{m.group(1).upper()}) {m.group(2).strip()}")
+            if len(normalized) >= 2:
+                return normalized
+        return []
+
+    def _already_answered(c: dict) -> bool:
+        back = (c.get("back") or "").strip()
+        lines = [l for l in back.split("\n") if l.strip()]
+        if len(lines) != 1:
+            return False
+        return bool(re.match(r"^\s*[A-Da-dTF1-4]\s*[\)\.\:\-]\s*\S", lines[0], re.IGNORECASE))
+
+    to_process = [i for i, c in enumerate(cards)
+                  if _get_options(c) and not _already_answered(c)]
+
+    if not to_process:
+        print(f"[auto_find_answers] vse {len(cards)} kart uzhe s otvetami ili bez variantov")
+        return cards
+
+    print(f"[auto_find_answers] {len(to_process)}/{len(cards)} kart nuzhno obrabotyvat'")
+    lang_name = {"ru": "русском", "en": "English", "uz": "узбекском"}.get(lang, "русском")
+    result_cards = list(cards)
+
+    for batch_start in range(0, len(to_process), batch_size):
+        batch_indices = to_process[batch_start:batch_start + batch_size]
+        batch_num = batch_start // batch_size + 1
+        total_batches = (len(to_process) - 1) // batch_size + 1
+        print(f"[auto_find_answers] batch {batch_num}/{total_batches}: {len(batch_indices)} kart")
+
+        batch_opts = []
+        items_text = []
+        for local_i, orig_i in enumerate(batch_indices):
+            c = cards[orig_i]
+            opts = _get_options(c)
+            batch_opts.append(opts)
+            items_text.append(
+                f"[{local_i + 1}]\nQuestion: {c.get('front', '').strip()}\n"
+                f"Options:\n{chr(10).join(opts)}\n"
+            )
+
+        prompt = f"""You are an expert teacher. For each question, identify the CORRECT answer.
+Language: {lang_name}
+
+Rules:
+1. Read the question and ALL options carefully
+2. Use your knowledge to find the CORRECT answer
+3. For True/False questions (2 options T/F): ALWAYS provide T or F
+4. For 3+ options: if confidence < 70% → use null (do not guess)
+5. Options 1/2/3/4 → convert to A/B/C/D
+
+QUESTIONS:
+{chr(10).join(items_text)}
+
+Output ONLY a JSON array:
+[
+  {{"index": 1, "correct_letter": "B", "confidence": 0.95}},
+  {{"index": 2, "correct_letter": "T", "confidence": 0.80}},
+  {{"index": 3, "correct_letter": null, "confidence": 0.40}}
+]
+
+JSON only, no explanations."""
+
+        raw = None
+        # 1. DeepSeek (prioritet — bystree i tochneye dlya faktov)
+        if is_deepseek_available():
+            try:
+                raw = _deepseek_chat_call(
+                    system_prompt="You are an expert teacher. Reply only with JSON.",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=2000, temperature=0.1, stream=False, timeout=60,
+                )
+                if raw:
+                    print(f"[auto_find_answers] batch {batch_num}: DeepSeek OK")
+            except Exception as e:
+                print(f"[auto_find_answers] batch {batch_num}: DeepSeek err: {e}")
+                raw = None
+
+        # 2. Gemini fallback
+        if not raw and is_available():
+            try:
+                raw = _call_gemini(prompt, max_tokens=2000)
+                if raw:
+                    print(f"[auto_find_answers] batch {batch_num}: Gemini OK")
+            except Exception as e:
+                print(f"[auto_find_answers] batch {batch_num}: Gemini err: {e}")
+                raw = None
+
+        if not raw:
+            print(f"[auto_find_answers] batch {batch_num}: oba AI ne otvetili, propuskaem")
+            continue
+
+        try:
+            cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+            answers = json.loads(cleaned)
+        except Exception:
+            m_arr = re.search(r"\[.*\]", raw, re.DOTALL)
+            answers = json.loads(m_arr.group(0)) if m_arr else []
+        if not isinstance(answers, list):
+            continue
+
+        ans_map = {a["index"]: a for a in answers
+                   if isinstance(a, dict) and isinstance(a.get("index"), int)}
+
+        for local_i, orig_i in enumerate(batch_indices):
+            ans = ans_map.get(local_i + 1, {})
+            correct = (ans.get("correct_letter") or "").strip().upper() if ans.get("correct_letter") else None
+            confidence = float(ans.get("confidence") or 0.0)
+            opts = batch_opts[local_i]
+            # Adaptive threshold
+            threshold = 0.5 if len(opts) <= 2 else (0.6 if len(opts) == 3 else 0.7)
+            if not correct or confidence < threshold:
+                continue
+            # 1/2/3/4 → A/B/C/D
+            if correct in "1234":
+                correct = "ABCD"["1234".index(correct)]
+            # Build new back
+            new_back = correct
+            for opt_line in opts:
+                m2 = re.match(r"^\s*([A-Da-dTF1-4])\s*[\)\.\:\-]\s*(.+)$", opt_line.strip(), re.IGNORECASE)
+                if m2 and m2.group(1).upper() == correct:
+                    new_back = f"{correct}) {m2.group(2).strip()}"
+                    break
+            new_note = "\n".join(opts)
+            result_cards[orig_i] = {**cards[orig_i], "back": new_back, "note": new_note}
+            print(f"[auto_find_answers] [{orig_i + 1}] → {correct} (conf={confidence:.2f}): {new_back[:60]}")
+
+    answered = sum(1 for i in to_process if _already_answered(result_cards[i]))
+    print(f"[auto_find_answers] ITOG: {answered}/{len(to_process)} kart poluchili otvet")
+    return result_cards
+
+
 def explain_question(question: str, answer: str, lang: str = "ru") -> str | None:
     """AI-pomoshnik: ob'yasnyayet vopros i otvet prostym yazykom."""
     if not is_available():
