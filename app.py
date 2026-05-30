@@ -640,19 +640,59 @@ def sitemap_xml():
             xml.append("<priority>0.7</priority>")
             xml.append("</url>")
 
-        # Polzovateli s otkrytym profilem
+        # Polzovateli s otkrytym profilem (filtruem bot-podobnye i sistemnye akkaunty)
         public_users = conn.execute("""
             SELECT username FROM users
-            WHERE COALESCE(profile_public, 1) = 1 AND username IS NOT NULL
+            WHERE COALESCE(profile_public, 1) = 1
+              AND username IS NOT NULL
+              AND username NOT LIKE '%@%'              -- net email-pohojih usernames
+              AND username NOT LIKE '%backdoor%'       -- net podozritel'nyh
+              AND username NOT LIKE '%xss%'
+              AND username NOT LIKE '%admin%'
+              AND username NOT LIKE '%system%'
+              AND username NOT LIKE '%test%'
+              AND LENGTH(username) >= 3
+              AND xp > 0                                -- tol'ko aktivnye polzovateli
             ORDER BY xp DESC LIMIT 200
         """).fetchall()
         for u in public_users:
+            # URL-encode imena (russkiy/uzbeksskiy alfavit)
+            from urllib.parse import quote
+            uname = quote(u['username'])
             xml.append("<url>")
-            xml.append(f"<loc>{base_url}/u/{u['username']}</loc>")
+            xml.append(f"<loc>{base_url}/u/{uname}</loc>")
             xml.append(f"<lastmod>{today}</lastmod>")
             xml.append("<changefreq>monthly</changefreq>")
             xml.append("<priority>0.5</priority>")
             xml.append("</url>")
+        # Sub'ekty marketpleysa (vazhnaya kontent dlya SEO)
+        try:
+            subjects = conn.execute(
+                "SELECT slug FROM mp_subjects WHERE is_active=1"
+            ).fetchall()
+            for s in subjects:
+                xml.append("<url>")
+                xml.append(f"<loc>{base_url}/marketplace/subject/{s['slug']}</loc>")
+                xml.append(f"<lastmod>{today}</lastmod>")
+                xml.append("<changefreq>weekly</changefreq>")
+                xml.append("<priority>0.8</priority>")
+                xml.append("</url>")
+        except Exception:
+            pass
+        # Kollektsii marketpleysa
+        try:
+            collections = conn.execute(
+                "SELECT slug FROM collections WHERE is_active=1"
+            ).fetchall()
+            for c in collections:
+                xml.append("<url>")
+                xml.append(f"<loc>{base_url}/collection/{c['slug']}</loc>")
+                xml.append(f"<lastmod>{today}</lastmod>")
+                xml.append("<changefreq>weekly</changefreq>")
+                xml.append("<priority>0.7</priority>")
+                xml.append("</url>")
+        except Exception:
+            pass
         conn.close()
     except Exception as e:
         print(f"[sitemap] dynamic part failed: {e}")
