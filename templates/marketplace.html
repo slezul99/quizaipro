@@ -52,46 +52,9 @@
     </div>
     {% endif %}
 
-    <!-- ── FEATURED COLLECTIONS ── -->
-    {% if featured %}
-    <div class="mb-14">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          ⭐ Популярные коллекции
-        </h2>
-        <a href="/marketplace/search" class="text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:underline">Все →</a>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {% for c in featured %}
-        <a href="/collection/{{ c.slug }}"
-          class="group relative rounded-3xl p-6 text-white overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl block"
-          style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">
-          <div class="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
-            style="background: radial-gradient(circle at 30% 0%, white, transparent 60%)"></div>
-          <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full opacity-10" style="background:white;"></div>
-          <div class="relative z-10">
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-4xl">{{ c.icon }}</div>
-              {% if c.subj_title %}
-              <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-semibold">{{ c.subj_title }}</span>
-              {% endif %}
-            </div>
-            <h3 class="font-black text-lg leading-tight mb-1">{{ c.title }}</h3>
-            {% if c.desc %}
-            <p class="text-white/70 text-sm line-clamp-2 mb-3">{{ c.desc }}</p>
-            {% endif %}
-            <div class="flex items-center justify-between">
-              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">
-                📚 {{ c.deck_count }} {{ t('mk_decks_word') }}
-              </span>
-              <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold group-hover:bg-white/35 transition-all">→</div>
-            </div>
-          </div>
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
+    <!-- ── FEATURED COLLECTIONS — REMOVED per request ──
+         Collections now only appear inside subject pages.
+         User clicks a subject → sees only that subject's collections. -->
 
     <!-- ── LEGACY COLLECTIONS (no subject) ── -->
     {% if legacy %}
@@ -121,7 +84,7 @@
     {% endif %}
 
     <!-- ── EMPTY STATE ── -->
-    {% if not subjects and not featured and not legacy %}
+    {% if not subjects and not legacy %}
     <div class="text-center py-20 glass-premium">
       <div class="text-7xl mb-5">📚</div>
       <h3 class="section-h" style="font-size:1.7rem;">{{ t('mk_empty_collections_h') }}</h3>
