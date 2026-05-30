@@ -105,13 +105,12 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {% for c in collections %}
-        <a href="/collection/{{ c.slug }}"
-          class="group relative rounded-3xl p-6 text-white overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl block"
+        <div class="group relative rounded-3xl p-6 text-white overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
           style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">
           <div class="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
             style="background: radial-gradient(circle at 30% 0%, white, transparent 60%)"></div>
           <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full opacity-10" style="background:white;"></div>
-          <div class="relative z-10">
+          <a href="/collection/{{ c.slug }}" class="relative z-10 block flex-1">
             <div class="flex items-start justify-between mb-3">
               <div class="text-4xl">{{ c.icon }}</div>
               {% if c.level %}
@@ -130,7 +129,6 @@
                 <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ t('mk_decks_word') }}</span>
                 {% if c.card_count %}<span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">🃏 {{ c.card_count }} {{ t('mk_cards_word') }}</span>{% endif %}
               </div>
-              <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold group-hover:bg-white/35 transition-all">→</div>
             </div>
             {% if c.tags %}
             <div class="flex flex-wrap gap-1 mt-3">
@@ -139,8 +137,27 @@
               {% endfor %}
             </div>
             {% endif %}
+          </a>
+          {# Action buttons — Test / Flashcards based on collection content #}
+          {% if c.has_mcq or c.has_terms %}
+          <div class="relative z-10 flex gap-2 mt-4 flex-wrap">
+            {% if c.has_mcq and c.first_mcq_deck_id %}
+            <a href="/deck/{{ c.first_mcq_deck_id }}/test?count=10&shuffle=1"
+              class="flex-1 min-w-0 text-center px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-emerald-700 font-bold text-xs transition-all hover:shadow-lg whitespace-nowrap"
+              onclick="event.stopPropagation()">
+              📝 {{ t('btn_test') }}
+            </a>
+            {% endif %}
+            {% if c.has_terms and c.first_terms_deck_id %}
+            <a href="/deck/{{ c.first_terms_deck_id }}/flashcards"
+              class="flex-1 min-w-0 text-center px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-indigo-700 font-bold text-xs transition-all hover:shadow-lg whitespace-nowrap"
+              onclick="event.stopPropagation()">
+              🃏 Flashcards
+            </a>
+            {% endif %}
           </div>
-        </a>
+          {% endif %}
+        </div>
         {% endfor %}
       </div>
     </div>

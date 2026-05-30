@@ -787,49 +787,50 @@ def init_db():
         )
     """)
     mig_done = c.execute(
-        "SELECT 1 FROM app_migrations WHERE key='mcq_terms_v2_back'"
+        "SELECT 1 FROM app_migrations WHERE key='mcq_terms_v3_front'"
     ).fetchone()
 
     try:
         if mig_done:
-            # Tol'ko NULL-decks (svezhie ili posle dobavleniya kolonok)
             decks_to_refresh = c.execute(
                 "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
             ).fetchall()
         else:
-            # Pervyy zapusk s back-fallback — proschitaem VSE kolody zanovo
+            # Check note + back + front for all decks (v3 adds front field check)
             decks_to_refresh = c.execute("SELECT id FROM decks").fetchall()
 
         for row in decks_to_refresh:
             did = row[0]
             cards = c.execute(
-                "SELECT note, back FROM cards WHERE deck_id=?", (did,)
+                "SELECT note, back, front FROM cards WHERE deck_id=?", (did,)
             ).fetchall()
             has_mcq = 0
             has_terms = 0
             for card in cards:
                 note = (card[0] or "")
                 back = (card[1] or "")
-                note_matches = _opt_re_db.findall(note)
-                is_mcq_note = len({m.upper() for m in note_matches}) >= 2
-                if is_mcq_note:
+                front = (card[2] or "")
+                # Check all three fields for MCQ pattern
+                is_mcq = False
+                for fld in (note, back, front):
+                    matches = _opt_re_db.findall(fld)
+                    if len({m.upper() for m in matches}) >= 2:
+                        is_mcq = True
+                        break
+                if is_mcq:
                     has_mcq = 1
                 else:
-                    back_matches = _opt_re_db.findall(back)
-                    if len({m.upper() for m in back_matches}) >= 2:
-                        has_mcq = 1
-                    else:
-                        has_terms = 1
+                    has_terms = 1
                 if has_mcq and has_terms:
                     break
             c.execute("UPDATE decks SET has_mcq=?, has_terms=? WHERE id=?",
                       (has_mcq, has_terms, did))
 
         if decks_to_refresh:
-            print(f"[DB] Migrated has_mcq/has_terms for {len(decks_to_refresh)} decks")
+            print(f"[DB] Migrated has_mcq/has_terms for {len(decks_to_refresh)} decks (v3)")
         if not mig_done:
             c.execute(
-                "INSERT OR IGNORE INTO app_migrations (key) VALUES ('mcq_terms_v2_back')"
+                "INSERT OR IGNORE INTO app_migrations (key) VALUES ('mcq_terms_v3_front')"
             )
     except Exception as e:
         print(f"[DB] Migration has_mcq/has_terms error: {e}")

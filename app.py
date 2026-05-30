@@ -424,10 +424,11 @@ def _has_mcq_options(text: str) -> bool:
 
 
 def _card_is_mcq(card_row) -> bool:
-    """True if a card has MCQ options either in `note` or in `back` field.
-    Old decks often store options directly in `back`; new decks use `note`."""
+    """True if a card has MCQ options either in `note`, `back`, or `front` field.
+    Old decks store options in `back`; new decks use `note`; AI/seed often puts them in `front`."""
     note = ""
     back = ""
+    front = ""
     try:
         note = card_row["note"] or ""
     except (KeyError, IndexError, TypeError):
@@ -442,9 +443,18 @@ def _card_is_mcq(card_row) -> bool:
             back = card_row.get("back") or ""
         except Exception:
             pass
+    try:
+        front = card_row["front"] or ""
+    except (KeyError, IndexError, TypeError):
+        try:
+            front = card_row.get("front") or ""
+        except Exception:
+            pass
     if _has_mcq_options(note):
         return True
     if _has_mcq_options(back):
+        return True
+    if _has_mcq_options(front):
         return True
     return False
 
@@ -452,9 +462,9 @@ def _card_is_mcq(card_row) -> bool:
 def refresh_deck_content_flags(conn, deck_id: int):
     """Pересчитывает has_mcq и has_terms для колоды и сохраняет в decks.
     Вызывать при: добавлении/удалении карточки, импорте, AI генерации.
-    Проверяет BOTH `note` AND `back` (old decks often have options in back)."""
+    Проверяет note, back AND front (different formats store options differently)."""
     cards = conn.execute(
-        "SELECT note, back FROM cards WHERE deck_id=?", (deck_id,)
+        "SELECT note, back, front FROM cards WHERE deck_id=?", (deck_id,)
     ).fetchall()
     has_mcq = 0
     has_terms = 0
@@ -3471,7 +3481,21 @@ def marketplace_subject(slug):
             (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count,
             (SELECT COALESCE(SUM(
                 (SELECT COUNT(*) FROM cards WHERE deck_id=cd2.deck_id)
-             ),0) FROM collection_decks cd2 WHERE cd2.collection_id=c.id) AS card_count
+             ),0) FROM collection_decks cd2 WHERE cd2.collection_id=c.id) AS card_count,
+            (SELECT MAX(COALESCE(d.has_mcq, 0))
+             FROM collection_decks cd3 JOIN decks d ON d.id=cd3.deck_id
+             WHERE cd3.collection_id=c.id) AS has_mcq,
+            (SELECT MAX(COALESCE(d.has_terms, 0))
+             FROM collection_decks cd4 JOIN decks d ON d.id=cd4.deck_id
+             WHERE cd4.collection_id=c.id) AS has_terms,
+            (SELECT cd5.deck_id FROM collection_decks cd5
+             JOIN decks d ON d.id=cd5.deck_id
+             WHERE cd5.collection_id=c.id AND COALESCE(d.has_mcq,0)=1
+             ORDER BY cd5.sort_order LIMIT 1) AS first_mcq_deck_id,
+            (SELECT cd6.deck_id FROM collection_decks cd6
+             JOIN decks d ON d.id=cd6.deck_id
+             WHERE cd6.collection_id=c.id AND COALESCE(d.has_terms,0)=1
+             ORDER BY cd6.sort_order LIMIT 1) AS first_terms_deck_id
         FROM collections c
         WHERE c.subject_id=? AND c.is_active=1
         ORDER BY c.sort_order ASC, c.id ASC
