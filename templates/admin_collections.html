@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Управление коллекциями — QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+  <div class="relative z-10">
+    <a href="/superadmin" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-4">← Superadmin</a>
+    <h1 class="section-h mb-6">📚 Управление коллекциями</h1>
+
+    <!-- Create form -->
+    <div class="glass-premium mb-8">
+      <h2 class="font-bold text-lg mb-4 text-slate-900 dark:text-slate-100">Создать коллекцию</h2>
+      <form method="POST" action="/admin/collections/create" class="space-y-3">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="grid grid-cols-2 gap-3">
+          <input name="slug" placeholder="slug (english-beginner)" class="input-premium" required>
+          <input name="icon" placeholder="Иконка (📚)" class="input-premium" value="📚">
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <input name="title_ru" placeholder="Название RU" class="input-premium" required>
+          <input name="title_en" placeholder="Title EN" class="input-premium" required>
+          <input name="title_uz" placeholder="Sarlavha UZ" class="input-premium" required>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <textarea name="desc_ru" placeholder="Описание RU" class="input-premium" rows="2"></textarea>
+          <textarea name="desc_en" placeholder="Description EN" class="input-premium" rows="2"></textarea>
+          <textarea name="desc_uz" placeholder="Tavsif UZ" class="input-premium" rows="2"></textarea>
+        </div>
+        <div class="grid grid-cols-4 gap-3">
+          <input name="color" placeholder="Цвет 1 (#6366f1)" class="input-premium" value="#6366f1">
+          <input name="color2" placeholder="Цвет 2 (#8b5cf6)" class="input-premium" value="#8b5cf6">
+          <select name="level" class="input-premium">
+            <option value="">— Уровень —</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <input name="sort_order" type="number" placeholder="Порядок (0)" class="input-premium" value="0">
+        </div>
+        <input name="tags" placeholder="Теги через запятую (english, grammar)" class="input-premium">
+        <button type="submit" class="btn-premium">Создать коллекцию</button>
+      </form>
+    </div>
+
+    <!-- Collections list -->
+    {% for c in collections %}
+    <div class="glass-premium mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">{{ c.icon }}</span>
+          <div>
+            <div class="font-bold text-slate-900 dark:text-slate-100">{{ c.title_ru }} / {{ c.title_en }} / {{ c.title_uz }}</div>
+            <div class="text-xs text-slate-500">/collection/{{ c.slug }} · {{ c.deck_count }} колод · order={{ c.sort_order }}</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="/collection/{{ c.slug }}" target="_blank" class="btn-premium-ghost" style="font-size:12px;padding:5px 12px;">👁 Просмотр</a>
+          <form method="POST" action="/admin/collections/{{ c.id }}/delete" onsubmit="return confirm('Удалить?')">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="btn-premium-danger" style="font-size:12px;padding:5px 12px;">🗑 Удалить</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Add deck to collection -->
+      <div class="border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Добавить колоду</div>
+        <div class="flex gap-2">
+          <select id="deck-sel-{{ c.id }}" class="input-premium flex-1" style="padding:6px 10px;font-size:13px;">
+            <option value="">— Выбрать публичную колоду —</option>
+            {% for d in pub_decks %}
+            <option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.card_count }} карт)</option>
+            {% endfor %}
+          </select>
+          <input type="number" id="order-{{ c.id }}" placeholder="Порядок" value="0" class="input-premium" style="width:80px;padding:6px 8px;font-size:13px;">
+          <button onclick="addDeckToCollection({{ c.id }})" class="btn-premium" style="font-size:12px;padding:6px 14px;">+ Добавить</button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+async function addDeckToCollection(collId) {
+  var sel = document.getElementById('deck-sel-' + collId);
+  var ord = document.getElementById('order-' + collId);
+  if (!sel.value) { alert('Выберите колоду'); return; }
+  var fd = new FormData();
+  fd.append('deck_id', sel.value);
+  fd.append('sort_order', ord.value || 0);
+  var r = await fetch('/admin/collections/' + collId + '/add-deck', { method: 'POST', body: fd });
+  var d = await r.json();
+  if (d.ok) { alert('Добавлено!'); location.reload(); }
+  else alert('Ошибка');
+}
+</script>
+{% endblock %}

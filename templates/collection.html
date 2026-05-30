@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ coll.title }} — QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+  <div class="deco-blob deco-blob-1" style="top:-50px;right:-100px;"></div>
+  <div class="deco-blob deco-blob-2" style="bottom:0;left:-100px;"></div>
+
+  <div class="relative z-10">
+    <!-- Back -->
+    <a href="/marketplace" class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-6">
+      <span>←</span> {{ t('nav_marketplace') }}
+    </a>
+
+    <!-- Collection header -->
+    <div class="rounded-3xl p-8 mb-8 text-white relative overflow-hidden"
+      style="background: linear-gradient(135deg, {{ coll.color }}, {{ coll.color2 }});">
+      <div class="absolute inset-0 opacity-10"
+        style="background: radial-gradient(circle at 80% 20%, white, transparent 60%)"></div>
+      <div class="relative z-10">
+        <div class="text-6xl mb-4">{{ coll.icon }}</div>
+        <h1 class="text-3xl md:text-4xl font-black mb-3 leading-tight">{{ coll.title }}</h1>
+        {% if coll.desc %}
+        <p class="text-white/80 text-lg max-w-2xl leading-relaxed">{{ coll.desc }}</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-3 mt-5 items-center">
+          <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">
+            📚 {{ decks|length }} {{ t('test_card_count_word') if decks|length != 1 else t('test_card_count_word') }}
+          </span>
+          {% if coll.level %}
+          <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">
+            {% if coll.level == 'beginner' %}🟢 Beginner
+            {% elif coll.level == 'intermediate' %}🟡 Intermediate
+            {% elif coll.level == 'advanced' %}🔴 Advanced
+            {% else %}{{ coll.level }}{% endif %}
+          </span>
+          {% endif %}
+          {% if coll.tags %}
+          {% for tag in coll.tags.split(',') %}
+          <span class="px-3 py-1 rounded-full bg-white/15 text-xs font-medium">{{ tag.strip() }}</span>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Decks grid -->
+    {% if decks %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for d in decks %}
+      {% set pct = (d.learned_count / d.card_count * 100) if d.card_count and d.get('learned_count') else 0 %}
+      <div class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-3xl">{{ d.icon }}</div>
+          <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+        </div>
+        <a href="/deck/{{ d.id }}" class="block">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ d.name }}</h3>
+          {% if d.description %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">{{ d.description }}</p>
+          {% endif %}
+        </a>
+        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
+          <span class="text-xs text-slate-500 dark:text-slate-400">{{ d.author }}</span>
+          <div class="flex gap-2">
+            {% if (d.deck_type or 'mcq') == 'terms' %}
+            <a href="/deck/{{ d.id }}/flashcards" class="btn-premium" style="font-size:11px;padding:5px 12px;">📖 Flashcards</a>
+            {% else %}
+            <a href="/deck/{{ d.id }}/test?count=10&shuffle=1" class="btn-premium" style="font-size:11px;padding:5px 12px;background:linear-gradient(135deg,#10b981,#059669);">📝 {{ t('btn_test') }}</a>
+            {% endif %}
+            <form method="POST" action="/marketplace/clone/{{ d.id }}" style="display:inline">
+              <button class="btn-premium-ghost" style="font-size:11px;padding:5px 12px;" title="{{ t('mp_clone') }}">📋</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 glass-premium">
+      <div class="text-6xl mb-4">📭</div>
+      <p class="text-slate-600 dark:text-slate-300 font-semibold">Колоды ещё добавляются</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

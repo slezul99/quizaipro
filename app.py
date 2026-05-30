@@ -3206,10 +3206,23 @@ def import_deck_json():
 @app.route("/marketplace")
 @login_required
 def marketplace():
-    """Publichnyy marketplace kolod."""
+    """Publichnyy marketplace kolod + tematicheskie kollektsii."""
     user = current_user()
     search = request.args.get("q", "").strip()
     conn = db.get_conn()
+
+    # === Kollektsii (tol'ko esli net poiska) ===
+    collections = []
+    if not search:
+        colls = conn.execute("""
+            SELECT c.*,
+                (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+            FROM collections c
+            WHERE c.is_active=1
+            ORDER BY c.sort_order ASC, c.id ASC
+        """).fetchall()
+        for coll in colls:
+            collections.append(dict(coll))
 
     sql = """
         SELECT d.*,
@@ -3230,7 +3243,122 @@ def marketplace():
 
     decks = conn.execute(sql, params).fetchall()
     conn.close()
-    return render_template("marketplace.html", decks=decks, search=search)
+    return render_template("marketplace.html", decks=decks, search=search, collections=collections)
+
+
+@app.route("/collection/<slug>")
+@login_required
+def collection_view(slug):
+    """Stranitsa tematicheskoj kollektsii s kolodami."""
+    user = current_user()
+    conn = db.get_conn()
+    coll = conn.execute("SELECT * FROM collections WHERE slug=? AND is_active=1", (slug,)).fetchone()
+    if not coll:
+        conn.close(); abort(404)
+    coll = dict(coll)
+
+    decks = conn.execute("""
+        SELECT d.*,
+            (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+            CASE WHEN d.org_id IS NOT NULL
+                 THEN (SELECT name FROM organizations WHERE id=d.org_id)
+                 ELSE (SELECT username FROM users WHERE id=d.owner_id)
+            END AS author
+        FROM collection_decks cd
+        JOIN decks d ON d.id=cd.deck_id
+        WHERE cd.collection_id=?
+        ORDER BY cd.sort_order ASC
+    """, (coll["id"],)).fetchall()
+    conn.close()
+
+    lang = session.get("lang", "ru")
+    coll["title"] = coll.get(f"title_{lang}") or coll["title_ru"]
+    coll["desc"] = coll.get(f"desc_{lang}") or coll.get("desc_ru", "")
+    return render_template("collection.html", coll=coll, decks=decks)
+
+
+# === Admin: manage collections ===
+@app.route("/admin/collections")
+@login_required
+def admin_collections():
+    user = current_user()
+    if not is_super_admin(user): abort(403)
+    conn = db.get_conn()
+    colls = conn.execute("""
+        SELECT c.*, (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+        FROM collections c ORDER BY c.sort_order, c.id
+    """).fetchall()
+    # Public decks for adding
+    pub_decks = conn.execute("""
+        SELECT d.id, d.name, d.icon,
+            (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count
+        FROM decks d WHERE d.is_public=1 ORDER BY d.clones_count DESC LIMIT 200
+    """).fetchall()
+    conn.close()
+    return render_template("admin_collections.html", collections=colls, pub_decks=pub_decks)
+
+
+@app.route("/admin/collections/create", methods=["POST"])
+@login_required
+def admin_collection_create():
+    user = current_user()
+    if not is_super_admin(user): abort(403)
+    data = request.form
+    conn = db.get_conn()
+    conn.execute("""
+        INSERT INTO collections (slug, title_ru, title_en, title_uz, desc_ru, desc_en, desc_uz,
+            icon, color, color2, level, tags, sort_order)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+    """, (
+        data.get("slug","").strip(),
+        data.get("title_ru",""), data.get("title_en",""), data.get("title_uz",""),
+        data.get("desc_ru",""), data.get("desc_en",""), data.get("desc_uz",""),
+        data.get("icon","📚"), data.get("color","#6366f1"), data.get("color2","#8b5cf6"),
+        data.get("level",""), data.get("tags",""),
+        int(data.get("sort_order", 0)),
+    ))
+    conn.commit(); conn.close()
+    flash("Коллекция создана", "success")
+    return redirect(url_for("admin_collections"))
+
+
+@app.route("/admin/collections/<int:coll_id>/add-deck", methods=["POST"])
+@login_required
+def admin_collection_add_deck(coll_id):
+    user = current_user()
+    if not is_super_admin(user): abort(403)
+    deck_id = request.form.get("deck_id", type=int)
+    sort_order = request.form.get("sort_order", 0, type=int)
+    if not deck_id: abort(400)
+    conn = db.get_conn()
+    conn.execute("INSERT OR IGNORE INTO collection_decks (collection_id, deck_id, sort_order) VALUES (?,?,?)",
+                 (coll_id, deck_id, sort_order))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+
+@app.route("/admin/collections/<int:coll_id>/remove-deck", methods=["POST"])
+@login_required
+def admin_collection_remove_deck(coll_id):
+    user = current_user()
+    if not is_super_admin(user): abort(403)
+    deck_id = request.form.get("deck_id", type=int)
+    conn = db.get_conn()
+    conn.execute("DELETE FROM collection_decks WHERE collection_id=? AND deck_id=?", (coll_id, deck_id))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+
+@app.route("/admin/collections/<int:coll_id>/delete", methods=["POST"])
+@login_required
+def admin_collection_delete(coll_id):
+    user = current_user()
+    if not is_super_admin(user): abort(403)
+    conn = db.get_conn()
+    conn.execute("DELETE FROM collections WHERE id=?", (coll_id,))
+    conn.commit(); conn.close()
+    flash("Коллекция удалена", "success")
+    return redirect(url_for("admin_collections"))
 
 
 @app.route("/search")

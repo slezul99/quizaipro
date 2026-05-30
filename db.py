@@ -727,6 +727,39 @@ def init_db():
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_tutor_msg_conv ON tutor_messages(conversation_id, created_at)")
 
+    # === COLLECTIONS (Tematicheskie nabory kolod dlya marketplace) ===
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS collections (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            slug         TEXT UNIQUE NOT NULL,        -- URL-friendly id: 'english-beginner'
+            title_ru     TEXT NOT NULL,
+            title_en     TEXT NOT NULL,
+            title_uz     TEXT NOT NULL,
+            desc_ru      TEXT DEFAULT '',
+            desc_en      TEXT DEFAULT '',
+            desc_uz      TEXT DEFAULT '',
+            icon         TEXT DEFAULT '📚',
+            color        TEXT DEFAULT '#6366f1',      -- gradient start color
+            color2       TEXT DEFAULT '#8b5cf6',      -- gradient end color
+            level        TEXT DEFAULT '',             -- 'beginner' / 'intermediate' / 'advanced'
+            tags         TEXT DEFAULT '',             -- comma-separated
+            sort_order   INTEGER DEFAULT 0,
+            is_active    INTEGER DEFAULT 1,
+            created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS collection_decks (
+            collection_id INTEGER NOT NULL,
+            deck_id       INTEGER NOT NULL,
+            sort_order    INTEGER DEFAULT 0,
+            PRIMARY KEY(collection_id, deck_id),
+            FOREIGN KEY(collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+            FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_coll_decks ON collection_decks(collection_id, sort_order)")
+
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")
