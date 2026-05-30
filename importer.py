@@ -388,6 +388,157 @@ def parse_mcq_inline(text: str) -> list[dict]:
     return cards
 
 
+def parse_mcq_textbook(text: str) -> list[dict]:
+    """Razbiraet format uchebnika tipa Oxford Solutions Placement Test:
+
+        1  Question text without dot/paren after number?
+         A First option  B Second option  C Third option  D Fourth option
+
+        2  Next question ____ goes here.
+         A First  B Second
+         C Third  D Fourth
+
+    Bez Answer: markerov — back budet soderzhat' vse varianty (uchitel' otmechaet).
+    Eto poslednyaya popytka pered AI Vision dlya dovolno strukturirovannyh PDF.
+    """
+    raw_lines = text.splitlines()
+    # Chistim
+    lines = []
+    for ln in raw_lines:
+        s = ln.strip()
+        if not s:
+            continue
+        # Page numbers / decoration
+        if re.fullmatch(r"[•·\-\*\s]+", s):
+            continue
+        if re.fullmatch(r"\d{1,3}", s):
+            continue
+        # Skip headers (copyright, page name, etc.)
+        if "PHOTOCOPIABLE" in s or "OXFORD UNIVERSITY" in s:
+            continue
+        if re.match(r"^Page\s+\d", s, re.IGNORECASE):
+            continue
+        lines.append(s)
+
+    # Pattern: number at start with 2+ spaces — but no `.` or `)` after
+    NUM_Q_RE = re.compile(r"^\s*(\d{1,4})\s{2,}(.+)$")
+    # Inline options: " A Be  B Am  C Is  D Are" — bukva s odnym/dvumya probelami sleduyushchiy
+    # Split po patternu " <letter> " (probel + bukva + probel)
+    INLINE_OPTS_RE = re.compile(r"(?:^|\s)([A-D])\s+")
+    # Single letter options at line start (no `)` `.`)
+    LETTER_OPT_RE = re.compile(r"^\s*([A-D])\s+(.+)$")
+    # Skip non-question lines
+    SKIP_LINE_RE = re.compile(
+        r"^(Mark:|Total:|Reading|Writing|Grammar|Placement|Circle the|"
+        r"Solutions Third|Are the sentences|Choose the best)",
+        re.IGNORECASE
+    )
+
+    def _extract_inline_opts(s: str) -> list[tuple[str, str]]:
+        """Try to parse 'A text  B text  C text  D text' from one line.
+        Need at least A and B on the line."""
+        # Find all positions of " <letter> " markers
+        positions = [(m.start(), m.group(1).upper())
+                     for m in INLINE_OPTS_RE.finditer(s)]
+        if len(positions) < 2:
+            return []
+        # Validate: starts with A or near start (within 2 chars of stripped start)
+        # AND letters are sequential (A, B, C, D)
+        letters = [p[1] for p in positions]
+        if letters[0] != "A":
+            return []
+        opts = []
+        for j, (pos, letter) in enumerate(positions):
+            # Text starts after letter+space (which is 2 chars: letter + space)
+            text_start = pos + 2  # skip "A " (counted from start of letter, which is at pos+1 if there's a leading space, but match starts at the leading space)
+            # Recompute: re finds " A " — m.start() = position of leading space (or 0)
+            # m.end() = position after letter+space
+            m_end = pos + len(positions[j][1]) + 2  # space + letter + space
+            text_end = positions[j+1][0] if j+1 < len(positions) else len(s)
+            opt_text = s[m_end:text_end].strip()
+            if opt_text:
+                opts.append((letter, opt_text))
+        return opts
+
+    cards = []
+    i = 0
+    n = len(lines)
+    while i < n:
+        ln = lines[i]
+        m = NUM_Q_RE.match(ln)
+        if not m:
+            i += 1
+            continue
+
+        question_parts = [m.group(2).strip()]
+        i += 1
+
+        # Sobiraem prodolzhenie voprosa do pervogo varianta
+        # Variant: a) liniya nachinayushchayasya s "A " (vozmozhno pred-probel)
+        #          b) liniya soderzhashchaya inline opciya " A xxx  B xxx"
+        while i < n:
+            nxt = lines[i].strip()
+            if NUM_Q_RE.match(lines[i]):
+                break
+            # Inline options on this line?
+            inline_opts = _extract_inline_opts(" " + nxt)
+            if inline_opts and len(inline_opts) >= 2:
+                break
+            # Block-style option line?
+            if LETTER_OPT_RE.match(lines[i]):
+                break
+            # Skip-line?
+            if SKIP_LINE_RE.match(nxt):
+                break
+            question_parts.append(nxt)
+            i += 1
+
+        question = " ".join(question_parts).strip()
+
+        # Sobiraem opciya — poprobuem inline ili block
+        options = []
+        while i < n:
+            cur = lines[i]
+            if NUM_Q_RE.match(cur):
+                break
+            cur_s = cur.strip()
+            # Try inline first
+            inline_opts = _extract_inline_opts(" " + cur_s)
+            if inline_opts:
+                options.extend(inline_opts)
+                i += 1
+                continue
+            # Try block-style "A text"
+            opt_m = LETTER_OPT_RE.match(cur)
+            if opt_m:
+                options.append((opt_m.group(1).upper(), opt_m.group(2).strip()))
+                i += 1
+                continue
+            # Possible continuation of last option
+            if options and not SKIP_LINE_RE.match(cur_s):
+                # Heuristic: if line is short and doesn't look like new question, append
+                options[-1] = (options[-1][0], options[-1][1] + " " + cur_s)
+                i += 1
+                continue
+            break
+
+        # Validuem
+        unique_letters = {o[0] for o in options}
+        if len(unique_letters) < 2 or not question:
+            continue
+
+        # Sortiruem po bukve
+        order = {"A": 0, "B": 1, "C": 2, "D": 3}
+        options.sort(key=lambda x: order.get(x[0], 99))
+
+        note = "\n".join(f"{l}) {t}" for l, t in options)
+        back = note  # nash format — uchitel' otmetit pravil'nyy
+
+        cards.append({"front": question, "back": back, "note": note})
+
+    return cards
+
+
 def parse_docx(filepath: Path, delimiter: str = "|") -> list[dict]:
     try:
         from docx import Document
@@ -424,11 +575,13 @@ def is_scanned_pdf(filepath: Path) -> bool:
 
 
 def parse_pdf(filepath: Path, delimiter: str = "|") -> list[dict]:
-    """Probuyem v poryadke: text-format → MCQ → Q/A blocks → Vision (esli skan)."""
+    """Probuyem v poryadke: text-format → MCQ → MCQ-textbook → Q/A blocks → Vision (esli skan)."""
     text = parse_pdf_raw(filepath)
     cards = parse_text(text, delimiter)
     if not cards:
         cards = parse_mcq(text)
+    if not cards:
+        cards = parse_mcq_textbook(text)
     if not cards:
         cards = parse_qa_blocks(text)
 
