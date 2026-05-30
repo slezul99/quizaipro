@@ -58,14 +58,14 @@ _GOAL_OPT_RE = _re.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", _re.
 
 
 def count_card_types(conn, target_type: str, target_id: int, user=None) -> tuple[int, int]:
-    """Schitaet (mcq_count, terms_count) po note pole kart.
-    MCQ — eto karta gde v note est' minimum 2 raznye opciya v formate "A) ...".
+    """Schitaet (mcq_count, terms_count) po note I back polyam kart.
+    MCQ — karta s 2+ raznymi optsiyami "A) ..." v note ILI v back (starye kolody).
     Terms — vse ostal'noe.
     Vozvrashchaet (mcq, terms)."""
     cards = []
     if target_type == "deck":
         cards = conn.execute(
-            "SELECT note FROM cards WHERE deck_id=?", (target_id,)
+            "SELECT note, back FROM cards WHERE deck_id=?", (target_id,)
         ).fetchall()
     elif target_type == "category":
         cat_ids = [target_id]
@@ -89,7 +89,7 @@ def count_card_types(conn, target_type: str, target_id: int, user=None) -> tuple
         if decks:
             deck_ph = ",".join("?" * len(decks))
             cards = conn.execute(
-                f"SELECT note FROM cards WHERE deck_id IN ({deck_ph})",
+                f"SELECT note, back FROM cards WHERE deck_id IN ({deck_ph})",
                 [d["id"] for d in decks]
             ).fetchall()
 
@@ -97,9 +97,13 @@ def count_card_types(conn, target_type: str, target_id: int, user=None) -> tuple
     terms = 0
     for c in cards:
         note = (c["note"] or "").strip()
-        matches = _GOAL_OPT_RE.findall(note)
-        unique = {m.upper() for m in matches}
-        if len(unique) >= 2:
+        back = (c["back"] or "").strip()
+        note_unique = {m.upper() for m in _GOAL_OPT_RE.findall(note)}
+        if len(note_unique) >= 2:
+            mcq += 1
+            continue
+        back_unique = {m.upper() for m in _GOAL_OPT_RE.findall(back)}
+        if len(back_unique) >= 2:
             mcq += 1
         else:
             terms += 1

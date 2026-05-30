@@ -423,17 +423,43 @@ def _has_mcq_options(text: str) -> bool:
     return len(unique) >= 2
 
 
+def _card_is_mcq(card_row) -> bool:
+    """True if a card has MCQ options either in `note` or in `back` field.
+    Old decks often store options directly in `back`; new decks use `note`."""
+    note = ""
+    back = ""
+    try:
+        note = card_row["note"] or ""
+    except (KeyError, IndexError, TypeError):
+        try:
+            note = card_row.get("note") or ""
+        except Exception:
+            pass
+    try:
+        back = card_row["back"] or ""
+    except (KeyError, IndexError, TypeError):
+        try:
+            back = card_row.get("back") or ""
+        except Exception:
+            pass
+    if _has_mcq_options(note):
+        return True
+    if _has_mcq_options(back):
+        return True
+    return False
+
+
 def refresh_deck_content_flags(conn, deck_id: int):
     """Pересчитывает has_mcq и has_terms для колоды и сохраняет в decks.
     Вызывать при: добавлении/удалении карточки, импорте, AI генерации.
-    Быстро — один SELECT по cards."""
+    Проверяет BOTH `note` AND `back` (old decks often have options in back)."""
     cards = conn.execute(
-        "SELECT note FROM cards WHERE deck_id=?", (deck_id,)
+        "SELECT note, back FROM cards WHERE deck_id=?", (deck_id,)
     ).fetchall()
     has_mcq = 0
     has_terms = 0
     for c in cards:
-        if _has_mcq_options(c["note"] or ""):
+        if _card_is_mcq(c):
             has_mcq = 1
         else:
             has_terms = 1
@@ -981,7 +1007,11 @@ def _student_dashboard(user):
     now = datetime.utcnow().isoformat()
     # has_mcq / has_terms — predvychislennye flagi (NULL = eshchyo ne schitano → fallback na SQL)
     # Esli NULL — ispol'zuem SQL-podschet (dlya starykh kolod)
-    mcq_filter = "(c.note LIKE '%A)%' OR c.note LIKE '%А)%' OR c.note LIKE 'A.%' OR c.note LIKE '1)%')"
+    # Proveryaem note I back — starye kolody hranyat varianty pryamo v back.
+    mcq_filter = (
+        "(c.note LIKE '%A)%' OR c.note LIKE '%А)%' OR c.note LIKE 'A.%' OR c.note LIKE '1)%' "
+        " OR c.back LIKE '%A)%' OR c.back LIKE '%А)%' OR c.back LIKE 'A.%' OR c.back LIKE '1)%')"
+    )
     if user["org_id"]:
         decks = conn.execute(f"""
             SELECT d.*, c.name AS category_name, c.icon AS category_icon, c.parent_id AS category_parent_id,
@@ -1673,9 +1703,10 @@ def flashcards_view(deck_id):
 
     # Razreshaem flashcards esli est' hot' odna ne-MCQ karta v kolode.
     # Ranshe blokirovali mcq-koldy, no teper' v odnoy kolodе mogut byt' karty oboikh tipov.
-    cards_check = conn.execute("SELECT note FROM cards WHERE deck_id=?", (deck_id,)).fetchall()
+    # Proveryaem note I back (starye kolody hranili varianty v back).
+    cards_check = conn.execute("SELECT note, back FROM cards WHERE deck_id=?", (deck_id,)).fetchall()
     has_terms = any(
-        not _has_mcq_options(c["note"] or "")
+        not _card_is_mcq(c)
         for c in cards_check
     ) if cards_check else False
     deck_type = (deck["deck_type"] if "deck_type" in deck.keys() else "mcq") or "mcq"
@@ -3019,9 +3050,9 @@ def deck_ai_convert(deck_id, direction):
     # Filtruyem podkhodyashchie karty po napravleniyu
     src_cards = []
     if direction == "to_terms":
-        # Beryom tol'ko MCQ-karty (s variantami)
+        # Beryom tol'ko MCQ-karty (s variantami v note ILI back)
         for c in cards_raw:
-            if _has_mcq_options((c["note"] or "")):
+            if _card_is_mcq(c):
                 src_cards.append({"front": c["front"], "back": c["back"], "note": c["note"] or ""})
         if not src_cards:
             conn.close()
@@ -3029,7 +3060,7 @@ def deck_ai_convert(deck_id, direction):
     else:  # to_tests
         # Beryom tol'ko ne-MCQ karty
         for c in cards_raw:
-            if not _has_mcq_options((c["note"] or "")):
+            if not _card_is_mcq(c):
                 src_cards.append({"front": c["front"], "back": c["back"], "note": c["note"] or ""})
         if not src_cards:
             conn.close()

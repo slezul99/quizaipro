@@ -773,31 +773,64 @@ def init_db():
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_coll_decks ON collection_decks(collection_id, sort_order)")
 
-    # === MIGRATE: refresh has_mcq/has_terms for all existing decks with NULL flags ===
+    # === MIGRATE: refresh has_mcq/has_terms for all existing decks ===
+    # Proveryaem BOTH note AND back (starye kolody hranili varianty v back).
+    # Esli ranee migrate proshla s nepravil'nym regex — flag mig_v2 zastavit recompute.
     import re as _re_db
     _opt_re_db = _re_db.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", _re_db.MULTILINE)
+
+    # Sluzhebnaya tablitsa dlya version-flag migratsiy
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS app_migrations (
+            key TEXT PRIMARY KEY,
+            done_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    mig_done = c.execute(
+        "SELECT 1 FROM app_migrations WHERE key='mcq_terms_v2_back'"
+    ).fetchone()
+
     try:
-        null_decks = c.execute(
-            "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
-        ).fetchall()
-        for row in null_decks:
+        if mig_done:
+            # Tol'ko NULL-decks (svezhie ili posle dobavleniya kolonok)
+            decks_to_refresh = c.execute(
+                "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
+            ).fetchall()
+        else:
+            # Pervyy zapusk s back-fallback — proschitaem VSE kolody zanovo
+            decks_to_refresh = c.execute("SELECT id FROM decks").fetchall()
+
+        for row in decks_to_refresh:
             did = row[0]
-            cards = c.execute("SELECT note FROM cards WHERE deck_id=?", (did,)).fetchall()
+            cards = c.execute(
+                "SELECT note, back FROM cards WHERE deck_id=?", (did,)
+            ).fetchall()
             has_mcq = 0
             has_terms = 0
             for card in cards:
                 note = (card[0] or "")
-                matches = _opt_re_db.findall(note)
-                if len({m.upper() for m in matches}) >= 2:
+                back = (card[1] or "")
+                note_matches = _opt_re_db.findall(note)
+                is_mcq_note = len({m.upper() for m in note_matches}) >= 2
+                if is_mcq_note:
                     has_mcq = 1
                 else:
-                    has_terms = 1
+                    back_matches = _opt_re_db.findall(back)
+                    if len({m.upper() for m in back_matches}) >= 2:
+                        has_mcq = 1
+                    else:
+                        has_terms = 1
                 if has_mcq and has_terms:
                     break
             c.execute("UPDATE decks SET has_mcq=?, has_terms=? WHERE id=?",
                       (has_mcq, has_terms, did))
-        if null_decks:
-            print(f"[DB] Migrated has_mcq/has_terms for {len(null_decks)} decks")
+
+        if decks_to_refresh:
+            print(f"[DB] Migrated has_mcq/has_terms for {len(decks_to_refresh)} decks")
+        if not mig_done:
+            c.execute(
+                "INSERT OR IGNORE INTO app_migrations (key) VALUES ('mcq_terms_v2_back')"
+            )
     except Exception as e:
         print(f"[DB] Migration has_mcq/has_terms error: {e}")
 
