@@ -126,3 +126,40 @@ def start_ai_gen_job(jid: str, gen_fn, save_fn):
 
     t = threading.Thread(target=_run, daemon=True)
     t.start()
+
+
+def start_ai_photo_job(jid: str, topic: str, count: int, lang: str, save_fn):
+    """Zapuskaem generatsiyu s fotografiyami v fone."""
+    def _run():
+        update_job(jid, status="running", stage_msg="AI генерирует вопросы...", progress=5)
+        try:
+            import ai_gen as _ai_gen
+
+            def _progress(done, total, msg):
+                pct = int(10 + (done / max(total, 1)) * 75)
+                update_job(jid, cards_done=done, progress=pct, stage_msg=msg)
+
+            cards = _ai_gen.generate_with_photos(topic, count, lang, progress_cb=_progress)
+
+            if not cards:
+                update_job(jid, status="error",
+                           error="AI не смог сгенерировать карточки с фото. Попробуйте другую тему.",
+                           progress=0)
+                return
+
+            update_job(jid, cards_done=len(cards), cards_total=len(cards),
+                       progress=88, stage_msg=f"Сохраняем {len(cards)} карточек...")
+
+            deck_id = save_fn(cards)
+            photos_count = sum(1 for c in cards if c.get("image_url"))
+            update_job(jid, status="done", result_cards=cards,
+                       result_deck_id=deck_id, progress=100,
+                       cards_done=len(cards),
+                       stage_msg=f"Готово! {len(cards)} карточек, {photos_count} с фото.")
+        except Exception as e:
+            err = str(e)[:300]
+            print(f"[ai_gen_jobs:{jid}] photo error: {err}")
+            update_job(jid, status="error", error=f"Ошибка: {err}", progress=0)
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()

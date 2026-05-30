@@ -849,6 +849,110 @@ VHODNYE SLOVARI:
     return _parse_cards_json(raw or "")
 
 
+# === AI GENERATION WITH PHOTOS ===============================================
+
+def generate_with_photos(topic: str, count: int = 10, lang: str = "ru",
+                         progress_cb=None) -> list[dict]:
+    """Generiruyet testovye karty s fotografiyami.
+
+    Algoritm:
+    1. AI generiruyet voprosy s klyuchevymi slovami dlya poiska foto
+    2. Dlya kazhdogo voprosa ishchem foto cherez Wikimedia/Pexels
+    3. Vozvrashchaem karty s image_url
+
+    progress_cb(done, total, msg) — optsional'nyy callback dlya progressa.
+    """
+    from image_search import find_image
+
+    lang_map = {"ru": "Russian (русский)", "en": "English", "uz": "Uzbek (o'zbek)"}
+    lang_name = lang_map.get(lang, "Russian")
+
+    # Step 1: AI generates questions with image search keywords
+    prompt = f"""You are a creative teacher creating visual flashcards with photos.
+
+Topic: "{topic}"
+Count: exactly {count} flashcards.
+Language: {lang_name}
+
+For each flashcard, generate:
+1. A question that can be illustrated with a photo
+2. The correct answer
+3. A SHORT English search query (2-4 words) to find a relevant photo on Wikimedia Commons
+4. A memory note or explanation
+
+IMPORTANT for image_query:
+- Use English regardless of the topic language
+- Be specific: "flag of France" not just "flag"
+- Use descriptive terms: "human heart anatomy" not "heart"
+- For people: "Albert Einstein portrait" 
+- For places: "Eiffel Tower Paris"
+- For animals: "Bengal tiger wildlife"
+- For concepts: use a visual representation
+
+Output ONLY a JSON array:
+[{{
+  "question": "...",
+  "answer": "...",
+  "note": "...",
+  "image_query": "short english search query"
+}}, ...]"""
+
+    raw = _call_gemini(prompt, max_tokens=8000)
+    if not raw:
+        return []
+
+    # Parse with extended fields
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+    try:
+        data = json.loads(text)
+    except Exception:
+        m = re.search(r"\[.*\]", text, re.DOTALL)
+        if not m:
+            return []
+        try:
+            data = json.loads(m.group(0))
+        except Exception:
+            return []
+
+    if not isinstance(data, list):
+        return []
+
+    cards = []
+    total = len(data)
+    for i, item in enumerate(data):
+        if not isinstance(item, dict):
+            continue
+        q = (item.get("question") or item.get("front") or "").strip()
+        a = (item.get("answer") or item.get("back") or "").strip()
+        n = (item.get("note") or item.get("explanation") or "").strip()
+        img_query = (item.get("image_query") or item.get("image_search") or q).strip()
+
+        if not q or not a:
+            continue
+
+        # Step 2: Search for image
+        if progress_cb:
+            progress_cb(i, total, f"Ищу фото: {img_query[:40]}...")
+
+        image_url = None
+        try:
+            image_url = find_image(img_query)
+        except Exception as e:
+            print(f"[ai_photo] image search error for '{img_query}': {e}")
+
+        cards.append({
+            "front": q,
+            "back": a,
+            "note": n,
+            "image_url": image_url or "",
+        })
+
+    if progress_cb:
+        progress_cb(total, total, f"Готово! {len(cards)} карточек с фото.")
+
+    return cards
+
+
 def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
                         max_pages: int = 30,
                         chunk_size: int = 1,

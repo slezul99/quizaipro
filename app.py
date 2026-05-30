@@ -7106,6 +7106,71 @@ def ai_gen_status_api(job_id):
     })
 
 
+@app.route("/ai/photo", methods=["POST"])
+@login_required
+def ai_photo_page():
+    """AI generatsiya kart s fotografiyami."""
+    user = current_user()
+    if not can_manage_content(user): abort(403)
+    if not ai_gen.is_available():
+        flash("AI не настроен", "error")
+        return redirect(url_for("ai_page"))
+
+    ok, used, limit = billing.check_ai_limit(user)
+    if not ok:
+        flash(f"Лимит AI достигнут: {used}/{limit}", "error")
+        return redirect(url_for("ai_page"))
+
+    topic = request.form.get("topic", "").strip()
+    count = max(1, min(int(request.form.get("count", 10)), 20))  # max 20 for photo mode
+    lang = session.get("lang", "ru")
+    deck_id = request.form.get("deck_id", type=int)
+    new_deck_name = request.form.get("new_deck_name", "").strip()
+    category_id = request.form.get("category_id", type=int)
+
+    if len(topic) < 3:
+        flash("Тема слишком короткая", "error")
+        return redirect(url_for("ai_page"))
+
+    _user_id = user["id"]
+    _org_id = user.get("org_id")
+    _user_dict = dict(user)
+
+    def save_fn(cards):
+        billing.log_ai_usage(_user_dict, "photo_topic", len(cards))
+        conn = db.get_conn()
+        try:
+            if deck_id:
+                target = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+                if not target: raise ValueError("Колода не найдена")
+                target_id = target["id"]
+            else:
+                tname = new_deck_name or f"📸 {topic[:40]}"
+                if _org_id:
+                    cur = conn.execute(
+                        "INSERT INTO decks (org_id, category_id, name, icon) VALUES (?,?,?,?)",
+                        (_org_id, category_id, tname, "📸"))
+                else:
+                    cur = conn.execute(
+                        "INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?,?,?,?)",
+                        (_user_id, category_id, tname, "📸"))
+                target_id = cur.lastrowid
+            for c in cards:
+                conn.execute(
+                    "INSERT INTO cards (deck_id, front, back, note, image_url) VALUES (?,?,?,?,?)",
+                    (target_id, c["front"], c["back"], c.get("note", ""), c.get("image_url", "")))
+            conn.commit()
+            refresh_deck_content_flags(conn, target_id)
+            conn.commit()
+            return target_id
+        finally:
+            conn.close()
+
+    jid = _aigen_jobs.create_job(user["id"], "photo_topic", count, topic)
+    _aigen_jobs.start_ai_photo_job(jid, topic, count, lang, save_fn)
+    return redirect(url_for("ai_gen_progress", job_id=jid))
+
+
 # ---------------------- billing ---------------------------------------------
 
 @app.route("/billing")
