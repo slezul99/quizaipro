@@ -6892,6 +6892,34 @@ def import_page():
             if not cards:
                 flash("Не найдено карточек", "error")
                 return redirect(url_for("import_page"))
+
+            # AI auto-fill: esli mnogo kart bez otveta (back pust ili = note),
+            # poprosim Gemini opredelit pravil'nye otvety
+            cards_without_answer = [
+                c for c in cards
+                if not c.get("back") or c.get("back") == c.get("note", "")
+            ]
+            if (cards_without_answer and ai_gen.is_available()
+                    and len(cards_without_answer) >= 3):
+                try:
+                    fixed = ai_gen.find_correct_answers(
+                        cards_without_answer, lang=session.get("lang", "ru")
+                    )
+                    # Postroim map: pamyat'-id (index v cards_without_answer) → fix
+                    fix_by_idx = {idx: fix for idx, fix in enumerate(fixed)}
+                    # Vmenim back/note v originalnyh kartah
+                    j = 0
+                    for c in cards:
+                        if not c.get("back") or c.get("back") == c.get("note", ""):
+                            fix = fix_by_idx.get(j, {})
+                            if fix.get("correct_letter") and fix.get("back"):
+                                c["back"] = fix["back"]
+                                if fix.get("note"):
+                                    c["note"] = fix["note"]
+                            j += 1
+                    print(f"[IMPORT] AI auto-filled {sum(1 for f in fixed if f.get('correct_letter'))}/{len(fixed)} answers")
+                except Exception as e:
+                    print(f"[IMPORT] AI answer fill failed: {e}")
         except Exception as e:
             flash(f"Ошибка: {e}", "error"); return redirect(url_for("import_page"))
         conn = db.get_conn()

@@ -567,7 +567,9 @@ def parse_mcq_textbook(text: str) -> list[dict]:
         options.sort(key=lambda x: order.get(x[0], 99))
 
         note = "\n".join(f"{l}) {t}" for l, t in options)
-        back = note  # nash format — uchitel' otmetit pravil'nyy
+        # PDF bez kluycha — back ostavlyaem pustym chtoby UI ne pokazyval lozhnyy "A) ..." kak pravil'nyy.
+        # Posle importa v app.py mozhet byt' AI auto-fill kotoryy zapolnit back.
+        back = ""
 
         cards.append({"front": question, "back": back, "note": note})
 
