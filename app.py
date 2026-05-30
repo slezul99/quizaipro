@@ -23,6 +23,7 @@ import vision_jobs
 import achievements as ach_mod
 import goals as goals_mod
 import help_content
+import bot_protection
 from auth import current_user, login_required, role_required, can_manage_content, super_admin_required, is_super_admin
 
 BASE = Path(__file__).resolve().parent
@@ -37,7 +38,9 @@ app = Flask(__name__)
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
-app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024
+# Upload limit: 50 MB. Bolshiye fayly (PDF, Word, video) — eshchyo razumno,
+# no ne 200 MB DoS vector.
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
 
 # === SECURITY CONFIG ===
@@ -56,15 +59,19 @@ if not os.environ.get("SECRET_KEY"):
         app.secret_key = new_key
 
 # Cookie zashchita
+# Auto-enable HTTPS-only cookies on production (Railway / cloud with PORT env var)
+_is_production = bool(
+    os.environ.get("RAILWAY_ENVIRONMENT") or
+    os.environ.get("HTTPS_ONLY") == "1" or
+    (os.environ.get("PORT") and not os.environ.get("FLASK_DEBUG"))
+)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,        # JS ne mozhet chitat' cookie (XSS zashchita)
     SESSION_COOKIE_SAMESITE="Lax",       # CSRF zashchita
-    SESSION_COOKIE_SECURE=False,         # True kogda HTTPS (postavlyu cherez env)
+    SESSION_COOKIE_SECURE=_is_production, # HTTPS-only cookies v production
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
     SESSION_REFRESH_EACH_REQUEST=True,
 )
-if os.environ.get("HTTPS_ONLY") == "1":
-    app.config["SESSION_COOKIE_SECURE"] = True
 
 # === SEO verifikatsiya (Google Search Console + Yandex) ===
 # Nuzhno: zaregistrirovat'sya v https://search.google.com/search-console,
@@ -109,9 +116,33 @@ def security_headers(response):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"  # Anti-clickjacking
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-    if os.environ.get("HTTPS_ONLY") == "1":
+    if _is_production:
+        # HSTS — brauzer pomnit chto sayt tol'ko HTTPS na 1 god
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
+
+
+# === BOT PROTECTION ==========================================================
+# Block known scanner patterns (WordPress probes, .env attempts, shells, etc)
+# BEFORE Flask processes them — saves CPU + cleans analytics.
+_blocked_bot_count = {"total": 0}
+
+@app.before_request
+def block_scanner_bots():
+    """Otklonyaem boty-skanyery do togo kak Flask render-it 404."""
+    path = request.path
+    ua = request.headers.get("User-Agent", "")
+    if bot_protection.is_bot_request(path, ua):
+        _blocked_bot_count["total"] += 1
+        # Logiruem v security log dlya audita
+        try:
+            log_security("BOT_BLOCKED", f"path={path[:100]} ua={ua[:60]}")
+        except Exception:
+            pass
+        # Vozvrashchaem 444 (Connection Closed Without Response — minimum work).
+        # Boty obychno ne ponimayut etot kod i prekraschayut atakovat'.
+        from flask import Response
+        return Response("", status=444)
 
 
 # === CSRF zashchita ===
@@ -213,6 +244,10 @@ def track_analytics():
     if any(path.startswith(p) for p in _ANALYTICS_SKIP_PREFIXES):
         return
     if request.method not in ("GET", "POST"):
+        return
+    # Ne logiruem boty-skanyery (chistim analitiku)
+    ua = request.headers.get("User-Agent", "")
+    if bot_protection.is_bot_request(path, ua):
         return
 
     try:
