@@ -882,11 +882,12 @@ For each flashcard, generate:
 
 IMPORTANT for image_query:
 - Use English regardless of the topic language
-- Be specific: "flag of France" not just "flag"
-- Use descriptive terms: "human heart anatomy" not "heart"
-- For people: "Albert Einstein portrait" 
-- For places: "Eiffel Tower Paris"
-- For animals: "Bengal tiger wildlife"
+- Be specific: "Flag of France" not just "flag France" (Wikimedia uses "Flag of X" format)
+- For flags ALWAYS use: "Flag of <country name in English>"
+- Use descriptive terms: "human heart anatomy diagram" not "heart"
+- For people: "Albert Einstein portrait"
+- For places: "Eiffel Tower Paris photo"
+- For animals: "Bengal tiger wildlife photo"
 - For concepts: use a visual representation
 
 Output ONLY a JSON array:
@@ -936,7 +937,7 @@ Output ONLY a JSON array:
 
         image_url = None
         try:
-            image_url = find_image(img_query)
+            image_url = find_image(img_query, topic_hint=topic)
         except Exception as e:
             print(f"[ai_photo] image search error for '{img_query}': {e}")
 
