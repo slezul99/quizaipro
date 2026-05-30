@@ -6904,6 +6904,9 @@ def gemini_health_check():
 
 # ---------------------- AI generation ---------------------------------------
 
+import ai_gen_jobs as _aigen_jobs
+
+
 @app.route("/ai", methods=["GET", "POST"])
 @login_required
 def ai_page():
@@ -6914,17 +6917,15 @@ def ai_page():
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
-        kind = request.form.get("kind", "text")  # text / topic / pdf
+        kind = request.form.get("kind", "text")
         count = max(1, min(int(request.form.get("count", 10)), 50))
         deck_id = request.form.get("deck_id", type=int)
         new_deck_name = request.form.get("new_deck_name", "").strip()
         category_id = request.form.get("category_id", type=int)
         lang = session.get("lang", "ru")
-        # Vybor yazyka generatsii: "auto" (kak v istochnike) / "ru" / "en" / "uz"
         output_lang = request.form.get("output_lang", "auto").strip()
         if output_lang not in ("auto", "source", "ru", "en", "uz"):
             output_lang = "auto"
-        # Quality mode: dvuhproxodnaya generatsiya s AI-kritikom
         quality = request.form.get("quality") == "1"
 
         # Limit check
@@ -6933,62 +6934,83 @@ def ai_page():
             flash(f"Лимит AI достигнут: {used}/{limit} в месяц. Обновите план.", "error")
             return redirect(url_for("ai_page"))
 
-        cards = []
-        try:
-            if kind == "text":
-                text = request.form.get("text", "").strip()
-                if len(text) < 50:
-                    flash("Текст слишком короткий (минимум 50 символов)", "error")
-                    return redirect(url_for("ai_page"))
-                cards = ai_gen.generate_from_text(text, count, lang, quality=quality, output_lang=output_lang)
-            elif kind == "topic":
-                topic = request.form.get("topic", "").strip()
-                difficulty = request.form.get("difficulty", "medium")
-                if len(topic) < 3:
-                    flash("Тема слишком короткая (минимум 3 символа)", "error")
-                    return redirect(url_for("ai_page"))
-                cards = ai_gen.generate_from_topic(topic, count, lang, difficulty, quality=quality, output_lang=output_lang)
-            elif kind == "pdf":
-                file = request.files.get("file")
-                if not file or not file.filename:
-                    flash("Загрузите PDF файл", "error")
-                    return redirect(url_for("ai_page"))
-                fname = secure_filename(file.filename)
-                fpath = UPLOAD / fname
-                file.save(str(fpath))
-                cards = ai_gen.generate_from_pdf(fpath, count, lang, quality=quality, output_lang=output_lang)
-                fpath.unlink(missing_ok=True)
-        except Exception as e:
-            flash(f"Ошибка AI: {str(e)[:200]}", "error")
+        # Validate input before starting job
+        label = ""
+        gen_fn = None
+        pdf_path_to_delete = None
+
+        if kind == "text":
+            text = request.form.get("text", "").strip()
+            if len(text) < 50:
+                flash("Текст слишком короткий (минимум 50 символов)", "error")
+                return redirect(url_for("ai_page"))
+            label = text[:60] + "..." if len(text) > 60 else text
+            gen_fn = lambda: ai_gen.generate_from_text(text, count, lang, quality=quality, output_lang=output_lang)
+
+        elif kind == "topic":
+            topic = request.form.get("topic", "").strip()
+            difficulty = request.form.get("difficulty", "medium")
+            if len(topic) < 3:
+                flash("Тема слишком короткая (минимум 3 символа)", "error")
+                return redirect(url_for("ai_page"))
+            label = topic
+            gen_fn = lambda: ai_gen.generate_from_topic(topic, count, lang, difficulty, quality=quality, output_lang=output_lang)
+
+        elif kind == "pdf":
+            file = request.files.get("file")
+            if not file or not file.filename:
+                flash("Загрузите PDF файл", "error")
+                return redirect(url_for("ai_page"))
+            fname = secure_filename(file.filename)
+            fpath = UPLOAD / fname
+            file.save(str(fpath))
+            label = fname
+            pdf_path_to_delete = fpath
+            _fpath = fpath  # capture for lambda
+            gen_fn = lambda: ai_gen.generate_from_pdf(_fpath, count, lang, quality=quality, output_lang=output_lang)
+
+        if not gen_fn:
+            flash("Неизвестный тип генерации", "error")
             return redirect(url_for("ai_page"))
 
-        if not cards:
-            flash("AI не смог сгенерировать карточки. Возможные причины: слишком общий запрос, перегрузка серверов Google. Попробуйте конкретнее или повторите через минуту.", "error")
-            return redirect(url_for("ai_page"))
+        # Save function — creates/updates deck
+        _user = user
+        _deck_id = deck_id
+        _new_deck_name = new_deck_name
+        _category_id = category_id
+        _kind = kind
+        _pdf_del = pdf_path_to_delete
 
-        # Sokhranyaem
-        billing.log_ai_usage(user, kind, len(cards))
-        conn = db.get_conn()
-        if deck_id:
-            target = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
-            if not target or not can_view_deck(user, dict(target)):
-                conn.close(); abort(404)
-            target_id = target["id"]
-        else:
-            tname = new_deck_name or f"AI {datetime.now():%Y-%m-%d %H:%M}"
-            if user["org_id"]:
-                cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
-                                  (user["org_id"], category_id, tname, "🤖"))
+        def save_fn(cards):
+            billing.log_ai_usage(_user, _kind, len(cards))
+            conn = db.get_conn()
+            if _deck_id:
+                target = conn.execute("SELECT * FROM decks WHERE id=?", (_deck_id,)).fetchone()
+                if not target:
+                    conn.close(); raise ValueError("Колода не найдена")
+                target_id = target["id"]
             else:
-                cur = conn.execute("INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
-                                  (user["id"], category_id, tname, "🤖"))
-            target_id = cur.lastrowid
-        for c in cards:
-            conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
-                         (target_id, c["front"], c["back"], c.get("note", "")))
-        conn.commit(); conn.close()
-        flash(f"AI sgeneriroval {len(cards)} kart", "success")
-        return redirect(url_for("deck_view", deck_id=target_id))
+                tname = _new_deck_name or f"AI {datetime.now():%Y-%m-%d %H:%M}"
+                if _user["org_id"]:
+                    cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?,?,?,?)",
+                                      (_user["org_id"], _category_id, tname, "🤖"))
+                else:
+                    cur = conn.execute("INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?,?,?,?)",
+                                      (_user["id"], _category_id, tname, "🤖"))
+                target_id = cur.lastrowid
+            for c in cards:
+                conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?,?,?,?)",
+                             (target_id, c["front"], c["back"], c.get("note", "")))
+            conn.commit(); conn.close()
+            if _pdf_del:
+                try: _pdf_del.unlink(missing_ok=True)
+                except: pass
+            return target_id
+
+        # Create background job and redirect to progress page
+        jid = _aigen_jobs.create_job(user["id"], kind, count, label)
+        _aigen_jobs.start_ai_gen_job(jid, gen_fn, save_fn)
+        return redirect(url_for("ai_gen_progress", job_id=jid))
 
     # GET
     conn = db.get_conn()
@@ -7003,6 +7025,37 @@ def ai_page():
     conn.close()
     ok, used, limit = billing.check_ai_limit(user)
     return render_template("ai.html", decks=decks, categories=cats, used=used, limit=limit)
+
+
+@app.route("/ai/progress/<job_id>")
+@login_required
+def ai_gen_progress(job_id):
+    """Stranitsa progressa AI generatsii."""
+    user = current_user()
+    job = _aigen_jobs.get_job(job_id)
+    if not job or job["user_id"] != user["id"]:
+        flash("Задача не найдена", "error")
+        return redirect(url_for("ai_page"))
+    return render_template("ai_gen_progress.html", job=job)
+
+
+@app.route("/api/ai/progress/<job_id>/status")
+@login_required
+def ai_gen_status_api(job_id):
+    """JSON-status fonovoy zadachi AI gen (dlya AJAX-polling)."""
+    user = current_user()
+    job = _aigen_jobs.get_job(job_id)
+    if not job or job["user_id"] != user["id"]:
+        return jsonify({"error": "not_found"}), 404
+    return jsonify({
+        "status": job["status"],
+        "progress": job["progress"],
+        "cards_done": job["cards_done"],
+        "cards_total": job["cards_total"],
+        "stage_msg": job["stage_msg"],
+        "result_deck_id": job["result_deck_id"],
+        "error": job["error"],
+    })
 
 
 # ---------------------- billing ---------------------------------------------
