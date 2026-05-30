@@ -6946,8 +6946,8 @@ def ai_page():
                 return redirect(url_for("ai_page"))
             label = text[:60] + "..." if len(text) > 60 else text
             # Capture all values explicitly to avoid closure issues
-            _text, _count, _lang, _quality, _output_lang = text, count, lang, quality, output_lang
-            gen_fn = lambda t=_text, c=_count, l=_lang, q=_quality, ol=_output_lang: \
+            _text, _lang, _quality, _output_lang = text, lang, quality, output_lang
+            gen_fn = lambda c, t=_text, l=_lang, q=_quality, ol=_output_lang: \
                 ai_gen.generate_from_text(t, c, l, quality=q, output_lang=ol)
 
         elif kind == "topic":
@@ -6957,8 +6957,8 @@ def ai_page():
                 flash("Тема слишком короткая (минимум 3 символа)", "error")
                 return redirect(url_for("ai_page"))
             label = topic
-            _topic, _count, _lang, _diff, _quality, _output_lang = topic, count, lang, difficulty, quality, output_lang
-            gen_fn = lambda tp=_topic, c=_count, l=_lang, d=_diff, q=_quality, ol=_output_lang: \
+            _topic, _lang, _diff, _quality, _output_lang = topic, lang, difficulty, quality, output_lang
+            gen_fn = lambda c, tp=_topic, l=_lang, d=_diff, q=_quality, ol=_output_lang: \
                 ai_gen.generate_from_topic(tp, c, l, d, quality=q, output_lang=ol)
 
         elif kind == "pdf":
@@ -6971,8 +6971,8 @@ def ai_page():
             file.save(str(fpath))
             label = fname
             pdf_path_to_delete = fpath
-            _fpath, _count, _lang, _quality, _output_lang = fpath, count, lang, quality, output_lang
-            gen_fn = lambda fp=_fpath, c=_count, l=_lang, q=_quality, ol=_output_lang: \
+            _fpath, _lang, _quality, _output_lang = fpath, lang, quality, output_lang
+            gen_fn = lambda c, fp=_fpath, l=_lang, q=_quality, ol=_output_lang: \
                 ai_gen.generate_from_pdf(fp, c, l, quality=q, output_lang=ol)
 
         if not gen_fn:

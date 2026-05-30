@@ -72,29 +72,53 @@ def update_job(jid: str, **kwargs):
 
 def start_ai_gen_job(jid: str, gen_fn, save_fn):
     """Zapuskaem generatsiyu v fone.
-    gen_fn() → list[dict] (karty)
+    gen_fn(count) → list[dict] (karty)
     save_fn(cards) → deck_id (int)
     """
+    job = get_job(jid)
+    total_needed = job["count"] if job else 25
+
     def _run():
         update_job(jid, status="running", stage_msg="AI генерирует карточки...", progress=5)
         try:
-            # Generatsiya
-            cards = gen_fn()
-            if not cards:
+            all_cards = []
+
+            # Gemini returns max ~25-30 per call reliably.
+            # For large counts, split into batches of 25.
+            BATCH_SIZE = 25
+            if total_needed <= BATCH_SIZE:
+                batches = [total_needed]
+            else:
+                full = total_needed // BATCH_SIZE
+                remainder = total_needed % BATCH_SIZE
+                batches = [BATCH_SIZE] * full
+                if remainder > 0:
+                    batches.append(remainder)
+
+            for i, batch_count in enumerate(batches):
+                pct = int(5 + (i / len(batches)) * 60)
+                update_job(jid,
+                           stage_msg=f"Батч {i+1}/{len(batches)}: генерирую {batch_count} карточек...",
+                           progress=pct)
+                batch = gen_fn(batch_count)
+                if batch:
+                    all_cards.extend(batch)
+                    update_job(jid, cards_done=len(all_cards), progress=pct + 5)
+
+            if not all_cards:
                 update_job(jid, status="error",
                            error="AI не смог сгенерировать карточки. Попробуйте конкретнее или повторите через минуту.",
                            progress=0)
                 return
 
-            update_job(jid, cards_done=len(cards), cards_total=len(cards),
-                       progress=70, stage_msg=f"Создано {len(cards)} карточек, сохраняем...")
+            update_job(jid, cards_done=len(all_cards), cards_total=len(all_cards),
+                       progress=75, stage_msg=f"Создано {len(all_cards)} карточек, сохраняем...")
 
-            # Sokhranenie v BD
-            deck_id = save_fn(cards)
-            update_job(jid, status="done", result_cards=cards,
+            deck_id = save_fn(all_cards)
+            update_job(jid, status="done", result_cards=all_cards,
                        result_deck_id=deck_id, progress=100,
-                       cards_done=len(cards),
-                       stage_msg=f"Готово! {len(cards)} карточек сохранено.")
+                       cards_done=len(all_cards),
+                       stage_msg=f"Готово! {len(all_cards)} карточек сохранено.")
         except Exception as e:
             err = str(e)[:300]
             print(f"[ai_gen_jobs:{jid}] error: {err}")
