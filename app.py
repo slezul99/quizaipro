@@ -8252,6 +8252,30 @@ try:
 except Exception as _e:
     print(f"[INIT] DB init error: {_e}")
 
+# Auto-seed marketplace v2 (idempotent — uses INSERT OR IGNORE; running twice is safe).
+# Gated by app_migrations table so it runs only once.
+try:
+    _conn = db.get_conn()
+    _seeded = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_v2_seed'"
+    ).fetchone()
+    _has_subjects = _conn.execute(
+        "SELECT COUNT(*) FROM mp_subjects"
+    ).fetchone()[0]
+    _conn.close()
+    if not _seeded or _has_subjects == 0:
+        print("[INIT] Seeding marketplace v2 ...")
+        import seed_marketplace  # noqa: F401  (running it as a side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_v2_seed')"
+        )
+        _conn.commit()
+        _conn.close()
+        print("[INIT] Marketplace v2 seeded.")
+except Exception as _e:
+    print(f"[INIT] Marketplace seed error: {_e}")
+
 
 if __name__ == "__main__":
     print("=" * 50)
