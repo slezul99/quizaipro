@@ -598,6 +598,19 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # === Flagi soderzhimogo kolody (dlya bystrogo otobrazheniya knopok) ===
+    # has_mcq=1 esli est' hot' odna karta s variantami (A) B) C) D))
+    # has_terms=1 esli est' hot' odna karta bez variantov (slovar'/termin)
+    # NULL = eshchyo ne podschitano (migratsia)
+    try:
+        c.execute("ALTER TABLE decks ADD COLUMN has_mcq INTEGER DEFAULT NULL")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE decks ADD COLUMN has_terms INTEGER DEFAULT NULL")
+    except sqlite3.OperationalError:
+        pass
+
     # === LEARNING GOALS ===
     c.execute("""
         CREATE TABLE IF NOT EXISTS learning_goals (
@@ -759,6 +772,34 @@ def init_db():
         )
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_coll_decks ON collection_decks(collection_id, sort_order)")
+
+    # === MIGRATE: refresh has_mcq/has_terms for all existing decks with NULL flags ===
+    import re as _re_db
+    _opt_re_db = _re_db.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", _re_db.MULTILINE)
+    try:
+        null_decks = c.execute(
+            "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
+        ).fetchall()
+        for row in null_decks:
+            did = row[0]
+            cards = c.execute("SELECT note FROM cards WHERE deck_id=?", (did,)).fetchall()
+            has_mcq = 0
+            has_terms = 0
+            for card in cards:
+                note = (card[0] or "")
+                matches = _opt_re_db.findall(note)
+                if len({m.upper() for m in matches}) >= 2:
+                    has_mcq = 1
+                else:
+                    has_terms = 1
+                if has_mcq and has_terms:
+                    break
+            c.execute("UPDATE decks SET has_mcq=?, has_terms=? WHERE id=?",
+                      (has_mcq, has_terms, did))
+        if null_decks:
+            print(f"[DB] Migrated has_mcq/has_terms for {len(null_decks)} decks")
+    except Exception as e:
+        print(f"[DB] Migration has_mcq/has_terms error: {e}")
 
     conn.commit()
     conn.close()

@@ -423,6 +423,28 @@ def _has_mcq_options(text: str) -> bool:
     return len(unique) >= 2
 
 
+def refresh_deck_content_flags(conn, deck_id: int):
+    """Pересчитывает has_mcq и has_terms для колоды и сохраняет в decks.
+    Вызывать при: добавлении/удалении карточки, импорте, AI генерации.
+    Быстро — один SELECT по cards."""
+    cards = conn.execute(
+        "SELECT note FROM cards WHERE deck_id=?", (deck_id,)
+    ).fetchall()
+    has_mcq = 0
+    has_terms = 0
+    for c in cards:
+        if _has_mcq_options(c["note"] or ""):
+            has_mcq = 1
+        else:
+            has_terms = 1
+        if has_mcq and has_terms:
+            break  # both found, no need to continue
+    conn.execute(
+        "UPDATE decks SET has_mcq=?, has_terms=? WHERE id=?",
+        (has_mcq, has_terms, deck_id)
+    )
+
+
 def _check_goals_daily_completion(conn, user_id):
     """Posle kazhdogo otveta — proveryaem, ne vypolnil li polzovatel' dnevnuyu normu po tselyam.
     Esli da i ranshe ne nachislyali bonus segodnya — daet XP. Vozvraschaet spisok soobshcheniy."""
@@ -957,18 +979,20 @@ def dashboard():
 def _student_dashboard(user):
     conn = db.get_conn()
     now = datetime.utcnow().isoformat()
-    # === SQL-podschet skol'ko v kazhdoy kolode kart MCQ (testov) i terms (slovarey).
-    # MCQ = note soderzhit varianty (LIKE '%A)%' AND LIKE '%B)%' ili A. B.).
-    # Esli mcq_count > 0 — kolodu mozhno v Test, esli terms_count > 0 — vo Flashcards.
-    # Eto pozvolit pokazat' obe knopki esli oba tipa est'.
+    # has_mcq / has_terms — predvychislennye flagi (NULL = eshchyo ne schitano → fallback na SQL)
+    # Esli NULL — ispol'zuem SQL-podschet (dlya starykh kolod)
     mcq_filter = "(c.note LIKE '%A)%' OR c.note LIKE '%А)%' OR c.note LIKE 'A.%' OR c.note LIKE '1)%')"
     if user["org_id"]:
         decks = conn.execute(f"""
             SELECT d.*, c.name AS category_name, c.icon AS category_icon, c.parent_id AS category_parent_id,
                 pc.name AS parent_name, pc.icon AS parent_icon,
                 (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
-                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND {mcq_filter}) AS mcq_count,
-                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND NOT {mcq_filter}) AS terms_count,
+                COALESCE(d.has_mcq,
+                    (SELECT CASE WHEN COUNT(*)>0 THEN 1 ELSE 0 END FROM cards c WHERE c.deck_id=d.id AND {mcq_filter})
+                ) AS mcq_count,
+                COALESCE(d.has_terms,
+                    (SELECT CASE WHEN COUNT(*)>0 THEN 1 ELSE 0 END FROM cards c WHERE c.deck_id=d.id AND NOT {mcq_filter})
+                ) AS terms_count,
                 (SELECT COUNT(*) FROM cards crd
                  LEFT JOIN user_card_progress p ON p.card_id=crd.id AND p.user_id=?
                  WHERE crd.deck_id=d.id AND (p.due_at IS NULL OR p.due_at <= ?)) AS due_count,
@@ -985,8 +1009,12 @@ def _student_dashboard(user):
             SELECT d.*, c.name AS category_name, c.icon AS category_icon, c.parent_id AS category_parent_id,
                 pc.name AS parent_name, pc.icon AS parent_icon,
                 (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
-                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND {mcq_filter}) AS mcq_count,
-                (SELECT COUNT(*) FROM cards c WHERE c.deck_id=d.id AND NOT {mcq_filter}) AS terms_count,
+                COALESCE(d.has_mcq,
+                    (SELECT CASE WHEN COUNT(*)>0 THEN 1 ELSE 0 END FROM cards c WHERE c.deck_id=d.id AND {mcq_filter})
+                ) AS mcq_count,
+                COALESCE(d.has_terms,
+                    (SELECT CASE WHEN COUNT(*)>0 THEN 1 ELSE 0 END FROM cards c WHERE c.deck_id=d.id AND NOT {mcq_filter})
+                ) AS terms_count,
                 (SELECT COUNT(*) FROM cards crd
                  LEFT JOIN user_card_progress p ON p.card_id=crd.id AND p.user_id=?
                  WHERE crd.deck_id=d.id AND (p.due_at IS NULL OR p.due_at <= ?)) AS due_count,
@@ -1543,7 +1571,9 @@ def card_new(deck_id):
     note = request.form.get("note", "").strip()
     cur = conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
                        (deck_id, front, back, note))
-    cid = cur.lastrowid; conn.commit(); conn.close()
+    cid = cur.lastrowid
+    refresh_deck_content_flags(conn, deck_id)
+    conn.commit(); conn.close()
     return jsonify({"ok": True, "id": cid})
 
 
@@ -1623,7 +1653,9 @@ def card_delete(card_id):
                           JOIN decks d ON d.id=c.deck_id WHERE c.id=?""", (card_id,)).fetchone()
     if not row or not can_view_deck(user, {"org_id": row["org_id"], "owner_id": row["owner_id"]}):
         conn.close(); abort(403)
+    deck_id_for_refresh = row["deck_id"]
     conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
+    refresh_deck_content_flags(conn, deck_id_for_refresh)
     conn.commit(); conn.close(); return jsonify({"ok": True})
 
 
@@ -7013,6 +7045,8 @@ def ai_page():
                     conn.execute(
                         "INSERT INTO cards (deck_id, front, back, note) VALUES (?,?,?,?)",
                         (target_id, c["front"], c["back"], c.get("note", "")))
+                conn.commit()
+                refresh_deck_content_flags(conn, target_id)
                 conn.commit()
                 return target_id
             finally:
