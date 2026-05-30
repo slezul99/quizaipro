@@ -47,7 +47,7 @@
     {% if decks %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {% for d in decks %}
-      {% set pct = (d.learned_count / d.card_count * 100) if d.card_count and d.get('learned_count') else 0 %}
+      {% set pct = (d.learned_count / d.card_count * 100) if d.card_count and d.learned_count else 0 %}
       <div class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
         <div class="flex items-start justify-between mb-3">
           <div class="text-3xl">{{ d.icon }}</div>

@@ -3353,6 +3353,7 @@ def collection_view(slug):
         WHERE cd.collection_id=?
         ORDER BY cd.sort_order ASC
     """, (coll["id"],)).fetchall()
+    decks = [dict(d) for d in decks]
     conn.close()
 
     lang = session.get("lang", "ru")
