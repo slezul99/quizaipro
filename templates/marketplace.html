@@ -11,7 +11,7 @@
       <span class="section-badge"><span class="badge-dot"></span>{{ t('mk_badge') }}</span>
       <div class="section-divider-mini"><span class="line"></span><span class="star">✦</span><span class="line"></span></div>
       <h1 class="section-h">{{ t('mk_h') }}</h1>
-      <p class="section-sub">{{ t('mk_collections_sub') if t('mk_collections_sub') != 'mk_collections_sub' else 'Готовые тематические наборы карточек — выбери тему и начни учиться прямо сейчас.' }}</p>
+      <p class="section-sub">{{ t('mk_collections_sub') }}</p>
     </div>
 
     {% if collections %}
@@ -42,7 +42,7 @@
           <div class="flex items-center justify-between mt-auto">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">
-                📚 {{ c.deck_count }} {{ 'колод' if lang == 'ru' else ('decks' if lang == 'en' else 'to\'plam') }}
+                📚 {{ c.deck_count }} {{ t('mk_decks_word') }}
               </span>
               {% if c.level %}
               <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">
@@ -73,9 +73,9 @@
     <!-- Empty state -->
     <div class="text-center py-20 glass-premium">
       <div class="text-7xl mb-5">📚</div>
-      <h3 class="section-h" style="font-size: 1.7rem;">Коллекции скоро появятся</h3>
+      <h3 class="section-h" style="font-size: 1.7rem;">{{ t('mk_empty_collections_h') }}</h3>
       <p class="text-slate-600 dark:text-slate-300 mt-3 max-w-md mx-auto">
-        Мы готовим качественные тематические наборы карточек. Следите за обновлениями!
+        {{ t('mk_empty_collections_sub') }}
       </p>
     </div>
     {% endif %}
