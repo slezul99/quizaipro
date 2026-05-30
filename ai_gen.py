@@ -313,20 +313,24 @@ def generate_from_text(text: str, count: int = 10, lang: str = "ru",
 From the TEXT below, generate exactly {count} flashcards for self-testing.
 {lang_instruction}
 
-MAKE CARDS ENGAGING — avoid boring "What is X?" questions. Mix these formats:
-1. 🎯 Direct fact: "What does [term] mean in this context?"
-2. 🔍 Spot it: "Which statement about [topic] is correct?"
-3. 🔄 Apply it: "How would you use [concept] in practice?"
-4. 💡 Why/How: "Why does [fact from text] happen?"
-5. ⚠️ Common mistake: "What's the common misconception about [topic]?"
-6. 🌍 Real example: "Give an example of [concept] from real life"
-7. 🔗 Connect: "How does [A] relate to [B] according to the text?"
+EMOTIONAL EXAMPLES RULE:
+When creating examples or context, use relatable situations:
+games, food, phones, social media, friends, music, sports, school life.
+NOT: "John goes to work" — YES: "She checks her phone every 5 minutes"
 
-Rules:
+QUESTION FORMATS (mix these):
+1. 🎯 Direct fact with relatable context
+2. 🔍 Spot the mistake in a real situation
+3. 🔄 Apply the concept to everyday life
+4. 💡 Why/How does this work?
+5. ⚠️ Common misconception: "What's wrong with thinking that...?"
+6. 🌍 Real example: "Give an example from daily life"
+7. 🔗 Connect two concepts from the text
+
+ANSWER FORMAT:
 - Answer directly first, then explain
-- Use concrete examples from the text
-- Keep it conversational, not textbook-style
-- "note": surprising fact, memory trick, or real-world connection
+- Use concrete, relatable examples
+- "note" field: memory trick, surprising fact, or ⚠️ common mistake
 - Only use information from the text
 
 Output ONLY a JSON array:
@@ -382,52 +386,65 @@ Level: {diff_name}
 Count: exactly {count} flashcards.
 {lang_instruction}
 
-MAKE CARDS ENGAGING — use these question formats (mix them!):
-1. 🎯 Rule + real example: "When do we use 'a' vs 'an'?"
-2. 🔍 Spot the mistake: "Find the error: 'She don't like coffee'"
-3. 💬 Real situation: "Your friend says 'I am agree'. Is it correct? Why?"
-4. ✏️ Complete it: "She ___ (not/like) Mondays. (Present Simple)"
-5. 🔄 Transform: "Make this negative: 'He plays football'"
-6. 🌍 Translate naturally: "How do you say 'Я хожу в школу каждый день' in English?"
-7. 🤔 Choose correctly: "Which is right: 'I have 20 years' or 'I am 20 years old'?"
-8. 💡 Why?: "Why do we say 'goes' not 'go' for she/he/it?"
+EMOTIONAL EXAMPLES RULE (MOST IMPORTANT):
+When giving examples, use situations students ACTUALLY CARE ABOUT:
+✅ GOOD examples (relatable, emotional, fun):
+  - Gaming: "I play Minecraft every day" / "She doesn't like losing in games"
+  - Food: "He eats pizza on Fridays" / "We always order sushi on weekends"
+  - Phone/Social media: "She checks Instagram every morning" / "I don't use TikTok at school"
+  - Friends/Family: "My best friend calls me every night" / "We watch Netflix together"
+  - School life: "I hate waking up at 7am" / "She always forgets her homework"
+  - Music: "He listens to music while studying" / "They go to concerts every summer"
+  - Sports: "I play football with my friends on Saturdays"
 
-Rules for ENGAGING answers:
-- Start with the direct answer (✓ or ✗ or the rule)
-- Add 1-2 real-life examples people actually say
-- Use emojis sparingly to highlight key points
-- Keep it conversational, not textbook-style
+❌ BORING examples (avoid these):
+  - "John goes to school" — too generic
+  - "She reads books" — no emotion
+  - "They work in an office" — not relatable for students
+  - "I check my email every day" — replace with something fun like "I check my messages every day"
 
-"note" field: add a fun memory trick, real-life context, or "common mistake" warning ⚠️
+QUESTION FORMATS (mix these):
+1. 🎮 Translate with emotional context: "Как перевести: 'Я играю в компьютерные игры каждый день'?"
+2. 🔍 Spot the mistake: "Найди ошибку: 'She don't like pizza'"
+3. 💬 Real situation: "Твой друг говорит 'I am agree'. Правильно ли это?"
+4. ✏️ Fill in: "She ___ (play) Minecraft every evening."
+5. 🔄 Transform: "Сделай отрицательным: 'He plays games every day'"
+6. 🤔 Choose: "Что правильно: 'everyday tasks' или 'every day tasks'?"
+7. 💡 Why: "Почему мы говорим 'goes' а не 'go' для he/she/it?"
+
+ANSWER FORMAT:
+- Start with ✓ for correct answer
+- Show the rule clearly
+- "note" field: memory trick, common mistake warning ⚠️, or fun fact
 
 Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
     else:
-        prompt = f"""You are a creative teacher making ENGAGING flashcards that students love to study.
+        prompt = f"""You are a creative teacher making ENGAGING flashcards that students love.
 
 Topic: "{topic}"
 Count: exactly {count} flashcards.
 Difficulty: {diff_name}.
 {lang_instruction}
 
-MAKE CARDS ENGAGING — avoid boring "What is X?" questions. Use these formats:
-1. 🎯 Practical: "You need to [do something]. What do you use/do?"
-2. 🔍 Scenario: "Imagine you are [situation]. What happens when...?"
-3. ✅ True or False + explain why
+EMOTIONAL EXAMPLES RULE:
+Use real, relatable situations — not dry textbook examples.
+Connect concepts to things students care about: games, food, phones, friends, music, sports, school life.
+
+QUESTION FORMATS (mix these):
+1. 🎯 Practical scenario: "You need to [do something]. What do you use/do?"
+2. 🔍 Spot the error: "What's wrong with this: [wrong example]?"
+3. ✅ True/False + explain why
 4. 🔄 Compare: "What's the difference between A and B?"
 5. 💡 Why/How: "Why does [phenomenon] happen?"
-6. 🧩 Connect: "How does [concept A] relate to [concept B]?"
-7. ⚠️ Common mistake: "What's wrong with this: [wrong example]?"
-8. 🌍 Real world: "Give a real-life example of [concept]"
+6. 🌍 Real world: "Give a real-life example of [concept]"
+7. 🧩 Apply it: "How would you use [concept] in practice?"
 
-Rules for ENGAGING answers:
-- Be direct and clear — answer first, explain second
-- Use concrete examples, not abstract definitions
-- Add analogies or comparisons when helpful
-- Keep it conversational
-
-"note" field: memory trick, real-world connection, or surprising fact 🤯
+ANSWER FORMAT:
+- Direct answer first, then explanation
+- Use concrete, relatable examples
+- "note" field: memory trick, surprising fact, or common mistake ⚠️
 
 Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
