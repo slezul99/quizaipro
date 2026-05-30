@@ -571,6 +571,8 @@ T = {
         "mk_hours_short": "ч",
         "mk_hours_word": "часов",
         "mk_hours_approx": "~",
+        "mp_clone": "Добавить себе",
+        "mk_clone_tooltip": "Добавить колоду себе",
         # friends
         "fr_badge": "👥 Друзья",
         "fr_h": "Учитесь вместе",
@@ -2272,6 +2274,8 @@ T = {
         "mk_hours_short": "h",
         "mk_hours_word": "hours",
         "mk_hours_approx": "~",
+        "mp_clone": "Add to my decks",
+        "mk_clone_tooltip": "Add deck to my collection",
         # friends
         "fr_badge": "👥 Friends",
         "fr_h": "Learn together",
@@ -3972,6 +3976,8 @@ T = {
         "mk_hours_short": "soat",
         "mk_hours_word": "soat",
         "mk_hours_approx": "~",
+        "mp_clone": "O'zimga qo'shish",
+        "mk_clone_tooltip": "Kolodani o'z to'plamimga qo'shish",
         # friends
         "fr_badge": "👥 Doʻstlar",
         "fr_h": "Birga oʻrganing",

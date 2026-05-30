@@ -3365,7 +3365,6 @@ def collection_view(slug):
     """, (coll["id"],)).fetchall()
     decks = [dict(d) for d in decks]
     conn.close()
-
     lang = session.get("lang", "ru")
     coll["title"] = coll.get(f"title_{lang}") or coll["title_ru"]
     coll["desc"] = coll.get(f"desc_{lang}") or coll.get("desc_ru", "")
