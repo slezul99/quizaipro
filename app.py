@@ -17,6 +17,7 @@ import i18n
 import config
 import google_auth
 import billing
+import analytics
 import ai_gen
 import vision_jobs
 import achievements as ach_mod
@@ -183,6 +184,67 @@ def track_last_seen():
         conn.commit()
         conn.close()
     except Exception:
+        pass
+
+
+# === ANALYTICS: trekkin posescheniy ==========================================
+# Cache chtoby ne pisat' kazhdyy zapros v BD: 1 visit ot odnogo IP+session za 30 sek
+_visit_cache = {}
+_visit_cache_lock = threading.Lock()
+
+# Putya kotorye NE logiruem (slishkom mnogo i ne polezno)
+_ANALYTICS_SKIP_PREFIXES = (
+    "/static/",
+    "/favicon.ico",
+    "/api/notifications/unread",
+    "/api/live/",
+    "/api/import/vision/",
+    "/api/ai/progress/",
+    "/api/duel/",
+    "/api/tournament/",
+    "/api/chat/",
+)
+
+
+@app.before_request
+def track_analytics():
+    """Logiruem posechenie sayta dlya analitiki super-admina."""
+    path = request.path
+    if any(path.startswith(p) for p in _ANALYTICS_SKIP_PREFIXES):
+        return
+    if request.method not in ("GET", "POST"):
+        return
+
+    try:
+        ip = get_client_ip()
+        user_id = session.get("user_id")
+
+        sid = session.get("_csrf_token", "")
+        if not sid:
+            ua_short = (request.headers.get("User-Agent", "") or "")[:50]
+            sid = f"{ip}_{hash(ua_short)}"
+
+        cache_key = f"{sid}:{path}"
+        now = datetime.utcnow()
+        with _visit_cache_lock:
+            last = _visit_cache.get(cache_key)
+            if last and (now - last).total_seconds() < 30:
+                return
+            _visit_cache[cache_key] = now
+            if len(_visit_cache) > 5000:
+                _visit_cache.clear()
+
+        analytics.log_visit(
+            user_id=user_id,
+            ip=ip,
+            path=path,
+            method=request.method,
+            user_agent=request.headers.get("User-Agent", ""),
+            referrer=request.headers.get("Referer", ""),
+            session_id=sid,
+        )
+    except Exception:
+        # Analytics must never break the main request
         pass
 
 
@@ -8079,6 +8141,75 @@ def superadmin_dashboard():
     )
 
 
+# === ANALYTICS DASHBOARD: posescheniya, geo, ustroystva =====================
+
+@app.route("/superadmin/analytics")
+@super_admin_required
+def superadmin_analytics():
+    """Stranitsa analitiki posescheniy."""
+    days = request.args.get("days", 30, type=int)
+    if days not in (1, 7, 30, 90, 365):
+        days = 30
+
+    summary       = analytics.get_summary(days=days)
+    by_country    = analytics.get_by_country(days=days, limit=50)
+    by_city       = analytics.get_by_city(days=days, limit=50)
+    daily         = analytics.get_daily(days=days)
+    by_device     = analytics.get_by_device(days=days)
+    by_browser    = analytics.get_by_browser(days=days, limit=10)
+    by_os         = analytics.get_by_os(days=days, limit=10)
+    top_pages     = analytics.get_top_pages(days=days, limit=30)
+    top_referrers = analytics.get_top_referrers(days=days, limit=20)
+    recent_visits = analytics.get_recent_visits(limit=50)
+    hourly_today  = analytics.get_hourly_today()
+
+    conn = db.get_conn()
+    try:
+        online_now = conn.execute("""
+            SELECT v.ip, v.country, v.country_name, v.city, v.path,
+                   v.device_type, v.browser, v.os,
+                   u.username,
+                   MAX(v.created_at) AS last_seen
+            FROM visits v
+            LEFT JOIN users u ON u.id = v.user_id
+            WHERE v.created_at >= datetime('now', '-5 minutes')
+            GROUP BY v.session_id
+            ORDER BY last_seen DESC LIMIT 50
+        """).fetchall()
+    finally:
+        conn.close()
+
+    return render_template("superadmin_analytics.html",
+        days=days, summary=summary,
+        by_country=by_country, by_city=by_city, daily=daily,
+        by_device=by_device, by_browser=by_browser, by_os=by_os,
+        top_pages=top_pages, top_referrers=top_referrers,
+        recent_visits=recent_visits, hourly_today=hourly_today,
+        online_now=[dict(r) for r in online_now],
+    )
+
+
+@app.route("/api/superadmin/analytics/live")
+@super_admin_required
+def superadmin_analytics_live():
+    """API: posledniye posescheniya v real-time (dlya AJAX-polling)."""
+    after_id = request.args.get("after_id", 0, type=int)
+    conn = db.get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT v.id, v.ip, v.country, v.country_name, v.city, v.path,
+                   v.device_type, v.browser, v.os, v.created_at,
+                   u.username
+            FROM visits v
+            LEFT JOIN users u ON u.id = v.user_id
+            WHERE v.id > ?
+            ORDER BY v.id DESC LIMIT 50
+        """, (after_id,)).fetchall()
+    finally:
+        conn.close()
+    return jsonify({"visits": [dict(r) for r in rows]})
+
+
 @app.route("/superadmin/user/<int:user_id>")
 @super_admin_required
 def superadmin_user_detail(user_id):
@@ -8252,6 +8383,7 @@ def superadmin_set_ai_limits(user_id):
 try:
     db.init_db()
     billing.init_billing_tables()
+    analytics.init_analytics_tables()
 except Exception as _e:
     print(f"[INIT] DB init error: {_e}")
 
