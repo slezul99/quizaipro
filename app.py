@@ -8519,6 +8519,34 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace extra seed error: {_e}")
 
+# One-time fix: refresh has_mcq/has_terms for any deck that still has NULL flags.
+# Independent of seed markers — handles the case where seeded decks ran but flags
+# weren't computed in the same boot. Runs ONCE per app_migrations key.
+try:
+    _conn = db.get_conn()
+    _refreshed = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='refresh_seeded_flags_v1'"
+    ).fetchone()
+    if not _refreshed:
+        _null_decks = _conn.execute(
+            "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
+        ).fetchall()
+        if _null_decks:
+            print(f"[INIT] Force-refreshing flags for {len(_null_decks)} decks with NULL flags...")
+            for _row in _null_decks:
+                try:
+                    refresh_deck_content_flags(_conn, _row[0])
+                except Exception:
+                    pass
+            print(f"[INIT] Done — {len(_null_decks)} decks now have proper flags")
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('refresh_seeded_flags_v1')"
+        )
+        _conn.commit()
+    _conn.close()
+except Exception as _e:
+    print(f"[INIT] Refresh flags error: {_e}")
+
 
 if __name__ == "__main__":
     print("=" * 50)
