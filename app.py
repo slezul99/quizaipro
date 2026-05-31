@@ -8574,6 +8574,53 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace extra seed error: {_e}")
 
+# Always-on safety: any deck with NULL flags gets recomputed at every startup.
+# Cheap (only NULL decks) and ensures Test/Flashcards buttons are correct.
+try:
+    _conn = db.get_conn()
+    _null_decks = _conn.execute(
+        "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
+    ).fetchall()
+    if _null_decks:
+        print(f"[INIT] Refreshing flags for {len(_null_decks)} decks with NULL flags...")
+        for _row in _null_decks:
+            try:
+                refresh_deck_content_flags(_conn, _row[0])
+            except Exception:
+                pass
+        _conn.commit()
+        print(f"[INIT] Done.")
+    _conn.close()
+except Exception as _e:
+    print(f"[INIT] Always-on flag refresh error: {_e}")
+
+# One-time forced refresh of ALL seeded marketplace decks (in case prior migration
+# computed wrong flags before we started checking the front field).
+try:
+    _conn = db.get_conn()
+    _forced = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='refresh_seeded_flags_v4_force'"
+    ).fetchone()
+    if not _forced:
+        _seeded = _conn.execute(
+            "SELECT id FROM decks WHERE created_via='seed'"
+        ).fetchall()
+        if _seeded:
+            print(f"[INIT] Force-refreshing {len(_seeded)} seeded decks...")
+            for _row in _seeded:
+                try:
+                    refresh_deck_content_flags(_conn, _row[0])
+                except Exception:
+                    pass
+            print(f"[INIT] Forced refresh done.")
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('refresh_seeded_flags_v4_force')"
+        )
+        _conn.commit()
+    _conn.close()
+except Exception as _e:
+    print(f"[INIT] Force refresh error: {_e}")
+
 # One-time fix: refresh has_mcq/has_terms for any deck that still has NULL flags.
 # Independent of seed markers — handles the case where seeded decks ran but flags
 # weren't computed in the same boot. Runs ONCE per app_migrations key.
