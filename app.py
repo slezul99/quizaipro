@@ -8487,6 +8487,27 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace seed error: {_e}")
 
+# Auto-seed marketplace EXTRA (B1/B2/IELTS/TOEFL/Calculus/Statistics/SQL/Algorithms/etc.)
+# Runs once after v2 seed. Idempotent.
+try:
+    _conn = db.get_conn()
+    _extra = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_extra_seed'"
+    ).fetchone()
+    _conn.close()
+    if not _extra:
+        print("[INIT] Seeding marketplace extra (18 collections) ...")
+        import seed_marketplace_extra  # noqa: F401
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_extra_seed')"
+        )
+        _conn.commit()
+        _conn.close()
+        print("[INIT] Marketplace extra seeded.")
+except Exception as _e:
+    print(f"[INIT] Marketplace extra seed error: {_e}")
+
 
 if __name__ == "__main__":
     print("=" * 50)
