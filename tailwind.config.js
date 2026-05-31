@@ -22,6 +22,8 @@ module.exports = {
     "hidden", "block", "flex", "grid", "inline-block",
     // Common opacity
     "opacity-0", "opacity-50", "opacity-100",
+    // Accessibility helpers
+    "sr-only", "not-sr-only",
   ],
   theme: {
     extend: {

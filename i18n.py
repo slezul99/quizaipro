@@ -224,6 +224,8 @@ T = {
         "test_card_count_word": "вопросов",
         "all_total": "всего",
         # === Landing page ===
+        # SEO h1 (skrytyy vizual'no, no chitaetsya Google i screen-readers)
+        "lp_seo_h1": "QuizAIPro — AI-платформа для умного обучения с флэш-картами и алгоритмом интервального повторения SM-2",
         "lp_hero_tag": "AI-обучение · Запуск за 30 секунд",
         "lp_hero_title_1": "Учись",
         "lp_hero_title_2": "как никогда раньше.",
@@ -1927,6 +1929,8 @@ T = {
         "test_card_count_word": "questions",
         "all_total": "total",
         # === Landing page ===
+        # SEO h1 (visually hidden, read by Google and screen readers)
+        "lp_seo_h1": "QuizAIPro — AI-Powered Learning Platform with Smart Flashcards and SM-2 Spaced Repetition",
         "lp_hero_tag": "AI-powered learning · Launch in 30 seconds",
         "lp_hero_title_1": "Learn",
         "lp_hero_title_2": "like never before.",
@@ -3629,6 +3633,8 @@ T = {
         "test_card_count_word": "savol",
         "all_total": "jami",
         # === Landing page ===
+        # SEO h1 (vizual yashirin, Google va screen reader uchun)
+        "lp_seo_h1": "QuizAIPro — Aqlli kartochkalar va SM-2 takrorlash algoritmi bilan AI yordamida oʻrganish platformasi",
         "lp_hero_tag": "AI yordamida oʻrganish · 30 soniyada ishga tushirish",
         "lp_hero_title_1": "Oʻrganing",
         "lp_hero_title_2": "hech qachon boʻlmagandek.",

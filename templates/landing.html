@@ -609,11 +609,14 @@
   <div class="hero-noise"></div>
 
   <div class="hero-text">
+    <!-- SEO: semanticheskiy h1 s klyuchevymi slovami (vizual'no skryt — ekran-riderkam i Google viden) -->
+    <h1 class="sr-only">{{ t('lp_seo_h1') }}</h1>
+
     <!-- Site Logo — icon (PNG) + custom text with gradient AI -->
     <div class="reveal hero-logo-block">
       <img src="/static/logo-org.png?v=7" alt="QuizAIPro icon" class="hero-logo-icon">
       <div class="hero-logo-text">
-        <div class="hero-logo-name">Quiz<span class="hero-logo-ai">AI</span>Pro</div>
+        <div class="hero-logo-name" aria-hidden="true">Quiz<span class="hero-logo-ai">AI</span>Pro</div>
         <div class="hero-logo-sub">AI-POWERED LEARNING</div>
       </div>
     </div>
