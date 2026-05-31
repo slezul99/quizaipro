@@ -8448,6 +8448,33 @@ def superadmin_toggle_beta(user_id):
     return jsonify({"ok": True, "is_beta_tester": new_state})
 
 
+@app.route("/superadmin/user/<int:user_id>/set-role", methods=["POST"])
+@super_admin_required
+def superadmin_set_role(user_id):
+    """Menyaet rol' polzovatelya. TOL'KO slezul99@gmail.com mozhet eto delat'.
+    body: {"role": "admin" | "teacher" | "student" | "individual"}"""
+    me = current_user()
+    # Tol'ko vladelets — ne lyuboy super-admin
+    if not me or me.get("username") != "slezul99@gmail.com":
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+
+    new_role = (request.form.get("role") or "").strip().lower()
+    if new_role not in ("admin", "teacher", "student", "individual"):
+        return jsonify({"ok": False, "error": "invalid_role"}), 400
+
+    conn = db.get_conn()
+    target = conn.execute("SELECT id, username, role FROM users WHERE id=?", (user_id,)).fetchone()
+    if not target:
+        conn.close()
+        return jsonify({"ok": False, "error": "user_not_found"}), 404
+    conn.execute("UPDATE users SET role=? WHERE id=?", (new_role, user_id))
+    conn.commit()
+    conn.close()
+    log_security("ROLE_CHANGED",
+                 f"by={me['username']} target={target['username']} {target['role']}->{new_role}")
+    return jsonify({"ok": True, "role": new_role})
+
+
 @app.route("/superadmin/user/<int:user_id>/vision-limits", methods=["POST"])
 @super_admin_required
 def superadmin_set_vision_limits(user_id):

@@ -41,6 +41,60 @@
       </div>
     </div>
 
+    {# Role-change controls — TOL'KO dlya vladelttsa slezul99@gmail.com #}
+    {% if current_user and current_user.username == 'slezul99@gmail.com' %}
+    <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700"
+         x-data="{
+           role: '{{ u.role }}',
+           busy: false,
+           saved: false,
+           setRole(newRole) {
+             if (newRole === this.role) return;
+             if (!confirm('Изменить роль на ' + newRole + '?')) return;
+             this.busy = true;
+             this.saved = false;
+             const fd = new FormData();
+             fd.append('role', newRole);
+             fetch('/superadmin/user/{{ u.id }}/set-role', { method: 'POST', body: fd })
+               .then(r => r.json())
+               .then(d => {
+                 if (d.ok) {
+                   this.role = d.role;
+                   this.saved = true;
+                   setTimeout(() => this.saved = false, 2000);
+                 } else {
+                   alert('Ошибка: ' + (d.error || 'unknown'));
+                 }
+                 this.busy = false;
+               })
+               .catch(e => { alert('Ошибка: ' + e); this.busy = false; });
+           }
+         }">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="text-sm font-bold text-slate-700 dark:text-slate-200">👑 Роль:</span>
+        <span class="text-xs text-slate-500 dark:text-slate-400">текущая —</span>
+        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200" x-text="role"></span>
+        <span x-show="saved" class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">✓ сохранено</span>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-3">
+        <template x-for="r in ['individual', 'student', 'teacher', 'admin']" :key="r">
+          <button type="button"
+                  @click="setRole(r)"
+                  :disabled="busy || role === r"
+                  :class="role === r
+                    ? 'bg-indigo-600 text-white border-indigo-600 cursor-default'
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:border-indigo-300'"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold border transition disabled:opacity-60">
+            <span x-text="r"></span>
+          </button>
+        </template>
+      </div>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+        ⚠️ Только slezul99@gmail.com может менять роли. <b>admin</b> = полный доступ к управлению контентом.
+      </p>
+    </div>
+    {% endif %}
+
     <!-- AI Vision custom limits -->
     <div class="mt-5 pt-5 border-t border-slate-200 dark:border-slate-700"
          x-data="{
