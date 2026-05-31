@@ -62,7 +62,7 @@ vision_jobs_data/*.json
 *.bak
 *.tmp
 
-# === Node.js / Tailwind build ===
+# === Node.js / Tailwind build (in tools/tailwind/) ===
+tools/tailwind/node_modules/
 node_modules/
-# package-lock.json kept for reproducible builds
-# static/tailwind.css IS committed as fallback — Railway rebuilds it on deploy
+# static/tailwind.css IS committed — Tailwind builds locally, not on Railway

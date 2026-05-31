@@ -4,8 +4,8 @@ module.exports = {
   // Vse kotorye ispol'zuyutsya — popadayut v final'nyy CSS.
   // Vse drugie — udalyayutsya. Eto i est' "tree-shaking" / "purge".
   content: [
-    "./templates/**/*.html",
-    "./static/**/*.js",
+    "../../templates/**/*.html",
+    "../../static/**/*.js",
   ],
   // Polnyy spektr klassov ispol'zuyetsya v inline x-bind / dynamic strings —
   // safelist ohranyaet ot ploxhego purge.
