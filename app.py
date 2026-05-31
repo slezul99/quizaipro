@@ -8321,6 +8321,8 @@ def superadmin_analytics():
             FROM visits v
             LEFT JOIN users u ON u.id = v.user_id
             WHERE v.created_at >= datetime('now', '-5 minutes')
+                  AND v.device_type != 'bot'
+                  AND (v.country IS NULL OR v.country != 'LOCAL')
             GROUP BY v.session_id
             ORDER BY last_seen DESC LIMIT 50
         """).fetchall()
@@ -8340,7 +8342,7 @@ def superadmin_analytics():
 @app.route("/api/superadmin/analytics/live")
 @super_admin_required
 def superadmin_analytics_live():
-    """API: posledniye posescheniya v real-time (dlya AJAX-polling)."""
+    """API: posledniye REAL-USER posescheniya (no bots, no LOCAL)."""
     after_id = request.args.get("after_id", 0, type=int)
     conn = db.get_conn()
     try:
@@ -8351,6 +8353,8 @@ def superadmin_analytics_live():
             FROM visits v
             LEFT JOIN users u ON u.id = v.user_id
             WHERE v.id > ?
+                  AND v.device_type != 'bot'
+                  AND (v.country IS NULL OR v.country != 'LOCAL')
             ORDER BY v.id DESC LIMIT 50
         """, (after_id,)).fetchall()
     finally:

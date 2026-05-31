@@ -360,25 +360,34 @@ def log_visit(user_id, ip, path, method, user_agent, referrer, session_id):
 # === Helpers dlya analitiki =================================================
 
 def get_summary(days: int = 30) -> dict:
-    """Obshchaya statistika posescheniy."""
+    """Obshchaya statistika posescheniy.
+    REAL users only: bot trafic + LOCAL ip filtered out (kept as separate counter)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
 
+    # REAL = ne bot AND ne local IP
+    real_filter = "device_type != 'bot' AND (country IS NULL OR country != 'LOCAL')"
+
     stats = {}
     stats["total_visits"] = conn.execute(
-        "SELECT COUNT(*) AS c FROM visits WHERE created_at >= ?", (cutoff,)
+        f"SELECT COUNT(*) AS c FROM visits WHERE created_at >= ? AND {real_filter}",
+        (cutoff,)
     ).fetchone()["c"]
     stats["unique_visitors"] = conn.execute(
-        "SELECT COUNT(DISTINCT session_id) AS c FROM visits WHERE created_at >= ? AND session_id != ''",
+        f"SELECT COUNT(DISTINCT session_id) AS c FROM visits "
+        f"WHERE created_at >= ? AND session_id != '' AND {real_filter}",
         (cutoff,)
     ).fetchone()["c"]
     stats["unique_users"] = conn.execute(
-        "SELECT COUNT(DISTINCT user_id) AS c FROM visits WHERE created_at >= ? AND user_id IS NOT NULL",
+        f"SELECT COUNT(DISTINCT user_id) AS c FROM visits "
+        f"WHERE created_at >= ? AND user_id IS NOT NULL AND {real_filter}",
         (cutoff,)
     ).fetchone()["c"]
     stats["unique_ips"] = conn.execute(
-        "SELECT COUNT(DISTINCT ip) AS c FROM visits WHERE created_at >= ?", (cutoff,)
+        f"SELECT COUNT(DISTINCT ip) AS c FROM visits WHERE created_at >= ? AND {real_filter}",
+        (cutoff,)
     ).fetchone()["c"]
+    # Boty po-prezhnemu schitayem otdel'no — chtoby ty videl skol'ko ataki/skanyirovshikov
     stats["bots"] = conn.execute(
         "SELECT COUNT(*) AS c FROM visits WHERE created_at >= ? AND device_type='bot'",
         (cutoff,)
@@ -389,7 +398,7 @@ def get_summary(days: int = 30) -> dict:
 
 
 def get_by_country(days: int = 30, limit: int = 50) -> list[dict]:
-    """Top stran po posescheniyam."""
+    """Top stran (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
     rows = conn.execute("""
@@ -399,6 +408,8 @@ def get_by_country(days: int = 30, limit: int = 50) -> list[dict]:
             COUNT(DISTINCT user_id) AS unique_users
         FROM visits
         WHERE created_at >= ? AND country IS NOT NULL AND country != ''
+              AND country != 'LOCAL' AND country != '?'
+              AND device_type != 'bot'
         GROUP BY country, country_name
         ORDER BY visits DESC
         LIMIT ?
@@ -408,7 +419,7 @@ def get_by_country(days: int = 30, limit: int = 50) -> list[dict]:
 
 
 def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
-    """Top gorodov."""
+    """Top gorodov (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
     rows = conn.execute("""
@@ -417,6 +428,8 @@ def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
             COUNT(DISTINCT session_id) AS unique_visitors
         FROM visits
         WHERE created_at >= ? AND city IS NOT NULL AND city != ''
+              AND country != 'LOCAL' AND country != '?'
+              AND device_type != 'bot'
         GROUP BY country, city
         ORDER BY visits DESC
         LIMIT ?
@@ -426,7 +439,7 @@ def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
 
 
 def get_daily(days: int = 30) -> list[dict]:
-    """Posechenia po dnyam (dlya grafika)."""
+    """Posechenia po dnyam (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
     rows = conn.execute("""
@@ -436,6 +449,8 @@ def get_daily(days: int = 30) -> list[dict]:
             COUNT(DISTINCT user_id) AS unique_users
         FROM visits
         WHERE created_at >= ?
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY DATE(created_at)
         ORDER BY day
     """, (cutoff,)).fetchall()
@@ -444,13 +459,15 @@ def get_daily(days: int = 30) -> list[dict]:
 
 
 def get_by_device(days: int = 30) -> list[dict]:
-    """Razbivka po tipu ustroistva."""
+    """Razbivka po tipu ustroistva (real users only — bots excluded)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
     rows = conn.execute("""
         SELECT device_type, COUNT(*) AS visits, COUNT(DISTINCT session_id) AS uniq
         FROM visits
         WHERE created_at >= ? AND device_type IS NOT NULL AND device_type != ''
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY device_type ORDER BY visits DESC
     """, (cutoff,)).fetchall()
     conn.close()
@@ -464,6 +481,9 @@ def get_by_browser(days: int = 30, limit: int = 10) -> list[dict]:
         SELECT browser, COUNT(*) AS visits, COUNT(DISTINCT session_id) AS uniq
         FROM visits
         WHERE created_at >= ? AND browser IS NOT NULL AND browser != ''
+              AND browser != 'Bot' AND browser != '?'
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY browser ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -477,6 +497,9 @@ def get_by_os(days: int = 30, limit: int = 10) -> list[dict]:
         SELECT os, COUNT(*) AS visits, COUNT(DISTINCT session_id) AS uniq
         FROM visits
         WHERE created_at >= ? AND os IS NOT NULL AND os != ''
+              AND os != 'Bot' AND os != '?'
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY os ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -484,13 +507,15 @@ def get_by_os(days: int = 30, limit: int = 10) -> list[dict]:
 
 
 def get_top_pages(days: int = 30, limit: int = 30) -> list[dict]:
-    """Samye populyarnye stranitsy."""
+    """Samye populyarnye stranitsy (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
     rows = conn.execute("""
         SELECT path, COUNT(*) AS visits, COUNT(DISTINCT session_id) AS uniq
         FROM visits
         WHERE created_at >= ?
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY path ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -498,13 +523,15 @@ def get_top_pages(days: int = 30, limit: int = 30) -> list[dict]:
 
 
 def get_top_referrers(days: int = 30, limit: int = 20) -> list[dict]:
-    """Top istochnikov trafika."""
+    """Top istochnikov trafika (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
     rows = conn.execute("""
         SELECT referrer, COUNT(*) AS visits
         FROM visits
         WHERE created_at >= ? AND referrer IS NOT NULL AND referrer != ''
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY referrer ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -512,12 +539,14 @@ def get_top_referrers(days: int = 30, limit: int = 20) -> list[dict]:
 
 
 def get_recent_visits(limit: int = 100) -> list[dict]:
-    """Posledniye posescheniya v real time."""
+    """Posledniye real-user posescheniya (no bots, no LOCAL)."""
     conn = db.get_conn()
     rows = conn.execute("""
         SELECT v.*, u.username
         FROM visits v
         LEFT JOIN users u ON u.id = v.user_id
+        WHERE v.device_type != 'bot'
+              AND (v.country IS NULL OR v.country != 'LOCAL')
         ORDER BY v.id DESC LIMIT ?
     """, (limit,)).fetchall()
     conn.close()
@@ -525,7 +554,7 @@ def get_recent_visits(limit: int = 100) -> list[dict]:
 
 
 def get_hourly_today() -> list[dict]:
-    """Posescheniya po chasam za segodnya."""
+    """Posescheniya po chasam za segodnya (real users only)."""
     conn = db.get_conn()
     rows = conn.execute("""
         SELECT strftime('%H', created_at) AS hour,
@@ -533,6 +562,8 @@ def get_hourly_today() -> list[dict]:
             COUNT(DISTINCT session_id) AS uniq
         FROM visits
         WHERE DATE(created_at) = DATE('now')
+              AND device_type != 'bot'
+              AND (country IS NULL OR country != 'LOCAL')
         GROUP BY hour ORDER BY hour
     """).fetchall()
     conn.close()
