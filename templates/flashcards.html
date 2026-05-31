@@ -294,7 +294,7 @@
         <div class="fc-face fc-front">
           <span class="fc-label text-indigo-700">{{ t('fc_question') }}</span>
           <template x-if="current && current.image_url">
-            <img :src="current.image_url" class="max-h-32 rounded-2xl mb-4 shadow-lg">
+            <img :src="current.image_url" :alt="current.front" class="max-h-32 rounded-2xl mb-4 shadow-lg">
           </template>
           <div class="fc-text text-slate-900" x-text="current ? current.front : ''"></div>
           <div class="absolute bottom-4 text-xs text-slate-400 font-semibold uppercase tracking-wider">{{ t('fc_tap_flip') }}</div>

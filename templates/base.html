@@ -1734,7 +1734,7 @@ function goalReminder() {
         <div class="text-xs text-slate-700 dark:text-amber-50/95 mt-1 font-medium">{{ ach.desc }}</div>
         <div class="text-xs font-bold text-indigo-700 dark:text-white mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-black/25">+{{ ach.xp }} XP</div>
       </div>
-      <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:text-amber-50/70 dark:hover:text-white text-lg leading-none">×</button>
+      <button aria-label="Закрыть" title="Закрыть" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:text-amber-50/70 dark:hover:text-white text-lg leading-none">×</button>
     </div>
   </div>
   {% endfor %}
@@ -1841,7 +1841,7 @@ window.showAchievementToasts = function(achievements) {
           <div class="text-xs text-slate-600 mt-0.5">${ach.desc}</div>
           <div class="text-xs font-bold text-indigo-600 mt-2">+${ach.xp} XP</div>
         </div>
-        <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
+        <button aria-label="Закрыть" title="Закрыть" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
       </div>`;
     container.appendChild(el);
     setTimeout(() => {

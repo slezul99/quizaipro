@@ -36,7 +36,7 @@
         </div>
         <form method="POST" action="/admin/group/{{ g.id }}/delete" onsubmit="return confirm({{ t('au_delete_group_confirm')|tojson }})">
           <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <button class="text-red-500 text-sm">✕</button>
+          <button aria-label="{{ t('au_delete_group') if t('au_delete_group') else 'Удалить группу' }}" title="Удалить" class="text-red-500 text-sm">✕</button>
         </form>
       </div>
       {% else %}
@@ -64,7 +64,7 @@
                 class="px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold hover:bg-orange-100">{{ t('au_pwd_reset_btn') }}</button>
               <form method="POST" action="/admin/user/{{ u.id }}/delete" onsubmit="return confirm({{ t('au_delete_confirm')|tojson }})" class="inline">
                 <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-                <button class="text-red-500">✕</button>
+                <button aria-label="Удалить" title="Удалить" class="text-red-500">✕</button>
               </form>
               {% endif %}
             </div>
@@ -98,7 +98,7 @@
               {% if current_user.role == 'admin' %}
               <form method="POST" action="/admin/user/{{ s.id }}/delete" onsubmit="return confirm({{ t('au_delete_confirm')|tojson }})" class="inline">
                 <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-                <button class="text-red-500">✕</button>
+                <button aria-label="Удалить" title="Удалить" class="text-red-500">✕</button>
               </form>
               {% endif %}
             </div>
@@ -118,7 +118,7 @@
       <h3 class="text-xl font-semibold">{{ t('au_new_user_h') }}</h3>
       <input name="full_name" placeholder="{{ t('au_full_name_ph') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
       <input name="username" required minlength="3" placeholder="{{ t('au_th_username') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
-      <input type="password" name="password" required minlength="4" placeholder="{{ t('au_password_ph') }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
+      <input type="password" name="password" required minlength="4" placeholder="{{ t('au_password_ph') }}" autocomplete="new-password" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
       <select name="role" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-900/40">
         <option value="student">{{ t('au_role_student') }}</option>
         {% if current_user.role == 'admin' %}

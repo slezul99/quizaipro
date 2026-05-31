@@ -557,8 +557,9 @@ function deckEditor() {
         {% if card.image_url %}
         <div class="ml-12 mb-3">
           <div class="relative inline-block group/img">
-            <img src="{{ card.image_url }}" class="max-h-44 rounded-2xl border-2 border-white shadow-md cursor-pointer" onclick="window.open(this.src, '_blank')">
+            <img src="{{ card.image_url }}" alt="{{ (card.front or '')[:80] }}" class="max-h-44 rounded-2xl border-2 border-white shadow-md cursor-pointer" onclick="window.open(this.src, '_blank')">
             <button type="button" data-card-id="{{ card.id }}" onclick="removeCardImage(this)"
+                    aria-label="Удалить изображение"
                     class="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold opacity-0 group-hover/img:opacity-100 transition shadow-lg hover:bg-red-600">✕</button>
           </div>
         </div>
