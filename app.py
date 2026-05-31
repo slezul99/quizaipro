@@ -8498,7 +8498,18 @@ try:
     if not _extra:
         print("[INIT] Seeding marketplace extra (18 collections) ...")
         import seed_marketplace_extra  # noqa: F401
+        # Force-recompute has_mcq/has_terms for all decks (new ones have NULL flags)
         _conn = db.get_conn()
+        _null_decks = _conn.execute(
+            "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
+        ).fetchall()
+        for _row in _null_decks:
+            try:
+                refresh_deck_content_flags(_conn, _row[0])
+            except Exception:
+                pass
+        if _null_decks:
+            print(f"[INIT] Refreshed flags for {len(_null_decks)} new seeded decks")
         _conn.execute(
             "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_extra_seed')"
         )
