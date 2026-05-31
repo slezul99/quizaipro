@@ -440,6 +440,14 @@ def init_db():
         c.execute("ALTER TABLE cards ADD COLUMN image_url TEXT DEFAULT ''")
     except sqlite3.OperationalError:
         pass
+    # === Multi-lang content (for marketplace seeded decks) ===
+    # Sushchestvuyushchiye polya front/back/note ostayutsya — eto "default" / RU.
+    # Esli est' perevod na yazyke pol'zovatelya — pokazhem ego, inache — default.
+    for col in ('front_en', 'front_uz', 'back_en', 'back_uz', 'note_en', 'note_uz'):
+        try:
+            c.execute(f"ALTER TABLE cards ADD COLUMN {col} TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass
     # Dobavlyaem daily_goal v users (migratsiya)
     try:
         c.execute("ALTER TABLE users ADD COLUMN daily_goal INTEGER DEFAULT 20")

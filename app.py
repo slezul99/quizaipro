@@ -319,6 +319,42 @@ def _tashkent_filter(value, fmt: str = "%Y-%m-%d %H:%M"):
     return dt_tash.strftime(fmt)
 
 
+# === Multi-lang field accessor for cards =====================================
+# Cards may have front/back/note translations in <field>_en, <field>_uz columns.
+# This helper returns the user's lang version if present, else the default field.
+
+def _card_field(card, field):
+    """Get field value in user's language (front/back/note). Falls back to default."""
+    lang = session.get("lang", "ru") if request else "ru"
+    # RU = default field
+    if lang == "ru":
+        try: return card[field] or ""
+        except (KeyError, TypeError, IndexError):
+            try: return card.get(field, "") or ""
+            except Exception: return ""
+    # EN/UZ — try translated column first, fallback to default
+    key_translated = f"{field}_{lang}"
+    try:
+        v = card[key_translated]
+        if v: return v
+    except (KeyError, TypeError, IndexError):
+        try:
+            v = card.get(key_translated, "")
+            if v: return v
+        except Exception: pass
+    # Fallback
+    try: return card[field] or ""
+    except (KeyError, TypeError, IndexError):
+        try: return card.get(field, "") or ""
+        except Exception: return ""
+
+
+@app.template_filter("card_field")
+def _card_field_filter(card, field):
+    """Jinja filter: {{ card | card_field('front') }} returns localized version."""
+    return _card_field(card, field)
+
+
 # ---------------------- helpers ---------------------------------------------
 
 def t(key):
@@ -1624,6 +1660,14 @@ def deck_view(deck_id):
         FROM cards c LEFT JOIN user_card_progress p ON p.card_id=c.id AND p.user_id=?
         WHERE c.deck_id=? ORDER BY c.id DESC""", (user["id"], deck_id)).fetchall()
     cards = [dict(c) for c in cards_raw]
+    # Localize: if user is en/uz and translation exists, swap
+    _user_lang = session.get("lang", "ru")
+    if _user_lang in ("en", "uz"):
+        for c in cards:
+            for fld in ("front", "back", "note"):
+                tr = c.get(f"{fld}_{_user_lang}", "")
+                if tr:
+                    c[fld] = tr
     # Regex dlya parsa MCQ-vidov: "A) text" / "А) текст" / "A. text"
     _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]?\s+(.+)$")
     for c in cards:
@@ -1878,6 +1922,7 @@ def flashcards_view(deck_id):
 
     cards = conn.execute(
         f"""SELECT c.id, c.front, c.back, c.note, c.image_url,
+                c.front_en, c.front_uz, c.back_en, c.back_uz, c.note_en, c.note_uz,
                 COALESCE(p.is_favorite, 0) AS is_favorite,
                 COALESCE(p.is_difficult, 0) AS is_difficult,
                 COALESCE(p.reviews, 0) AS reviews
@@ -1888,7 +1933,17 @@ def flashcards_view(deck_id):
     ).fetchall()
     conn.close()
 
-    cards_list = [dict(c) for c in cards]
+    # Localize: if user lang is en/uz and translation exists, swap into front/back/note
+    lang = session.get("lang", "ru")
+    cards_list = []
+    for c in cards:
+        d = dict(c)
+        if lang in ("en", "uz"):
+            for fld in ("front", "back", "note"):
+                tr = d.get(f"{fld}_{lang}", "")
+                if tr:
+                    d[fld] = tr
+        cards_list.append(d)
     return render_template("flashcards.html",
         deck=dict(deck),
         cards=cards_list,
@@ -8546,6 +8601,28 @@ try:
     _conn.close()
 except Exception as _e:
     print(f"[INIT] Refresh flags error: {_e}")
+
+# Auto-seed UZ + EN translations for marketplace seeded "terms"-style decks
+# (Phrasal Verbs, IELTS Vocabulary, Tech Vocab, Marketing, Finance, Accounting, Entrepreneurship).
+# Runs once. Idempotent.
+try:
+    _conn = db.get_conn()
+    _trans = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_translations_v1'"
+    ).fetchone()
+    _conn.close()
+    if not _trans:
+        print("[INIT] Seeding marketplace translations (UZ + EN)...")
+        import seed_marketplace_translations  # noqa: F401
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_translations_v1')"
+        )
+        _conn.commit()
+        _conn.close()
+        print("[INIT] Translations seeded.")
+except Exception as _e:
+    print(f"[INIT] Translations seed error: {_e}")
 
 
 if __name__ == "__main__":
