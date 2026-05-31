@@ -1673,19 +1673,36 @@ def deck_view(deck_id):
     for c in cards:
         c["level"] = sm2.card_level(c)
         c["difficulty"] = sm2.card_difficulty(c)
-        # === Pre-parse MCQ options on server (zatychay s sloman <template x-for> v Alpine) ===
-        source = (c.get("note") or "").strip() or (c.get("back") or "")
+        # === Pre-parse MCQ options on server ===
+        # Cards may store options in any of: front (seeded MCQ decks),
+        # note (older AI-generated decks), or back (legacy imports).
         opts = []
-        for line in source.split("\n"):
-            m = _opt_re.match(line.strip())
-            if m:
-                opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
-        # Fallback: try parsing back if no opts in note
-        if not opts and c.get("back"):
-            for line in c["back"].split("\n"):
+        # Try fields in priority order: front -> note -> back
+        # If front contains MCQ options, also clean up the question text
+        for src_field in ("front", "note", "back"):
+            text = (c.get(src_field) or "").strip()
+            if not text:
+                continue
+            candidate_opts = []
+            for line in text.split("\n"):
                 m = _opt_re.match(line.strip())
                 if m:
-                    opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+                    candidate_opts.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+            # Need at least 2 different letters
+            if len({o["letter"] for o in candidate_opts}) >= 2:
+                opts = candidate_opts
+                # If options are in front, strip them out for display:
+                # take only the part before the first option
+                if src_field == "front":
+                    parts = []
+                    for line in text.split("\n"):
+                        if _opt_re.match(line.strip()):
+                            break  # stop at first option
+                        parts.append(line)
+                    cleaned_q = "\n".join(parts).strip()
+                    if cleaned_q:
+                        c["front_clean"] = cleaned_q
+                break
         c["options"] = opts
         # Determine which letter is correct (first letter of "back")
         c["correct_letter"] = None
