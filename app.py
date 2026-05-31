@@ -3768,6 +3768,7 @@ def marketplace_search():
                            q=q, subject_slug=subject_slug, level=level)
 
 
+@app.route("/search")
 @login_required
 def global_search():
     """Global'nyy poisk: po polzovatelyam, kolod, kanal."""
