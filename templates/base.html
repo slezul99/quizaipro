@@ -1321,7 +1321,7 @@
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="nav-link" title="{{ t('plan_today_title') if false else 'More' }}">
           {{ icon('list', 18) }}
-          <span class="hidden lg:inline">Ещё</span>
+          <span class="hidden lg:inline">{{ t('nav_more') }}</span>
           {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
@@ -1332,7 +1332,7 @@
           <a href="/ai" class="dd-item emerald">{{ icon('sparkles', 17) }} <span>{{ t('nav_ai_gen') }}</span></a>
           {% endif %}
           <a href="/stats" class="dd-item emerald">{{ icon('chart', 17) }} <span>{{ t('nav_stats') }}</span></a>
-          <a href="/test/history" class="dd-item emerald">📊 <span>История тестов</span></a>
+          <a href="/test/history" class="dd-item emerald">📊 <span>{{ t('nav_test_history') | replace('📊 ','') }}</span></a>
           <a href="/goals" class="dd-item emerald">{{ icon('target', 17) }} <span>{{ t('nav_goals') }}</span></a>
           <a href="/achievements" class="dd-item emerald">{{ icon('trophy', 17) }} <span>{{ t('nav_achievements') }}</span></a>
 
@@ -1734,7 +1734,7 @@ function goalReminder() {
         <div class="text-xs text-slate-700 dark:text-amber-50/95 mt-1 font-medium">{{ ach.desc }}</div>
         <div class="text-xs font-bold text-indigo-700 dark:text-white mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-black/25">+{{ ach.xp }} XP</div>
       </div>
-      <button aria-label="Закрыть" title="Закрыть" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:text-amber-50/70 dark:hover:text-white text-lg leading-none">×</button>
+      <button aria-label="{{ t('btn_close') }}" title="{{ t('btn_close') }}" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:text-amber-50/70 dark:hover:text-white text-lg leading-none">×</button>
     </div>
   </div>
   {% endfor %}
@@ -1841,7 +1841,7 @@ window.showAchievementToasts = function(achievements) {
           <div class="text-xs text-slate-600 mt-0.5">${ach.desc}</div>
           <div class="text-xs font-bold text-indigo-600 mt-2">+${ach.xp} XP</div>
         </div>
-        <button aria-label="Закрыть" title="Закрыть" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
+        <button aria-label="{{ t('btn_close') }}" title="{{ t('btn_close') }}" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
       </div>`;
     container.appendChild(el);
     setTimeout(() => {
@@ -1929,8 +1929,8 @@ document.addEventListener('mousemove', (e) => {
       var on = document.documentElement.classList.contains('lite-mode');
       btn.innerHTML = on ? '🚀' : '✨';
       btn.title = on
-        ? 'Lite режим вкл. (для слабых телефонов). Нажмите чтобы выкл.'
-        : 'Лагает? Нажмите для облегчённого режима';
+        ? '{{ t("lite_on_msg") }}'
+        : '{{ t("lite_off_msg") }}';
     }
     btn.onclick = function(){
       if (typeof window.__toggleLiteMode === 'function') {

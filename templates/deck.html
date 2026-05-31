@@ -95,24 +95,24 @@ function deckEditor() {
     async aiConvert(direction) {
       // direction: 'to_terms' (testy → slovari) | 'to_tests' (slovari → testy)
       const labels = {
-        to_terms: 'Конвертировать тесты в словари?\\nAI создаст новую колоду со словарями. Расход: 1 AI-генерация.',
-        to_tests: 'Конвертировать словари в тесты?\\nAI создаст новую колоду с 4-вариантными тестами. Расход: 1 AI-генерация.',
+        to_terms: '{{ t("deck_convert_to_terms")|replace("\n", "\\n") }}',
+        to_tests: '{{ t("deck_convert_to_tests")|replace("\n", "\\n") }}',
       };
-      if (!confirm(labels[direction] || 'Конвертировать?')) return;
+      if (!confirm(labels[direction] || '{{ t("deck_convert_default") }}')) return;
       this.converting = true;
       try {
         const r = await fetch(`/deck/${this.deck.id}/convert/${direction}`, { method: 'POST' });
         const data = await r.json();
         this.converting = false;
         if (!data.ok) {
-          alert('Ошибка: ' + (data.error || 'unknown'));
+          alert('{{ t("deck_convert_error") }} ' + (data.error || 'unknown'));
           return;
         }
-        alert(`Создано ${data.count} карт. Открываю новую колоду...`);
+        alert(`{{ t("deck_convert_success")|replace("{n}", "") }}` + data.count + ' cards');
         window.location.href = data.url;
       } catch (e) {
         this.converting = false;
-        alert('Ошибка: ' + e);
+        alert('{{ t("deck_convert_error") }} ' + e);
       }
     }
   };
@@ -374,14 +374,14 @@ function deckEditor() {
       <div class="flex items-center gap-3 text-sm">
         <span class="text-2xl">🔓</span>
         <div>
-          <div class="font-bold text-amber-900 dark:text-amber-200">Режим админ-аудита</div>
+          <div class="font-bold text-amber-900 dark:text-amber-200">{{ t('deck_admin_view_h') }}</div>
           <div class="text-xs text-amber-800 dark:text-amber-300/80">
-            Чужая приватная колода. Только просмотр — редактирование/удаление недоступны.
-            {% if admin_view_owner %}Владелец: <a href="/superadmin/user/{{ admin_view_owner.id }}" class="underline font-semibold">{{ admin_view_owner.full_name or admin_view_owner.username }}</a> (@{{ admin_view_owner.username }}){% endif %}
+            {{ t('deck_admin_view_body') }}
+            {% if admin_view_owner %}{{ t('deck_admin_owner') }} <a href="/superadmin/user/{{ admin_view_owner.id }}" class="underline font-semibold">{{ admin_view_owner.full_name or admin_view_owner.username }}</a> (@{{ admin_view_owner.username }}){% endif %}
           </div>
         </div>
       </div>
-      <a href="/superadmin" class="text-xs font-semibold text-amber-900 dark:text-amber-200 hover:underline">← К панели</a>
+      <a href="/superadmin" class="text-xs font-semibold text-amber-900 dark:text-amber-200 hover:underline">{{ t('deck_admin_back') }}</a>
     </div>
     {% endif %}
 
@@ -435,7 +435,7 @@ function deckEditor() {
         {% endif %}
         {% if _mcq > 0 %}
         <button type="button" @click="showTest = true" class="btn-premium" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}" data-tour="deck-test-btn">{{ t('dk_btn_test') }}</button>
-        <a href="/test/history?scope_type=deck&scope_id={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(217,70,239,0.1)); color: #7c3aed; border-color: rgba(168,85,247,0.4);" title="История тестов по этой колоде">📊 История</a>
+        <a href="/test/history?scope_type=deck&scope_id={{ deck['id'] }}" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(217,70,239,0.1)); color: #7c3aed; border-color: rgba(168,85,247,0.4);" title="{{ t('deck_history_btn') }}">📊 {{ t('cat_history_short') }}</a>
         {% endif %}
         {% if can_edit %}
         <button type="button" @click="showLive = true" class="btn-premium-ghost" style="font-size: 13px; padding: 9px 18px; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.1)); color: #be185d; border-color: rgba(236,72,153,0.4);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
@@ -559,7 +559,7 @@ function deckEditor() {
           <div class="relative inline-block group/img">
             <img src="{{ card.image_url }}" alt="{{ (card.front or '')[:80] }}" class="max-h-44 rounded-2xl border-2 border-white shadow-md cursor-pointer" onclick="window.open(this.src, '_blank')">
             <button type="button" data-card-id="{{ card.id }}" onclick="removeCardImage(this)"
-                    aria-label="Удалить изображение"
+                    aria-label="{{ t('deck_image_remove') }}"
                     class="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold opacity-0 group-hover/img:opacity-100 transition shadow-lg hover:bg-red-600">✕</button>
           </div>
         </div>

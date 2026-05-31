@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Детали теста · QuizAIPro{% endblock %}
+{% block title %}{{ t('test_detail_title') }} · QuizAIPro{% endblock %}
 {% block content %}
 <div class="max-w-4xl mx-auto px-6 py-8">
 
   <a href="/test/history{% if attempt.scope_type %}?scope_type={{ attempt.scope_type }}&scope_id={{ attempt.scope_id }}{% endif %}"
      class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300 text-sm font-semibold hover:gap-2 transition-all mb-3">
-    <span>←</span> К истории
+    <span>←</span> {{ t('test_back_history') }}
   </a>
 
   <!-- Zagolovok -->
@@ -24,7 +24,7 @@
         </h1>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {{ attempt.finished_at|tashkent('%d.%m.%Y %H:%M') }}
-          {% if attempt.duration_sec %} · ⏱ {{ (attempt.duration_sec / 60)|round(1) }} мин{% endif %}
+          {% if attempt.duration_sec %} · ⏱ {{ (attempt.duration_sec / 60)|round(1) }} {{ t('test_minutes_short') }}{% endif %}
         </p>
       </div>
       <div class="text-right">
@@ -39,8 +39,8 @@
           <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ attempt.correct }}</span>
           /
           <span class="text-rose-600 dark:text-rose-400 font-bold">{{ attempt.wrong }}</span>
-          из {{ attempt.total_q }}
-          {% if attempt.is_perfect %} · ⭐ <b>Идеально</b>{% endif %}
+          {{ t('test_n_questions').replace('{total}', attempt.total_q|string) }}
+          {% if attempt.is_perfect %} · ⭐ <b>{{ t('test_perfect') }}</b>{% endif %}
         </div>
       </div>
     </div>
@@ -50,10 +50,9 @@
   <!-- Net detaley (popytka iz pred-eshchego prilozheniya) -->
   <div class="rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-8 text-center">
     <div class="text-5xl mb-3">📋</div>
-    <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Детали этой попытки не сохранены</h3>
+    <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">{{ t('test_detail_not_saved_h') }}</h3>
     <p class="text-sm text-slate-500 dark:text-slate-400">
-      Эта попытка прошла до того, как мы стали сохранять детали ответов.<br>
-      Все новые тесты будут отображаться полностью.
+      {{ t('test_detail_not_saved_body') }}
     </p>
   </div>
   {% else %}
@@ -76,7 +75,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">
-              Вопрос {{ a.position }}
+              {{ t('test_question_n').replace('{n}', a.position|string) }}
             </div>
             <div class="text-base font-semibold text-slate-900 dark:text-slate-100 whitespace-pre-line">{{ a.front }}</div>
           </div>
@@ -106,12 +105,12 @@
               <span class="text-[10px] px-1.5 py-0.5 rounded font-bold
                           {% if is_correct_letter %}bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100
                           {% else %}bg-rose-200 dark:bg-rose-800 text-rose-900 dark:text-rose-100{% endif %}">
-                Ваш ответ
+                {{ t('test_your_answer') }}
               </span>
               {% endif %}
               {% if is_correct_letter %}
               <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">
-                ✓ Правильный
+                {{ t('test_correct_label') }}
               </span>
               {% endif %}
             </div>
@@ -123,7 +122,7 @@
       <!-- Net razmechennyh variantov — pokazhem prosto otvety -->
       <div class="px-5 py-3 space-y-2 text-sm">
         <div class="flex items-start gap-2">
-          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 w-32 flex-shrink-0 pt-0.5">Ваш ответ:</span>
+          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 w-32 flex-shrink-0 pt-0.5">{{ t('test_your_answer') }}:</span>
           <span class="flex-1 px-2 py-1 rounded
                        {% if is_ok %}bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200
                        {% else %}bg-rose-100 dark:bg-rose-900/40 text-rose-900 dark:text-rose-200{% endif %}">
@@ -132,7 +131,7 @@
         </div>
         {% if not is_ok %}
         <div class="flex items-start gap-2">
-          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 w-32 flex-shrink-0 pt-0.5">Правильный:</span>
+          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 w-32 flex-shrink-0 pt-0.5">{{ t('test_correct_answer') }}:</span>
           <span class="flex-1 px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200">
             {{ a.correct or a.back or '—' }}
           </span>
@@ -151,12 +150,12 @@
     {% if attempt.scope_type == 'deck' %}
     <a href="/deck/{{ attempt.scope_id }}/test?count={{ attempt.total_q }}&shuffle=1"
        class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition">
-      ↻ Пройти тест ещё раз
+      {{ t('test_retake') }}
     </a>
     {% elif attempt.scope_type == 'category' %}
     <a href="/category/{{ attempt.scope_id }}/test?count={{ attempt.total_q }}"
        class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition">
-      ↻ Пройти тест ещё раз
+      {{ t('test_retake') }}
     </a>
     {% endif %}
   </div>

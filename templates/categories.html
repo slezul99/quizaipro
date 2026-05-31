@@ -53,8 +53,8 @@
           <a href="/test/history?scope_type=category&scope_id={{ r.id }}"
             class="px-4 py-3 rounded-2xl font-bold transition text-sm flex items-center gap-2 whitespace-nowrap"
             style="background: rgba(168,85,247,0.12); color: #7c3aed; border: 1.5px solid rgba(168,85,247,0.35);"
-            title="История тестов">
-            📊 <span class="hidden sm:inline">История</span>
+            title="{{ t('cat_history_title') }}">
+            📊 <span class="hidden sm:inline">{{ t('cat_history_short') }}</span>
           </a>
         </div>
         {% endif %}
@@ -82,7 +82,7 @@
               <a href="/test/history?scope_type=category&scope_id={{ ch.id }}"
                 class="px-2 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center"
                 style="background: rgba(168,85,247,0.12); color: #7c3aed; border: 1px solid rgba(168,85,247,0.35);"
-                title="История">
+                title="{{ t('cat_history_short') }}">
                 📊
               </a>
             </div>

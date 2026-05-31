@@ -71,15 +71,15 @@
           <div class="flex items-start gap-3">
             <span class="text-3xl">📸</span>
             <div>
-              <div class="font-bold text-slate-900 dark:text-slate-100 mb-1">Карточки с фотографиями</div>
-              <p class="text-sm text-slate-600 dark:text-slate-300">AI генерирует вопросы и автоматически находит подходящие фото из Wikimedia Commons. Идеально для: флаги стран, анатомия, история, животные, география.</p>
+              <div class="font-bold text-slate-900 dark:text-slate-100 mb-1">{{ t('ai_photo_card_h') }}</div>
+              <p class="text-sm text-slate-600 dark:text-slate-300">{{ t('ai_photo_card_desc') }}</p>
             </div>
           </div>
         </div>
-        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">Тема</label>
-        <input name="photo_topic_ui" id="ai-photo-topic" placeholder="Например: флаги стран, анатомия человека, животные Африки..." class="input-premium">
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('ai_topic') }}</label>
+        <input name="photo_topic_ui" id="ai-photo-topic" placeholder="{{ t('ai_photo_topic_ph') }}" class="input-premium">
         <div class="mt-2 flex flex-wrap gap-1.5">
-          <span class="text-xs text-slate-500 dark:text-slate-400 self-center">Попробуйте:</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ t('ai_demo_try') }}:</span>
           {% for demo in ['Флаги стран', 'Анатомия человека', 'Животные Африки', 'Достопримечательности мира', 'Исторические личности'] %}
           <button type="button" onclick="document.getElementById('ai-photo-topic').value = this.dataset.t"
                   data-t="{{ demo }}"
@@ -94,20 +94,20 @@
         <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('ai_count_label') }}</label>
         <input type="number" name="count" value="50" :max="kind === 'photo' ? 20 : 50" min="1" class="input-premium">
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5" x-show="kind !== 'photo'">{{ t('ai_count_max') }}</p>
-        <p class="text-xs text-pink-600 dark:text-pink-400 mt-1.5" x-show="kind === 'photo'">Максимум 20 карточек с фото за раз</p>
+        <p class="text-xs text-pink-600 dark:text-pink-400 mt-1.5" x-show="kind === 'photo'">{{ t('ai_photo_max') }}</p>
       </div>
 
       <!-- Yazyk vyhoda kart -->
       <div>
-        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">🌐 Язык карт</label>
+        <label class="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">{{ t('ai_lang_card') }}</label>
         <select name="output_lang" class="input-premium">
-          <option value="auto">Как в источнике (по умолчанию)</option>
+          <option value="auto">{{ t('ai_lang_auto') }}</option>
           <option value="ru">Русский</option>
           <option value="en">English</option>
           <option value="uz">Oʻzbek</option>
         </select>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-          AI сохранит язык исходного материала или переведёт в выбранный.
+          {{ t('ai_lang_auto_hint') }}
         </p>
       </div>
 
@@ -154,7 +154,7 @@
         <template x-if="kind !== 'photo'">
           <img src="/static/tutor-avatar.png" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:6px;">
         </template>
-        <span x-show="kind === 'photo'">📸 Сгенерировать с фото</span>
+        <span x-show="kind === 'photo'">{{ t('ai_photo_btn') }}</span>
         <span x-show="kind !== 'photo'">{{ t('ai_submit')|replace('🤖 ', '') }}</span>
       </button>
     </form>

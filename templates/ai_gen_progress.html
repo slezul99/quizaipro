@@ -41,32 +41,32 @@
           <div class="grid grid-cols-2 gap-3 mt-4 text-center">
             <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3">
               <div class="text-2xl font-black text-indigo-700 dark:text-indigo-300" x-text="state.cards_done">{{ job.cards_done }}</div>
-              <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">Создано карточек</div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{{ t('aigen_cards_made') }}</div>
             </div>
             <div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3">
               <div class="text-2xl font-black text-purple-700 dark:text-purple-300" x-text="state.cards_total">{{ job.cards_total }}</div>
-              <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">Запрошено</div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{{ t('aigen_done_label') }}</div>
             </div>
           </div>
 
           <!-- Stage message -->
           <div class="mt-4 p-2 bg-slate-100 dark:bg-slate-800/40 rounded-lg text-xs font-mono text-slate-600 dark:text-slate-300 text-center">
-            ⚡ <span x-text="state.stage_msg || '{{ job.stage_msg or 'Подготовка...' }}'">{{ job.stage_msg or 'Подготовка...' }}</span>
+            ⚡ <span x-text="state.stage_msg || '{{ job.stage_msg or t('aigen_status_default') }}'">{{ job.stage_msg or t('aigen_status_default') }}</span>
           </div>
 
           <!-- Stages -->
           <div class="mt-5 space-y-2 text-left text-sm">
             <div class="flex items-center gap-2">
               <span class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs">✓</span>
-              <span class="text-slate-700 dark:text-slate-200">Запрос принят</span>
+              <span class="text-slate-700 dark:text-slate-200">{{ t('aigen_step_received') }}</span>
             </div>
             <div class="flex items-center gap-2">
               <span class="w-5 h-5 rounded-full bg-indigo-500 animate-pulse flex items-center justify-center text-white text-xs">⋯</span>
-              <span class="text-slate-700 dark:text-slate-200">AI генерирует карточки</span>
+              <span class="text-slate-700 dark:text-slate-200">{{ t('aigen_step_generating') }}</span>
             </div>
             <div class="flex items-center gap-2">
               <span class="w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-white text-xs">·</span>
-              <span class="text-slate-700 dark:text-slate-200">Сохранение в колоду</span>
+              <span class="text-slate-700 dark:text-slate-200">{{ t('aigen_step_saving') }}</span>
             </div>
           </div>
         </div>
@@ -77,8 +77,8 @@
           <div class="flex items-start gap-3">
             <span class="text-3xl flex-shrink-0">⚠️</span>
             <div class="text-left">
-              <div class="font-bold text-amber-900 dark:text-amber-200 mb-1">Не закрывайте страницу</div>
-              <p class="text-sm text-amber-800 dark:text-amber-100">AI генерирует карточки в фоне. Это займёт 10–30 секунд.</p>
+              <div class="font-bold text-amber-900 dark:text-amber-200 mb-1">{{ t('aigen_warn_title') }}</div>
+              <p class="text-sm text-amber-800 dark:text-amber-100">{{ t('aigen_warn_body') }}</p>
             </div>
           </div>
         </div>
@@ -89,26 +89,26 @@
     <template x-if="state.status === 'done'">
       <div class="text-center">
         <div class="text-8xl mb-5 animate-bounce">🎉</div>
-        <h1 class="section-h text-emerald-600 dark:text-emerald-400">Готово!</h1>
+        <h1 class="section-h text-emerald-600 dark:text-emerald-400">{{ t('aigen_finish_h') }}</h1>
         <p class="text-slate-600 dark:text-slate-300 mt-2 mb-6">
-          Создано <span class="font-black text-indigo-600 dark:text-indigo-300" x-text="state.cards_done"></span> карточек
+          {{ t('aigen_finish_summary').replace('{n}', '') }}<span class="font-black text-indigo-600 dark:text-indigo-300" x-text="state.cards_done"></span>
         </p>
         <div class="glass-premium mb-5" style="padding: 2rem;">
           <div class="grid grid-cols-2 gap-3 text-center mb-5">
             <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-4">
               <div class="text-3xl font-black text-emerald-700 dark:text-emerald-300" x-text="state.cards_done"></div>
-              <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mt-1">Карточек создано</div>
+              <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mt-1">{{ t('aigen_cards_made') }}</div>
             </div>
             <div class="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4">
               <div class="text-3xl font-black text-indigo-700 dark:text-indigo-300">100%</div>
-              <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mt-1">Завершено</div>
+              <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mt-1">{{ t('aigen_done_label') }}</div>
             </div>
           </div>
           <a :href="`/deck/${state.result_deck_id}`" class="btn-premium w-full justify-center" style="font-size: 16px; padding: 14px;">
-            📚 Открыть колоду →
+            {{ t('aigen_open_deck') }}
           </a>
           <a href="/ai" class="btn-premium-ghost w-full justify-center mt-3" style="font-size: 14px; padding: 10px;">
-            ✨ Создать ещё
+            {{ t('aigen_create_more') }}
           </a>
         </div>
       </div>
@@ -118,12 +118,12 @@
     <template x-if="state.status === 'error'">
       <div class="text-center">
         <div class="text-8xl mb-5">😔</div>
-        <h1 class="section-h text-red-600 dark:text-red-400">Ошибка генерации</h1>
+        <h1 class="section-h text-red-600 dark:text-red-400">{{ t('aigen_error_h') }}</h1>
         <div class="glass-premium border-2 border-red-300/60 dark:border-red-500/40 mt-5 mb-5" style="padding: 1.5rem;">
-          <p class="text-red-700 dark:text-red-300 text-sm" x-text="state.error || 'Неизвестная ошибка'"></p>
+          <p class="text-red-700 dark:text-red-300 text-sm" x-text="state.error || '{{ t('aigen_error_default') }}'"></p>
         </div>
         <a href="/ai" class="btn-premium justify-center" style="font-size: 15px; padding: 12px 28px;">
-          ← Попробовать снова
+          {{ t('aigen_try_again') }}
         </a>
       </div>
     </template>

@@ -186,10 +186,10 @@ html.dark .tst-question-box { color: #f1f5f9; }
             <li>{{ t('tst_no_options_step2') }}</li>
             <li>{{ t('tst_no_options_step3') }}</li>
           </ol>
-          <pre class="bg-white/40 dark:bg-slate-900/40 rounded-lg p-3 text-[11px] font-mono text-amber-900 dark:text-amber-100 mb-3 whitespace-pre-wrap">A) Первый вариант
-B) Второй вариант
-C) Третий вариант
-D) Четвёртый вариант</pre>
+          <pre class="bg-white/40 dark:bg-slate-900/40 rounded-lg p-3 text-[11px] font-mono text-amber-900 dark:text-amber-100 mb-3 whitespace-pre-wrap">{{ t('test_format_a') }}
+{{ t('test_format_b') }}
+{{ t('test_format_c') }}
+{{ t('test_format_d') }}</pre>
           <a href="/deck/{{ deck_id }}" class="btn-premium inline-flex" style="font-size: 13px; padding: 8px 16px;">
             {{ t('tst_no_options_go_edit') }} →
           </a>
