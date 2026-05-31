@@ -1050,11 +1050,20 @@
     justify-content: center;
     overflow: hidden;
     transition: transform 0.25s;
+    position: relative;
   }
   .brand-logo-icon img {
     width: 100%; height: 100%;
     object-fit: contain;
+    position: absolute;
+    inset: 0;
   }
+  /* Light mode: show light logo, hide dark logo */
+  .brand-logo-icon .logo-light { display: block; }
+  .brand-logo-icon .logo-dark  { display: none; }
+  /* Dark mode: opposite */
+  html.dark .brand-logo-icon .logo-light { display: none; }
+  html.dark .brand-logo-icon .logo-dark  { display: block; }
   .brand-logo:hover .brand-logo-icon { transform: rotate(-4deg) scale(1.05); }
   .brand-logo-text {
     font-family: 'Space Grotesk', sans-serif;
@@ -1281,7 +1290,10 @@
 <header class="sticky top-0 z-40 nav-blur">
   <nav class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center" id="main-nav">
     <a href="/dashboard" class="brand-logo">
-      <span class="brand-logo-icon"><img src="/static/logo.png" alt="QuizAIPro"></span>
+      <span class="brand-logo-icon">
+        <img src="/static/logo.png" alt="QuizAIPro" class="logo-light">
+        <img src="/static/logo-org.png?v=7" alt="QuizAIPro" class="logo-dark">
+      </span>
       <span class="brand-logo-text">{{ t('app_name') }}</span>
       {% if current_user.role in ['admin','teacher'] %}
       <span class="badge bg-indigo-100 text-indigo-700 hidden sm:inline-flex ml-1">{{ current_user.role }}</span>
