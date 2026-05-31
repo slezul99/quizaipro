@@ -61,3 +61,8 @@ vision_jobs_data/*.json
 # === Razrabotka ===
 *.bak
 *.tmp
+
+# === Node.js / Tailwind build ===
+node_modules/
+# package-lock.json kept for reproducible builds
+# static/tailwind.css IS committed as fallback — Railway rebuilds it on deploy
