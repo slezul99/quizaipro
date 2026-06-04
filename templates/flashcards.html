@@ -20,7 +20,8 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 32px;
-    padding: 28px 24px;
+    /* Top/bottom padding reserves room for label (top) and tap-hint (bottom) so they don't overlap text */
+    padding: 52px 24px 44px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -80,15 +81,21 @@
     font-size: clamp(16px, 3.5vw, 32px);
     line-height: 1.4;
     font-weight: 600;
+    width: 100%;
     max-width: 92%;
-    /* Allow scroll if text is very long */
-    max-height: 55%;
+    /* Take remaining space and scroll inside instead of overflowing onto siblings */
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     word-break: break-word;
+    overflow-wrap: anywhere;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.4) transparent;
     padding: 0 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .fc-text::-webkit-scrollbar { width: 3px; }
   .fc-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.35); border-radius: 3px; }
@@ -109,10 +116,15 @@
     margin-top: 14px;
     font-size: clamp(12px, 1.8vw, 15px);
     opacity: 0.85;
+    width: 100%;
     max-width: 90%;
-    max-height: 20%;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 30%;
     overflow-y: auto;
     white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
     line-height: 1.5;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.3) transparent;
@@ -165,11 +177,37 @@
   .fc-swipe-right { right: 12px; color: #10b981; }
 
   /* Dark mode adapt */
-  .dark .fc-front {
+  html.dark .fc-front {
     background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 50%, #312e81 100%);
     color: #f1f5f9;
     border-color: rgba(139,92,246,0.3);
   }
+  html.dark .fc-front::before {
+    background: radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%);
+  }
+  html.dark .fc-front .fc-text { color: #f1f5f9 !important; }
+  html.dark .fc-front .fc-label { color: #c4b5fd !important; }
+  html.dark .fc-front .text-slate-400 { color: #94a3b8 !important; }
+  /* Back face: slightly deeper gradient for readable contrast in dark mode */
+  html.dark .fc-back {
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 50%, #be185d 100%);
+  }
+
+  /* Nav buttons in dark mode */
+  html.dark .fc-nav-btn {
+    background: rgba(30, 41, 75, 0.9);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+  }
+  html.dark .fc-nav-btn svg { color: #c4b5fd !important; }
+
+  /* Progress track */
+  html.dark .fc-progress-track { background: rgba(99,102,241,0.2); }
+
+  /* Grade buttons (😣 👍 ⭐): override the bright light inline gradients in dark mode */
+  html.dark [style*="#fff7ed"] { background: linear-gradient(135deg, rgba(249,115,22,0.22), rgba(234,88,12,0.15)) !important; color: #fdba74 !important; border: 1px solid rgba(249,115,22,0.35); }
+  html.dark [style*="#ecfdf5"] { background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(5,150,105,0.15)) !important; color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.35); }
+  html.dark [style*="#eff6ff"] { background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.15)) !important; color: #93c5fd !important; border: 1px solid rgba(59,130,246,0.35); }
 
   /* Progress bar premium */
   .fc-progress-track {
