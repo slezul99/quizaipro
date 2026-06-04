@@ -5,13 +5,33 @@
   <div class="deco-blob deco-blob-1" style="top:-100px; right:-120px;"></div>
   <div class="deco-blob deco-blob-3" style="bottom:-80px; left:-100px;"></div>
 
+  <style>
+    .login-logo-ai {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .login-logo-name { color: #0f172a; }
+    html.dark .login-logo-name { color: #f1f5f9; }
+  </style>
   <div class="relative z-10">
     <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-4"
-           style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); border: 1.5px solid rgba(99,102,241,0.3); box-shadow: 0 12px 32px -10px rgba(99,102,241,0.4);">
-        <span class="text-5xl">🧠</span>
+      <div class="flex items-center justify-center gap-4 mb-5">
+        <span class="brand-logo-icon" style="width:80px;height:80px;flex-shrink:0;border-radius:20px;">
+          <img src="/static/logo.png" alt="QuizAIPro" class="logo-light" style="width:80px;height:80px;object-fit:contain;">
+          <img src="/static/logo-org.png?v=7" alt="QuizAIPro" class="logo-dark" style="width:80px;height:80px;object-fit:contain;">
+        </span>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+          <div class="login-logo-name" style="font-size:2.6rem;font-weight:800;letter-spacing:-0.04em;line-height:1;font-family:'Space Grotesk','Plus Jakarta Sans','Inter',sans-serif;">
+            Quiz<span class="login-logo-ai">AI</span>Pro
+          </div>
+          <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.3em;color:#94a3b8;text-transform:uppercase;font-family:'Plus Jakarta Sans','Inter',sans-serif;">
+            AI-POWERED LEARNING
+          </div>
+        </div>
       </div>
-      <h1 class="section-h" style="font-size: clamp(2rem, 4vw, 2.6rem);">{{ t('register') }}</h1>
+      <h1 class="section-h" style="font-size: clamp(1.5rem, 3vw, 2rem);">{{ t('register') }}</h1>
       <p class="text-sm text-slate-600 mt-2 dark:text-slate-300">{{ t('rg_sub') }}</p>
     </div>
 
