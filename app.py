@@ -234,6 +234,11 @@ _ANALYTICS_SKIP_PREFIXES = (
     "/api/duel/",
     "/api/tournament/",
     "/api/chat/",
+    "/login",
+    "/logout",
+    "/register",
+    "/auth/",
+    "/superadmin",
 )
 
 
