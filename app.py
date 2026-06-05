@@ -24,7 +24,7 @@ import achievements as ach_mod
 import goals as goals_mod
 import help_content
 import bot_protection
-from auth import current_user, login_required, role_required, can_manage_content, super_admin_required, is_super_admin
+from auth import current_user, login_required, role_required, can_manage_content, super_admin_required, is_super_admin, SUPER_ADMINS
 
 BASE = Path(__file__).resolve().parent
 # Production: /data/uploads (persistent volume), Lokalno: ./uploads
@@ -248,6 +248,10 @@ def track_analytics():
     # Ne logiruem boty-skanyery (chistim analitiku)
     ua = request.headers.get("User-Agent", "")
     if bot_protection.is_bot_request(path, ua):
+        return
+
+    # Ne logiruyem vizity super-adminov
+    if session.get("username") in SUPER_ADMINS:
         return
 
     try:
@@ -857,6 +861,7 @@ def login():
             _rate_limits.pop(f"login_user:{username}", None)
             session.clear()  # Anti-session-fixation
             session["user_id"] = user["id"]
+            session["username"] = user["username"]
             session["lang"] = user["lang"] or "ru"
             session.permanent = True
             return redirect(url_for("dashboard"))
@@ -954,7 +959,7 @@ def register():
                 )
             except Exception as log_err:
                 print(f"[!] Ne udalos' zapisat' registratsiyu v fayl: {log_err}")
-            session["user_id"] = user["id"]; session["lang"] = "ru"
+            session["user_id"] = user["id"]; session["username"] = user["username"]; session["lang"] = "ru"
             return redirect(url_for("dashboard"))
         except Exception as e:
             flash(f"Oshibka: {e}", "error")
@@ -1016,6 +1021,7 @@ def auth_google_callback():
     except Exception as log_err:
         print(f"[!] Google reg log oshibka: {log_err}")
     session["user_id"] = uid
+    session["username"] = u["username"] if u else ""
     session["lang"] = "ru"
     return redirect(url_for("dashboard"))
 
