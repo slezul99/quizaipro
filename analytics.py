@@ -75,6 +75,12 @@ _PRIVATE_PREFIXES = (
     "192.168.", "127.", "::1", "fe80",
 )
 
+# Superadminy isklyuchayutsya iz analitiki
+_EXCL_ADMINS = (
+    "(user_id IS NULL OR user_id NOT IN "
+    "(SELECT id FROM users WHERE username IN ('slezul99@gmail.com','aza')))"
+)
+
 
 def is_private_ip(ip: str) -> bool:
     if not ip:
@@ -365,8 +371,8 @@ def get_summary(days: int = 30) -> dict:
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
 
-    # REAL = ne bot AND ne local IP
-    real_filter = "device_type != 'bot' AND (country IS NULL OR country != 'LOCAL')"
+    # REAL = ne bot AND ne local IP AND ne superadmin
+    real_filter = f"device_type != 'bot' AND (country IS NULL OR country != 'LOCAL') AND {_EXCL_ADMINS}"
 
     stats = {}
     stats["total_visits"] = conn.execute(
@@ -387,7 +393,6 @@ def get_summary(days: int = 30) -> dict:
         f"SELECT COUNT(DISTINCT ip) AS c FROM visits WHERE created_at >= ? AND {real_filter}",
         (cutoff,)
     ).fetchone()["c"]
-    # Boty po-prezhnemu schitayem otdel'no — chtoby ty videl skol'ko ataki/skanyirovshikov
     stats["bots"] = conn.execute(
         "SELECT COUNT(*) AS c FROM visits WHERE created_at >= ? AND device_type='bot'",
         (cutoff,)
@@ -409,7 +414,7 @@ def get_by_country(days: int = 30, limit: int = 50) -> list[dict]:
         FROM visits
         WHERE created_at >= ? AND country IS NOT NULL AND country != ''
               AND country != 'LOCAL' AND country != '?'
-              AND device_type != 'bot'
+              AND device_type != 'bot' AND {_EXCL_ADMINS}
         GROUP BY country, country_name
         ORDER BY visits DESC
         LIMIT ?
@@ -429,7 +434,7 @@ def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
         FROM visits
         WHERE created_at >= ? AND city IS NOT NULL AND city != ''
               AND country != 'LOCAL' AND country != '?'
-              AND device_type != 'bot'
+              AND device_type != 'bot' AND {_EXCL_ADMINS}
         GROUP BY country, city
         ORDER BY visits DESC
         LIMIT ?
@@ -451,6 +456,7 @@ def get_daily(days: int = 30) -> list[dict]:
         WHERE created_at >= ?
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND {_EXCL_ADMINS}
         GROUP BY DATE(created_at)
         ORDER BY day
     """, (cutoff,)).fetchall()
@@ -547,6 +553,7 @@ def get_recent_visits(limit: int = 100) -> list[dict]:
         LEFT JOIN users u ON u.id = v.user_id
         WHERE v.device_type != 'bot'
               AND (v.country IS NULL OR v.country != 'LOCAL')
+              AND (v.user_id IS NULL OR v.user_id NOT IN (SELECT id FROM users WHERE username IN ('slezul99@gmail.com','aza')))
         ORDER BY v.id DESC LIMIT ?
     """, (limit,)).fetchall()
     conn.close()

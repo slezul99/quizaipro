@@ -8329,6 +8329,7 @@ def superadmin_analytics():
             WHERE v.created_at >= datetime('now', '-5 minutes')
                   AND v.device_type != 'bot'
                   AND (v.country IS NULL OR v.country != 'LOCAL')
+                  AND (v.user_id IS NULL OR v.user_id NOT IN (SELECT id FROM users WHERE username IN ('slezul99@gmail.com','aza')))
             GROUP BY v.session_id
             ORDER BY last_seen DESC LIMIT 50
         """).fetchall()
