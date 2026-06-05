@@ -406,7 +406,7 @@ def get_by_country(days: int = 30, limit: int = 50) -> list[dict]:
     """Top stran (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
-    rows = conn.execute("""
+    rows = conn.execute(f"""
         SELECT country, country_name,
             COUNT(*) AS visits,
             COUNT(DISTINCT session_id) AS unique_visitors,
@@ -427,7 +427,7 @@ def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
     """Top gorodov (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
-    rows = conn.execute("""
+    rows = conn.execute(f"""
         SELECT country, country_name, city,
             COUNT(*) AS visits,
             COUNT(DISTINCT session_id) AS unique_visitors
@@ -447,7 +447,7 @@ def get_daily(days: int = 30) -> list[dict]:
     """Posechenia po dnyam (real users only)."""
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
-    rows = conn.execute("""
+    rows = conn.execute(f"""
         SELECT DATE(created_at) AS day,
             COUNT(*) AS visits,
             COUNT(DISTINCT session_id) AS unique_visitors,
