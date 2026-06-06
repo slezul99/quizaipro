@@ -1365,7 +1365,7 @@
           {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak
-          class="absolute right-0 mt-2 w-64 glass-strong rounded-2xl shadow-2xl overflow-hidden text-sm z-50 border border-indigo-200/40">
+          class="absolute right-0 mt-2 w-64 glass-strong rounded-2xl shadow-2xl text-sm z-50 border border-indigo-200/40 overflow-y-auto" style="max-height:50vh;">
           <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-800/30">{{ t('nav_learn') }}</div>
           <a href="/categories" class="dd-item emerald">{{ icon('folder', 17) }} <span>{{ t('nav_categories') }}</span></a>
           {% if ai_available %}
@@ -1378,7 +1378,7 @@
 
           <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700/40">{{ t('nav_games') }}</div>
           <a href="/duels" class="dd-item pink">{{ icon('sword', 17) }} <span>{{ t('nav_duels') }}</span></a>
-          <a href="/tournaments" class="dd-item pink">{{ icon('trophy', 17) }} <span>{{ t('nav_tournaments') }}</span></a>
+          <span class="dd-item pink opacity-40 cursor-not-allowed select-none">{{ icon('trophy', 17) }} <span>{{ t('nav_tournaments') }}</span> <span class="ml-auto text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded-full">скоро</span></span>
           <a href="/live/join" class="dd-item pink">{{ icon('key', 17) }} <span>{{ t('nav_live_join') }}</span></a>
           {% if current_user.role in ['admin','teacher','individual'] %}
           <a href="/live/create" class="dd-item pink">{{ icon('gamepad', 17) }} <span>{{ t('nav_live_create') }}</span></a>
@@ -1471,7 +1471,7 @@
 
     <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-3 pb-1 border-t border-slate-100 mt-2">{{ t('nav_games') }}</div>
     <a href="/duels" class="mob-link pink">{{ icon('sword', 19) }} <span>{{ t('nav_duels') }}</span></a>
-    <a href="/tournaments" class="mob-link pink">{{ icon('trophy', 19) }} <span>{{ t('nav_tournaments') }}</span></a>
+    <span class="mob-link pink opacity-40 cursor-not-allowed select-none">{{ icon('trophy', 19) }} <span>{{ t('nav_tournaments') }}</span> <span class="ml-auto text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded-full">скоро</span></span>
     <a href="/live/join" class="mob-link pink">{{ icon('key', 19) }} <span>{{ t('nav_live_join') }}</span></a>
     {% if current_user.role in ['admin','teacher','individual'] %}
     <a href="/live/create" class="mob-link pink">{{ icon('gamepad', 19) }} <span>{{ t('nav_live_create') }}</span></a>
