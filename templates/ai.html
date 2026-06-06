@@ -76,8 +76,8 @@
              style="background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1)); border: 1.5px solid rgba(251,191,36,0.5);">
           <span class="text-2xl">🧪</span>
           <div class="flex-1">
-            <div class="font-bold text-amber-800 dark:text-amber-300 text-sm mb-0.5">Тестовый режим</div>
-            <p class="text-xs text-amber-700 dark:text-amber-400">Функция «С фото» сейчас находится в тестовом режиме. Результаты могут быть неточными. Спасибо за обратную связь!</p>
+            <div class="font-bold text-amber-800 dark:text-amber-300 text-sm mb-0.5">{{ t('ai_photo_beta_h') }}</div>
+            <p class="text-xs text-amber-700 dark:text-amber-400">{{ t('ai_photo_beta_desc') }}</p>
           </div>
           <button @click="showPhotoBeta = false" class="text-amber-500 hover:text-amber-700 text-lg leading-none mt-0.5">×</button>
         </div>
@@ -110,10 +110,10 @@
                :max="kind === 'photo' ? 20 : 50" min="1"
                :class="(kind === 'photo' ? count > 20 : count > 50) ? 'input-premium border-red-500 dark:border-red-500 ring-1 ring-red-400' : 'input-premium'">
         <p x-show="kind === 'photo' && count > 20" x-transition class="text-xs text-red-500 font-semibold mt-1.5">
-          Максимальное количество для этого режима — 20 карточек
+          {{ t('ai_count_over_photo') }}
         </p>
         <p x-show="kind !== 'photo' && count > 50" x-transition class="text-xs text-red-500 font-semibold mt-1.5">
-          Максимальное количество — 50 карточек
+          {{ t('ai_count_over') }}
         </p>
         <p x-show="!(kind === 'photo' ? count > 20 : count > 50)" class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
           <span x-show="kind === 'photo'">{{ t('ai_photo_max') }}</span>
