@@ -412,6 +412,10 @@ function deckEditor() {
     background: rgba(99, 102, 241, 0.18);
     color: #ddd6fe;
   }
+  /* Header card: overflow:visible so the Tools dropdown is not clipped.
+     Also suppress the card-lift hover — it's jarring on a full-page header. */
+  .deck-header-card { overflow: visible !important; }
+  .deck-header-card:hover { transform: none !important; }
   @media (max-width: 640px) {
     .deck-action-bar { align-items: stretch; }
     .deck-primary-actions { flex: 1 1 100%; }
@@ -457,7 +461,7 @@ function deckEditor() {
     </a>
 
     <!-- HEADER колоды -->
-    <div class="glass-premium mb-6">
+    <div class="glass-premium deck-header-card mb-6">
       <div class="flex items-center gap-4 mb-4 flex-wrap">
         <input x-model="deck.icon" @blur="saveDeck()" maxlength="2" class="deck-icon-input" value="{{ deck['icon'] }}" {% if not can_edit %}disabled{% endif %}>
         <input x-model="deck.name" @blur="saveDeck()" class="deck-name-input" value="{{ deck['name'] }}" {% if not can_edit %}disabled{% endif %}>
@@ -501,6 +505,9 @@ function deckEditor() {
           <a href="/deck/{{ deck['id'] }}/flashcards" class="btn-premium deck-study-action" title="{{ t('dk_btn_flashcards_title') }}">{{ t('dk_btn_flashcards') }}</a>
           <a href="/deck/{{ deck['id'] }}/match" class="btn-premium deck-study-action" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 8px 20px -6px rgba(245,158,11,0.45);" title="{{ t('dk_btn_match_title') }}">{{ t('dk_btn_match') }}</a>
           {% endif %}
+          {% if _mcq > 0 %}
+          <button type="button" @click="showTest = true" class="btn-premium deck-study-action" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}" data-tour="deck-test-btn">{{ t('dk_btn_test') }}</button>
+          {% endif %}
           {% if can_edit %}
           <button type="button" @click="showLive = true" class="btn-premium deck-study-action" style="background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 8px 20px -6px rgba(236,72,153,0.45);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
           <button @click="addCard()" class="btn-premium-ghost deck-study-action" title="{{ t('dk_btn_addcard_title') }}" data-tour="deck-add-card">{{ t('dk_btn_addcard') }}</button>
@@ -513,9 +520,8 @@ function deckEditor() {
             <button type="button" @click="toolsOpen = !toolsOpen" class="btn-premium-ghost deck-study-action" aria-haspopup="menu" :aria-expanded="toolsOpen.toString()" data-tour="deck-import-btn">
               Tools <span aria-hidden="true">⋯</span>
             </button>
-            <div x-show="toolsOpen" x-transition.origin.top.right x-cloak class="deck-tools-menu absolute right-0 mt-2 z-40" role="menu">
+            <div x-show="toolsOpen" x-transition x-cloak class="deck-tools-menu absolute right-0 mt-2 z-50" role="menu">
               {% if _mcq > 0 %}
-              <button type="button" @click="toolsOpen = false; showTest = true" class="deck-tools-item" role="menuitem" data-tour="deck-test-btn">{{ t('dk_btn_test') }}</button>
               <a href="/test/history?scope_type=deck&scope_id={{ deck['id'] }}" class="deck-tools-item" role="menuitem">📊 {{ t('cat_history_short') }}</a>
               {% endif %}
               {% if can_edit %}
