@@ -43,6 +43,30 @@ app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
 
+# === Mobile /api/v1 JSON REST layer (isolated Blueprint, JWT-based, no session coupling) ===
+from api_v1 import (
+    ai_generation_bp as _api_v1_ai_generation_bp,
+    auth_bp as _api_v1_auth_bp,
+    dashboard_bp as _api_v1_dashboard_bp,
+    library_bp as _api_v1_library_bp,
+    marketplace_bp as _api_v1_marketplace_bp,
+    decks_bp as _api_v1_decks_bp,
+    study_bp as _api_v1_study_bp,
+    test_questions_bp as _api_v1_test_questions_bp,
+    tests_bp as _api_v1_tests_bp,
+    tutor_bp as _api_v1_tutor_bp,
+)
+app.register_blueprint(_api_v1_auth_bp)
+app.register_blueprint(_api_v1_dashboard_bp)
+app.register_blueprint(_api_v1_library_bp)
+app.register_blueprint(_api_v1_marketplace_bp)
+app.register_blueprint(_api_v1_decks_bp)
+app.register_blueprint(_api_v1_study_bp)
+app.register_blueprint(_api_v1_test_questions_bp)
+app.register_blueprint(_api_v1_tests_bp)
+app.register_blueprint(_api_v1_tutor_bp)
+app.register_blueprint(_api_v1_ai_generation_bp)
+
 # === SECURITY CONFIG ===
 # Stoykie persistent secret key (sokhranyaet sessii pri perezapuske)
 SECRET_FILE = BASE / ".secret_key"
@@ -173,6 +197,9 @@ def log_security(event: str, details: str = ""):
 def csrf_protect():
     """Proveryaem CSRF-token na vse POST-zaprosy. Iskl: webhook'i."""
     if request.method == "POST":
+        # Iskl: mobil'nyy /api/v1 — JSON + Bearer-token auth, ne cookie/sessiya (CSRF ne primenim)
+        if request.path.startswith("/api/v1/"):
+            return
         # Iskl: Stripe webhook (svoya proverka po podpisi)
         if request.path == "/webhooks/stripe":
             return
@@ -3540,6 +3567,21 @@ def marketplace():
         d["subj_title"] = d.get(f"subj_{lang}") or d.get("subj_en", "")
         featured.append(d)
 
+    # Trending decks — most-cloned public decks (social proof + discovery)
+    trending_raw = conn.execute("""
+        SELECT d.*,
+            (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+            CASE WHEN d.org_id IS NOT NULL
+                 THEN (SELECT name FROM organizations WHERE id=d.org_id)
+                 ELSE (SELECT username FROM users WHERE id=d.owner_id)
+            END AS author
+        FROM decks d
+        WHERE d.is_public=1 AND d.clones_count > 0
+        ORDER BY d.clones_count DESC, d.id DESC
+        LIMIT 10
+    """).fetchall()
+    trending = [dict(d) for d in trending_raw]
+
     # Legacy collections (no subject_id) — keep backward compat
     legacy_raw = conn.execute("""
         SELECT c.*,
@@ -3557,7 +3599,7 @@ def marketplace():
 
     conn.close()
     return render_template("marketplace.html",
-                           subjects=subjects, featured=featured, legacy=legacy)
+                           subjects=subjects, featured=featured, legacy=legacy, trending=trending)
 
 
 @app.route("/collection/<slug>")
@@ -3838,6 +3880,24 @@ def marketplace_search():
         d["subj_title"] = d.get(f"subj_{lang}") or d.get("subj_en", "")
         colls.append(d)
 
+    # Search individual public decks too — collections-only search misses most content
+    decks = []
+    if q:
+        like = f"%{q}%"
+        decks_raw = conn.execute("""
+            SELECT d.*,
+                (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+                CASE WHEN d.org_id IS NOT NULL
+                     THEN (SELECT name FROM organizations WHERE id=d.org_id)
+                     ELSE (SELECT username FROM users WHERE id=d.owner_id)
+                END AS author
+            FROM decks d
+            WHERE d.is_public=1 AND (d.name LIKE ? OR d.description LIKE ?)
+            ORDER BY d.clones_count DESC, d.id DESC
+            LIMIT 30
+        """, (like, like)).fetchall()
+        decks = [dict(d) for d in decks_raw]
+
     subjects = conn.execute(
         "SELECT * FROM mp_subjects WHERE is_active=1 ORDER BY sort_order"
     ).fetchall()
@@ -3847,7 +3907,7 @@ def marketplace_search():
 
     conn.close()
     return render_template("marketplace_search.html",
-                           collections=colls, subjects=subjects,
+                           collections=colls, decks=decks, subjects=subjects,
                            q=q, subject_slug=subject_slug, level=level)
 
 
@@ -5586,9 +5646,11 @@ def api_tutor_ask():
     deck_id = request.form.get("deck_id", type=int)
     if deck_id:
         conn = db.get_conn()
-        cards = conn.execute("SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (deck_id,)).fetchall()
-        if cards:
-            deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if deck is not None and can_view_deck(user, deck):
+            cards = conn.execute("SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (deck_id,)).fetchall()
+            if cards:
+                deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
         conn.close()
 
     # VSEGDA gruzim istoriyu iz DB — nadezhno, ne zavisit ot razmera cookie

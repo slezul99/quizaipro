@@ -40,6 +40,59 @@
       </form>
     </div>
 
+    <!-- Deck results — individual decks matching the query -->
+    {% if decks %}
+    <div class="mb-10">
+      <h2 class="text-lg font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+        {{ t('mk_decks_results_h') }}
+        <span class="text-sm font-semibold text-slate-400">({{ decks|length }})</span>
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for d in decks %}
+        <div class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">{{ d.icon }}</div>
+            <div class="flex flex-col items-end gap-1">
+              <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+              {% if d.clones_count and d.clones_count > 0 %}
+              <span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-[11px] font-bold">📥 {{ d.clones_count }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <a href="/deck/{{ d.id }}" class="block flex-1">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ d.name }}</h3>
+            {% if d.description %}<p class="text-xs text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">{{ d.description }}</p>{% endif %}
+          </a>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
+            {% if d.author and d.author != 'quizaipro_system' %}
+            <span class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[90px]">{{ d.author }}</span>
+            {% else %}
+            <span class="text-xs text-slate-400 dark:text-slate-500">QuizAIPro</span>
+            {% endif %}
+            <div class="flex gap-2 items-center">
+              <a href="/deck/{{ d.id }}"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 hover:shadow-md"
+                style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                {{ t('mk_view_btn') }}
+              </a>
+              <form method="POST" action="/marketplace/clone/{{ d.id }}" style="display:inline">
+                <button type="submit"
+                  class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 flex items-center justify-center transition-all hover:scale-105 group/clone"
+                  title="{{ t('mk_clone_tooltip') }}">
+                  <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover/clone:text-indigo-600 dark:group-hover/clone:text-indigo-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Results -->
     {% if collections %}
     <div class="mb-4 text-sm text-slate-500 dark:text-slate-400 font-semibold">
@@ -78,14 +131,14 @@
       </a>
       {% endfor %}
     </div>
-    {% elif q or subject_slug or level %}
+    {% elif (q or subject_slug or level) and not decks %}
     <div class="text-center py-20 glass-premium">
       <div class="text-6xl mb-4">🔍</div>
       <h3 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">{{ t('mk_nothing_found') }}</h3>
       <p class="text-slate-500 dark:text-slate-400">{{ t('mk_try_other_or_filter') }}</p>
       <a href="/marketplace/search" class="btn-premium mt-4 inline-block">{{ t('mk_reset_filters') }}</a>
     </div>
-    {% else %}
+    {% elif not decks and not q and not subject_slug and not level %}
     <div class="text-center py-20 glass-premium">
       <div class="text-6xl mb-4">📚</div>
       <p class="text-slate-600 dark:text-slate-300 font-semibold">{{ t('mk_enter_query') }}</p>

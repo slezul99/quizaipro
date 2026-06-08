@@ -1,5 +1,32 @@
 {% extends "base.html" %}
 {% block title %}{{ coll.title }} — QuizAIPro{% endblock %}
+{% block meta_description %}{{ coll.desc or coll.title }}{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": {{ coll.title|tojson }},
+  "description": {{ (coll.desc or coll.title)|tojson }},
+  "numberOfItems": {{ decks|length }},
+  "itemListElement": [
+    {% for d in decks %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "url": {{ (request.url_root.rstrip('/') + '/deck/' + d.id|string)|tojson }},
+      "item": {
+        "@type": "LearningResource",
+        "name": {{ d.name|tojson }},
+        "description": {{ (d.description or d.name)|tojson }},
+        "learningResourceType": "Flashcard deck"
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
 {% block content %}
 <div class="max-w-5xl mx-auto px-6 py-10">
   <div class="deco-blob deco-blob-1" style="top:-50px;right:-100px;"></div>
@@ -51,7 +78,14 @@
       <div class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
         <div class="flex items-start justify-between mb-3">
           <div class="text-3xl">{{ d.icon }}</div>
-          <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+          <div class="flex flex-col items-end gap-1">
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+            {% if d.clones_count and d.clones_count > 0 %}
+            <span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1">
+              📥 {{ d.clones_count }}
+            </span>
+            {% endif %}
+          </div>
         </div>
         <a href="/deck/{{ d.id }}" class="block flex-1">
           <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ d.name }}</h3>
