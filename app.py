@@ -2,9 +2,24 @@
 """QuizAIPro v3 — Multi-tenant + Google OAuth + AI + Stripe."""
 import os
 import re
+import sys
 import secrets
 from datetime import datetime, timedelta, date
 from pathlib import Path
+
+# === Console encoding (P0-5) ===
+# On Windows the process stdout/stderr default to the system code page
+# (cp1251/cp1252), which cannot encode many glyphs the AI returns — chemistry
+# subscripts (₂/₆), reaction arrows (→), emoji, etc. Any `print()` that echoes
+# raw AI output (e.g. ai_gen._parse_cards_json) then raises
+# `UnicodeEncodeError: 'charmap' codec can't encode character …`, crashing the
+# generation job (topic "Photosynthesis" failed while "Dogs" worked). Force
+# UTF-8 with replacement so logging can never abort a request.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 from flask import Flask, render_template, render_template_string, request, jsonify, redirect, url_for, session, flash, abort
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -42,30 +57,6 @@ app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
 # no ne 200 MB DoS vector.
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
-
-# === Mobile /api/v1 JSON REST layer (isolated Blueprint, JWT-based, no session coupling) ===
-from api_v1 import (
-    ai_generation_bp as _api_v1_ai_generation_bp,
-    auth_bp as _api_v1_auth_bp,
-    dashboard_bp as _api_v1_dashboard_bp,
-    library_bp as _api_v1_library_bp,
-    marketplace_bp as _api_v1_marketplace_bp,
-    decks_bp as _api_v1_decks_bp,
-    study_bp as _api_v1_study_bp,
-    test_questions_bp as _api_v1_test_questions_bp,
-    tests_bp as _api_v1_tests_bp,
-    tutor_bp as _api_v1_tutor_bp,
-)
-app.register_blueprint(_api_v1_auth_bp)
-app.register_blueprint(_api_v1_dashboard_bp)
-app.register_blueprint(_api_v1_library_bp)
-app.register_blueprint(_api_v1_marketplace_bp)
-app.register_blueprint(_api_v1_decks_bp)
-app.register_blueprint(_api_v1_study_bp)
-app.register_blueprint(_api_v1_test_questions_bp)
-app.register_blueprint(_api_v1_tests_bp)
-app.register_blueprint(_api_v1_tutor_bp)
-app.register_blueprint(_api_v1_ai_generation_bp)
 
 # === SECURITY CONFIG ===
 # Stoykie persistent secret key (sokhranyaet sessii pri perezapuske)
@@ -197,9 +188,6 @@ def log_security(event: str, details: str = ""):
 def csrf_protect():
     """Proveryaem CSRF-token na vse POST-zaprosy. Iskl: webhook'i."""
     if request.method == "POST":
-        # Iskl: mobil'nyy /api/v1 — JSON + Bearer-token auth, ne cookie/sessiya (CSRF ne primenim)
-        if request.path.startswith("/api/v1/"):
-            return
         # Iskl: Stripe webhook (svoya proverka po podpisi)
         if request.path == "/webhooks/stripe":
             return
