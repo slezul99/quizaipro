@@ -120,14 +120,20 @@ function deckEditor() {
 </script>
 <style>
   /* === КАРТА === */
+  /* Cards use a near-opaque solid background instead of backdrop-filter:blur().
+     backdrop-filter is the single most GPU-expensive CSS property — with 50-100
+     cards on a deck page the browser re-samples and re-blurs the page background
+     behind EVERY card on each scroll frame, causing severe scroll jank on
+     desktops (lite-mode only auto-disables it on low-end phones). At 0.96/0.92
+     opacity the frosted tint was barely visible anyway, so this is a near-
+     invisible visual change for a large performance win. Only transform/box-shadow
+     transition on hover (cheap, compositor-friendly) instead of `all`. */
   .deck-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.96);
     border: 1.5px solid rgba(99, 102, 241, 0.12);
     border-radius: 22px;
     padding: 1.5rem 1.75rem;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
     position: relative;
     box-shadow: 0 4px 20px -4px rgba(108, 181, 232, 0.15);
   }
@@ -137,7 +143,7 @@ function deckEditor() {
     transform: translateY(-2px);
   }
   html.dark .deck-card {
-    background: rgba(30, 41, 75, 0.7);
+    background: rgba(30, 41, 75, 0.92);
     border-color: rgba(99, 102, 241, 0.25);
     box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4);
   }
@@ -376,16 +382,16 @@ function deckEditor() {
   }
   .deck-tools-menu {
     min-width: 230px;
-    background: rgba(255, 255, 255, 0.96);
+    /* Solid background (no backdrop-filter): bg is near-opaque so blur was
+       invisible, and dropping it makes the x-transition open animation smooth. */
+    background: rgb(252, 252, 254);
     border: 1.5px solid rgba(99, 102, 241, 0.18);
     border-radius: 16px;
     box-shadow: 0 18px 45px -18px rgba(15, 23, 42, 0.35);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
     overflow: hidden;
   }
   html.dark .deck-tools-menu {
-    background: rgba(15, 23, 42, 0.96);
+    background: rgb(18, 27, 48);
     border-color: rgba(99, 102, 241, 0.28);
     box-shadow: 0 18px 45px -18px rgba(0, 0, 0, 0.75);
   }
