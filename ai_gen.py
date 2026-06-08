@@ -1369,7 +1369,7 @@ JSON only, no explanations."""
                     break
             new_note = "\n".join(opts)
             result_cards[orig_i] = {**cards[orig_i], "back": new_back, "note": new_note}
-            print(f"[auto_find_answers] [{orig_i + 1}] → {correct} (conf={confidence:.2f}): {new_back[:60]}")
+            print(f"[auto_find_answers] [{orig_i + 1}] -> {correct} (conf={confidence:.2f}): {new_back[:60]}")
 
     answered = sum(1 for i in to_process if _already_answered(result_cards[i]))
     print(f"[auto_find_answers] ITOG: {answered}/{len(to_process)} kart poluchili otvet")
@@ -1425,7 +1425,7 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
                 return text
         except urlerr.HTTPError as e:
             if e.code == 429:
-                print(f"[AI explain] {url_template.split('/models/')[1][:30]} → 429, fallback")
+                print(f"[AI explain] {url_template.split('/models/')[1][:30]} -> 429, fallback")
                 continue
             err_body = e.read().decode("utf-8", errors="replace")[:200]
             print(f"[AI explain] HTTP {e.code}: {err_body}")
@@ -1435,6 +1435,54 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
             return None
     return None
 
+
+def find_answers(question: str, deck_context: str = "", lang: str = "ru") -> dict | None:
+    """AI-pomoshnik: otvechaet na svobodnyy vopros studenta s kratkimi key points.
+    Ispol'zuyet tu zhe infrastrukturu (_call_gemini), chto i generatsiya kart —
+    tol'ko prosit strukturirovannyy JSON vmesto massiva kartochek."""
+    if not is_available():
+        return None
+    lang_name = {"ru": "русском", "en": "English", "uz": "узбекском"}.get(lang, "русском")
+    context_block = f"\n\nКонтекст из колоды пользователя (используй, если уместно):\n{deck_context}" if deck_context else ""
+
+    prompt = f"""Студент задал вопрос. Дай ясный, полезный ответ на {lang_name} языке.
+
+ВОПРОС: {question}{context_block}
+
+Верни ТОЛЬКО JSON-объект:
+{{"explanation": "развёрнутый ответ в 3-6 предложениях, по существу, без вступлений",
+  "key_points": ["короткий ключевой тезис 1", "короткий ключевой тезис 2", "..."]}}
+
+key_points — это 2-5 коротких (до 12 слов) тезисов, которые стоит запомнить."""
+
+    try:
+        raw = _call_gemini(prompt, max_tokens=1200)
+    except Exception as e:
+        print(f"[AI find-answers] {type(e).__name__}: {e}")
+        return None
+    if not raw:
+        return None
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+    try:
+        data = json.loads(cleaned)
+    except Exception:
+        m = re.search(r"\{.*\}", cleaned, re.DOTALL)
+        if not m:
+            return None
+        try:
+            data = json.loads(m.group(0))
+        except Exception:
+            return None
+    if not isinstance(data, dict):
+        return None
+    explanation = str(data.get("explanation") or "").strip()
+    key_points = data.get("key_points") or []
+    if not isinstance(key_points, list):
+        key_points = []
+    key_points = [str(p).strip() for p in key_points if str(p or "").strip()]
+    if not explanation:
+        return None
+    return {"explanation": explanation, "key_points": key_points}
 
 
 def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> tuple[str, list]:
@@ -1700,7 +1748,7 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
             return payload["candidates"][0]["content"]["parts"][0]["text"].strip()
         except urlerr.HTTPError as e:
             if e.code == 429:
-                print(f"[AI tutor Gemini] {url_template.split('/models/')[1][:30]} → 429, пробуем fallback")
+                print(f"[AI tutor Gemini] {url_template.split('/models/')[1][:30]} -> 429, probuem fallback")
                 continue
             print(f"[AI tutor Gemini] HTTP {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}")
             return None

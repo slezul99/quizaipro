@@ -149,6 +149,21 @@ def init_db():
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
+    -- Refresh-tokeny dlya mobil'nogo /api/v1 JWT-sloya (izolirovano ot web-sessiy)
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id      INTEGER NOT NULL,
+        token_hash   TEXT NOT NULL UNIQUE,
+        device_token TEXT,
+        created_at   TEXT DEFAULT CURRENT_TIMESTAMP,
+        expires_at   TEXT NOT NULL,
+        revoked_at   TEXT,
+        replaced_by  INTEGER,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(replaced_by) REFERENCES refresh_tokens(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+
     -- Druzhba mezhdu polzovatelyami (oba storony posle accept)
     CREATE TABLE IF NOT EXISTS friendships (
         from_id      INTEGER NOT NULL,
@@ -536,6 +551,60 @@ def init_db():
         c.execute("ALTER TABLE user_card_progress ADD COLUMN is_difficult INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
         pass
+    # Mobile SM-2 "repetitions" counter (consecutive-success count) — distinct from the
+    # web flow's lifetime "reviews"/"lapses" pair; the mobile client is the canonical
+    # source for this field (see api_v1/study.py — ownership decision: client computes,
+    # backend persists/validates without recomputing).
+    try:
+        c.execute("ALTER TABLE user_card_progress ADD COLUMN repetitions INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+
+    # === MOBILE STUDY SESSIONS (synced from the Flutter app's local Drift DB) ===
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS study_sessions (
+            id               TEXT NOT NULL,
+            user_id          INTEGER NOT NULL,
+            deck_id          INTEGER NOT NULL,
+            total_cards      INTEGER DEFAULT 0,
+            new_cards        INTEGER DEFAULT 0,
+            review_cards     INTEGER DEFAULT 0,
+            again_count      INTEGER DEFAULT 0,
+            hard_count       INTEGER DEFAULT 0,
+            good_count       INTEGER DEFAULT 0,
+            easy_count       INTEGER DEFAULT 0,
+            duration_seconds INTEGER DEFAULT 0,
+            completed_at     TEXT NOT NULL,
+            created_at       TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY(user_id, id),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_study_sessions_user ON study_sessions(user_id, completed_at DESC)")
+
+    # === IDEMPOTENCY LOG for mobile-submitted SM-2 grades ===
+    # The mobile client is the SM-2 source of truth (it computes scheduling locally,
+    # offline-first, and may retry a sync after a dropped connection). The UNIQUE
+    # constraint on (user_id, card_id, graded_at) lets POST /api/v1/study/grade detect
+    # and no-op a retried submission instead of double-applying XP/streak/progress.
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS study_grade_log (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id        INTEGER NOT NULL,
+            card_id        INTEGER NOT NULL,
+            graded_at      TEXT NOT NULL,
+            grade          INTEGER NOT NULL,
+            ease_factor    REAL NOT NULL,
+            interval_days  INTEGER NOT NULL,
+            repetitions    INTEGER NOT NULL,
+            next_review_at TEXT NOT NULL,
+            created_at     TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, card_id, graded_at),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
+        )
+    """)
     # Welcome tour pokazan li polzovatelyu
     try:
         c.execute("ALTER TABLE users ADD COLUMN welcome_shown INTEGER DEFAULT 0")
@@ -734,6 +803,31 @@ def init_db():
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_tutor_conv_user ON tutor_conversations(user_id, updated_at)")
 
+    # === MOBILE AI TUTOR: client-generated conversation ids + deck linkage ===
+    # The mobile Tutor module generates a 32-char hex id client-side (same
+    # idempotency pattern as Phase 4's client_result_id) and may attach a deck
+    # to a conversation (ConversationDto.deckId/deckTitle — denormalized like
+    # test_attempts.scope_name, since decks can be renamed/deleted later).
+    # NULL client_id = legacy web-created conversation; the partial unique
+    # index leaves those untouched so the web tutor flow keeps working as-is.
+    try:
+        c.execute("ALTER TABLE tutor_conversations ADD COLUMN client_id TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE tutor_conversations ADD COLUMN deck_id INTEGER")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE tutor_conversations ADD COLUMN deck_title TEXT")
+    except sqlite3.OperationalError:
+        pass
+    c.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tutor_conv_client_id
+        ON tutor_conversations(user_id, client_id)
+        WHERE client_id IS NOT NULL
+    """)
+
     c.execute("""
         CREATE TABLE IF NOT EXISTS tutor_messages (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -747,6 +841,37 @@ def init_db():
         )
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_tutor_msg_conv ON tutor_messages(conversation_id, created_at)")
+
+    # === MOBILE AI GENERATION: persisted async job tracking ===
+    # The web app's AI generation jobs (ai_gen_jobs.py) live only in memory +
+    # disk JSON snapshots — fine for a single-session progress page, but the
+    # mobile module needs jobs to survive app restarts and to back a
+    # GET /api/v1/ai/jobs history list (GenerationHistoryNotifier). So mobile
+    # generation jobs get their own DB-backed table; ids are server-generated
+    # (mobile never sends a job id), so no client_id/idempotency machinery is
+    # needed — unlike Phase 5 conversations.
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS ai_generation_jobs (
+            id                   TEXT PRIMARY KEY,
+            user_id              INTEGER NOT NULL,
+            source               TEXT NOT NULL CHECK(source IN ('topic','text','pdf')),
+            status               TEXT NOT NULL DEFAULT 'pending'
+                                   CHECK(status IN ('pending','processing','completed','failed','cancelled')),
+            progress             INTEGER NOT NULL DEFAULT 0,
+            topic                TEXT,
+            input_text           TEXT,
+            pdf_file_name        TEXT,
+            quality_mode         TEXT NOT NULL DEFAULT 'balanced',
+            requested_card_count INTEGER NOT NULL,
+            cards_json           TEXT,
+            error_message        TEXT,
+            result_deck_id       INTEGER,
+            created_at           TEXT DEFAULT CURRENT_TIMESTAMP,
+            completed_at         TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_ai_gen_jobs_user ON ai_generation_jobs(user_id, created_at)")
 
     # === COLLECTIONS (Tematicheskie nabory kolod dlya marketplace) ===
     c.execute("""
@@ -918,6 +1043,22 @@ def init_db():
         )
     """)
     c.execute("CREATE INDEX IF NOT EXISTS idx_lp_steps_path ON learning_path_steps(path_id, step_order)")
+
+    # === MOBILE TEST RESULTS: idempotency key for offline-first sync ===
+    # The mobile Tests module generates a 32-char hex id client-side and may retry
+    # POST /api/v1/test/results after a dropped connection. client_result_id lets us
+    # detect and no-op a retried submission (mirrors study_grade_log / study_sessions).
+    # NULL for legacy web-submitted attempts — the partial unique index leaves those
+    # untouched so existing web test flow keeps working unchanged.
+    try:
+        c.execute("ALTER TABLE test_attempts ADD COLUMN client_result_id TEXT")
+    except sqlite3.OperationalError:
+        pass
+    c.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_test_attempts_client_result
+        ON test_attempts(user_id, client_result_id)
+        WHERE client_result_id IS NOT NULL
+    """)
 
     conn.commit()
     conn.close()

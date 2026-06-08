@@ -58,6 +58,37 @@ app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
 
+# === Mobile /api/v1 JSON REST layer (isolated Blueprint, JWT-based, no session coupling) ===
+# Guarded registration: the `api_v1/` package is local-only and is NOT part of
+# the tree Railway builds from. On Railway the import raises ModuleNotFoundError,
+# which previously crash-looped every gunicorn worker (commit a0b681d removed the
+# block entirely to stop that). Wrapping it in try/except restores the mobile
+# layer LOCALLY — where api_v1/ exists — while staying inert in production, so
+# the web deploy can never be taken down by a missing module again.
+try:
+    from api_v1 import (
+        ai_generation_bp as _api_v1_ai_generation_bp,
+        auth_bp as _api_v1_auth_bp,
+        dashboard_bp as _api_v1_dashboard_bp,
+        library_bp as _api_v1_library_bp,
+        marketplace_bp as _api_v1_marketplace_bp,
+        decks_bp as _api_v1_decks_bp,
+        study_bp as _api_v1_study_bp,
+        test_questions_bp as _api_v1_test_questions_bp,
+        tests_bp as _api_v1_tests_bp,
+        tutor_bp as _api_v1_tutor_bp,
+    )
+    for _api_bp in (
+        _api_v1_auth_bp, _api_v1_dashboard_bp, _api_v1_library_bp,
+        _api_v1_marketplace_bp, _api_v1_decks_bp, _api_v1_study_bp,
+        _api_v1_test_questions_bp, _api_v1_tests_bp, _api_v1_tutor_bp,
+        _api_v1_ai_generation_bp,
+    ):
+        app.register_blueprint(_api_bp)
+    print("[INIT] Mobile /api/v1 layer registered (local mode).")
+except ModuleNotFoundError as _api_e:
+    print(f"[INIT] /api/v1 package not present — running web-only: {_api_e}")
+
 # === SECURITY CONFIG ===
 # Stoykie persistent secret key (sokhranyaet sessii pri perezapuske)
 SECRET_FILE = BASE / ".secret_key"
@@ -190,6 +221,10 @@ def csrf_protect():
     if request.method == "POST":
         # Iskl: Stripe webhook (svoya proverka po podpisi)
         if request.path == "/webhooks/stripe":
+            return
+        # Iskl: mobil'nyy /api/v1 — JSON + Bearer-token auth, ne cookie/sessiya
+        # (CSRF ne primenim). Vosstanovleno vmeste s registratsiey api_v1.
+        if request.path.startswith("/api/v1/"):
             return
         # Iskl: API-vyzovy (XMLHttpRequest s tem zhe origin) — Flask SameSite zaschishchaet ikh
         # Tol'ko proveryaem klassicheskie HTML-formy:

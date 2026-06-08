@@ -6,6 +6,9 @@ google_oauth.txt
 *.key
 secrets/
 api_key.txt
+jwt_secret.txt
+deepseek_key.txt
+stripe_keys.txt
 
 # === DB i loadovannye dannye ===
 *.db
