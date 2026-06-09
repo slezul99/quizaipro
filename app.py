@@ -59,12 +59,12 @@ app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
 
 # === Mobile /api/v1 JSON REST layer (isolated Blueprint, JWT-based, no session coupling) ===
-# Guarded registration: the `api_v1/` package is local-only and is NOT part of
-# the tree Railway builds from. On Railway the import raises ModuleNotFoundError,
-# which previously crash-looped every gunicorn worker (commit a0b681d removed the
-# block entirely to stop that). Wrapping it in try/except restores the mobile
-# layer LOCALLY — where api_v1/ exists — while staying inert in production, so
-# the web deploy can never be taken down by a missing module again.
+# Guarded registration: the mobile API is an isolated layer that must NEVER be
+# able to take down the website. A missing package once crash-looped every
+# gunicorn worker (commit a0b681d). The guard catches *any* failure — missing
+# module, import error, bad registration — so the web deploy always boots; if
+# the mobile layer fails, the site stays up and /api/v1 simply 404s (visible in
+# logs). Set JWT_SECRET_KEY in the Railway env so issued tokens survive restarts.
 try:
     from api_v1 import (
         ai_generation_bp as _api_v1_ai_generation_bp,
@@ -85,9 +85,12 @@ try:
         _api_v1_ai_generation_bp,
     ):
         app.register_blueprint(_api_bp)
-    print("[INIT] Mobile /api/v1 layer registered (local mode).")
-except ModuleNotFoundError as _api_e:
-    print(f"[INIT] /api/v1 package not present — running web-only: {_api_e}")
+    print("[INIT] Mobile /api/v1 layer registered.")
+except Exception as _api_e:
+    import traceback as _tb
+    print(f"[INIT] /api/v1 layer NOT registered — running web-only: "
+          f"{type(_api_e).__name__}: {_api_e}")
+    _tb.print_exc()
 
 # === SECURITY CONFIG ===
 # Stoykie persistent secret key (sokhranyaet sessii pri perezapuske)
