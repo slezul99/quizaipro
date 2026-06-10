@@ -284,11 +284,12 @@ def _validate_grade_payload(body):
     docstring) — this is a sanity net around values the client already computed,
     not a recomputation of the SM-2 formula.
     """
-    try:
-        card_id = int(body.get("card_id"))
-        deck_id = int(body.get("deck_id"))
-    except (TypeError, ValueError):
-        return None, "card_id and deck_id must be numeric identifiers"
+    card_id = body.get("card_id")
+    deck_id = body.get("deck_id")
+    if card_id is None or deck_id is None:
+        return None, "card_id and deck_id are required"
+    card_id = str(card_id)
+    deck_id = str(deck_id)
 
     grade = body.get("grade")
     if isinstance(grade, bool) or not isinstance(grade, int) or grade not in _VALID_GRADES:
