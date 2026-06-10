@@ -1,62 +1,61 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 py-8">
+{% set card = "bg-white dark:bg-slate-900/40 border border-slate-200/70 dark:border-slate-800/80 rounded-2xl" %}
+{% set label = "text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500" %}
+<div class="max-w-5xl mx-auto px-4 py-8 sm:py-10">
 
   <!-- Header -->
-  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div class="mb-7 flex flex-wrap items-end justify-between gap-3">
     <div>
-      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Аналитика</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Только реальные посетители · без ботов · без вас</p>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Аналитика</h1>
+      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Реальные посетители · без ботов · без API-вызовов</p>
     </div>
-    <div class="flex items-center gap-2">
-      <a href="/superadmin" class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition">← Дашборд</a>
-    </div>
+    <a href="/superadmin" class="text-xs font-medium text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition">← Дашборд</a>
   </div>
 
   <!-- Period selector -->
-  <div class="mb-6 flex flex-wrap gap-1.5">
-    {% for d, label in [(1, 'Сегодня'), (7, '7 дней'), (30, '30 дней'), (90, '90 дней'), (365, 'Год')] %}
+  <div class="mb-6 inline-flex p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800/70">
+    {% for d, lbl in [(1, 'Сегодня'), (7, '7 дней'), (30, '30 дней'), (90, '90 дней'), (365, 'Год')] %}
       <a href="?days={{ d }}"
-         class="px-3 py-1.5 rounded-lg text-xs font-semibold transition
-                {% if days == d %}bg-indigo-600 text-white{% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700{% endif %}">
-        {{ label }}
+         class="px-3.5 py-1.5 rounded-[10px] text-xs font-semibold transition
+                {% if days == d %}bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200{% endif %}">
+        {{ lbl }}
       </a>
     {% endfor %}
   </div>
 
-  <!-- Summary cards -->
-  <div class="grid grid-cols-3 gap-3 mb-6">
-    <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 text-center">
-      <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-300">{{ summary.total_visits }}</div>
-      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Визиты</div>
+  <!-- KPI cards -->
+  <div class="grid grid-cols-3 gap-3 mb-5">
+    {% set kpis = [
+      ('Визиты',     summary.total_visits,    'text-slate-900 dark:text-slate-100'),
+      ('Уникальных', summary.unique_visitors, 'text-slate-900 dark:text-slate-100'),
+      ('Онлайн',     online_now|length,       'text-emerald-500 dark:text-emerald-400'),
+    ] %}
+    {% for name, value, color in kpis %}
+    <div class="{{ card }} px-5 py-5">
+      <div class="text-3xl sm:text-4xl font-bold tabular-nums {{ color }}">{{ value }}</div>
+      <div class="{{ label }} mt-1.5 flex items-center gap-1.5">
+        {% if name == 'Онлайн' and online_now %}<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>{% endif %}
+        {{ name }}
+      </div>
     </div>
-    <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 text-center">
-      <div class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-300">{{ summary.unique_visitors }}</div>
-      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Уникальных</div>
-    </div>
-    <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 text-center">
-      <div class="text-3xl font-extrabold text-amber-500 dark:text-amber-300">{{ online_now|length }}</div>
-      <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Сейчас онлайн</div>
-    </div>
+    {% endfor %}
   </div>
 
   <!-- Online now -->
   {% if online_now %}
-  <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 mb-5">
-    <div class="flex items-center gap-2 mb-3">
-      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span class="text-sm font-bold text-slate-800 dark:text-slate-100">Сейчас на сайте</span>
-    </div>
-    <div class="space-y-2">
+  <div class="{{ card }} p-5 mb-5">
+    <div class="{{ label }} mb-3">Сейчас на сайте</div>
+    <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
       {% for v in online_now %}
-      <div class="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-        <span class="font-semibold text-slate-800 dark:text-slate-100 min-w-[80px]">
+      <div class="flex items-center gap-3 py-2 text-xs first:pt-0 last:pb-0">
+        <span class="font-semibold min-w-[90px] truncate">
           {% if v.username %}<span class="text-indigo-600 dark:text-indigo-300">@{{ v.username }}</span>
-          {% else %}гость{% endif %}
+          {% else %}<span class="text-slate-500 dark:text-slate-400">гость</span>{% endif %}
         </span>
-        <span class="text-slate-400">{{ v.country or '—' }}{% if v.city %}, {{ v.city }}{% endif %}</span>
-        <span class="text-slate-400">{{ v.device_type }}</span>
-        <span class="font-mono text-slate-500 truncate">{{ v.path }}</span>
+        <span class="text-slate-400 dark:text-slate-500 truncate">{{ v.country or '—' }}{% if v.city %}, {{ v.city }}{% endif %}</span>
+        <span class="text-slate-300 dark:text-slate-600">{{ v.device_type }}</span>
+        <span class="ml-auto font-mono text-slate-500 dark:text-slate-400 truncate max-w-[40%]">{{ v.path }}</span>
       </div>
       {% endfor %}
     </div>
@@ -65,69 +64,103 @@
 
   <!-- Daily chart -->
   {% if daily %}
-  <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 mb-5">
-    <div class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4">Посещения по дням</div>
-    <div class="flex items-end gap-1 h-36">
+  <div class="{{ card }} p-5 mb-5">
+    <div class="{{ label }} mb-5">Посещения по дням</div>
+    <div class="flex items-end gap-1.5 h-32">
       {% set max_d = (daily | map(attribute='visits') | max) or 1 %}
       {% for d in daily %}
-        <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
-          <div class="text-xs text-slate-500 font-mono leading-none" style="font-size:9px;">{{ d.visits if d.visits else '' }}</div>
-          <div class="w-full rounded-t bg-gradient-to-t from-indigo-500 to-purple-400"
-               style="height:{{ (d.visits / max_d * 100)|int }}px; min-height:2px;"
+        <div class="group flex-1 flex flex-col items-center justify-end gap-1.5 min-w-0 h-full">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 font-medium tabular-nums leading-none opacity-0 group-hover:opacity-100 transition">{{ d.visits or '' }}</div>
+          <div class="w-full max-w-[28px] rounded-md bg-indigo-500/90 dark:bg-indigo-400/80 group-hover:bg-indigo-600 dark:group-hover:bg-indigo-300 transition-colors"
+               style="height:{{ [(d.visits / max_d * 100)|int, 3]|max }}%;"
                title="{{ d.day }} — {{ d.visits }}"></div>
-          <div class="text-slate-400 font-mono" style="font-size:9px;">{{ d.day[5:] }}</div>
+          <div class="text-slate-300 dark:text-slate-600 tabular-nums" style="font-size:9px;">{{ d.day[5:] }}</div>
         </div>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <!-- Countries + Recent visits -->
-  <div class="grid lg:grid-cols-2 gap-4">
+  <!-- Countries · Pages · Devices -->
+  <div class="grid lg:grid-cols-3 gap-3 mb-5">
 
     <!-- Top countries -->
-    <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5">
-      <div class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Топ стран</div>
+    <div class="{{ card }} p-5">
+      <div class="{{ label }} mb-4">Страны</div>
       {% if by_country %}
-      <div class="space-y-2">
+      <div class="space-y-2.5">
         {% set max_c = by_country[0].visits or 1 %}
-        {% for c in by_country[:15] %}
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 w-6 text-center">{{ c.country }}</span>
-          <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div class="h-full bg-indigo-500 rounded-full" style="width:{{ (c.visits / max_c * 100)|int }}%"></div>
+        {% for c in by_country[:8] %}
+        <div class="flex items-center gap-2.5">
+          <span class="text-xs font-semibold text-slate-600 dark:text-slate-300 w-7">{{ c.country }}</span>
+          <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-indigo-500/80 dark:bg-indigo-400/70 rounded-full" style="width:{{ [(c.visits / max_c * 100)|int, 4]|max }}%"></div>
           </div>
-          <span class="text-xs font-mono text-indigo-600 dark:text-indigo-300 w-8 text-right">{{ c.visits }}</span>
-          <span class="text-xs text-slate-400 w-8 text-right">{{ c.unique_visitors }}u</span>
+          <span class="text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-200 w-8 text-right">{{ c.visits }}</span>
         </div>
         {% endfor %}
       </div>
-      {% else %}
-        <p class="text-xs text-slate-400 italic">Нет данных.</p>
-      {% endif %}
+      {% else %}<p class="text-xs text-slate-400">Нет данных</p>{% endif %}
     </div>
 
-    <!-- Recent visits -->
-    <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5">
-      <div class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Последние посещения</div>
-      <div class="space-y-2 overflow-y-auto max-h-80">
-        {% for v in recent_visits %}
-        <div class="flex items-start gap-2 text-xs pb-2 border-b border-slate-100 dark:border-slate-700/40">
-          <span class="font-mono text-slate-400 whitespace-nowrap">{{ v.created_at|tashkent('%H:%M') }}</span>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold truncate">
-              {% if v.username %}<span class="text-indigo-600 dark:text-indigo-300">@{{ v.username }}</span>
-              {% else %}<span class="text-slate-500">гость</span>{% endif %}
-              <span class="text-slate-400 font-normal ml-1">{{ v.country or '' }}{% if v.city %}, {{ v.city }}{% endif %}</span>
-            </div>
-            <div class="font-mono text-slate-500 truncate">{{ v.path }}</div>
-          </div>
-          <span class="text-slate-400 whitespace-nowrap">{{ v.device_type }}</span>
+    <!-- Top pages -->
+    <div class="{{ card }} p-5">
+      <div class="{{ label }} mb-4">Страницы</div>
+      {% if top_pages %}
+      <div class="space-y-2.5">
+        {% for p in top_pages[:8] %}
+        <div class="flex items-center gap-2.5">
+          <span class="flex-1 font-mono text-xs text-slate-600 dark:text-slate-300 truncate">{{ p.path }}</span>
+          <span class="text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-200 w-8 text-right">{{ p.visits }}</span>
         </div>
         {% endfor %}
       </div>
+      {% else %}<p class="text-xs text-slate-400">Нет данных</p>{% endif %}
     </div>
 
+    <!-- Devices -->
+    <div class="{{ card }} p-5">
+      <div class="{{ label }} mb-4">Устройства</div>
+      {% if by_device %}
+      {% set dev_total = (by_device | map(attribute='visits') | sum) or 1 %}
+      {% set dev_icons = {'mobile': '📱', 'desktop': '🖥', 'tablet': '📲'} %}
+      <div class="space-y-3">
+        {% for d in by_device %}
+        <div>
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="text-slate-600 dark:text-slate-300 capitalize">{{ dev_icons.get(d.device_type, '•') }} {{ d.device_type }}</span>
+            <span class="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{{ (d.visits / dev_total * 100)|round|int }}%</span>
+          </div>
+          <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-slate-400 dark:bg-slate-500 rounded-full" style="width:{{ (d.visits / dev_total * 100)|int }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-xs text-slate-400">Нет данных</p>{% endif %}
+    </div>
+
+  </div>
+
+  <!-- Recent visits -->
+  <div class="{{ card }} p-5">
+    <div class="{{ label }} mb-3">Последние посещения</div>
+    {% if recent_visits %}
+    <div class="divide-y divide-slate-100 dark:divide-slate-800/60 max-h-96 overflow-y-auto -mx-1 px-1">
+      {% for v in recent_visits %}
+      <div class="flex items-center gap-3 py-2 text-xs">
+        <span class="font-mono text-slate-300 dark:text-slate-600 tabular-nums whitespace-nowrap">{{ v.created_at|tashkent('%H:%M') }}</span>
+        <span class="font-semibold min-w-[80px] truncate">
+          {% if v.username %}<span class="text-indigo-600 dark:text-indigo-300">@{{ v.username }}</span>
+          {% else %}<span class="text-slate-400 dark:text-slate-500">гость</span>{% endif %}
+        </span>
+        <span class="text-slate-400 dark:text-slate-500 truncate hidden sm:block">{{ v.country or '' }}{% if v.city %}, {{ v.city }}{% endif %}</span>
+        <span class="ml-auto font-mono text-slate-500 dark:text-slate-400 truncate max-w-[45%]">{{ v.path }}</span>
+        <span class="text-slate-300 dark:text-slate-600 whitespace-nowrap hidden sm:block">{{ v.device_type }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<p class="text-xs text-slate-400">Нет данных</p>{% endif %}
   </div>
 
 </div>

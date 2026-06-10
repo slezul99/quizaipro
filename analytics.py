@@ -81,6 +81,11 @@ _EXCL_ADMINS = (
     "(SELECT id FROM users WHERE username IN ('slezul99@gmail.com','aza')))"
 )
 
+# API / XHR vyzovy (vklyuchaya ves' mobilnyy /api/v1/...) — eto ne prosmotry
+# stranic. Isklyuchaem ih iz vsekh metrik, chtoby ne razduvat' schyotchiki
+# i ne zasoryat' "posledniye posescheniya" sluzhebnymi endpointami.
+_NOT_API = "path NOT LIKE '/api/%'"
+
 
 def is_private_ip(ip: str) -> bool:
     if not ip:
@@ -371,8 +376,8 @@ def get_summary(days: int = 30) -> dict:
     conn = db.get_conn()
     cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
 
-    # REAL = ne bot AND ne local IP AND ne superadmin
-    real_filter = f"device_type != 'bot' AND (country IS NULL OR country != 'LOCAL') AND {_EXCL_ADMINS}"
+    # REAL = ne bot AND ne local IP AND ne superadmin AND ne API-vyzov
+    real_filter = f"device_type != 'bot' AND (country IS NULL OR country != 'LOCAL') AND {_EXCL_ADMINS} AND {_NOT_API}"
 
     stats = {}
     stats["total_visits"] = conn.execute(
@@ -414,7 +419,7 @@ def get_by_country(days: int = 30, limit: int = 50) -> list[dict]:
         FROM visits
         WHERE created_at >= ? AND country IS NOT NULL AND country != ''
               AND country != 'LOCAL' AND country != '?'
-              AND device_type != 'bot' AND {_EXCL_ADMINS}
+              AND device_type != 'bot' AND {_EXCL_ADMINS} AND {_NOT_API}
         GROUP BY country, country_name
         ORDER BY visits DESC
         LIMIT ?
@@ -434,7 +439,7 @@ def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
         FROM visits
         WHERE created_at >= ? AND city IS NOT NULL AND city != ''
               AND country != 'LOCAL' AND country != '?'
-              AND device_type != 'bot' AND {_EXCL_ADMINS}
+              AND device_type != 'bot' AND {_EXCL_ADMINS} AND {_NOT_API}
         GROUP BY country, city
         ORDER BY visits DESC
         LIMIT ?
@@ -456,7 +461,7 @@ def get_daily(days: int = 30) -> list[dict]:
         WHERE created_at >= ?
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
-              AND {_EXCL_ADMINS}
+              AND {_EXCL_ADMINS} AND {_NOT_API}
         GROUP BY DATE(created_at)
         ORDER BY day
     """, (cutoff,)).fetchall()
@@ -474,6 +479,7 @@ def get_by_device(days: int = 30) -> list[dict]:
         WHERE created_at >= ? AND device_type IS NOT NULL AND device_type != ''
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND path NOT LIKE '/api/%'
         GROUP BY device_type ORDER BY visits DESC
     """, (cutoff,)).fetchall()
     conn.close()
@@ -490,6 +496,7 @@ def get_by_browser(days: int = 30, limit: int = 10) -> list[dict]:
               AND browser != 'Bot' AND browser != '?'
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND path NOT LIKE '/api/%'
         GROUP BY browser ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -506,6 +513,7 @@ def get_by_os(days: int = 30, limit: int = 10) -> list[dict]:
               AND os != 'Bot' AND os != '?'
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND path NOT LIKE '/api/%'
         GROUP BY os ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -522,6 +530,7 @@ def get_top_pages(days: int = 30, limit: int = 30) -> list[dict]:
         WHERE created_at >= ?
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND path NOT LIKE '/api/%'
         GROUP BY path ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -538,6 +547,7 @@ def get_top_referrers(days: int = 30, limit: int = 20) -> list[dict]:
         WHERE created_at >= ? AND referrer IS NOT NULL AND referrer != ''
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND path NOT LIKE '/api/%'
         GROUP BY referrer ORDER BY visits DESC LIMIT ?
     """, (cutoff, limit)).fetchall()
     conn.close()
@@ -554,6 +564,7 @@ def get_recent_visits(limit: int = 100) -> list[dict]:
         WHERE v.device_type != 'bot'
               AND (v.country IS NULL OR v.country != 'LOCAL')
               AND (v.user_id IS NULL OR v.user_id NOT IN (SELECT id FROM users WHERE username IN ('slezul99@gmail.com','aza')))
+              AND v.path NOT LIKE '/api/%'
         ORDER BY v.id DESC LIMIT ?
     """, (limit,)).fetchall()
     conn.close()
@@ -571,6 +582,7 @@ def get_hourly_today() -> list[dict]:
         WHERE DATE(created_at) = DATE('now')
               AND device_type != 'bot'
               AND (country IS NULL OR country != 'LOCAL')
+              AND path NOT LIKE '/api/%'
         GROUP BY hour ORDER BY hour
     """).fetchall()
     conn.close()

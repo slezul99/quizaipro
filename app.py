@@ -276,17 +276,11 @@ def track_last_seen():
 _visit_cache = {}
 _visit_cache_lock = threading.Lock()
 
-# Putya kotorye NE logiruem (slishkom mnogo i ne polezno)
+# Putya kotorye NE logiruem (eto ne prosmotry stranic, a sluzhebnye vyzovy)
 _ANALYTICS_SKIP_PREFIXES = (
     "/static/",
     "/favicon.ico",
-    "/api/notifications/unread",
-    "/api/live/",
-    "/api/import/vision/",
-    "/api/ai/progress/",
-    "/api/duel/",
-    "/api/tournament/",
-    "/api/chat/",
+    "/api/",          # vse API / XHR / mobilnye (/api/v1/...) vyzovy — ne stranicy
     "/login",
     "/logout",
     "/register",
@@ -8423,6 +8417,7 @@ def superadmin_analytics():
                   AND v.device_type != 'bot'
                   AND (v.country IS NULL OR v.country != 'LOCAL')
                   AND (v.user_id IS NULL OR v.user_id NOT IN (SELECT id FROM users WHERE username IN ('slezul99@gmail.com','aza')))
+                  AND v.path NOT LIKE '/api/%'
             GROUP BY v.session_id
             ORDER BY last_seen DESC LIMIT 50
         """).fetchall()
@@ -8455,6 +8450,7 @@ def superadmin_analytics_live():
             WHERE v.id > ?
                   AND v.device_type != 'bot'
                   AND (v.country IS NULL OR v.country != 'LOCAL')
+                  AND v.path NOT LIKE '/api/%'
             ORDER BY v.id DESC LIMIT 50
         """, (after_id,)).fetchall()
     finally:
