@@ -91,22 +91,53 @@ _MCQ_LETTER_PREFIX_RE = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]")
 _MCQ_NEW_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
 
-def _parse_mcq_options(card_dict, shuffle_seed=None):
-    """Split note/back into lettered options + find the correct letter.
-
-    With shuffle_seed given, options are shuffled deterministically (seeded by
-    `(shuffle_seed << 8) ^ card_id`, exactly like the web flow) and relettered
-    A/B/C/... so the same seed always reproduces the same order for a card.
-    """
+def _extract_options(src):
+    """Pull lettered option lines ("A) ...", "B) ...") out of a text block."""
     options = []
-    src = card_dict.get("note") or card_dict.get("back") or ""
-    for line in src.splitlines():
+    for line in (src or "").splitlines():
         line = line.strip()
         if not line:
             continue
         m = _MCQ_OPTION_RE.match(line)
         if m:
             options.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
+    return options
+
+
+def _mcq_stem(front):
+    """Question text with any lettered option lines stripped off.
+
+    Quiz/AI-generated decks frequently inline the answer choices into the card
+    front ("What is X?\\nA) ...\\nB) ..."); for the test UI we only want the
+    question stem, since the options are rendered as tappable buttons.
+    """
+    kept = [
+        line for line in (front or "").splitlines()
+        if not _MCQ_LETTER_PREFIX_RE.match(line.strip())
+    ]
+    stem = "\n".join(kept).strip()
+    return stem or (front or "")
+
+
+def _parse_mcq_options(card_dict, shuffle_seed=None):
+    """Split a card into lettered options + find the correct letter.
+
+    Options may live in `note`/`back` (canonical web format) or be inlined in
+    the `front` (quiz/AI-generated decks). We scan all three and use whichever
+    yields the richest option list, so both layouts produce a valid test.
+
+    With shuffle_seed given, options are shuffled deterministically (seeded by
+    `(shuffle_seed << 8) ^ card_id`, exactly like the web flow) and relettered
+    A/B/C/... so the same seed always reproduces the same order for a card.
+    """
+    options = max(
+        (
+            _extract_options(card_dict.get("note")),
+            _extract_options(card_dict.get("front")),
+            _extract_options(card_dict.get("back")),
+        ),
+        key=len,
+    )
 
     correct_letter = None
     back_first = (card_dict.get("back") or "").strip().split("\n")[0]
@@ -153,7 +184,7 @@ def _build_test_question(card_row, shuffle_seed):
     return {
         "id": str(card_row["id"]),
         "deck_id": str(card_row["deck_id"]),
-        "question": card_row["front"],
+        "question": _mcq_stem(card_row["front"]),
         "correct_answer": correct_text,
         "options": option_dtos,
         "topic": None,
