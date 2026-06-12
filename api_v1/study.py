@@ -84,17 +84,29 @@ def _user_owns_deck(user, deck):
     return user["id"] == deck["owner_id"]
 
 
+def _resolve_lang(user):
+    """Mirrors api_v1.marketplace._resolve_lang — mobile has no session, so
+    language comes from an optional ?lang= override or the user's stored pref."""
+    lang = request.args.get("lang") or (user["lang"] if user else None)
+    return lang if lang in ("ru", "en", "uz") else "ru"
+
+
 # ---------------------------------------------------------------------------
 # GET /api/v1/decks/<id>/cards
 # ---------------------------------------------------------------------------
 
-def _serialize_card(row):
+def _serialize_card(row, lang="ru"):
+    front, back, note = row["front"], row["back"], row["note"]
+    if lang in ("en", "uz"):
+        front = row[f"front_{lang}"] or front
+        back = row[f"back_{lang}"] or back
+        note = row[f"note_{lang}"] or note
     return {
         "id": str(row["id"]),
         "deck_id": str(row["deck_id"]),
-        "front": row["front"],
-        "back": row["back"],
-        "hint": row["note"] or None,
+        "front": front,
+        "back": back,
+        "hint": note or None,
         "ease_factor": row["ef"] if row["ef"] is not None else 2.5,
         "interval": row["interval_days"] or 0,
         "repetitions": row["repetitions"] or 0,
@@ -130,7 +142,8 @@ def get_deck_cards(deck_id):
     finally:
         conn.close()
 
-    return jsonify({"data": [_serialize_card(r) for r in rows]})
+    lang = _resolve_lang(user)
+    return jsonify({"data": [_serialize_card(r, lang) for r in rows]})
 
 
 # ---------------------------------------------------------------------------

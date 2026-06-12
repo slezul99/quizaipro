@@ -8747,6 +8747,30 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace history seed error: {_e}")
 
+# Auto-seed UZ/EN translations for the History deck cards (front_uz/back_uz/
+# note_uz + _en columns), so mobile users on uz/en see localized questions
+# instead of the Russian originals (api_v1.tests._localize_card /
+# api_v1.study._serialize_card). Idempotent — updates only rows with empty
+# front_uz.
+try:
+    _conn = db.get_conn()
+    _hist_tr = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_history_translations_seed'"
+    ).fetchone()
+    _conn.close()
+    if not _hist_tr:
+        print("[INIT] Seeding marketplace history translations ...")
+        import seed_marketplace_history_translations  # noqa: F401
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_history_translations_seed')"
+        )
+        _conn.commit()
+        _conn.close()
+        print("[INIT] Marketplace history translations seeded.")
+except Exception as _e:
+    print(f"[INIT] Marketplace history translations seed error: {_e}")
+
 # Always-on safety: any deck with NULL flags gets recomputed at every startup.
 # Cheap (only NULL decks) and ensures Test/Flashcards buttons are correct.
 try:

@@ -81,6 +81,27 @@ def _user_owns_deck(user, deck):
     return user["id"] == deck["owner_id"]
 
 
+def _resolve_lang(user):
+    """Mirrors api_v1.marketplace._resolve_lang — mobile has no session, so
+    language comes from an optional ?lang= override or the user's stored pref."""
+    lang = request.args.get("lang") or (user["lang"] if user else None)
+    return lang if lang in ("ru", "en", "uz") else "ru"
+
+
+def _localize_card(card_dict, lang):
+    """Swap front/back/note for their _en/_uz translation if one exists.
+
+    Mirrors app.py:flashcards_view's localization step so mobile test
+    questions and flashcards match the seeded translation columns.
+    """
+    if lang in ("en", "uz"):
+        for fld in ("front", "back", "note"):
+            tr = card_dict.get(f"{fld}_{lang}")
+            if tr:
+                card_dict[fld] = tr
+    return card_dict
+
+
 # ---------------------------------------------------------------------------
 # MCQ option parsing — ported from app.py:_parse_card_options (see module
 # docstring for why this is duplicated rather than imported)
@@ -221,7 +242,9 @@ def get_test_questions(deck_id):
             return _err("forbidden", "Нет доступа к этой колоде", 403)
 
         rows = conn.execute(
-            "SELECT id, deck_id, front, back, note FROM cards WHERE deck_id=? ORDER BY id",
+            """SELECT id, deck_id, front, back, note,
+                      front_en, front_uz, back_en, back_uz, note_en, note_uz
+               FROM cards WHERE deck_id=? ORDER BY id""",
             (deck_id,),
         ).fetchall()
     finally:
@@ -230,9 +253,11 @@ def get_test_questions(deck_id):
     # Fresh per-request seed: mobile fetches once, caches, and shuffles/slices
     # locally per TestConfig — this just avoids "the correct answer is always A".
     shuffle_seed = random.randint(1, 10 ** 9)
+    lang = _resolve_lang(user)
     questions = []
     for row in rows:
-        q = _build_test_question(row, shuffle_seed)
+        card = _localize_card(dict(row), lang)
+        q = _build_test_question(card, shuffle_seed)
         if q is not None:
             questions.append(q)
 
