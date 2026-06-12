@@ -145,6 +145,19 @@ def _parse_mcq_options(card_dict, shuffle_seed=None):
     if m_corr:
         correct_letter = m_corr.group(1).upper()
 
+    # Fallbacks for decks that don't use the "C) ..." lettered-answer form:
+    #   • a bare answer letter ("С"), or
+    #   • the full answer text matching one of the options.
+    if correct_letter is None and options:
+        bare = back_first.strip()
+        if len(bare) == 1 and any(o["letter"] == bare.upper() for o in options):
+            correct_letter = bare.upper()
+        else:
+            for o in options:
+                if o["text"].strip().lower() == bare.lower():
+                    correct_letter = o["letter"]
+                    break
+
     if shuffle_seed is not None and options:
         correct_text = None
         if correct_letter:
