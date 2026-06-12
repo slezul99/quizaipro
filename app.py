@@ -8718,6 +8718,35 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace extra seed error: {_e}")
 
+# Auto-seed marketplace HISTORY subject (Древний мир / Средние века / Новое время / XX век).
+# Runs once after the extra seed. Idempotent (INSERT OR IGNORE / get_or_create).
+try:
+    _conn = db.get_conn()
+    _hist = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_history_seed'"
+    ).fetchone()
+    _conn.close()
+    if not _hist:
+        print("[INIT] Seeding marketplace history subject ...")
+        import seed_marketplace_history  # noqa: F401
+        _conn = db.get_conn()
+        _null_decks = _conn.execute(
+            "SELECT id FROM decks WHERE has_mcq IS NULL OR has_terms IS NULL"
+        ).fetchall()
+        for _row in _null_decks:
+            try:
+                refresh_deck_content_flags(_conn, _row[0])
+            except Exception:
+                pass
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_history_seed')"
+        )
+        _conn.commit()
+        _conn.close()
+        print("[INIT] Marketplace history seeded.")
+except Exception as _e:
+    print(f"[INIT] Marketplace history seed error: {_e}")
+
 # Always-on safety: any deck with NULL flags gets recomputed at every startup.
 # Cheap (only NULL decks) and ensures Test/Flashcards buttons are correct.
 try:
