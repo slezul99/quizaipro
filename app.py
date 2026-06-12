@@ -648,6 +648,20 @@ def _card_is_mcq(card_row) -> bool:
     return False
 
 
+def _localize_card_fields(card_dict, lang):
+    """Swap front/back/note for their _en/_uz translation if one exists.
+
+    Used by flashcards_view and the /test flow so seeded translations
+    (front_uz/back_uz/note_uz, _en) show up for non-RU users.
+    """
+    if lang in ("en", "uz"):
+        for fld in ("front", "back", "note"):
+            tr = card_dict.get(f"{fld}_{lang}")
+            if tr:
+                card_dict[fld] = tr
+    return card_dict
+
+
 def refresh_deck_content_flags(conn, deck_id: int):
     """Pересчитывает has_mcq и has_terms для колоды и сохраняет в decks.
     Вызывать при: добавлении/удалении карточки, импорте, AI генерации.
@@ -2010,15 +2024,7 @@ def flashcards_view(deck_id):
 
     # Localize: if user lang is en/uz and translation exists, swap into front/back/note
     lang = session.get("lang", "ru")
-    cards_list = []
-    for c in cards:
-        d = dict(c)
-        if lang in ("en", "uz"):
-            for fld in ("front", "back", "note"):
-                tr = d.get(f"{fld}_{lang}", "")
-                if tr:
-                    d[fld] = tr
-        cards_list.append(d)
+    cards_list = [_localize_card_fields(dict(c), lang) for c in cards]
     return render_template("flashcards.html",
         deck=dict(deck),
         cards=cards_list,
@@ -2434,6 +2440,7 @@ def test_view():
     queue = session.get("test_queue", [])
     idx = session.get("test_idx", 0)
     deck_id = session.get("test_deck")
+    lang = session.get("lang", "ru")
     if not queue or idx >= len(queue):
         stats = session.get("test_stats", {"correct": 0, "wrong": 0})
         # Sobiraem dannye dlya review: vopros + otvety + ob'yasnenie
@@ -2446,7 +2453,7 @@ def test_view():
                 card = conn.execute("SELECT * FROM cards WHERE id=?", (a["card_id"],)).fetchone()
                 if not card:
                     continue
-                cd = dict(card)
+                cd = _localize_card_fields(dict(card), lang)
                 # Razbiraem varianty S TEM ZHE seed — bukvy budut sovpadat'
                 opts, corr_letter = _parse_card_options(cd, shuffle_seed=seed_for_review)
                 review.append({
@@ -2470,7 +2477,7 @@ def test_view():
         return redirect(url_for("test_view"))
 
     # Razbiraem varianty s peremeshivaniyem (s tem zhe seed-om)
-    card_d = dict(card)
+    card_d = _localize_card_fields(dict(card), lang)
     options, correct_letter = _parse_card_options(
         card_d,
         shuffle_seed=session.get("test_seed", 0) or None
