@@ -762,6 +762,7 @@ def init_db():
             score_pct    REAL NOT NULL,
             duration_sec INTEGER DEFAULT 0,
             is_perfect   INTEGER DEFAULT 0,
+            xp_earned    INTEGER DEFAULT 0,
             started_at   TEXT,
             finished_at  TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -783,6 +784,7 @@ def init_db():
             chosen       TEXT,                    -- chto vybral polzovatel' (bukva A/B/C/...)
             correct      TEXT,                    -- pravil'naya bukva
             is_correct   INTEGER NOT NULL,        -- 1 / 0
+            xp_earned    INTEGER DEFAULT 0,
             FOREIGN KEY(attempt_id) REFERENCES test_attempts(id) ON DELETE CASCADE,
             FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE SET NULL
         )
@@ -1059,6 +1061,35 @@ def init_db():
         ON test_attempts(user_id, client_result_id)
         WHERE client_result_id IS NOT NULL
     """)
+
+    # === Phase 4: Persist XP earned for test attempts and answers ===
+    try:
+        c.execute("ALTER TABLE test_attempts ADD COLUMN xp_earned INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE test_attempt_answers ADD COLUMN xp_earned INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+
+    # Run backfill for any legacy rows that have no XP stored
+    c.execute("""
+        UPDATE test_attempts
+        SET xp_earned = (correct * 3) + (CASE WHEN is_perfect = 1 THEN 5 ELSE 0 END)
+        WHERE xp_earned = 0 OR xp_earned IS NULL
+    """)
+    c.execute("""
+        UPDATE test_attempt_answers
+        SET xp_earned = CASE WHEN is_correct = 1 THEN 3 ELSE 0 END
+        WHERE xp_earned = 0 OR xp_earned IS NULL
+    """)
+
+    # === Phase 5: Persist max_streak for users ===
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN max_streak INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    c.execute("UPDATE users SET max_streak = streak WHERE max_streak IS NULL OR max_streak < streak")
 
     conn.commit()
     conn.close()

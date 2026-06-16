@@ -45,6 +45,8 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, g, jsonify, request
 
 import db
+import achievements as ach_mod
+from .study import bump_streak
 
 from . import jwt_auth
 
@@ -53,6 +55,9 @@ tests_bp = Blueprint("api_v1_test", __name__, url_prefix="/api/v1/test")
 
 _FUTURE_TOLERANCE = timedelta(minutes=5)
 _PAST_TOLERANCE = timedelta(days=90)
+
+TEST_XP_PER_CORRECT = 3
+TEST_XP_PERFECT_BONUS = 5
 
 
 def _err(code, message, status):
@@ -345,17 +350,27 @@ def post_test_result():
         score_pct = (parsed["correct_count"] / parsed["total_questions"] * 100.0) if parsed["total_questions"] else 0.0
         is_perfect = 1 if (wrong == 0 and parsed["correct_count"] > 0) else 0
 
+        # Balanced Option: 3 XP per correct answer + 5 XP perfect score bonus
+        xp_gain = (parsed["correct_count"] * TEST_XP_PER_CORRECT) + (TEST_XP_PERFECT_BONUS if is_perfect else 0)
+
         # Idempotent by (user_id, client_result_id) — re-POSTing the same
         # client-generated id (a sync retry) is a no-op; we always return the
         # persisted record (mirrors POST /api/v1/study/sessions).
-        conn.execute("""
+        cur = conn.execute("""
             INSERT OR IGNORE INTO test_attempts
                 (user_id, scope_type, scope_id, scope_name, total_q, correct, wrong,
-                 score_pct, duration_sec, is_perfect, started_at, finished_at, client_result_id)
-            VALUES (?, 'deck', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 score_pct, duration_sec, is_perfect, xp_earned, started_at, finished_at, client_result_id)
+            VALUES (?, 'deck', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (user["id"], parsed["deck_id"], deck["name"], parsed["total_questions"],
               parsed["correct_count"], wrong, score_pct, parsed["duration_seconds"],
-              is_perfect, started_at.isoformat(), completed_at.isoformat(), parsed["id"]))
+              is_perfect, xp_gain, started_at.isoformat(), completed_at.isoformat(), parsed["id"]))
+        already_applied = cur.rowcount == 0
+
+        if not already_applied:
+            bump_streak(conn, user, xp_gain, completed_at.isoformat())
+            ach_mod.award_test_completed(conn, user["id"], perfect=(is_perfect == 1))
+            ach_mod.check_and_award(conn, user["id"])
+
         conn.commit()
 
         row = conn.execute("SELECT * FROM test_attempts WHERE user_id=? AND client_result_id=?",

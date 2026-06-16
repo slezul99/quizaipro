@@ -52,6 +52,16 @@ ACHIEVEMENTS = [
     {"key": "live_x10", "icon": "📡", "name": "Live-игрок", "desc": "Сыграй 10 Live test-ов", "xp": 150},
 ]
 
+# Shared definition of evolution stages for the Knowledge Tree
+EVOLUTION_STAGES = [
+    {"key": "seed", "start_days": 0, "next_stage_days": 3},
+    {"key": "sprout", "start_days": 3, "next_stage_days": 7},
+    {"key": "young_tree", "start_days": 7, "next_stage_days": 14},
+    {"key": "blooming_tree", "start_days": 14, "next_stage_days": 30},
+    {"key": "ancient_tree", "start_days": 30, "next_stage_days": 60},
+    {"key": "legendary_tree", "start_days": 60, "next_stage_days": None},
+]
+
 # Slovar' dlya bystrogo dostupa
 ACH_BY_KEY = {a["key"]: a for a in ACHIEVEMENTS}
 
@@ -276,3 +286,74 @@ def get_user_game_stats(conn, user_id):
     if not row:
         return {}
     return dict(row)
+
+
+def xp_required(L):
+    """Option E: XP required to go from level L to L+1, capped at 1000 XP."""
+    return min(50 * L + 50, 1000)
+
+
+
+def calculate_level_info(xp):
+    """Calculates user level info based on cumulative XP under Option E."""
+    if xp is None:
+        xp = 0
+    L = 1
+    remaining_xp = xp
+    while True:
+        req = xp_required(L)
+        if remaining_xp >= req:
+            remaining_xp -= req
+            L += 1
+        else:
+            break
+
+    req = xp_required(L)
+    progress_ratio = remaining_xp / float(req) if req > 0 else 0.0
+
+    # Determine Tier: Novice (1-5), Scholar (6-15), Master (16-30), Sage (31-50), Grandmaster (51-100), Legend (101+)
+    if L <= 5:
+        tier_key = "novice"
+        tier_name = "Novice"
+        min_level = 1
+        max_level = 5
+    elif L <= 15:
+        tier_key = "scholar"
+        tier_name = "Scholar"
+        min_level = 6
+        max_level = 15
+    elif L <= 30:
+        tier_key = "master"
+        tier_name = "Master"
+        min_level = 16
+        max_level = 30
+    elif L <= 50:
+        tier_key = "sage"
+        tier_name = "Sage"
+        min_level = 31
+        max_level = 50
+    elif L <= 100:
+        tier_key = "grandmaster"
+        tier_name = "Grandmaster"
+        min_level = 51
+        max_level = 100
+    else:
+        tier_key = "legend"
+        tier_name = "Legend"
+        min_level = 101
+        max_level = 9999
+
+    return {
+        "level": L,
+        "total_xp": xp,
+        "xp_in_current_level": remaining_xp,
+        "xp_for_next_level": req,
+        "progress_ratio": progress_ratio,
+        "tier": {
+            "key": tier_key,
+            "name": tier_name,
+            "min_level": min_level,
+            "max_level": max_level
+        }
+    }
+

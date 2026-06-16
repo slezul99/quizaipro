@@ -359,7 +359,7 @@ def _xp_for_grade(grade):
     return 5 if grade == 5 else 3 if grade == 4 else 1 if grade == 3 else 0
 
 
-def _bump_streak(conn, user, xp_gain, graded_at_iso):
+def bump_streak(conn, user, xp_gain, graded_at_iso):
     """Mirrors the existing web grading routes' streak/XP bookkeeping (app.py)."""
     new_xp = (user["xp"] or 0) + xp_gain
     today = datetime.utcnow().date().isoformat()
@@ -368,8 +368,11 @@ def _bump_streak(conn, user, xp_gain, graded_at_iso):
     if last != today:
         yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
         streak = streak + 1 if last == yesterday else 1
-    conn.execute("UPDATE users SET xp=?, streak=?, last_study=? WHERE id=?",
-                 (new_xp, streak, datetime.utcnow().isoformat(), user["id"]))
+    conn.execute("""
+        UPDATE users 
+        SET xp=?, streak=?, max_streak=MAX(COALESCE(max_streak, 0), ?), last_study=? 
+        WHERE id=?
+    """, (new_xp, streak, streak, datetime.utcnow().isoformat(), user["id"]))
     return streak
 
 
@@ -433,7 +436,7 @@ def post_grade():
                 (user["id"], parsed["card_id"], parsed["grade"], parsed["graded_at"]))
 
             xp_gain = _xp_for_grade(parsed["grade"])
-            streak = _bump_streak(conn, user, xp_gain, parsed["graded_at"])
+            streak = bump_streak(conn, user, xp_gain, parsed["graded_at"])
             ach_mod.check_and_award(conn, user["id"])
             conn.commit()
 

@@ -2103,8 +2103,11 @@ def api_card_grade(card_id):
     if last != today:
         yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
         streak = streak + 1 if last == yesterday else 1
-    conn.execute("UPDATE users SET xp=?, streak=?, last_study=? WHERE id=?",
-                 (new_xp, streak, datetime.utcnow().isoformat(), user["id"]))
+    conn.execute("""
+        UPDATE users 
+        SET xp=?, streak=?, max_streak=MAX(COALESCE(max_streak, 0), ?), last_study=? 
+        WHERE id=?
+    """, (new_xp, streak, streak, datetime.utcnow().isoformat(), user["id"]))
     new_unlocks = ach_mod.check_and_award(conn, user["id"])
     today_count = conn.execute(
         "SELECT COUNT(*) AS c FROM reviews WHERE user_id=? AND DATE(reviewed_at) = DATE('now')",
@@ -2270,8 +2273,11 @@ def study_grade():
     if last != today:
         yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
         streak = streak + 1 if last == yesterday else 1
-    conn.execute("UPDATE users SET xp=?, streak=?, last_study=? WHERE id=?",
-                 (new_xp, streak, datetime.utcnow().isoformat(), user["id"]))
+    conn.execute("""
+        UPDATE users 
+        SET xp=?, streak=?, max_streak=MAX(COALESCE(max_streak, 0), ?), last_study=? 
+        WHERE id=?
+    """, (new_xp, streak, streak, datetime.utcnow().isoformat(), user["id"]))
     # Achievements
     new_unlocks = ach_mod.check_and_award(conn, user["id"])
     # Goal achievement
@@ -2561,6 +2567,8 @@ def test_answer():
     is_last = (idx + 1) >= len(queue_now)
     if is_last:
         is_perfect = (stats["wrong"] == 0 and stats["correct"] > 0)
+        from api_v1.tests import TEST_XP_PER_CORRECT, TEST_XP_PERFECT_BONUS
+        xp_earned_h = stats["correct"] * TEST_XP_PER_CORRECT + (TEST_XP_PERFECT_BONUS if is_perfect else 0)
         new_unlocks += ach_mod.award_test_completed(conn2, user["id"], perfect=is_perfect)
 
         # === Zapis' v istoriyu testov ===
@@ -2581,13 +2589,13 @@ def test_answer():
                     duration_sec = 0
             conn2.execute("""
                 INSERT INTO test_attempts
-                (user_id, scope_type, scope_id, scope_name, total_q, correct, wrong, score_pct, duration_sec, is_perfect, started_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (user_id, scope_type, scope_id, scope_name, total_q, correct, wrong, score_pct, duration_sec, is_perfect, xp_earned, started_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 user["id"], scope_type, scope_id, scope_name,
                 total_q_h, stats["correct"], stats["wrong"],
                 round(score_pct_h, 2), duration_sec,
-                1 if is_perfect else 0,
+                1 if is_perfect else 0, xp_earned_h,
                 started_at,
             ))
             attempt_id = conn2.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
@@ -2607,10 +2615,13 @@ def test_answer():
 
                     for pos, ans in enumerate(session_answers, 1):
                         card = cards_map.get(ans["card_id"], {})
+                        ans_is_correct = 1 if ans.get("is_correct") else 0
+                        from api_v1.tests import TEST_XP_PER_CORRECT
+                        ans_xp = TEST_XP_PER_CORRECT if ans_is_correct else 0
                         conn2.execute("""
                             INSERT INTO test_attempt_answers
-                            (attempt_id, position, card_id, front, back, note, chosen, correct, is_correct)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            (attempt_id, position, card_id, front, back, note, chosen, correct, is_correct, xp_earned)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """, (
                             attempt_id, pos, ans["card_id"],
                             card.get("front", "[karta udalena]"),
@@ -2618,7 +2629,8 @@ def test_answer():
                             card.get("note", ""),
                             ans.get("chosen", ""),
                             ans.get("correct", ""),
-                            1 if ans.get("is_correct") else 0,
+                            ans_is_correct,
+                            ans_xp,
                         ))
         except Exception as e:
             print(f"[test_history] failed: {e}")
