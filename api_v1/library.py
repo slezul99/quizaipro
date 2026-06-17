@@ -72,12 +72,23 @@ def _fetch_user_decks(conn, user):
 
 
 def _serialize_library_deck(d):
+    # Content-type flags drive the mobile deck card badges and the Study/Test
+    # gating. They come from the precomputed `decks.has_mcq` / `has_terms`
+    # columns (see app.py:_recalc_deck_flags). Fallback: if a non-empty deck was
+    # never flagged, assume it has flashcards so the Study action isn't wrongly
+    # disabled (an unflagged deck is treated as terms, never MCQ).
+    has_tests = bool(d.get("has_mcq"))
+    has_flashcards = bool(d.get("has_terms"))
+    if (d.get("card_count") or 0) > 0 and not has_tests and not has_flashcards:
+        has_flashcards = True
     return {
         "id": str(d["id"]),
         "title": d["name"],
         "description": d["description"] or "",
         "card_count": d["card_count"] or 0,
         "due_count": d["due_count"] or 0,
+        "has_tests": has_tests,
+        "has_flashcards": has_flashcards,
         "cover_color_hex": d["category_color"] or _palette_color(d["id"]),
         "is_pro": False,
         "is_public": bool(d["is_public"]),
@@ -209,3 +220,117 @@ def search_library():
         "total_pages": total_pages,
         "total_count": total_count,
     }})
+
+
+# ---------------------------------------------------------------------------
+# Deck write endpoints (Library add/edit/delete) — the read-only contract of
+# this blueprint is extended here so the mobile Library can manage its own
+# decks. Card-level CRUD lives in study.py (decks_bp).
+# ---------------------------------------------------------------------------
+
+_DECK_TITLE_MAX_LEN = 100
+_DECK_DESC_MAX_LEN = 2000
+
+
+def _err(code, message, status):
+    return jsonify({"error": {"code": code, "message": message}}), status
+
+
+def _user_owns_deck(user, deck):
+    if user["org_id"]:
+        return deck["org_id"] == user["org_id"]
+    return deck["owner_id"] == user["id"]
+
+
+def _fetch_one_serialized(conn, user, deck_id):
+    for d in _fetch_user_decks(conn, user):
+        if str(d["id"]) == str(deck_id):
+            return _serialize_library_deck(d)
+    return None
+
+
+@library_bp.route("/decks", methods=["POST"])
+@jwt_auth.jwt_required
+def create_deck():
+    user = g.current_user
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Invalid JSON body", 400)
+    title = (body.get("title") or "").strip()
+    if not title:
+        return _err("validation_error", "title is required", 400)
+    if len(title) > _DECK_TITLE_MAX_LEN:
+        return _err("validation_error", f"title must be at most {_DECK_TITLE_MAX_LEN} characters", 400)
+    desc = body.get("description")
+    desc = (desc or "").strip()[:_DECK_DESC_MAX_LEN] if isinstance(desc, str) else ""
+
+    conn = db.get_conn()
+    try:
+        if user["org_id"]:
+            cur = conn.execute(
+                "INSERT INTO decks (org_id, name, description, icon, created_via) VALUES (?, ?, ?, '📚', 'mobile')",
+                (user["org_id"], title, desc))
+        else:
+            cur = conn.execute(
+                "INSERT INTO decks (owner_id, name, description, icon, created_via) VALUES (?, ?, ?, '📚', 'mobile')",
+                (user["id"], title, desc))
+        conn.commit()
+        data = _fetch_one_serialized(conn, user, cur.lastrowid)
+    finally:
+        conn.close()
+    return jsonify({"data": data}), 201
+
+
+@library_bp.route("/decks/<int:deck_id>", methods=["PUT", "PATCH"])
+@jwt_auth.jwt_required
+def update_deck(deck_id):
+    user = g.current_user
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Invalid JSON body", 400)
+    sets = {}
+    if "title" in body:
+        title = (body.get("title") or "").strip()
+        if not title:
+            return _err("validation_error", "title cannot be empty", 400)
+        if len(title) > _DECK_TITLE_MAX_LEN:
+            return _err("validation_error", f"title must be at most {_DECK_TITLE_MAX_LEN} characters", 400)
+        sets["name"] = title
+    if "description" in body:
+        desc = body.get("description")
+        sets["description"] = (desc or "").strip()[:_DECK_DESC_MAX_LEN] if isinstance(desc, str) else ""
+    if not sets:
+        return _err("validation_error", "no fields to update", 400)
+
+    conn = db.get_conn()
+    try:
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if deck is None:
+            return _err("not_found", "Колода не найдена", 404)
+        if not _user_owns_deck(user, deck):
+            return _err("forbidden", "Нет доступа к этой колоде", 403)
+        clause = ", ".join(f"{k}=?" for k in sets)
+        conn.execute(f"UPDATE decks SET {clause} WHERE id=?", (*sets.values(), deck_id))
+        conn.commit()
+        data = _fetch_one_serialized(conn, user, deck_id)
+    finally:
+        conn.close()
+    return jsonify({"data": data})
+
+
+@library_bp.route("/decks/<int:deck_id>", methods=["DELETE"])
+@jwt_auth.jwt_required
+def delete_deck(deck_id):
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if deck is None:
+            return _err("not_found", "Колода не найдена", 404)
+        if not _user_owns_deck(user, deck):
+            return _err("forbidden", "Нет доступа к этой колоде", 403)
+        conn.execute("DELETE FROM decks WHERE id=?", (deck_id,))  # cascades to cards
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"data": {"deleted": True}})

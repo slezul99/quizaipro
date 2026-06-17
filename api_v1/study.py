@@ -35,6 +35,7 @@ Field-mapping notes (documented mismatches, no schema redesign):
     there. This is a one-time, self-correcting edge case for cross-platform
     users; flagged in the verification report as a known mismatch.
 """
+import re
 from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, g, jsonify, request
@@ -43,6 +44,42 @@ import db
 import achievements as ach_mod
 
 from . import jwt_auth
+
+# MCQ detection mirrored from app.py (_MCQ_OPTION_RE / _card_is_mcq /
+# refresh_deck_content_flags) so card mutations here keep decks.has_mcq /
+# has_terms in sync without importing the Flask app into this blueprint.
+_MCQ_OPTION_RE = re.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", re.MULTILINE)
+
+
+def _has_mcq_options(text):
+    if not text:
+        return False
+    matches = _MCQ_OPTION_RE.findall(text)
+    return len({m.upper() for m in matches}) >= 2
+
+
+def _card_is_mcq(front, back, note):
+    return _has_mcq_options(note) or _has_mcq_options(back) or _has_mcq_options(front)
+
+
+def _recalc_deck_flags(conn, deck_id):
+    """Recompute decks.has_mcq / has_terms after a card mutation."""
+    cards = conn.execute(
+        "SELECT front, back, note FROM cards WHERE deck_id=?", (deck_id,)
+    ).fetchall()
+    has_mcq = 0
+    has_terms = 0
+    for c in cards:
+        if _card_is_mcq(c["front"], c["back"], c["note"]):
+            has_mcq = 1
+        else:
+            has_terms = 1
+        if has_mcq and has_terms:
+            break
+    conn.execute(
+        "UPDATE decks SET has_mcq=?, has_terms=? WHERE id=?",
+        (has_mcq, has_terms, deck_id),
+    )
 
 decks_bp = Blueprint("api_v1_decks", __name__, url_prefix="/api/v1/decks")
 study_bp = Blueprint("api_v1_study", __name__, url_prefix="/api/v1/study")
@@ -283,6 +320,127 @@ def post_bulk_cards(deck_id):
         conn.close()
 
     return jsonify({"data": {"saved_count": len(cards), "card_count": card_count}}), 201
+
+
+# ---------------------------------------------------------------------------
+# Single-card CRUD (Library add/edit) — POST/PUT/DELETE /decks/<id>/cards[/<cid>]
+# ---------------------------------------------------------------------------
+
+_CARD_FIELD_MAX_LEN = 4000
+
+
+def _validate_card_payload(body, *, partial=False):
+    """Validate a single-card add/edit payload. Returns (parsed, error)."""
+    if not isinstance(body, dict):
+        return None, "Invalid JSON body"
+    out = {}
+    for field in ("front", "back", "note"):
+        if field in body:
+            val = body.get(field)
+            if val is None:
+                val = ""
+            if not isinstance(val, str):
+                return None, f"{field} must be a string"
+            val = val.strip()
+            if len(val) > _CARD_FIELD_MAX_LEN:
+                return None, f"{field} is too long"
+            out[field] = val
+    if not partial:
+        if not out.get("front"):
+            return None, "front is required"
+        if not out.get("back"):
+            return None, "back is required"
+        out.setdefault("note", "")
+    return out, None
+
+
+def _load_card_row(conn, deck_id, card_id):
+    return conn.execute("""
+        SELECT c.*, p.ef, p.interval_days, p.repetitions, p.due_at, p.last_reviewed,
+               p.is_favorite, p.is_difficult, p.lapses
+        FROM cards c
+        LEFT JOIN user_card_progress p ON p.card_id = c.id AND p.user_id = ?
+        WHERE c.id = ? AND c.deck_id = ?
+    """, (g.current_user["id"], card_id, deck_id)).fetchone()
+
+
+@decks_bp.route("/<int:deck_id>/cards", methods=["POST"])
+@jwt_auth.jwt_required
+def post_create_card(deck_id):
+    user = g.current_user
+    parsed, err = _validate_card_payload(request.get_json(silent=True))
+    if err:
+        return _err("validation_error", err, 400)
+
+    conn = db.get_conn()
+    try:
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if deck is None:
+            return _err("not_found", "Колода не найдена", 404)
+        if not _user_owns_deck(user, deck):
+            return _err("forbidden", "Нет доступа к этой колоде", 403)
+        cur = conn.execute(
+            "INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+            (deck_id, parsed["front"], parsed["back"], parsed["note"]))
+        _recalc_deck_flags(conn, deck_id)
+        conn.commit()
+        row = _load_card_row(conn, deck_id, cur.lastrowid)
+    finally:
+        conn.close()
+    return jsonify({"data": _serialize_card(row, _resolve_lang(user))}), 201
+
+
+@decks_bp.route("/<int:deck_id>/cards/<int:card_id>", methods=["PUT", "PATCH"])
+@jwt_auth.jwt_required
+def put_update_card(deck_id, card_id):
+    user = g.current_user
+    parsed, err = _validate_card_payload(request.get_json(silent=True), partial=True)
+    if err:
+        return _err("validation_error", err, 400)
+    if not parsed:
+        return _err("validation_error", "no fields to update", 400)
+
+    conn = db.get_conn()
+    try:
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if deck is None:
+            return _err("not_found", "Колода не найдена", 404)
+        if not _user_owns_deck(user, deck):
+            return _err("forbidden", "Нет доступа к этой колоде", 403)
+        existing = conn.execute(
+            "SELECT id FROM cards WHERE id=? AND deck_id=?", (card_id, deck_id)).fetchone()
+        if existing is None:
+            return _err("not_found", "Карточка не найдена", 404)
+        sets = ", ".join(f"{f}=?" for f in parsed)
+        conn.execute(f"UPDATE cards SET {sets} WHERE id=? AND deck_id=?",
+                     (*parsed.values(), card_id, deck_id))
+        _recalc_deck_flags(conn, deck_id)
+        conn.commit()
+        row = _load_card_row(conn, deck_id, card_id)
+    finally:
+        conn.close()
+    return jsonify({"data": _serialize_card(row, _resolve_lang(user))})
+
+
+@decks_bp.route("/<int:deck_id>/cards/<int:card_id>", methods=["DELETE"])
+@jwt_auth.jwt_required
+def delete_card(deck_id, card_id):
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if deck is None:
+            return _err("not_found", "Колода не найдена", 404)
+        if not _user_owns_deck(user, deck):
+            return _err("forbidden", "Нет доступа к этой колоде", 403)
+        cur = conn.execute("DELETE FROM cards WHERE id=? AND deck_id=?", (card_id, deck_id))
+        if cur.rowcount == 0:
+            return _err("not_found", "Карточка не найдена", 404)
+        _recalc_deck_flags(conn, deck_id)
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"data": {"deleted": True}})
 
 
 # ---------------------------------------------------------------------------
