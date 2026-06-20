@@ -1729,7 +1729,8 @@ def deck_view(deck_id):
                         (deck_id,)).fetchone()
     if not deck or not can_view_deck(user, dict(deck)):
         conn.close(); abort(404)
-    cards_raw = conn.execute("""SELECT c.*, p.ef, p.interval_days, p.reviews, p.lapses, p.due_at
+    cards_raw = conn.execute("""SELECT c.*, p.ef, p.interval_days, p.reviews, p.lapses,
+        p.due_at, p.stability, p.last_reviewed
         FROM cards c LEFT JOIN user_card_progress p ON p.card_id=c.id AND p.user_id=?
         WHERE c.deck_id=? ORDER BY c.id DESC""", (user["id"], deck_id)).fetchall()
     cards = [dict(c) for c in cards_raw]
@@ -1794,9 +1795,12 @@ def deck_view(deck_id):
     # chtoby shablon mog pokazat' obe knopki esli oba tipa est'.
     mcq_count = sum(1 for c in cards if len(c.get("options") or []) >= 2)
     terms_count = len(cards) - mcq_count
+    # FSRS memory snapshot for the deck (makes forgetting visible).
+    retention = fsrs.deck_retention(cards)
     return render_template("deck.html", deck=deck, cards=cards, categories=cats,
                             can_edit=can_manage_content(user),
-                            mcq_count=mcq_count, terms_count=terms_count)
+                            mcq_count=mcq_count, terms_count=terms_count,
+                            retention=retention)
 
 
 @app.route("/deck/<int:deck_id>/edit", methods=["POST"])

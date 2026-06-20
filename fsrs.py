@@ -185,6 +185,48 @@ def calc_fsrs(card: dict, grade: int, now: datetime = None) -> dict:
     return out
 
 
+def deck_retention(cards: list, now: datetime = None, horizon_days: int = 7) -> dict:
+    """Aggregate memory state for a deck (list of user_card_progress dicts).
+
+    Returns a small summary the UI can show to make invisible forgetting
+    visible and actionable:
+      • now       — average recall probability across studied cards (%, 0-100)
+      • forecast  — what it drops to in [horizon_days] with no review (%)
+      • fading    — studied cards already below target retention (due to slip)
+      • studied   — how many cards have been reviewed at least once
+      • total     — total cards in the deck
+    Returns now/forecast = None when nothing has been studied yet.
+    """
+    now = now or datetime.utcnow()
+    studied = [c for c in cards if (c.get("reviews") or 0) > 0]
+    if not studied:
+        return {"now": None, "forecast": None, "fading": 0,
+                "studied": 0, "total": len(cards)}
+
+    sum_now = 0.0
+    sum_future = 0.0
+    fading = 0
+    for c in studied:
+        s = c.get("stability")
+        if not s:
+            s, _ = _seed_from_sm2(c)        # estimate for legacy SM-2 cards
+        elapsed = _elapsed_days(c, now)
+        r_now = retrievability(elapsed, s)
+        sum_now += r_now
+        sum_future += retrievability(elapsed + horizon_days, s)
+        if r_now < TARGET_RETENTION:
+            fading += 1
+
+    n = len(studied)
+    return {
+        "now": round(sum_now / n * 100),
+        "forecast": round(sum_future / n * 100),
+        "fading": fading,
+        "studied": n,
+        "total": len(cards),
+    }
+
+
 if __name__ == "__main__":
     # Quick sanity check: a fresh card answered Good a few times should grow
     # its interval, and a lapse should collapse it.

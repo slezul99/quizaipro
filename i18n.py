@@ -1044,6 +1044,10 @@ T = {
         "fc_test": "📝 Тест",
         # deck (already partly covered by u_*; add deck-specific keys)
         "dk_cards_count": "карт",
+        "dk_retention": "Удержание",
+        "dk_retention_week": "через неделю",
+        "dk_retention_fading": "остывают — повторите",
+        "dk_retention_hint": "Вероятность вспомнить карты сейчас (по FSRS) и прогноз через неделю без повторений",
         "dk_cat_label": "📁 Категория:",
         "dk_no_cat": "— Без категории —",
         "dk_create_cat": "+ Создать",
@@ -2847,6 +2851,10 @@ T = {
         "fc_test": "📝 Test",
         # deck
         "dk_cards_count": "cards",
+        "dk_retention": "Retention",
+        "dk_retention_week": "in a week",
+        "dk_retention_fading": "fading — review",
+        "dk_retention_hint": "Probability of recalling these cards now (FSRS) and the forecast in a week with no review",
         "dk_cat_label": "📁 Category:",
         "dk_no_cat": "— No category —",
         "dk_create_cat": "+ Create",
@@ -4640,6 +4648,10 @@ T = {
         "fc_test": "📝 Test",
         # deck
         "dk_cards_count": "karta",
+        "dk_retention": "Eslab qolish",
+        "dk_retention_week": "bir haftadan keyin",
+        "dk_retention_fading": "so'nmoqda — takrorlang",
+        "dk_retention_hint": "Kartalarni hozir eslab qolish ehtimoli (FSRS) va takrorlashsiz bir haftadan keyingi prognoz",
         "dk_cat_label": "📁 Toifa:",
         "dk_no_cat": "— Toifasiz —",
         "dk_create_cat": "+ Yaratish",
