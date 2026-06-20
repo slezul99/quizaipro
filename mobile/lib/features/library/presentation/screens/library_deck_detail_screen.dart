@@ -1,0 +1,915 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:quizaipro_mobile/core/router/app_routes.dart';
+import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
+import 'package:quizaipro_mobile/core/utils/mcq_text.dart';
+import 'package:quizaipro_mobile/features/flashcards/domain/entities/flashcard.dart';
+import 'package:quizaipro_mobile/features/flashcards/presentation/providers/flashcard_providers.dart';
+import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/deck_cards_provider.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_decks_notifier.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_favorites_notifier.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_state.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_providers.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/recent_decks_notifier.dart';
+import 'package:quizaipro_mobile/features/library/presentation/widgets/card_editor_sheet.dart';
+import 'package:quizaipro_mobile/features/library/presentation/widgets/deck_editor_sheet.dart';
+import 'package:quizaipro_mobile/features/library/presentation/widgets/library_empty_state.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
+
+/// Library deck detail — shown when the user opens one of *their own* decks
+/// from the Library tab.
+///
+/// The deck is looked up by id in the already-loaded Library providers
+/// (my decks / recent / favorites) rather than fetched again: every entry
+/// point that navigates here (`LibraryScreen`, `LibrarySearchScreen`,
+/// `DeckActionsHandler`) already populated those caches with the full
+/// [LibraryDeck], so no extra network round-trip or backend endpoint is
+/// needed.
+class LibraryDeckDetailScreen extends ConsumerWidget {
+  const LibraryDeckDetailScreen({super.key, required this.deckId});
+
+  final String deckId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.aurora;
+    final l = AppLocalizations.of(context);
+
+    final myDecks = ref.watch(libraryDecksNotifierProvider);
+    final recentDecks = ref.watch(recentDecksNotifierProvider);
+    final favorites = ref.watch(libraryFavoritesNotifierProvider);
+
+    final deck = _findDeck(myDecks, recentDecks, favorites);
+    final stillLoading = deck == null &&
+        (myDecks.isLoading || recentDecks.isLoading || favorites.isLoading);
+
+    return Scaffold(
+      backgroundColor: t.backgroundCanvas,
+      appBar: AppBar(
+        backgroundColor: t.backgroundCanvas,
+        elevation: 0,
+        foregroundColor: t.textPrimary,
+        actions: deck == null
+            ? null
+            : [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Редактировать колоду',
+                  onPressed: () => showDeckEditorSheet(context, deck: deck),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  tooltip: 'Удалить колоду',
+                  onPressed: () => _confirmDeleteDeck(context, ref, deck.id),
+                ),
+              ],
+      ),
+      body: stillLoading
+          ? const Center(child: CircularProgressIndicator())
+          : deck == null
+              ? LibraryEmptyState(
+                  tokens: t,
+                  icon: Icons.search_off_rounded,
+                  message: l.libraryDeckDetailNotFound,
+                )
+              : _DeckDetailBody(deck: deck, tokens: t, l: l),
+    );
+  }
+
+  LibraryDeck? _findDeck(
+    AsyncValue<DecksListState> myDecks,
+    AsyncValue<List<LibraryDeck>> recentDecks,
+    AsyncValue<FavoritesListState> favorites,
+  ) {
+    for (final deck in myDecks.valueOrNull?.items ?? const <LibraryDeck>[]) {
+      if (deck.id == deckId) return deck;
+    }
+    for (final deck in recentDecks.valueOrNull ?? const <LibraryDeck>[]) {
+      if (deck.id == deckId) return deck;
+    }
+    for (final deck in favorites.valueOrNull?.items ?? const <LibraryDeck>[]) {
+      if (deck.id == deckId) return deck;
+    }
+    return null;
+  }
+}
+
+class _DeckDetailBody extends ConsumerWidget {
+  const _DeckDetailBody({required this.deck, required this.tokens, required this.l});
+
+  final LibraryDeck deck;
+  final AuroraTokens tokens;
+  final AppLocalizations l;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tt = Theme.of(context).textTheme;
+    final cardsAsync = ref.watch(deckCardsProvider(deck.id));
+    final coverColor = _hexToColor(deck.coverColorHex);
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Container(
+            margin: EdgeInsets.fromLTRB(
+              tokens.space20,
+              tokens.space4,
+              tokens.space20,
+              tokens.space20,
+            ),
+            padding: EdgeInsets.all(tokens.space20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [coverColor, Color.lerp(coverColor, Colors.black, 0.30)!],
+              ),
+              borderRadius: BorderRadius.circular(tokens.radiusLg),
+              boxShadow: [
+                BoxShadow(
+                  color: coverColor.withValues(alpha: 0.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (deck.isPro)
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: tokens.space8,
+                      vertical: tokens.space4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.22),
+                      borderRadius: BorderRadius.circular(tokens.radiusFull),
+                    ),
+                    child: Text(
+                      l.marketplaceProBadge,
+                      style: tt.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                SizedBox(height: tokens.space8),
+                Text(
+                  deck.title,
+                  style: tt.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (deck.subjectName != null) ...[
+                  SizedBox(height: tokens.space4),
+                  Text(
+                    deck.subjectName!,
+                    style: tt.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85)),
+                  ),
+                ],
+                SizedBox(height: tokens.space16),
+                Row(
+                  children: [
+                    _HeroStat(
+                      icon: Icons.style_rounded,
+                      value: '${deck.cardCount}',
+                      label: l.marketplaceCards,
+                      tokens: tokens,
+                    ),
+                    SizedBox(width: tokens.space8),
+                    _HeroStat(
+                      icon: Icons.schedule_rounded,
+                      value: '${deck.dueCount}',
+                      label: l.libraryDeckDetailDue,
+                      tokens: tokens,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: tokens.space20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (deck.description.isNotEmpty) ...[
+                  Text(l.marketplaceDeckAbout, style: tt.titleSmall),
+                  SizedBox(height: tokens.space8),
+                  Text(
+                    deck.description,
+                    style: tt.bodyMedium?.copyWith(color: tokens.textSecondary),
+                  ),
+                  SizedBox(height: tokens.space20),
+                ],
+                if (deck.tags.isNotEmpty) ...[
+                  Wrap(
+                    spacing: tokens.space8,
+                    runSpacing: tokens.space8,
+                    children: deck.tags
+                        .map(
+                          (tag) => Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: tokens.space12,
+                              vertical: tokens.space4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: tokens.backgroundSurfaceElevated,
+                              borderRadius: BorderRadius.circular(tokens.radiusFull),
+                              border: Border.all(color: tokens.borderSubtle),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: tt.labelSmall?.copyWith(color: tokens.textSecondary),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  SizedBox(height: tokens.space20),
+                ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: deck.hasFlashcards
+                            ? () => context.pushNamed(
+                                  AppRoutes.studySessionName,
+                                  queryParameters: {
+                                    'deckId': deck.id,
+                                    'deckTitle': deck.title,
+                                  },
+                                )
+                            : () => _showNoContentSheet(context, tokens, isTest: false),
+                        icon: const Icon(Icons.style_rounded),
+                        label: Text(l.libraryActionStudy),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52),
+                          backgroundColor: deck.hasFlashcards
+                              ? tokens.brandGradientStart
+                              : tokens.surfaceSubtle,
+                          foregroundColor:
+                              deck.hasFlashcards ? Colors.white : tokens.textTertiary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(tokens.radiusMd),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: tokens.space12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: deck.hasTests
+                            ? () => context.pushNamed(
+                                  AppRoutes.testSetupName,
+                                  queryParameters: {
+                                    'deckId': deck.id,
+                                    'deckTitle': deck.title,
+                                  },
+                                )
+                            : () => _showNoContentSheet(context, tokens, isTest: true),
+                        icon: const Icon(Icons.fact_check_outlined),
+                        label: Text(l.libraryDeckDetailTest),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52),
+                          foregroundColor:
+                              deck.hasTests ? null : tokens.textTertiary,
+                          side: BorderSide(
+                            color: deck.hasTests
+                                ? tokens.borderStrong
+                                : tokens.borderSubtle,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(tokens.radiusMd),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: tokens.space24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(l.marketplaceCards, style: tt.titleSmall),
+                    TextButton.icon(
+                      onPressed: () =>
+                          showCardEditorSheet(context, deckId: deck.id),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Добавить'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: tokens.brandPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: tokens.space12),
+                _CardsSection(
+                  cardsAsync: cardsAsync,
+                  tokens: tokens,
+                  l: l,
+                  deckId: deck.id,
+                ),
+                SizedBox(height: tokens.space32),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _hexToColor(String hex) {
+    final clean = hex.replaceAll('#', '');
+    try {
+      return Color(int.parse('FF$clean', radix: 16));
+    } catch (_) {
+      return const Color(0xFF6366F1);
+    }
+  }
+}
+
+/// Translucent stat pill shown inside the gradient deck hero.
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.tokens,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final AuroraTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: tokens.space12,
+        vertical: tokens.space8,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(tokens.radiusMd),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          SizedBox(width: tokens.space8),
+          Text(
+            value,
+            style: tt.titleSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(width: tokens.space4),
+          Text(
+            label,
+            style: tt.labelSmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Renders the deck's own flashcards as a tappable, flippable list so users
+/// can browse what's actually inside a deck from the Library — mirroring the
+/// Marketplace's card-preview affordance, but showing every card.
+class _CardsSection extends ConsumerWidget {
+  const _CardsSection({
+    required this.cardsAsync,
+    required this.tokens,
+    required this.l,
+    required this.deckId,
+  });
+
+  final AsyncValue<List<Flashcard>> cardsAsync;
+  final AuroraTokens tokens;
+  final AppLocalizations l;
+  final String deckId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return cardsAsync.when(
+      loading: () => Padding(
+        padding: EdgeInsets.symmetric(vertical: tokens.space24),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, _) => Padding(
+        padding: EdgeInsets.symmetric(vertical: tokens.space12),
+        child: Text(
+          l.errorNetwork,
+          style: TextStyle(color: tokens.textSecondary),
+        ),
+      ),
+      data: (cards) {
+        if (cards.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: tokens.space12),
+            child: Text(
+              l.libraryDeckDetailNoCards,
+              style: TextStyle(color: tokens.textSecondary),
+            ),
+          );
+        }
+        return Column(
+          children: [
+            for (var i = 0; i < cards.length; i++)
+              _FlashcardTile(
+                index: i + 1,
+                card: cards[i],
+                tokens: tokens,
+                frontLabel: l.marketplaceCardFront,
+                backLabel: l.marketplaceCardBack,
+                onEdit: () => showCardEditorSheet(
+                  context,
+                  deckId: deckId,
+                  card: cards[i],
+                ),
+                onDelete: () =>
+                    _confirmDeleteCard(context, ref, deckId, cards[i].id),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FlashcardTile extends StatefulWidget {
+  const _FlashcardTile({
+    required this.index,
+    required this.card,
+    required this.tokens,
+    required this.frontLabel,
+    required this.backLabel,
+    this.onEdit,
+    this.onDelete,
+  });
+
+  final int index;
+  final Flashcard card;
+  final AuroraTokens tokens;
+  final String frontLabel;
+  final String backLabel;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+
+  @override
+  State<_FlashcardTile> createState() => _FlashcardTileState();
+}
+
+class _FlashcardTileState extends State<_FlashcardTile> {
+  bool _revealed = false;
+  bool _showOptions = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.tokens;
+    final card = widget.card;
+    final stem = mcqStem(card.front);
+    // Options may be inlined in the front (most decks) or in the note/hint.
+    var options = mcqOptions(card.front);
+    if (options.isEmpty) options = mcqOptions(card.hint ?? '');
+    final isMcq = options.length >= 2;
+    final accent = isMcq ? t.stateInfo : t.brandGradientStart;
+
+    // Explanation = note (surfaced as hint). For MCQ cards the note often holds
+    // the options themselves, not prose — don't show that as an "explanation".
+    final hint = (card.hint ?? '').trim();
+    final hasExplanation =
+        hint.isNotEmpty && hint != card.back && !mcqHasOptions(hint);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: t.space12),
+      padding: EdgeInsets.all(t.space16),
+      decoration: BoxDecoration(
+        color: t.backgroundSurface,
+        borderRadius: BorderRadius.circular(t.radiusLg),
+        border: Border.all(color: t.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: index + content-type chip
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: t.surfaceSubtle,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '${widget.index}',
+                  style: t.labelSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: t.textSecondary,
+                  ),
+                ),
+              ),
+              SizedBox(width: t.space8),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: t.space8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(t.radiusFull),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isMcq ? Icons.fact_check_rounded : Icons.style_rounded,
+                      size: 12,
+                      color: accent,
+                    ),
+                    SizedBox(width: t.space4),
+                    Text(
+                      isMcq ? 'Тест' : 'Флешкарта',
+                      style: t.labelSmall.copyWith(
+                        color: accent,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.onEdit != null || widget.onDelete != null) ...[
+                const Spacer(),
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(Icons.more_vert_rounded,
+                        size: 18, color: t.textTertiary),
+                    onSelected: (v) {
+                      if (v == 'edit') widget.onEdit?.call();
+                      if (v == 'delete') widget.onDelete?.call();
+                    },
+                    itemBuilder: (_) => [
+                      if (widget.onEdit != null)
+                        const PopupMenuItem(
+                            value: 'edit', child: Text('Редактировать')),
+                      if (widget.onDelete != null)
+                        const PopupMenuItem(
+                            value: 'delete', child: Text('Удалить')),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          SizedBox(height: t.space12),
+          // Question
+          Text(
+            stem,
+            style: t.titleSmall.copyWith(fontWeight: FontWeight.w600),
+          ),
+
+          // #4 — MCQ options behind a "Варианты" toggle
+          if (isMcq) ...[
+            SizedBox(height: t.space12),
+            _PillButton(
+              icon: _showOptions
+                  ? Icons.expand_less_rounded
+                  : Icons.format_list_bulleted_rounded,
+              label: _showOptions ? 'Скрыть варианты' : 'Варианты',
+              color: accent,
+              tokens: t,
+              onTap: () => setState(() => _showOptions = !_showOptions),
+            ),
+            if (_showOptions) ...[
+              SizedBox(height: t.space8),
+              for (final opt in options)
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(bottom: t.space4),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: t.space12,
+                    vertical: t.space8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: t.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(t.radiusMd),
+                  ),
+                  child: Text(opt, style: t.bodyMedium),
+                ),
+            ],
+          ],
+
+          SizedBox(height: t.space12),
+          // Answer reveal
+          _PillButton(
+            icon: _revealed
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded,
+            label: _revealed ? 'Скрыть ответ' : 'Показать ответ',
+            color: t.brandGradientStart,
+            tokens: t,
+            onTap: () => setState(() => _revealed = !_revealed),
+          ),
+          if (_revealed) ...[
+            SizedBox(height: t.space8),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(t.space12),
+              decoration: BoxDecoration(
+                color: t.brandGradientStart.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(t.radiusMd),
+                border: Border.all(color: t.brandGradientStart.withOpacity(0.25)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.backLabel.toUpperCase(),
+                    style: t.labelSmall.copyWith(
+                      color: t.brandGradientStart,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: t.space4),
+                  Text(
+                    card.back,
+                    style: t.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            // #3 — explanation
+            if (hasExplanation) ...[
+              SizedBox(height: t.space8),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(t.space12),
+                decoration: BoxDecoration(
+                  color: t.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(t.radiusMd),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline_rounded,
+                            size: 14, color: t.textSecondary),
+                        SizedBox(width: t.space4),
+                        Text(
+                          'ОБЪЯСНЕНИЕ',
+                          style: t.labelSmall.copyWith(
+                            color: t.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: t.space4),
+                    Text(
+                      hint,
+                      style: t.bodyMedium.copyWith(
+                        color: t.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact outlined pill button used inside a card tile (reveal options/answer).
+class _PillButton extends StatelessWidget {
+  const _PillButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.tokens,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final AuroraTokens tokens;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: tokens.space12,
+          vertical: tokens.space8,
+        ),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(tokens.radiusFull),
+          border: Border.all(color: color.withOpacity(0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            SizedBox(width: tokens.space4),
+            Text(
+              label,
+              style: tokens.labelMedium.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Friendly bottom sheet shown when the user taps Study on a deck with no
+/// flashcards, or Test on a deck with no MCQ cards.
+void _showNoContentSheet(
+  BuildContext context,
+  AuroraTokens tokens, {
+  required bool isTest,
+}) {
+  final accent = isTest ? tokens.stateInfo : tokens.brandGradientStart;
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: tokens.backgroundSurface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(tokens.radiusLg)),
+    ),
+    builder: (ctx) {
+      final tt = Theme.of(ctx).textTheme;
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            tokens.space24,
+            tokens.space12,
+            tokens.space24,
+            tokens.space24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: tokens.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(height: tokens.space24),
+              Container(
+                width: 64,
+                height: 64,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent.withOpacity(0.12),
+                ),
+                child: Icon(
+                  isTest ? Icons.fact_check_outlined : Icons.style_outlined,
+                  size: 30,
+                  color: accent,
+                ),
+              ),
+              SizedBox(height: tokens.space16),
+              Text(
+                isTest
+                    ? 'В этой колоде нет тестов'
+                    : 'В этой колоде нет флешкарт',
+                textAlign: TextAlign.center,
+                style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              SizedBox(height: tokens.space8),
+              Text(
+                isTest
+                    ? 'Добавьте карточки с вариантами ответов (A, B, C…), чтобы пройти тест.'
+                    : 'Добавьте флешкарты, чтобы начать изучение этой колоды.',
+                textAlign: TextAlign.center,
+                style: tt.bodyMedium?.copyWith(color: tokens.textSecondary),
+              ),
+              SizedBox(height: tokens.space24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: tokens.brandPrimary,
+                    foregroundColor: tokens.textOnBrand,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(tokens.radiusMd),
+                    ),
+                  ),
+                  child: const Text('Понятно'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Future<bool> _confirmDelete(
+  BuildContext context, {
+  required String title,
+  required String message,
+}) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Отмена'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+          child: const Text('Удалить'),
+        ),
+      ],
+    ),
+  );
+  return ok ?? false;
+}
+
+Future<void> _confirmDeleteDeck(
+    BuildContext context, WidgetRef ref, String deckId) async {
+  final confirmed = await _confirmDelete(
+    context,
+    title: 'Удалить колоду?',
+    message: 'Колода и все её карточки будут удалены безвозвратно.',
+  );
+  if (!confirmed) return;
+  final result = await ref.read(libraryRepositoryProvider).deleteDeck(deckId);
+  if (!context.mounted) return;
+  result.fold(
+    (_) => ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Не удалось удалить колоду')),
+    ),
+    (_) {
+      ref.read(libraryDecksNotifierProvider.notifier).refresh();
+      ref.invalidate(recentDecksNotifierProvider);
+      ref.invalidate(libraryFavoritesNotifierProvider);
+      Navigator.of(context).pop(); // leave the deck detail
+    },
+  );
+}
+
+Future<void> _confirmDeleteCard(BuildContext context, WidgetRef ref,
+    String deckId, String cardId) async {
+  final confirmed = await _confirmDelete(
+    context,
+    title: 'Удалить карточку?',
+    message: 'Это действие нельзя отменить.',
+  );
+  if (!confirmed) return;
+  final result = await ref
+      .read(flashcardRepositoryProvider)
+      .deleteCard(deckId: deckId, cardId: cardId);
+  if (!context.mounted) return;
+  result.fold(
+    (_) => ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Не удалось удалить карточку')),
+    ),
+    (_) {
+      ref.invalidate(deckCardsProvider(deckId));
+      ref.read(libraryDecksNotifierProvider.notifier).refresh();
+    },
+  );
+}

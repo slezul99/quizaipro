@@ -1,0 +1,513 @@
+{
+  "@@locale": "uz",
+
+  "appName": "QuizAIPro",
+  "loading": "Yuklanmoqda...",
+  "retry": "Qayta urining",
+  "cancel": "Bekor qilish",
+  "save": "Saqlash",
+  "delete": "O'chirish",
+  "confirm": "Tasdiqlash",
+  "back": "Orqaga",
+  "done": "Tayyor",
+  "next": "Keyingi",
+  "skip": "O'tkazib yuborish",
+
+  "errorGeneric": "Xatolik yuz berdi. Qayta urining.",
+  "errorNetwork": "Internet aloqasi yo'q.",
+  "errorUnauthorized": "Sessiya tugadi. Qayta kiring.",
+  "errorRateLimited": "Ko'p so'rovlar yuborildi. Bir oz kuting.",
+
+  "authWelcomeTitle": "AI bilan aqlli o'rganing",
+  "authWelcomeSubtitle": "Sizga moslashadigan AI-kartochkalar.",
+  "authLogin": "Kirish",
+  "authRegister": "Hisob yaratish",
+  "authContinueWithGoogle": "Google orqali kirish",
+  "authContinueWithApple": "Apple orqali kirish",
+  "authEmail": "Email",
+  "authPassword": "Parol",
+  "authForgotPassword": "Parolni unutdingizmi?",
+  "authLogout": "Chiqish",
+
+  "authLoginTitle": "Xush kelibsiz",
+  "authLoginSubtitle": "O'qishni davom ettirish uchun kiring",
+  "authRegisterTitle": "Hisob yaratish",
+  "authRegisterSubtitle": "AI o'rganish yo'lingizni boshlang",
+  "authUsername": "Foydalanuvchi nomi",
+  "authUsernamePlaceholder": "sizning_nikingiz",
+  "authEmailPlaceholder": "sizning@email.com",
+  "authIdentifier": "Email yoki login",
+  "authIdentifierPlaceholder": "email yoki foydalanuvchi nomi",
+  "authPasswordPlaceholder": "Kamida 8 ta belgi",
+  "authConfirmPassword": "Parolni tasdiqlang",
+  "authConfirmPasswordPlaceholder": "Parolni takrorlang",
+  "authPasswordHintLogin": "Parolingiz",
+  "authConfirmPasswordRequired": "Iltimos, parolni tasdiqlang",
+  "authGetStarted": "Boshlash",
+  "authAlreadyHaveAccount": "Hisobim allaqachon bor",
+  "authOrContinueWith": "yoki davom eting",
+  "authSignIn": "Kirish",
+  "authCreateAccount": "Hisob yaratish",
+  "authNoAccount": "Hisobingiz yo'qmi? ",
+  "authSignUp": "Ro'yxatdan o'tish",
+  "authHaveAccount": "Hisobingiz bormi? ",
+  "authSignInLink": "Kirish",
+  "authTermsNotice": "Hisob yaratib, siz\nFoydalanish shartlari va Maxfiylik siyosatiga rozisiz.",
+  "authPasswordStrengthWeak": "Zaif",
+  "authPasswordStrengthFair": "O'rta",
+  "authPasswordStrengthStrong": "Kuchli",
+  "authPasswordStrengthVeryStrong": "Juda kuchli",
+  "validationRequired": "{field} majburiy",
+  "@validationRequired": {
+    "placeholders": { "field": { "type": "String" } }
+  },
+  "validationEmail": "To'g'ri email kiriting",
+  "validationPasswordMin": "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
+  "validationPasswordsNoMatch": "Parollar mos kelmadi",
+  "validationUsernameMin": "Foydalanuvchi nomi kamida 3 ta belgi bo'lishi kerak",
+  "validationUsernameMax": "Foydalanuvchi nomi ko'pi bilan 20 ta belgi bo'lishi kerak",
+  "validationUsernameChars": "Faqat harflar, raqamlar va pastki chiziq",
+  "errorUnexpected": "Kutilmagan xatolik yuz berdi.",
+
+  "navHome": "Bosh sahifa",
+  "navLibrary": "Kutubxona",
+  "navDiscover": "Bozor",
+  "navArena": "Arena",
+  "navProfile": "Profil",
+
+  "arenaComingSoon": "Arena — tez orada",
+  "profileComingSoon": "Profil — tez orada",
+  "homeComingSoon": "Bosh sahifa — tez orada",
+  "discoverTitle": "Kashf etish",
+  "discoverComingSoon": "Kashf etish — tez orada",
+  "duelComingSoon": "Duel — tez orada",
+  "liveTestComingSoon": "Jonli test — tez orada",
+  "notificationsComingSoon": "Bildirishnomalar — tez orada",
+
+  "homeStreak": "{count} kunlik seriya",
+  "@homeStreak": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "homeDueCards": "{count} ta kartochka takrorlash kerak",
+  "@homeDueCards": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "studyStart": "O'qishni boshlash",
+  "studyCardOf": "{current} / {total}",
+  "@studyCardOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "tutorAskPlaceholder": "Mavzu bo'yicha savol bering...",
+
+  "settingsTheme": "Mavzu",
+  "settingsThemeLight": "Yorug'",
+  "settingsThemeDark": "Qorong'u",
+  "settingsThemeSystem": "Tizim",
+  "settingsLanguage": "Til",
+  "settingsDailyGoal": "Kunlik maqsad",
+  "settingsDailyGoalCards": "Kuniga {count} ta kartochka",
+  "@settingsDailyGoalCards": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "dashboardGreetingMorning": "Xayrli tong,",
+  "dashboardGreetingAfternoon": "Xayrli kun,",
+  "dashboardGreetingEvening": "Xayrli kech,",
+  "dashboardDailyGoal": "Kunlik maqsad",
+  "dashboardDailyGoalCompleted": "Maqsadga erishdingiz!",
+  "dashboardStreakDay": "kunlik seriya",
+  "dashboardStreakBest": "Eng yaxshi: {count} kun",
+  "@dashboardStreakBest": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "dashboardStreakToday": "Bugun",
+  "dashboardStreakDone": "Bajarildi!",
+  "dashboardCardsLeft": "{count} ta karta qoldi",
+  "@dashboardCardsLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "dashboardReadyToStudy": "O'rganishga tayyor",
+  "dashboardAllCaughtUp": "Hammasi tugallandi! 🎉",
+  "dashboardOverdue": "muddati o'tgan",
+  "dashboardXpLabel": "{xp} XP",
+  "@dashboardXpLabel": {
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+  "dashboardXpToNextLevel": "{nextLevel}-daraja uchun {xp} XP",
+  "@dashboardXpToNextLevel": {
+    "placeholders": {
+      "xp": { "type": "int" },
+      "nextLevel": { "type": "int" }
+    }
+  },
+  "dashboardLevelBadge": "{level}-daraja",
+  "@dashboardLevelBadge": {
+    "placeholders": {
+      "level": { "type": "int" }
+    }
+  },
+  "dashboardStartStudying": "Boshlash",
+  "dashboardQuickActions": "Tezkor amallar",
+  "dashboardActionStudy": "O'qish",
+  "dashboardActionDiscover": "Bozor",
+  "dashboardActionAiTutor": "Murabbiy",
+  "dashboardActionAiStudio": "Studiya",
+  "dashboardRecentActivity": "So'nggi faollik",
+  "dashboardActivityEmpty": "Hozircha faollik yo'q. O'qishni boshlang!",
+
+  "dashboardActivitySummary": "{count} ta karta · {time}",
+  "@dashboardActivitySummary": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "dashboardTimeAgoMinutes": "{minutes} daq oldin",
+  "@dashboardTimeAgoMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+
+  "dashboardTimeAgoHours": "{hours} soat oldin",
+  "@dashboardTimeAgoHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+
+  "dashboardTimeAgoDays": "{days} kun oldin",
+  "@dashboardTimeAgoDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "dashboardXpEarned": "+{xp} XP",
+  "@dashboardXpEarned": {
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+
+  "dashboardActivityTypeStudy": "Mashg'ulot sessiyasi",
+  "dashboardActivityTypeTest": "Test yakunlandi",
+  "dashboardActivityTypeDuel": "Duel",
+  "dashboardActivityTypeAiTutor": "AI O'qituvchi sessiyasi",
+
+  "marketplaceTitle": "Bozor",
+  "marketplaceTabExplore": "Ko'rish",
+  "marketplaceTabCollections": "To'plamlar",
+  "marketplaceTabPaths": "Yo'llar",
+  "marketplaceSearchHint": "Dastalar qidirish...",
+  "marketplaceFilterSort": "Saralash",
+  "marketplaceFilterDifficulty": "Daraja",
+  "marketplaceFilterProOnly": "Faqat Pro-dastalar",
+  "marketplaceFilterApply": "Qo'llash",
+  "marketplaceFilterReset": "Tiklash",
+  "marketplaceFilterAllSubjects": "Barcha mavzular",
+  "marketplaceNoDecks": "Dasta topilmadi. Filtrlarni o'zgartiring.",
+  "marketplaceNoCollections": "Hozircha to'plamlar yo'q.",
+  "marketplaceNoPaths": "Hozircha o'quv yo'llari yo'q.",
+  "marketplaceEnroll": "Yozilganlar",
+  "marketplaceDeckAbout": "Dasta haqida",
+  "marketplaceDeckPreview": "Kartochkalarni ko'rish",
+  "marketplaceDeckClone": "Kutubxonaga qo'shish",
+  "marketplaceDeckAlreadyCloned": "Allaqachon kutubxonangizda",
+  "marketplaceCards": "Kartochkalar",
+  "marketplaceRating": "Reyting",
+  "marketplaceClones": "Nusxalar",
+  "marketplaceLikes": "Yoqtirishlar",
+  "marketplaceCardFront": "Old tomon",
+  "marketplaceCardBack": "Orqa tomon",
+  "marketplaceSearchIdle": "Dastalar, mavzular yoki mualliflarni qidiring.",
+  "marketplaceSearchEmpty": "Hech narsa topilmadi. Boshqa so'rov kiriting.",
+  "marketplaceSortPopular": "Ommabop",
+  "marketplaceSortNewest": "Yangi",
+  "marketplaceSortRating": "Yuqori reytingli",
+  "marketplaceSortAlphabetical": "A–Z",
+  "marketplaceCardCount": "{count} ta karta",
+  "@marketplaceCardCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "marketplaceDeckCount": "{count} ta dasta",
+  "@marketplaceDeckCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "marketplaceHours": "{hours}s",
+  "@marketplaceHours": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "marketplaceProBadge": "PRO",
+
+  "libraryTitle": "Mening kutubxonam",
+  "libraryTabDecks": "Dastalar",
+  "libraryTabCollections": "To'plamlar",
+  "libraryTabFavorites": "Sevimlilar",
+  "librarySearchHint": "Kutubxonada qidirish...",
+  "libraryRecentDecks": "Yaqinda o'rganilganlar",
+  "librarySortTitle": "Saralash",
+  "librarySortDateAdded": "Qo'shilgan sana",
+  "librarySortName": "Nomi (A–Z)",
+  "librarySortRecent": "Yaqinda o'rganilganlar",
+  "librarySortCardCount": "Kartochkalar soni",
+  "librarySortDueCards": "Takrorlash kerak",
+  "libraryFilter": "Filtr",
+  "libraryFilterApply": "Qo'llash",
+  "libraryFilterReset": "Tiklash",
+  "libraryFilterDifficulty": "Daraja",
+  "libraryFilterArchived": "Arxivlanganlarni ko'rsatish",
+  "libraryFilterDueOnly": "Faqat takrorlash kerak",
+  "libraryFilterDifficultyAny": "Har qanday",
+  "libraryFilterDifficultyBeginner": "Boshlang'ich",
+  "libraryFilterDifficultyIntermediate": "O'rta",
+  "libraryFilterDifficultyAdvanced": "Murakkab",
+  "libraryNoDecks": "Hozircha dasta yo'q. Bozordan klon qiling.",
+  "libraryNoCollections": "Hozircha to'plamlar yo'q.",
+  "libraryNoFavorites": "Hozircha sevimlilar yo'q. Dastani sevimlilarga qo'shing.",
+  "libraryActionStudy": "O'qish",
+  "libraryActionFavorite": "Sevimlilarga qo'shish",
+  "libraryActionUnfavorite": "Sevimlilardan olib tashlash",
+  "libraryActionArchive": "Arxivlash",
+  "libraryActionUnarchive": "Arxivdan chiqarish",
+  "libraryActionDelete": "O'chirish",
+  "libraryFavoriteAdded": "Sevimlilarga qo'shildi",
+  "libraryFavoriteRemoved": "Sevimlilardan olib tashlandi",
+  "libraryArchived": "Dasta arxivlandi",
+  "libraryUnarchived": "Dasta arxivdan chiqarildi",
+  "libraryDeleted": "Dasta o'chirildi",
+  "libraryDeleteTitle": "Dastani o'chirish",
+  "libraryDeleteConfirm": "\"{title}\" ni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi.",
+  "@libraryDeleteConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "librarySearchIdle": "Kutubxonangizni qidirish uchun yozing.",
+  "librarySearchEmpty": "Kutubxonangizda dasta topilmadi.",
+
+  "libraryDueCount": "{count} ta takrorlash",
+  "@libraryDueCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "libraryDeckDetailDue": "Takrorlanadigan",
+  "libraryDeckDetailTest": "Test",
+  "libraryDeckDetailNotFound": "Dasta topilmadi",
+  "libraryDeckDetailNoCards": "Bu dastada hozircha kartalar yo'q.",
+
+  "flashcardsAgain": "Qayta",
+  "flashcardsHard": "Qiyin",
+  "flashcardsGood": "Yaxshi",
+  "flashcardsEasy": "Oson",
+  "flashcardsCardFlip": "Javobni ko'rsatish",
+  "flashcardsCardFront": "Old tomon",
+  "flashcardsCardBack": "Orqa tomon",
+  "flashcardsModeSmart": "Aqlli aralash",
+  "flashcardsModeNew": "Yangi",
+  "flashcardsModeReview": "Takrorlash",
+  "flashcardsModeDifficult": "Qiyin",
+  "flashcardsModeFavorite": "Sevimlilar",
+  "flashcardsLoadError": "Kartochkalarni yuklab bo'lmadi",
+  "flashcardsQuit": "Sessiyani tugatish",
+  "flashcardsQuitConfirm": "Bu o'quv sessiyasini tugatmoqchimisiz?",
+  "flashcardsQuitYes": "Tugatish",
+  "flashcardsQuitNo": "Davom etish",
+  "flashcardsSessionComplete": "Sessiya tugadi!",
+  "flashcardsSessionStats": "Natijalaringiz",
+  "flashcardsCardsStudied": "O'rganilgan kartochkalar",
+  "flashcardsNewCards": "Yangi",
+  "flashcardsReviewCards": "Takrorlash",
+  "flashcardsRetention": "Eslab qolish",
+  "flashcardsTimeSpent": "Sarflangan vaqt",
+  "flashcardsStudyAgain": "Qayta o'rganish",
+  "flashcardsBackToLibrary": "Kutubxonaga qaytish",
+
+  "testsSetupTitle": "Test sozlamalari",
+  "testsSetupSubtitle": "Test parametrlarini sozlang",
+  "testsQuestionCount": "Savollar soni",
+  "testsCountAll": "Barchasi",
+  "testsShuffle": "Savollarni aralashtirish",
+  "testsTimedMode": "Vaqt rejimi",
+  "testsSecondsPerQuestion": "Savol uchun soniyalar",
+  "testsStart": "Testni boshlash",
+  "testsSubmit": "Testni topshirish",
+  "testsNext": "Keyingi",
+  "testsPrevious": "Oldingi",
+  "testsQuitTitle": "Testdan chiqish?",
+  "testsQuitMessage": "Natijalar yo'qoladi. Ishonchingiz komilmi?",
+  "testsQuitCancel": "Bekor qilish",
+  "testsQuitConfirm": "Chiqish",
+  "testsResultsTitle": "Test natijalari",
+  "testsScoreExcellent": "A'lo!",
+  "testsScoreGreat": "Zo'r!",
+  "testsScoreGood": "Yaxshi harakat",
+  "testsScorePractice": "Mashq qilishda davom eting",
+  "testsScoreStudy": "Ko'proq o'rganish kerak",
+  "testsCorrect": "To'g'ri",
+  "testsWrong": "Noto'g'ri",
+  "testsDuration": "Vaqt",
+  "testsWeakAreas": "Zaif tomonlar",
+  "testsReviewAnswers": "Javoblarni ko'rish",
+  "testsTryAgain": "Qayta urinish",
+  "testsViewHistory": "Test tarixini ko'rish",
+  "testsReviewTitle": "Javoblarni ko'rish",
+  "testsHistoryTitle": "Test tarixi",
+  "testsHistoryEmpty": "Hali testlar yo'q",
+  "testsHistoryEmptySubtitle": "Natijalarni ko'rish uchun test topshing",
+  "testsLoadError": "Savollarni yuklashda xato",
+  "testsNoQuestions": "Bu dastada test uchun savollar yo'q.",
+  "testsHistoryLoadError": "Tarixni yuklashda xato",
+  "testsRetry": "Qayta urinish",
+  "testsCorrectOfTotal": "{total} savoldan {correct} ta to'g'ri",
+  "testsReviewQuestionOf": "{current}-savol, {total} tadan",
+  "testsSecondsShort": "{seconds}s",
+  "testsMinutesSecondsShort": "{minutes}d {seconds}s",
+  "testsScoreFraction": "{correct} / {total} to'g'ri",
+
+  "tutorTitle": "AI O'qituvchi",
+  "tutorNewConversation": "Yangi suhbat",
+  "tutorConversationTitle": "Suhbat sarlavhasi",
+  "tutorCreate": "Yaratish",
+  "tutorRenameTitle": "Suhbatni qayta nomlash",
+  "tutorRename": "Qayta nomlash",
+  "tutorNewTitle": "Yangi nom",
+  "tutorDeleteTitle": "Suhbatni o'chirish?",
+  "tutorDeleteMessage": "Bu suhbat va barcha xabarlar butunlay o'chiriladi.",
+  "tutorPin": "Mahkamlash",
+  "tutorUnpin": "Mahkamlashni bekor qilish",
+  "tutorDelete": "O'chirish",
+  "tutorPinnedSection": "Mahkamlangan",
+  "tutorConversationsSection": "Suhbatlar",
+  "tutorEmpty": "Hali suhbatlar yo'q",
+  "tutorEmptySubtitle": "AI o'qituvchi bilan suhbat boshlang",
+  "tutorSearch": "Suhbatlarni qidirish…",
+  "tutorNoResults": "\"{query}\" bo'yicha natija yo'q",
+  "tutorWithDeckContext": "Dek konteksti bilan",
+  "tutorAskAnything": "Har narsani so'rang!",
+  "tutorWelcomeSubtitle": "Men tushunchalarni tushuntira olaman, savollar bera olaman yoki kartochkalarni tushunishga yordam bera olaman.",
+  "tutorInputHint": "AI o'qituvchidan so'rang…",
+  "tutorCopied": "Buferga nusxalandi",
+  "tutorConnectionLost": "Ulanish uzildi. Qayta urinib ko'ring.",
+  "tutorLoadError": "Suhbatlarni yuklab bo'lmadi",
+  "tutorRetry": "Qayta urinish",
+
+  "aiStudioTitle": "AI Studiya",
+  "aiStudioTabGenerate": "Yaratish",
+  "aiStudioTabFindAnswers": "Javob topish",
+  "aiStudioHistory": "Tarix",
+  "aiStudioSourceTopic": "Mavzu",
+  "aiStudioSourceText": "Matn",
+  "aiStudioSourcePdf": "PDF",
+  "aiStudioTopicLabel": "Mavzu",
+  "aiStudioTopicHint": "Masalan: Fransuz inqilobi, Matematika, Inson tanasi…",
+  "aiStudioTextLabel": "Matningizni yoping (kamida 50 belgi)",
+  "aiStudioTextHint": "Maqola, darslik parchasi yoki istalgan matnni kiriting…",
+  "aiStudioPdfLabel": "PDF yuklash",
+  "aiStudioPdfChoose": "PDF faylni tanlang",
+  "aiStudioPdfReady": "PDF tayyor",
+  "aiStudioCardCountLabel": "Kartochkalar soni",
+  "aiStudioQualityLabel": "Sifat",
+  "aiStudioQualityFast": "Tez",
+  "aiStudioQualityBalanced": "Muvozanatli",
+  "aiStudioQualityPremium": "Premium",
+  "aiStudioQualityFastDescription": "~15 son",
+  "aiStudioQualityBalancedDescription": "~30 son",
+  "aiStudioQualityPremiumDescription": "~60 son · eng yaxshi sifat",
+  "aiStudioGenerate": "Yaratish",
+  "aiStudioGenerating": "Yaratilmoqda…",
+  "aiStudioFindAnswersHint": "Masalan: Birinchi jahon urushining sababi nima?",
+  "aiStudioFindAnswersLabel": "Istalgan savol bering",
+  "aiStudioAiAnswer": "AI javobi",
+  "aiStudioKeyPoints": "Asosiy fikrlar",
+  "aiProgressTitle": "Yaratilmoqda…",
+  "aiProgressFrom": "{source} dan yaratilmoqda",
+  "@aiProgressFrom": { "placeholders": { "source": { "type": "String" } } },
+  "aiProgressQuality": "{count} kartochka · {quality} sifat",
+  "@aiProgressQuality": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "quality": { "type": "String" }
+    }
+  },
+  "aiProgressFailed": "Yaratish muvaffaqiyatsiz bo'ldi. Qayta urinib ko'ring.",
+  "aiProgressGoBack": "Orqaga",
+  "aiResultsTitle": "kartochka yaratildi",
+  "aiResultsTitleDefault": "Natijalar",
+  "aiResultsSelected": "{total} dan {selected} tanlandi",
+  "@aiResultsSelected": {
+    "placeholders": {
+      "selected": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "aiResultsSelectAll": "Hammasini tanlash",
+  "aiResultsDeselectAll": "Tanlovni bekor qilish",
+  "aiResultsNew": "Yangi",
+  "aiResultsSaveToDeck": "Dastaga saqlash",
+  "aiResultsCardsSaved": "ta kartochka saqlandi!",
+  "aiResultsEmpty": "Kartochkalar yaratilmadi.",
+  "aiResultsEmptySubtitle": "Boshqa mavzu sinab ko'ring yoki ko'proq matn qo'shing.",
+  "aiResultsTryAgain": "Qayta urinish",
+  "aiHistoryTitle": "Yaratish tarixi",
+  "aiHistoryEmpty": "Hali yaratishlar yo'q",
+  "aiHistoryEmptySubtitle": "Kartochka yaratish tarixingiz bu yerda ko'rinadi.",
+  "aiSaveToDeck": "{count} ta kartochkani saqlash…",
+  "@aiSaveToDeck": { "placeholders": { "count": { "type": "int" } } },
+  "aiSaveCreateNew": "Yangi dasta yaratish",
+  "aiSaveDeckName": "Dasta nomi",
+  "aiSaveSaveCards": "Kartochkalarni saqlash",
+  "aiExplainTitle": "AI tushuntirishi",
+  "aiExplainQuestion": "Savol",
+  "aiExplainAnswer": "Javob",
+  "aiExplainExplanation": "Tushuntirish",
+  "aiExplainLoading": "AI bu tushunchani tushuntirmoqda…",
+  "aiExplainRetry": "Qayta urinish",
+  "aiStudioCharCount": "{count} belgi",
+  "aiStudioCharCountNeedMore": "{count} belgi (yana {more} ta kerak)",
+  "aiStudioStatusFailed": "Xato",
+  "aiStudioStatusCancelled": "Bekor qilindi",
+  "aiStudioStatusPending": "Kutilmoqda",
+  "aiStudioStatusProcessing": "Jarayonda",
+  "aiStudioCardsCount": "{count} kartochka",
+  "aiSaveErrorNoName": "Dasta nomini kiriting.",
+  "aiSaveErrorNoDeck": "Avval dastani tanlang.",
+  "streakEvolutionRoadmap": "Evolyutsiya xaritasi",
+  "streakMilestoneAchievements": "Seriyalar yutuqlari",
+  "streakConsistencyHistory": "Faollik tarixi (oxirgi 30 kun)",
+  "streakClaimedRewardsHistory": "Mukofotlar tarixi",
+  "streakActiveBadge": "FAOL",
+  "streakMaximized": "Afsonaviy daraxt to'liq o'sdi! 👑",
+  "streakNoRewards": "Mukofotlar hali olinmagan.",
+  "streakDaysRemaining": "{stage} bosqichigacha {count} kun qoldi",
+  "streakGrowthStage": "O'sish bosqichi: {stage}",
+  "streakCurrentDays": "{count} kunlik faol seriya",
+  "streakDayCount": "{count} kunlik seriya",
+  "streakStageSeed": "Urug'",
+  "streakStageSprout": "Nihol",
+  "streakStageYoungTree": "Yosh daraxt",
+  "streakStageBloomingTree": "Gullayotgan daraxt",
+  "streakStageAncientTree": "Qadimiy daraxt",
+  "streakStageLegendaryTree": "Afsonaviy daraxt",
+  "streakLastReward": "Oxirgi mukofot: {reward}",
+  "streakNextReward": "Keyingi mukofot: {reward}",
+  "streakNoLastReward": "Oxirgi mukofot: Yo'q",
+  "streakMaxReward": "Keyingi mukofot: Yo'q (Maks. daraja)",
+  "streakProgressDays": "{current} / {target} kun ({pct}%)"
+}

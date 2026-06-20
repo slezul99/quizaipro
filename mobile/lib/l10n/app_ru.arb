@@ -1,0 +1,514 @@
+{
+  "@@locale": "ru",
+
+  "appName": "QuizAIPro",
+  "loading": "Загрузка...",
+  "retry": "Повторить",
+  "cancel": "Отмена",
+  "save": "Сохранить",
+  "delete": "Удалить",
+  "confirm": "Подтвердить",
+  "back": "Назад",
+  "done": "Готово",
+  "next": "Далее",
+  "skip": "Пропустить",
+
+  "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз.",
+  "errorNetwork": "Нет подключения к интернету.",
+  "errorUnauthorized": "Сессия истекла. Войдите снова.",
+  "errorRateLimited": "Слишком много запросов. Подождите немного.",
+
+  "authWelcomeTitle": "Учись умнее с AI",
+  "authWelcomeSubtitle": "AI-карточки, которые адаптируются под тебя.",
+  "authLogin": "Войти",
+  "authRegister": "Создать аккаунт",
+  "authContinueWithGoogle": "Войти через Google",
+  "authContinueWithApple": "Войти через Apple",
+  "authEmail": "Email",
+  "authPassword": "Пароль",
+  "authForgotPassword": "Забыли пароль?",
+  "authLogout": "Выйти",
+
+  "authLoginTitle": "С возвращением",
+  "authLoginSubtitle": "Войдите, чтобы продолжить обучение",
+  "authRegisterTitle": "Создать аккаунт",
+  "authRegisterSubtitle": "Начните путь с AI-обучением",
+  "authUsername": "Имя пользователя",
+  "authUsernamePlaceholder": "ваш_ник",
+  "authEmailPlaceholder": "ваш@email.com",
+  "authIdentifier": "Email или логин",
+  "authIdentifierPlaceholder": "email или имя пользователя",
+  "authPasswordPlaceholder": "Не менее 8 символов",
+  "authConfirmPassword": "Подтвердите пароль",
+  "authConfirmPasswordPlaceholder": "Повторите пароль",
+  "authPasswordHintLogin": "Ваш пароль",
+  "authConfirmPasswordRequired": "Пожалуйста, подтвердите пароль",
+  "authGetStarted": "Начать",
+  "authAlreadyHaveAccount": "У меня уже есть аккаунт",
+  "authOrContinueWith": "или продолжить через",
+  "authSignIn": "Войти",
+  "authCreateAccount": "Создать аккаунт",
+  "authNoAccount": "Нет аккаунта? ",
+  "authSignUp": "Зарегистрироваться",
+  "authHaveAccount": "Уже есть аккаунт? ",
+  "authSignInLink": "Войти",
+  "authTermsNotice": "Создавая аккаунт, вы соглашаетесь с\nПользовательским соглашением и Политикой конфиденциальности.",
+  "authPasswordStrengthWeak": "Слабый",
+  "authPasswordStrengthFair": "Средний",
+  "authPasswordStrengthStrong": "Надёжный",
+  "authPasswordStrengthVeryStrong": "Очень надёжный",
+  "validationRequired": "Поле «{field}» обязательно",
+  "@validationRequired": {
+    "placeholders": { "field": { "type": "String" } }
+  },
+  "validationEmail": "Введите корректный email",
+  "validationPasswordMin": "Пароль должен содержать не менее 8 символов",
+  "validationPasswordsNoMatch": "Пароли не совпадают",
+  "validationUsernameMin": "Имя пользователя должно содержать не менее 3 символов",
+  "validationUsernameMax": "Имя пользователя должно содержать не более 20 символов",
+  "validationUsernameChars": "Только буквы, цифры и нижнее подчёркивание",
+  "errorUnexpected": "Произошла непредвиденная ошибка.",
+
+  "navHome": "Главная",
+  "navLibrary": "Библиотека",
+  "navDiscover": "Маркет",
+  "navArena": "Арена",
+  "navProfile": "Профиль",
+
+  "arenaComingSoon": "Арена — скоро появится",
+  "profileComingSoon": "Профиль — скоро появится",
+  "homeComingSoon": "Главная — скоро появится",
+  "discoverTitle": "Обзор",
+  "discoverComingSoon": "Обзор — скоро появится",
+  "duelComingSoon": "Дуэль — скоро появится",
+  "liveTestComingSoon": "Живой тест — скоро появится",
+  "notificationsComingSoon": "Уведомления — скоро появятся",
+
+  "homeStreak": "Серия {count} дн.",
+  "@homeStreak": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "dashboardStreakDay": "дн. серия",
+  "dashboardStreakBest": "Рекорд: {count} дн.",
+  "@dashboardStreakBest": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "dashboardStreakToday": "Сегодня",
+  "dashboardStreakDone": "Готово!",
+  "dashboardCardsLeft": "осталось {count} шт.",
+  "@dashboardCardsLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "homeDueCards": "{count} карточек к повторению",
+  "@homeDueCards": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "studyStart": "Начать учёбу",
+  "studyCardOf": "{current} из {total}",
+  "@studyCardOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "tutorAskPlaceholder": "Спроси что угодно по теме колоды...",
+
+  "settingsTheme": "Тема",
+  "settingsThemeLight": "Светлая",
+  "settingsThemeDark": "Тёмная",
+  "settingsThemeSystem": "Системная",
+  "settingsLanguage": "Язык",
+  "settingsDailyGoal": "Дневная цель",
+  "settingsDailyGoalCards": "{count} карточек / день",
+  "@settingsDailyGoalCards": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "dashboardGreetingMorning": "Доброе утро,",
+  "dashboardGreetingAfternoon": "Добрый день,",
+  "dashboardGreetingEvening": "Добрый вечер,",
+  "dashboardDailyGoal": "Дневная цель",
+  "dashboardDailyGoalCompleted": "Цель достигнута!",
+  "dashboardReadyToStudy": "Готово к изучению",
+  "dashboardAllCaughtUp": "Все карточки изучены! 🎉",
+  "dashboardOverdue": "просрочено",
+  "dashboardXpLabel": "{xp} XP",
+  "@dashboardXpLabel": {
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+  "dashboardXpToNextLevel": "{xp} XP до уровня {nextLevel}",
+  "@dashboardXpToNextLevel": {
+    "placeholders": {
+      "xp": { "type": "int" },
+      "nextLevel": { "type": "int" }
+    }
+  },
+  "dashboardLevelBadge": "Ур{level}",
+  "@dashboardLevelBadge": {
+    "placeholders": {
+      "level": { "type": "int" }
+    }
+  },
+  "dashboardStartStudying": "Начать",
+  "dashboardQuickActions": "Быстрые действия",
+  "dashboardActionStudy": "Учить",
+  "dashboardActionDiscover": "Маркет",
+  "dashboardActionAiTutor": "Тьютор",
+  "dashboardActionAiStudio": "Студия",
+  "dashboardRecentActivity": "Недавняя активность",
+  "dashboardActivityEmpty": "Активности пока нет. Начните учиться, чтобы видеть прогресс!",
+
+  "dashboardActivitySummary": "{count} шт. · {time}",
+  "@dashboardActivitySummary": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "dashboardTimeAgoMinutes": "{minutes} мин назад",
+  "@dashboardTimeAgoMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+
+  "dashboardTimeAgoHours": "{hours} ч назад",
+  "@dashboardTimeAgoHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+
+  "dashboardTimeAgoDays": "{days} дн назад",
+  "@dashboardTimeAgoDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "dashboardXpEarned": "+{xp} XP",
+  "@dashboardXpEarned": {
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+
+  "dashboardActivityTypeStudy": "Изучение карточек",
+  "dashboardActivityTypeTest": "Тест пройден",
+  "dashboardActivityTypeDuel": "Дуэль",
+  "dashboardActivityTypeAiTutor": "Сессия с AI-репетитором",
+
+  "marketplaceTitle": "Маркетплейс",
+  "marketplaceTabExplore": "Обзор",
+  "marketplaceTabCollections": "Коллекции",
+  "marketplaceTabPaths": "Пути",
+  "marketplaceSearchHint": "Поиск колод...",
+  "marketplaceFilterSort": "Сортировка",
+  "marketplaceFilterDifficulty": "Уровень",
+  "marketplaceFilterProOnly": "Только Pro-колоды",
+  "marketplaceFilterApply": "Применить",
+  "marketplaceFilterReset": "Сбросить",
+  "marketplaceFilterAllSubjects": "Все темы",
+  "marketplaceNoDecks": "Колоды не найдены. Попробуйте изменить фильтры.",
+  "marketplaceNoCollections": "Коллекций пока нет.",
+  "marketplaceNoPaths": "Учебных путей пока нет.",
+  "marketplaceEnroll": "Записались",
+  "marketplaceDeckAbout": "О колоде",
+  "marketplaceDeckPreview": "Предпросмотр карточек",
+  "marketplaceDeckClone": "Добавить в библиотеку",
+  "marketplaceDeckAlreadyCloned": "Уже в вашей библиотеке",
+  "marketplaceCards": "Карточки",
+  "marketplaceRating": "Рейтинг",
+  "marketplaceClones": "Копии",
+  "marketplaceLikes": "Лайки",
+  "marketplaceCardFront": "Лицо",
+  "marketplaceCardBack": "Оборот",
+  "marketplaceSearchIdle": "Введите запрос для поиска колод, тем или авторов.",
+  "marketplaceSearchEmpty": "Ничего не найдено. Попробуйте другой запрос.",
+  "marketplaceSortPopular": "Популярные",
+  "marketplaceSortNewest": "Новинки",
+  "marketplaceSortRating": "С высоким рейтингом",
+  "marketplaceSortAlphabetical": "А–Я",
+  "marketplaceCardCount": "{count} карт.",
+  "@marketplaceCardCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "marketplaceDeckCount": "{count} колод",
+  "@marketplaceDeckCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "marketplaceHours": "{hours}ч",
+  "@marketplaceHours": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "marketplaceProBadge": "PRO",
+
+  "libraryTitle": "Моя библиотека",
+  "libraryTabDecks": "Колоды",
+  "libraryTabCollections": "Коллекции",
+  "libraryTabFavorites": "Избранное",
+  "librarySearchHint": "Поиск в библиотеке...",
+  "libraryRecentDecks": "Недавно изученные",
+  "librarySortTitle": "Сортировка",
+  "librarySortDateAdded": "Дата добавления",
+  "librarySortName": "Название (А–Я)",
+  "librarySortRecent": "Недавно изученные",
+  "librarySortCardCount": "Количество карточек",
+  "librarySortDueCards": "Карточки к повторению",
+  "libraryFilter": "Фильтр",
+  "libraryFilterApply": "Применить",
+  "libraryFilterReset": "Сбросить",
+  "libraryFilterDifficulty": "Уровень",
+  "libraryFilterArchived": "Показать архивные",
+  "libraryFilterDueOnly": "Только к повторению",
+  "libraryFilterDifficultyAny": "Любой",
+  "libraryFilterDifficultyBeginner": "Начинающий",
+  "libraryFilterDifficultyIntermediate": "Средний",
+  "libraryFilterDifficultyAdvanced": "Продвинутый",
+  "libraryNoDecks": "Колод пока нет. Клонируйте из Маркетплейса.",
+  "libraryNoCollections": "Коллекций пока нет.",
+  "libraryNoFavorites": "Нет избранного. Добавьте колоду в избранное.",
+  "libraryActionStudy": "Учить",
+  "libraryActionFavorite": "В избранное",
+  "libraryActionUnfavorite": "Убрать из избранного",
+  "libraryActionArchive": "Архивировать",
+  "libraryActionUnarchive": "Разархивировать",
+  "libraryActionDelete": "Удалить",
+  "libraryFavoriteAdded": "Добавлено в избранное",
+  "libraryFavoriteRemoved": "Убрано из избранного",
+  "libraryArchived": "Колода архивирована",
+  "libraryUnarchived": "Колода разархивирована",
+  "libraryDeleted": "Колода удалена",
+  "libraryDeleteTitle": "Удалить колоду",
+  "libraryDeleteConfirm": "Удалить \"{title}\"? Это действие нельзя отменить.",
+  "@libraryDeleteConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "librarySearchIdle": "Введите запрос для поиска в библиотеке.",
+  "librarySearchEmpty": "Колоды не найдены в вашей библиотеке.",
+
+  "libraryDueCount": "{count} к повторению",
+  "@libraryDueCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "libraryDeckDetailDue": "К повторению",
+  "libraryDeckDetailTest": "Тест",
+  "libraryDeckDetailNotFound": "Колода не найдена",
+  "libraryDeckDetailNoCards": "В этой колоде пока нет карточек.",
+
+  "flashcardsAgain": "Снова",
+  "flashcardsHard": "Трудно",
+  "flashcardsGood": "Хорошо",
+  "flashcardsEasy": "Легко",
+  "flashcardsCardFlip": "Показать ответ",
+  "flashcardsCardFront": "Лицевая",
+  "flashcardsCardBack": "Обратная",
+  "flashcardsModeSmart": "Умный микс",
+  "flashcardsModeNew": "Новые",
+  "flashcardsModeReview": "Повторение",
+  "flashcardsModeDifficult": "Трудные",
+  "flashcardsModeFavorite": "Избранное",
+  "flashcardsLoadError": "Не удалось загрузить карточки",
+  "flashcardsQuit": "Завершить сессию",
+  "flashcardsQuitConfirm": "Завершить эту учебную сессию?",
+  "flashcardsQuitYes": "Завершить",
+  "flashcardsQuitNo": "Продолжить",
+  "flashcardsSessionComplete": "Сессия завершена!",
+  "flashcardsSessionStats": "Ваши результаты",
+  "flashcardsCardsStudied": "Карточек изучено",
+  "flashcardsNewCards": "Новых",
+  "flashcardsReviewCards": "Повторений",
+  "flashcardsRetention": "Запоминание",
+  "flashcardsTimeSpent": "Потрачено времени",
+  "flashcardsStudyAgain": "Учить снова",
+  "flashcardsBackToLibrary": "Вернуться в библиотеку",
+
+  "testsSetupTitle": "Настройка теста",
+  "testsSetupSubtitle": "Настройте параметры теста",
+  "testsQuestionCount": "Количество вопросов",
+  "testsCountAll": "Все",
+  "testsShuffle": "Перемешать вопросы",
+  "testsTimedMode": "Режим таймера",
+  "testsSecondsPerQuestion": "Секунд на вопрос",
+  "testsStart": "Начать тест",
+  "testsSubmit": "Сдать тест",
+  "testsNext": "Далее",
+  "testsPrevious": "Назад",
+  "testsQuitTitle": "Выйти из теста?",
+  "testsQuitMessage": "Прогресс будет потерян. Вы уверены?",
+  "testsQuitCancel": "Отмена",
+  "testsQuitConfirm": "Выйти",
+  "testsResultsTitle": "Результаты теста",
+  "testsScoreExcellent": "Отлично!",
+  "testsScoreGreat": "Молодец!",
+  "testsScoreGood": "Хорошая попытка",
+  "testsScorePractice": "Продолжайте практиковаться",
+  "testsScoreStudy": "Нужно больше изучения",
+  "testsCorrect": "Верно",
+  "testsWrong": "Неверно",
+  "testsDuration": "Время",
+  "testsWeakAreas": "Слабые места",
+  "testsReviewAnswers": "Просмотр ответов",
+  "testsTryAgain": "Попробовать снова",
+  "testsViewHistory": "История тестов",
+  "testsReviewTitle": "Просмотр ответов",
+  "testsHistoryTitle": "История тестов",
+  "testsHistoryEmpty": "Тестов ещё нет",
+  "testsHistoryEmptySubtitle": "Пройдите тест, чтобы увидеть результаты",
+  "testsLoadError": "Не удалось загрузить вопросы",
+  "testsNoQuestions": "В этой колоде нет вопросов для теста.",
+  "testsHistoryLoadError": "Не удалось загрузить историю",
+  "testsRetry": "Повторить",
+  "testsCorrectOfTotal": "{correct} правильных из {total} вопросов",
+  "testsReviewQuestionOf": "Вопрос {current} из {total}",
+  "testsSecondsShort": "{seconds}с",
+  "testsMinutesSecondsShort": "{minutes}мин {seconds}с",
+  "testsScoreFraction": "{correct} / {total} правильно",
+
+  "tutorTitle": "ИИ-наставник",
+  "tutorNewConversation": "Новый диалог",
+  "tutorConversationTitle": "Название диалога",
+  "tutorCreate": "Создать",
+  "tutorRenameTitle": "Переименовать диалог",
+  "tutorRename": "Переименовать",
+  "tutorNewTitle": "Новое название",
+  "tutorDeleteTitle": "Удалить диалог?",
+  "tutorDeleteMessage": "Этот диалог и все сообщения будут удалены навсегда.",
+  "tutorPin": "Закрепить",
+  "tutorUnpin": "Открепить",
+  "tutorDelete": "Удалить",
+  "tutorPinnedSection": "Закреплённые",
+  "tutorConversationsSection": "Диалоги",
+  "tutorEmpty": "Диалогов пока нет",
+  "tutorEmptySubtitle": "Начните разговор с ИИ-наставником",
+  "tutorSearch": "Поиск диалогов…",
+  "tutorNoResults": "Ничего не найдено для \"{query}\"",
+  "tutorWithDeckContext": "С контекстом колоды",
+  "tutorAskAnything": "Спроси меня что угодно!",
+  "tutorWelcomeSubtitle": "Я могу объяснить концепции, задать вопросы или помочь разобраться с карточками.",
+  "tutorInputHint": "Спросите ИИ-наставника…",
+  "tutorCopied": "Скопировано в буфер",
+  "tutorConnectionLost": "Соединение потеряно. Попробуйте снова.",
+  "tutorLoadError": "Не удалось загрузить диалоги",
+  "tutorRetry": "Повторить",
+
+  "aiStudioTitle": "AI Студия",
+  "aiStudioTabGenerate": "Генерация",
+  "aiStudioTabFindAnswers": "Найти ответы",
+  "aiStudioHistory": "История",
+  "aiStudioSourceTopic": "Тема",
+  "aiStudioSourceText": "Текст",
+  "aiStudioSourcePdf": "PDF",
+  "aiStudioTopicLabel": "Тема",
+  "aiStudioTopicHint": "Например: Французская революция, Математика, Тело человека…",
+  "aiStudioTextLabel": "Вставьте текст (минимум 50 символов)",
+  "aiStudioTextHint": "Вставьте статью, отрывок из учебника или любой текст…",
+  "aiStudioPdfLabel": "Загрузить PDF",
+  "aiStudioPdfChoose": "Выбрать PDF-файл",
+  "aiStudioPdfReady": "PDF готов",
+  "aiStudioCardCountLabel": "Количество карточек",
+  "aiStudioQualityLabel": "Качество",
+  "aiStudioQualityFast": "Быстро",
+  "aiStudioQualityBalanced": "Сбалансированно",
+  "aiStudioQualityPremium": "Премиум",
+  "aiStudioQualityFastDescription": "~15 сек",
+  "aiStudioQualityBalancedDescription": "~30 сек",
+  "aiStudioQualityPremiumDescription": "~60 сек · лучшее качество",
+  "aiStudioGenerate": "Генерировать",
+  "aiStudioGenerating": "Генерируется…",
+  "aiStudioFindAnswersHint": "Например: Что стало причиной Первой мировой войны?",
+  "aiStudioFindAnswersLabel": "Задайте любой вопрос",
+  "aiStudioAiAnswer": "Ответ ИИ",
+  "aiStudioKeyPoints": "Ключевые моменты",
+  "aiProgressTitle": "Генерируется…",
+  "aiProgressFrom": "Генерация из {source}",
+  "@aiProgressFrom": { "placeholders": { "source": { "type": "String" } } },
+  "aiProgressQuality": "{count} карточек · качество {quality}",
+  "@aiProgressQuality": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "quality": { "type": "String" }
+    }
+  },
+  "aiProgressFailed": "Генерация не удалась. Попробуйте ещё раз.",
+  "aiProgressGoBack": "Назад",
+  "aiResultsTitle": "сгенерировано карточек",
+  "aiResultsTitleDefault": "Результаты",
+  "aiResultsSelected": "Выбрано {selected} из {total}",
+  "@aiResultsSelected": {
+    "placeholders": {
+      "selected": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "aiResultsSelectAll": "Выбрать все",
+  "aiResultsDeselectAll": "Снять выбор",
+  "aiResultsNew": "Новая",
+  "aiResultsSaveToDeck": "Сохранить в колоду",
+  "aiResultsCardsSaved": "карточек сохранено!",
+  "aiResultsEmpty": "Карточки не были сгенерированы.",
+  "aiResultsEmptySubtitle": "Попробуйте другую тему или добавьте больше текста.",
+  "aiResultsTryAgain": "Попробовать снова",
+  "aiHistoryTitle": "История генерации",
+  "aiHistoryEmpty": "Генераций пока нет",
+  "aiHistoryEmptySubtitle": "История создания карточек появится здесь.",
+  "aiSaveToDeck": "Сохранить {count} карточек в…",
+  "@aiSaveToDeck": { "placeholders": { "count": { "type": "int" } } },
+  "aiSaveCreateNew": "Создать новую колоду",
+  "aiSaveDeckName": "Название колоды",
+  "aiSaveSaveCards": "Сохранить карточки",
+  "aiExplainTitle": "Объяснение ИИ",
+  "aiExplainQuestion": "Вопрос",
+  "aiExplainAnswer": "Ответ",
+  "aiExplainExplanation": "Объяснение",
+  "aiExplainLoading": "ИИ объясняет эту концепцию…",
+  "aiExplainRetry": "Попробовать снова",
+  "aiStudioCharCount": "{count} симв.",
+  "aiStudioCharCountNeedMore": "{count} симв. (нужно еще {more})",
+  "aiStudioStatusFailed": "Ошибка",
+  "aiStudioStatusCancelled": "Отменено",
+  "aiStudioStatusPending": "Ожидание",
+  "aiStudioStatusProcessing": "В процессе",
+  "aiStudioCardsCount": "{count} карточек",
+  "aiSaveErrorNoName": "Введите название колоды.",
+  "aiSaveErrorNoDeck": "Сначала выберите колоду.",
+  "streakEvolutionRoadmap": "Карта эволюции",
+  "streakMilestoneAchievements": "Достижения серий",
+  "streakConsistencyHistory": "История активности (30 дней)",
+  "streakClaimedRewardsHistory": "История наград",
+  "streakActiveBadge": "АКТИВНО",
+  "streakMaximized": "Легендарное дерево выращено! 👑",
+  "streakNoRewards": "Награды за серии еще не получены.",
+  "streakDaysRemaining": "{count} дн. до стадии {stage}",
+  "streakGrowthStage": "Стадия роста: {stage}",
+  "streakCurrentDays": "Активная серия: {count} дн.",
+  "streakDayCount": "Серия: {count} дн.",
+  "streakStageSeed": "Семечко",
+  "streakStageSprout": "Росток",
+  "streakStageYoungTree": "Молодое дерево",
+  "streakStageBloomingTree": "Цветущее дерево",
+  "streakStageAncientTree": "Древнее дерево",
+  "streakStageLegendaryTree": "Легендарное дерево",
+  "streakLastReward": "Последняя награда: {reward}",
+  "streakNextReward": "Следующая награда: {reward}",
+  "streakNoLastReward": "Последняя награда: Нет",
+  "streakMaxReward": "Следующая награда: Нет (Макс. уровень)",
+  "streakProgressDays": "{current} / {target} дн. ({pct}%)"
+}

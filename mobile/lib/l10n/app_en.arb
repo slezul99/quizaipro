@@ -1,0 +1,1080 @@
+{
+  "@@locale": "en",
+
+  "appName": "QuizAIPro",
+  "@appName": { "description": "Application name" },
+
+  "loading": "Loading...",
+  "@loading": { "description": "Generic loading text" },
+
+  "retry": "Retry",
+  "@retry": { "description": "Retry button label" },
+
+  "cancel": "Cancel",
+  "@cancel": { "description": "Cancel button label" },
+
+  "save": "Save",
+  "@save": { "description": "Save button label" },
+
+  "delete": "Delete",
+  "@delete": { "description": "Delete button label" },
+
+  "confirm": "Confirm",
+  "@confirm": { "description": "Confirm button label" },
+
+  "back": "Back",
+  "@back": { "description": "Back navigation label" },
+
+  "done": "Done",
+  "@done": { "description": "Done button label" },
+
+  "next": "Next",
+  "@next": { "description": "Next button label" },
+
+  "skip": "Skip",
+  "@skip": { "description": "Skip button label" },
+
+  "errorGeneric": "Something went wrong. Please try again.",
+  "@errorGeneric": { "description": "Generic error message" },
+
+  "errorNetwork": "No internet connection. Check your network.",
+  "@errorNetwork": { "description": "Network error message" },
+
+  "errorUnauthorized": "Session expired. Please log in again.",
+  "@errorUnauthorized": { "description": "Unauthorized error message" },
+
+  "errorRateLimited": "Too many requests. Please wait a moment.",
+  "@errorRateLimited": { "description": "Rate limit error message" },
+
+  "authWelcomeTitle": "Learn Smarter with AI",
+  "@authWelcomeTitle": { "description": "Welcome screen headline" },
+
+  "authWelcomeSubtitle": "AI-powered flashcards that adapt to how you learn.",
+  "@authWelcomeSubtitle": { "description": "Welcome screen subtitle" },
+
+  "authLogin": "Log In",
+  "@authLogin": { "description": "Login button label" },
+
+  "authRegister": "Create Account",
+  "@authRegister": { "description": "Register button label" },
+
+  "authContinueWithGoogle": "Continue with Google",
+  "@authContinueWithGoogle": { "description": "Google sign-in button" },
+
+  "authContinueWithApple": "Continue with Apple",
+  "@authContinueWithApple": { "description": "Apple sign-in button" },
+
+  "authEmail": "Email",
+  "@authEmail": { "description": "Email field label" },
+
+  "authPassword": "Password",
+  "@authPassword": { "description": "Password field label" },
+
+  "authForgotPassword": "Forgot password?",
+  "@authForgotPassword": { "description": "Forgot password link" },
+
+  "authLogout": "Log Out",
+  "@authLogout": { "description": "Logout action label" },
+
+  "authLoginTitle": "Welcome back",
+  "@authLoginTitle": { "description": "Login screen headline" },
+
+  "authLoginSubtitle": "Sign in to continue learning",
+  "@authLoginSubtitle": { "description": "Login screen subtitle" },
+
+  "authRegisterTitle": "Create account",
+  "@authRegisterTitle": { "description": "Register screen headline" },
+
+  "authRegisterSubtitle": "Start your AI learning journey",
+  "@authRegisterSubtitle": { "description": "Register screen subtitle" },
+
+  "authUsername": "Username",
+  "@authUsername": { "description": "Username field label" },
+
+  "authUsernamePlaceholder": "your_username",
+  "@authUsernamePlaceholder": { "description": "Username field placeholder" },
+
+  "authEmailPlaceholder": "your@email.com",
+  "@authEmailPlaceholder": { "description": "Email field placeholder" },
+
+  "authIdentifier": "Email or username",
+  "@authIdentifier": { "description": "Login identifier field label (email or username)" },
+
+  "authIdentifierPlaceholder": "email or username",
+  "@authIdentifierPlaceholder": { "description": "Login identifier field placeholder" },
+
+  "authPasswordPlaceholder": "At least 8 characters",
+  "@authPasswordPlaceholder": { "description": "Password field placeholder" },
+
+  "authConfirmPassword": "Confirm password",
+  "@authConfirmPassword": { "description": "Confirm password field label" },
+
+  "authConfirmPasswordPlaceholder": "Repeat your password",
+  "@authConfirmPasswordPlaceholder": { "description": "Confirm password field placeholder" },
+
+  "authPasswordHintLogin": "Your password",
+  "@authPasswordHintLogin": { "description": "Password field placeholder on the login screen" },
+
+  "authConfirmPasswordRequired": "Please confirm your password",
+  "@authConfirmPasswordRequired": { "description": "Confirm password required validation message" },
+
+  "authGetStarted": "Get Started",
+  "@authGetStarted": { "description": "Get started button label on welcome screen" },
+
+  "authAlreadyHaveAccount": "I already have an account",
+  "@authAlreadyHaveAccount": { "description": "Login button label on welcome screen" },
+
+  "authOrContinueWith": "or continue with",
+  "@authOrContinueWith": { "description": "Divider label between email auth and social auth" },
+
+  "authSignIn": "Sign In",
+  "@authSignIn": { "description": "Sign in button label" },
+
+  "authCreateAccount": "Create Account",
+  "@authCreateAccount": { "description": "Create account button label" },
+
+  "authNoAccount": "Don't have an account? ",
+  "@authNoAccount": { "description": "Prompt for users without an account" },
+
+  "authSignUp": "Sign up",
+  "@authSignUp": { "description": "Sign up link label" },
+
+  "authHaveAccount": "Already have an account? ",
+  "@authHaveAccount": { "description": "Prompt for users with an existing account" },
+
+  "authSignInLink": "Sign in",
+  "@authSignInLink": { "description": "Sign in link label on register screen" },
+
+  "authTermsNotice": "By creating an account you agree to our\nTerms of Service and Privacy Policy.",
+  "@authTermsNotice": { "description": "Terms notice on register screen" },
+
+  "authPasswordStrengthWeak": "Weak",
+  "@authPasswordStrengthWeak": { "description": "Weak password strength label" },
+
+  "authPasswordStrengthFair": "Fair",
+  "@authPasswordStrengthFair": { "description": "Fair password strength label" },
+
+  "authPasswordStrengthStrong": "Strong",
+  "@authPasswordStrengthStrong": { "description": "Strong password strength label" },
+
+  "authPasswordStrengthVeryStrong": "Very strong",
+  "@authPasswordStrengthVeryStrong": { "description": "Very strong password strength label" },
+
+  "validationRequired": "{field} is required",
+  "@validationRequired": {
+    "description": "Field required validation message",
+    "placeholders": { "field": { "type": "String" } }
+  },
+
+  "validationEmail": "Enter a valid email address",
+  "@validationEmail": { "description": "Invalid email validation message" },
+
+  "validationPasswordMin": "Password must be at least 8 characters",
+  "@validationPasswordMin": { "description": "Password too short validation message" },
+
+  "validationPasswordsNoMatch": "Passwords do not match",
+  "@validationPasswordsNoMatch": { "description": "Passwords mismatch validation message" },
+
+  "validationUsernameMin": "Username must be at least 3 characters",
+  "@validationUsernameMin": { "description": "Username too short validation message" },
+
+  "validationUsernameMax": "Username must be at most 20 characters",
+  "@validationUsernameMax": { "description": "Username too long validation message" },
+
+  "validationUsernameChars": "Only letters, numbers and underscores",
+  "@validationUsernameChars": { "description": "Username invalid chars validation message" },
+
+  "errorUnexpected": "An unexpected error occurred.",
+  "@errorUnexpected": { "description": "Fallback error message for unhandled exceptions" },
+
+  "navHome": "Home",
+  "@navHome": { "description": "Home tab label" },
+
+  "navLibrary": "Library",
+  "@navLibrary": { "description": "Library tab label" },
+
+  "navDiscover": "Discover",
+  "@navDiscover": { "description": "Discover tab label" },
+
+  "navArena": "Arena",
+  "@navArena": { "description": "Arena tab label" },
+
+  "navProfile": "Profile",
+  "@navProfile": { "description": "Profile tab label" },
+
+  "arenaComingSoon": "Arena — Coming soon",
+  "@arenaComingSoon": { "description": "Placeholder text on the Arena screen" },
+
+  "profileComingSoon": "Profile — Coming soon",
+  "@profileComingSoon": { "description": "Placeholder text on the Profile screen" },
+
+  "homeComingSoon": "Home — Coming soon",
+  "@homeComingSoon": { "description": "Placeholder text on the Home screen" },
+
+  "discoverTitle": "Discover",
+  "@discoverTitle": { "description": "Discover screen app bar title" },
+
+  "discoverComingSoon": "Discover — Coming soon",
+  "@discoverComingSoon": { "description": "Placeholder text on the Discover screen" },
+
+  "duelComingSoon": "Duel — Coming soon",
+  "@duelComingSoon": { "description": "Placeholder text on the Duel screen" },
+
+  "liveTestComingSoon": "Live Test — Coming soon",
+  "@liveTestComingSoon": { "description": "Placeholder text on the Live Test screen" },
+
+  "notificationsComingSoon": "Notifications — Coming soon",
+  "@notificationsComingSoon": { "description": "Placeholder text on the Notifications screen" },
+
+  "homeStreak": "{count} day streak",
+  "@homeStreak": {
+    "description": "Streak counter on home screen",
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "dashboardStreakDay": "day streak",
+  "@dashboardStreakDay": { "description": "Day streak label" },
+
+  "dashboardStreakBest": "Best: {count} days",
+  "@dashboardStreakBest": {
+    "description": "Best streak label",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "dashboardStreakToday": "Today",
+  "@dashboardStreakToday": { "description": "Today status label" },
+
+  "dashboardStreakDone": "Done!",
+  "@dashboardStreakDone": { "description": "Streak done status label" },
+
+  "dashboardCardsLeft": "{count} cards left",
+  "@dashboardCardsLeft": {
+    "description": "Remaining cards label",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "homeDueCards": "{count} cards due",
+  "@homeDueCards": {
+    "description": "Due cards count on home screen",
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "studyStart": "Start Studying",
+  "@studyStart": { "description": "Start study session button" },
+
+  "studyCardOf": "{current} of {total}",
+  "@studyCardOf": {
+    "description": "Card progress in study session",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "tutorAskPlaceholder": "Ask anything about your deck...",
+  "@tutorAskPlaceholder": { "description": "AI Tutor input placeholder" },
+
+  "settingsTheme": "Theme",
+  "@settingsTheme": { "description": "Theme setting label" },
+
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": { "description": "Light theme option" },
+
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": { "description": "Dark theme option" },
+
+  "settingsThemeSystem": "System",
+  "@settingsThemeSystem": { "description": "System theme option" },
+
+  "settingsLanguage": "Language",
+  "@settingsLanguage": { "description": "Language setting label" },
+
+  "settingsDailyGoal": "Daily Goal",
+  "@settingsDailyGoal": { "description": "Daily goal setting label" },
+
+  "settingsDailyGoalCards": "{count} cards / day",
+  "@settingsDailyGoalCards": {
+    "description": "Daily goal value display",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "dashboardGreetingMorning": "Good morning,",
+  "@dashboardGreetingMorning": { "description": "Morning greeting on dashboard" },
+
+  "dashboardGreetingAfternoon": "Good afternoon,",
+  "@dashboardGreetingAfternoon": { "description": "Afternoon greeting on dashboard" },
+
+  "dashboardGreetingEvening": "Good evening,",
+  "@dashboardGreetingEvening": { "description": "Evening greeting on dashboard" },
+
+  "dashboardDailyGoal": "Daily Goal",
+  "@dashboardDailyGoal": { "description": "Daily goal card title" },
+
+  "dashboardDailyGoalCompleted": "Goal achieved!",
+  "@dashboardDailyGoalCompleted": { "description": "Daily goal completed label" },
+
+  "dashboardReadyToStudy": "Ready to study",
+  "@dashboardReadyToStudy": { "description": "Ready-to-study card title" },
+
+  "dashboardAllCaughtUp": "All caught up! 🎉",
+  "@dashboardAllCaughtUp": { "description": "Empty state message when nothing is due" },
+
+  "dashboardXpLabel": "{xp} XP",
+  "@dashboardXpLabel": {
+    "description": "XP value with suffix",
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+
+  "dashboardXpToNextLevel": "{xp} XP to level {nextLevel}",
+  "@dashboardXpToNextLevel": {
+    "description": "XP required to reach next level",
+    "placeholders": {
+      "xp": { "type": "int" },
+      "nextLevel": { "type": "int" }
+    }
+  },
+
+  "dashboardLevelBadge": "L{level}",
+  "@dashboardLevelBadge": {
+    "description": "Level badge text",
+    "placeholders": {
+      "level": { "type": "int" }
+    }
+  },
+
+  "dashboardOverdue": "Overdue",
+  "@dashboardOverdue": { "description": "Overdue pill label" },
+
+  "dashboardStartStudying": "Start",
+  "@dashboardStartStudying": { "description": "Start studying CTA button" },
+
+  "dashboardQuickActions": "Quick Actions",
+  "@dashboardQuickActions": { "description": "Quick actions section header" },
+
+  "dashboardActionStudy": "Study",
+  "@dashboardActionStudy": { "description": "Study quick action button" },
+
+  "dashboardActionDiscover": "Discover",
+  "@dashboardActionDiscover": { "description": "Discover quick action button" },
+
+  "dashboardActionAiTutor": "Tutor",
+  "@dashboardActionAiTutor": { "description": "AI Tutor quick action button" },
+
+  "dashboardActionAiStudio": "Studio",
+  "@dashboardActionAiStudio": { "description": "AI Studio quick action button label" },
+
+  "dashboardRecentActivity": "Recent Activity",
+  "@dashboardRecentActivity": { "description": "Recent activity section header" },
+
+  "dashboardActivityEmpty": "No activity yet. Start studying to see your progress!",
+  "@dashboardActivityEmpty": { "description": "Empty activity list message" },
+
+  "dashboardActivitySummary": "{count} cards · {time}",
+  "@dashboardActivitySummary": {
+    "description": "Activity item summary: cards reviewed and relative time",
+    "placeholders": {
+      "count": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "dashboardTimeAgoMinutes": "{minutes}m ago",
+  "@dashboardTimeAgoMinutes": {
+    "description": "Relative time in minutes",
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+
+  "dashboardTimeAgoHours": "{hours}h ago",
+  "@dashboardTimeAgoHours": {
+    "description": "Relative time in hours",
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+
+  "dashboardTimeAgoDays": "{days}d ago",
+  "@dashboardTimeAgoDays": {
+    "description": "Relative time in days",
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "dashboardXpEarned": "+{xp} XP",
+  "@dashboardXpEarned": {
+    "description": "XP earned badge with plus sign",
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+
+  "dashboardActivityTypeStudy": "Study session",
+  "@dashboardActivityTypeStudy": { "description": "Activity detail label for a flashcard study session" },
+
+  "dashboardActivityTypeTest": "Test completed",
+  "@dashboardActivityTypeTest": { "description": "Activity detail label for a completed test" },
+
+  "dashboardActivityTypeDuel": "Duel",
+  "@dashboardActivityTypeDuel": { "description": "Activity detail label for a duel" },
+
+  "dashboardActivityTypeAiTutor": "AI Tutor session",
+  "@dashboardActivityTypeAiTutor": { "description": "Activity detail label for an AI tutor session" },
+
+  "marketplaceTitle": "Discover",
+  "@marketplaceTitle": { "description": "Marketplace screen title" },
+
+  "marketplaceTabExplore": "Explore",
+  "@marketplaceTabExplore": { "description": "Explore tab label" },
+
+  "marketplaceTabCollections": "Collections",
+  "@marketplaceTabCollections": { "description": "Collections tab label" },
+
+  "marketplaceTabPaths": "Paths",
+  "@marketplaceTabPaths": { "description": "Learning paths tab label" },
+
+  "marketplaceSearchHint": "Search decks...",
+  "@marketplaceSearchHint": { "description": "Search bar hint text" },
+
+  "marketplaceFilterSort": "Sort by",
+  "@marketplaceFilterSort": { "description": "Sort filter section label" },
+
+  "marketplaceFilterDifficulty": "Difficulty",
+  "@marketplaceFilterDifficulty": { "description": "Difficulty filter section label" },
+
+  "marketplaceFilterProOnly": "Pro decks only",
+  "@marketplaceFilterProOnly": { "description": "Pro only filter toggle label" },
+
+  "marketplaceFilterApply": "Apply",
+  "@marketplaceFilterApply": { "description": "Apply filter button label" },
+
+  "marketplaceFilterReset": "Reset",
+  "@marketplaceFilterReset": { "description": "Reset filter button label" },
+
+  "marketplaceFilterAllSubjects": "All subjects",
+  "@marketplaceFilterAllSubjects": { "description": "All subjects chip label" },
+
+  "marketplaceNoDecks": "No decks found. Try changing your filters.",
+  "@marketplaceNoDecks": { "description": "Empty decks list message" },
+
+  "marketplaceNoCollections": "No collections available yet.",
+  "@marketplaceNoCollections": { "description": "Empty collections list message" },
+
+  "marketplaceNoPaths": "No learning paths available yet.",
+  "@marketplaceNoPaths": { "description": "Empty paths list message" },
+
+  "marketplaceEnroll": "Enrolled",
+  "@marketplaceEnroll": { "description": "Enrolled count label on learning path card" },
+
+  "marketplaceDeckAbout": "About",
+  "@marketplaceDeckAbout": { "description": "About section header on deck detail" },
+
+  "marketplaceDeckPreview": "Preview cards",
+  "@marketplaceDeckPreview": { "description": "Preview cards button label" },
+
+  "marketplaceDeckClone": "Clone to my library",
+  "@marketplaceDeckClone": { "description": "Clone deck button label" },
+
+  "marketplaceDeckAlreadyCloned": "Already in your library",
+  "@marketplaceDeckAlreadyCloned": { "description": "Already cloned status label" },
+
+  "marketplaceCards": "Cards",
+  "@marketplaceCards": { "description": "Cards stat label on deck detail" },
+
+  "marketplaceRating": "Rating",
+  "@marketplaceRating": { "description": "Rating stat label on deck detail" },
+
+  "marketplaceClones": "Clones",
+  "@marketplaceClones": { "description": "Clones stat label on deck detail" },
+
+  "marketplaceLikes": "Likes",
+  "@marketplaceLikes": { "description": "Likes stat label on deck detail" },
+
+  "marketplaceCardFront": "Front",
+  "@marketplaceCardFront": { "description": "Card front face label in preview" },
+
+  "marketplaceCardBack": "Back",
+  "@marketplaceCardBack": { "description": "Card back face label in preview" },
+
+  "marketplaceSearchIdle": "Search for decks, subjects, or creators to get started.",
+  "@marketplaceSearchIdle": { "description": "Search idle state message" },
+
+  "marketplaceSearchEmpty": "No results found. Try adjusting your search terms.",
+  "@marketplaceSearchEmpty": { "description": "Search empty state message" },
+
+  "marketplaceSortPopular": "Popular",
+  "@marketplaceSortPopular": { "description": "Sort by popular" },
+  "marketplaceSortNewest": "Newest",
+  "@marketplaceSortNewest": { "description": "Sort by newest" },
+  "marketplaceSortRating": "Top Rated",
+  "@marketplaceSortRating": { "description": "Sort by rating" },
+  "marketplaceSortAlphabetical": "A–Z",
+  "@marketplaceSortAlphabetical": { "description": "Sort alphabetical" },
+
+  "marketplaceCardCount": "{count} cards",
+  "@marketplaceCardCount": {
+    "description": "Number of cards in a deck",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "marketplaceDeckCount": "{count} decks",
+  "@marketplaceDeckCount": {
+    "description": "Number of decks in a collection/path",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "marketplaceHours": "{hours}h",
+  "@marketplaceHours": {
+    "description": "Estimated hours",
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "marketplaceProBadge": "PRO",
+  "@marketplaceProBadge": { "description": "Pro badge text" },
+
+  "libraryTitle": "My Library",
+  "@libraryTitle": { "description": "Library screen title" },
+
+  "libraryTabDecks": "Decks",
+  "@libraryTabDecks": { "description": "Decks tab label" },
+
+  "libraryTabCollections": "Collections",
+  "@libraryTabCollections": { "description": "Collections tab label in library" },
+
+  "libraryTabFavorites": "Favorites",
+  "@libraryTabFavorites": { "description": "Favorites tab label" },
+
+  "librarySearchHint": "Search my library...",
+  "@librarySearchHint": { "description": "Library search bar hint" },
+
+  "libraryRecentDecks": "Recently Studied",
+  "@libraryRecentDecks": { "description": "Recent decks section label" },
+
+  "librarySortTitle": "Sort by",
+  "@librarySortTitle": { "description": "Sort sheet title" },
+
+  "librarySortDateAdded": "Date Added",
+  "@librarySortDateAdded": { "description": "Sort by date added label" },
+
+  "librarySortName": "Name (A–Z)",
+  "@librarySortName": { "description": "Sort by name label" },
+
+  "librarySortRecent": "Recently Studied",
+  "@librarySortRecent": { "description": "Sort by recently studied label" },
+
+  "librarySortCardCount": "Card Count",
+  "@librarySortCardCount": { "description": "Sort by card count label" },
+
+  "librarySortDueCards": "Due Cards",
+  "@librarySortDueCards": { "description": "Sort by due cards label" },
+
+  "libraryFilter": "Filter",
+  "@libraryFilter": { "description": "Filter button label" },
+
+  "libraryFilterApply": "Apply",
+  "@libraryFilterApply": { "description": "Apply filter button" },
+
+  "libraryFilterReset": "Reset",
+  "@libraryFilterReset": { "description": "Reset filter button" },
+
+  "libraryFilterDifficulty": "Difficulty",
+  "@libraryFilterDifficulty": { "description": "Difficulty filter label" },
+
+  "libraryFilterArchived": "Show archived",
+  "@libraryFilterArchived": { "description": "Show archived filter label" },
+
+  "libraryFilterDueOnly": "Due cards only",
+  "@libraryFilterDueOnly": { "description": "Due only filter label" },
+
+  "libraryFilterDifficultyAny": "Any",
+  "@libraryFilterDifficultyAny": { "description": "Filter difficulty any" },
+  "libraryFilterDifficultyBeginner": "Beginner",
+  "@libraryFilterDifficultyBeginner": { "description": "Filter difficulty beginner" },
+  "libraryFilterDifficultyIntermediate": "Intermediate",
+  "@libraryFilterDifficultyIntermediate": { "description": "Filter difficulty intermediate" },
+  "libraryFilterDifficultyAdvanced": "Advanced",
+  "@libraryFilterDifficultyAdvanced": { "description": "Filter difficulty advanced" },
+
+  "libraryNoDecks": "No decks yet. Clone from the Marketplace to get started.",
+  "@libraryNoDecks": { "description": "Empty decks message" },
+
+  "libraryNoCollections": "No collections yet.",
+  "@libraryNoCollections": { "description": "Empty collections message" },
+
+  "libraryNoFavorites": "No favorites yet. Star a deck to save it here.",
+  "@libraryNoFavorites": { "description": "Empty favorites message" },
+
+  "libraryActionStudy": "Study",
+  "@libraryActionStudy": { "description": "Study action label" },
+
+  "libraryActionFavorite": "Add to Favorites",
+  "@libraryActionFavorite": { "description": "Favorite action label" },
+
+  "libraryActionUnfavorite": "Remove from Favorites",
+  "@libraryActionUnfavorite": { "description": "Unfavorite action label" },
+
+  "libraryActionArchive": "Archive",
+  "@libraryActionArchive": { "description": "Archive action label" },
+
+  "libraryActionUnarchive": "Unarchive",
+  "@libraryActionUnarchive": { "description": "Unarchive action label" },
+
+  "libraryActionDelete": "Delete",
+  "@libraryActionDelete": { "description": "Delete action label" },
+
+  "libraryFavoriteAdded": "Added to favorites",
+  "@libraryFavoriteAdded": { "description": "Favorite added snackbar" },
+
+  "libraryFavoriteRemoved": "Removed from favorites",
+  "@libraryFavoriteRemoved": { "description": "Favorite removed snackbar" },
+
+  "libraryArchived": "Deck archived",
+  "@libraryArchived": { "description": "Archived snackbar" },
+
+  "libraryUnarchived": "Deck unarchived",
+  "@libraryUnarchived": { "description": "Unarchived snackbar" },
+
+  "libraryDeleted": "Deck deleted",
+  "@libraryDeleted": { "description": "Deleted snackbar" },
+
+  "libraryDeleteTitle": "Delete Deck",
+  "@libraryDeleteTitle": { "description": "Delete dialog title" },
+
+  "libraryDeleteConfirm": "Are you sure you want to delete \"{title}\"? This cannot be undone.",
+  "@libraryDeleteConfirm": {
+    "description": "Delete confirmation message",
+    "placeholders": { "title": { "type": "String" } }
+  },
+
+  "librarySearchIdle": "Type to search your library.",
+  "@librarySearchIdle": { "description": "Search idle hint" },
+
+  "librarySearchEmpty": "No decks found in your library.",
+  "@librarySearchEmpty": { "description": "Search empty in library" },
+
+  "libraryDueCount": "{count} due",
+  "@libraryDueCount": {
+    "description": "Due cards count badge on library deck list tile",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "libraryDeckDetailDue": "Due",
+  "@libraryDeckDetailDue": { "description": "Due cards stat label on library deck detail" },
+
+  "libraryDeckDetailTest": "Test",
+  "@libraryDeckDetailTest": { "description": "Test action button label on library deck detail" },
+
+  "libraryDeckDetailNotFound": "Deck not found",
+  "@libraryDeckDetailNotFound": { "description": "Shown when a library deck id can't be resolved" },
+
+  "libraryDeckDetailNoCards": "No cards in this deck yet.",
+  "@libraryDeckDetailNoCards": { "description": "Empty state for the cards section on library deck detail" },
+
+  "flashcardsAgain": "Again",
+  "@flashcardsAgain": { "description": "Again grade button" },
+
+  "flashcardsHard": "Hard",
+  "@flashcardsHard": { "description": "Hard grade button" },
+
+  "flashcardsGood": "Good",
+  "@flashcardsGood": { "description": "Good grade button" },
+
+  "flashcardsEasy": "Easy",
+  "@flashcardsEasy": { "description": "Easy grade button" },
+
+  "flashcardsCardFlip": "Tap to reveal",
+  "@flashcardsCardFlip": { "description": "Tap to flip card hint" },
+
+  "flashcardsCardFront": "Front",
+  "@flashcardsCardFront": { "description": "Label shown on the front face of a flashcard" },
+
+  "flashcardsCardBack": "Back",
+  "@flashcardsCardBack": { "description": "Label shown on the back face of a flashcard" },
+
+  "flashcardsModeSmart": "Smart Mix",
+  "@flashcardsModeSmart": { "description": "Smart mix mode label" },
+
+  "flashcardsModeNew": "New Cards",
+  "@flashcardsModeNew": { "description": "New cards mode label" },
+
+  "flashcardsModeReview": "Review",
+  "@flashcardsModeReview": { "description": "Review mode label" },
+
+  "flashcardsModeDifficult": "Difficult",
+  "@flashcardsModeDifficult": { "description": "Difficult mode label" },
+
+  "flashcardsModeFavorite": "Favorites",
+  "@flashcardsModeFavorite": { "description": "Favorites mode label" },
+
+  "flashcardsLoadError": "Failed to load cards",
+  "@flashcardsLoadError": { "description": "Error loading cards" },
+
+  "flashcardsQuit": "End Session",
+  "@flashcardsQuit": { "description": "Quit study session button tooltip" },
+
+  "flashcardsQuitConfirm": "End this study session?",
+  "@flashcardsQuitConfirm": { "description": "Quit confirmation dialog body" },
+
+  "flashcardsQuitYes": "End Session",
+  "@flashcardsQuitYes": { "description": "Confirm quit" },
+
+  "flashcardsQuitNo": "Keep Studying",
+  "@flashcardsQuitNo": { "description": "Cancel quit" },
+
+  "flashcardsSessionComplete": "Session Complete!",
+  "@flashcardsSessionComplete": { "description": "Completion screen title" },
+
+  "flashcardsSessionStats": "Your Results",
+  "@flashcardsSessionStats": { "description": "Session stats heading" },
+
+  "flashcardsCardsStudied": "Cards studied",
+  "@flashcardsCardsStudied": { "description": "Cards studied stat label" },
+
+  "flashcardsNewCards": "New",
+  "@flashcardsNewCards": { "description": "New cards count label" },
+
+  "flashcardsReviewCards": "Review",
+  "@flashcardsReviewCards": { "description": "Review cards count label" },
+
+  "flashcardsRetention": "Retention",
+  "@flashcardsRetention": { "description": "Retention rate label" },
+
+  "flashcardsTimeSpent": "Time spent",
+  "@flashcardsTimeSpent": { "description": "Duration label" },
+
+  "flashcardsStudyAgain": "Study Again",
+  "@flashcardsStudyAgain": { "description": "Study again CTA" },
+
+  "flashcardsBackToLibrary": "Back to Library",
+  "@flashcardsBackToLibrary": { "description": "Return to library CTA" },
+
+  "testsSetupTitle": "Test Setup",
+  "@testsSetupTitle": { "description": "Test setup screen title" },
+  "testsSetupSubtitle": "Configure your test session",
+  "@testsSetupSubtitle": { "description": "Test setup subtitle" },
+  "testsQuestionCount": "Number of Questions",
+  "@testsQuestionCount": { "description": "Question count selector label" },
+  "testsCountAll": "All",
+  "@testsCountAll": { "description": "All questions option" },
+  "testsShuffle": "Shuffle Questions",
+  "@testsShuffle": { "description": "Shuffle toggle label" },
+  "testsTimedMode": "Timed Mode",
+  "@testsTimedMode": { "description": "Timed mode toggle label" },
+  "testsSecondsPerQuestion": "Seconds per Question",
+  "@testsSecondsPerQuestion": { "description": "Seconds per question label" },
+  "testsStart": "Start Test",
+  "@testsStart": { "description": "Start test CTA" },
+  "testsSubmit": "Submit Test",
+  "@testsSubmit": { "description": "Submit test CTA" },
+  "testsNext": "Next",
+  "@testsNext": { "description": "Next question button" },
+  "testsPrevious": "Previous",
+  "@testsPrevious": { "description": "Previous question button" },
+  "testsQuitTitle": "Quit Test?",
+  "@testsQuitTitle": { "description": "Quit dialog title" },
+  "testsQuitMessage": "Your progress will be lost. Are you sure?",
+  "@testsQuitMessage": { "description": "Quit dialog message" },
+  "testsQuitCancel": "Cancel",
+  "@testsQuitCancel": { "description": "Cancel quit" },
+  "testsQuitConfirm": "Quit",
+  "@testsQuitConfirm": { "description": "Confirm quit" },
+  "testsResultsTitle": "Test Results",
+  "@testsResultsTitle": { "description": "Results screen title" },
+  "testsScoreExcellent": "Excellent!",
+  "@testsScoreExcellent": { "description": "Score label 90%+" },
+  "testsScoreGreat": "Great Job!",
+  "@testsScoreGreat": { "description": "Score label 80-89%" },
+  "testsScoreGood": "Good Effort",
+  "@testsScoreGood": { "description": "Score label 60-79%" },
+  "testsScorePractice": "Keep Practicing",
+  "@testsScorePractice": { "description": "Score label 40-59%" },
+  "testsScoreStudy": "Need More Study",
+  "@testsScoreStudy": { "description": "Score label below 40%" },
+  "testsCorrect": "Correct",
+  "@testsCorrect": { "description": "Correct answers stat" },
+  "testsWrong": "Wrong",
+  "@testsWrong": { "description": "Wrong answers stat" },
+  "testsDuration": "Duration",
+  "@testsDuration": { "description": "Duration stat label" },
+  "testsWeakAreas": "Weak Areas",
+  "@testsWeakAreas": { "description": "Weak areas section title" },
+  "testsReviewAnswers": "Review Answers",
+  "@testsReviewAnswers": { "description": "Review answers CTA" },
+  "testsTryAgain": "Try Again",
+  "@testsTryAgain": { "description": "Try again CTA" },
+  "testsViewHistory": "View Test History",
+  "@testsViewHistory": { "description": "History CTA" },
+  "testsReviewTitle": "Review Answers",
+  "@testsReviewTitle": { "description": "Review screen title" },
+  "testsHistoryTitle": "Test History",
+  "@testsHistoryTitle": { "description": "History screen title" },
+  "testsHistoryEmpty": "No tests taken yet",
+  "@testsHistoryEmpty": { "description": "Empty history message" },
+  "testsHistoryEmptySubtitle": "Complete a test to see your results here",
+  "@testsHistoryEmptySubtitle": { "description": "Empty history subtitle" },
+  "testsLoadError": "Failed to load questions",
+  "@testsLoadError": { "description": "Load error message" },
+  "testsNoQuestions": "This deck has no quiz questions to test.",
+  "@testsNoQuestions": { "description": "Shown when a deck has no MCQ cards to build a test from" },
+  "testsHistoryLoadError": "Failed to load history",
+  "@testsHistoryLoadError": { "description": "History load error" },
+  "testsRetry": "Retry",
+  "@testsRetry": { "description": "Retry button" },
+  "testsCorrectOfTotal": "{correct} correct out of {total} questions",
+  "@testsCorrectOfTotal": {
+    "description": "Score detail line",
+    "placeholders": {
+      "correct": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "testsReviewQuestionOf": "Question {current} of {total}",
+  "@testsReviewQuestionOf": {
+    "description": "Review answers question position label",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "testsSecondsShort": "{seconds}s",
+  "@testsSecondsShort": {
+    "description": "Short seconds value, e.g. 30s",
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "testsMinutesSecondsShort": "{minutes}m {seconds}s",
+  "@testsMinutesSecondsShort": {
+    "description": "Short minutes and seconds duration, e.g. 1m 30s",
+    "placeholders": {
+      "minutes": { "type": "int" },
+      "seconds": { "type": "int" }
+    }
+  },
+  "testsScoreFraction": "{correct} / {total} correct",
+  "@testsScoreFraction": {
+    "description": "Score fraction, e.g. 7 / 10 correct",
+    "placeholders": {
+      "correct": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "tutorTitle": "AI Tutor",
+  "@tutorTitle": { "description": "AI Tutor screen title" },
+  "tutorNewConversation": "New Conversation",
+  "@tutorNewConversation": { "description": "New conversation CTA" },
+  "tutorConversationTitle": "Conversation title",
+  "@tutorConversationTitle": { "description": "Title input hint" },
+  "tutorCreate": "Create",
+  "@tutorCreate": { "description": "Create button" },
+  "tutorRenameTitle": "Rename Conversation",
+  "@tutorRenameTitle": { "description": "Rename dialog title" },
+  "tutorRename": "Rename",
+  "@tutorRename": { "description": "Rename button" },
+  "tutorNewTitle": "New title",
+  "@tutorNewTitle": { "description": "New title hint" },
+  "tutorDeleteTitle": "Delete Conversation?",
+  "@tutorDeleteTitle": { "description": "Delete dialog title" },
+  "tutorDeleteMessage": "This conversation and all its messages will be permanently deleted.",
+  "@tutorDeleteMessage": { "description": "Delete dialog message" },
+  "tutorPin": "Pin",
+  "@tutorPin": { "description": "Pin action" },
+  "tutorUnpin": "Unpin",
+  "@tutorUnpin": { "description": "Unpin action" },
+  "tutorDelete": "Delete",
+  "@tutorDelete": { "description": "Delete action" },
+  "tutorPinnedSection": "Pinned",
+  "@tutorPinnedSection": { "description": "Pinned section header" },
+  "tutorConversationsSection": "Conversations",
+  "@tutorConversationsSection": { "description": "Conversations section header" },
+  "tutorEmpty": "No conversations yet",
+  "@tutorEmpty": { "description": "Empty state title" },
+  "tutorEmptySubtitle": "Start a conversation with your AI tutor",
+  "@tutorEmptySubtitle": { "description": "Empty state subtitle" },
+  "tutorSearch": "Search conversations…",
+  "@tutorSearch": { "description": "Search hint" },
+  "tutorNoResults": "No results for \"{query}\"",
+  "@tutorNoResults": {
+    "description": "No search results",
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "tutorWithDeckContext": "With deck context",
+  "@tutorWithDeckContext": { "description": "Deck context badge" },
+  "tutorAskAnything": "Ask me anything!",
+  "@tutorAskAnything": { "description": "Chat welcome title" },
+  "tutorWelcomeSubtitle": "I can explain concepts, quiz you on topics, or help you understand your flashcards.",
+  "@tutorWelcomeSubtitle": { "description": "Chat welcome subtitle" },
+  "tutorInputHint": "Ask your AI tutor…",
+  "@tutorInputHint": { "description": "Chat input placeholder" },
+  "tutorCopied": "Copied to clipboard",
+  "@tutorCopied": { "description": "Copy snackbar" },
+  "tutorConnectionLost": "Connection lost. Please try again.",
+  "@tutorConnectionLost": { "description": "SSE connection lost error" },
+  "tutorLoadError": "Failed to load conversations",
+  "@tutorLoadError": { "description": "Load error" },
+  "tutorRetry": "Retry",
+  "@tutorRetry": { "description": "Retry button" },
+
+  "aiStudioTitle": "AI Studio",
+  "aiStudioTabGenerate": "Generate",
+  "aiStudioTabFindAnswers": "Find Answers",
+  "aiStudioHistory": "History",
+  "aiStudioSourceTopic": "Topic",
+  "aiStudioSourceText": "Text",
+  "aiStudioSourcePdf": "PDF",
+  "aiStudioTopicLabel": "Topic",
+  "aiStudioTopicHint": "e.g. The French Revolution, Calculus, Human Body…",
+  "aiStudioTextLabel": "Paste your text (min 50 characters)",
+  "aiStudioTextHint": "Paste an article, textbook excerpt, or any text…",
+  "aiStudioPdfLabel": "Upload PDF",
+  "aiStudioPdfChoose": "Choose PDF file",
+  "aiStudioPdfReady": "PDF ready",
+  "aiStudioCardCountLabel": "Number of cards",
+  "aiStudioQualityLabel": "Quality",
+  "aiStudioQualityFast": "Fast",
+  "aiStudioQualityBalanced": "Balanced",
+  "aiStudioQualityPremium": "Premium",
+  "aiStudioQualityFastDescription": "~15 sec",
+  "aiStudioQualityBalancedDescription": "~30 sec",
+  "aiStudioQualityPremiumDescription": "~60 sec · best quality",
+  "aiStudioGenerate": "Generate",
+  "aiStudioGenerating": "Generating…",
+  "aiStudioFindAnswersHint": "e.g. What caused World War I?",
+  "aiStudioFindAnswersLabel": "Ask any question",
+  "aiStudioAiAnswer": "AI Answer",
+  "aiStudioKeyPoints": "Key Points",
+  "aiProgressTitle": "Generating…",
+  "aiProgressFrom": "Generating from {source}",
+  "@aiProgressFrom": { "placeholders": { "source": { "type": "String" } } },
+  "aiProgressQuality": "{count} cards · {quality} quality",
+  "@aiProgressQuality": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "quality": { "type": "String" }
+    }
+  },
+  "aiProgressFailed": "Generation failed. Please try again.",
+  "aiProgressGoBack": "Go back",
+  "aiResultsTitle": "cards generated",
+  "aiResultsTitleDefault": "Results",
+  "aiResultsSelected": "{selected} of {total} selected",
+  "@aiResultsSelected": {
+    "placeholders": {
+      "selected": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "aiResultsSelectAll": "Select All",
+  "aiResultsDeselectAll": "Deselect All",
+  "aiResultsNew": "New",
+  "aiResultsSaveToDeck": "Save to Deck",
+  "aiResultsCardsSaved": "cards saved!",
+  "aiResultsEmpty": "No cards were generated.",
+  "aiResultsEmptySubtitle": "Try a different topic or use more text.",
+  "aiResultsTryAgain": "Try Again",
+  "aiHistoryTitle": "Generation History",
+  "aiHistoryEmpty": "No generations yet",
+  "aiHistoryEmptySubtitle": "Your card generation history will appear here.",
+  "aiSaveToDeck": "Save {count} cards to…",
+  "@aiSaveToDeck": { "placeholders": { "count": { "type": "int" } } },
+  "aiSaveCreateNew": "Create new deck",
+  "aiSaveDeckName": "Deck name",
+  "aiSaveSaveCards": "Save Cards",
+  "aiExplainTitle": "AI Explanation",
+  "aiExplainQuestion": "Question",
+  "aiExplainAnswer": "Answer",
+  "aiExplainExplanation": "Explanation",
+  "aiExplainLoading": "AI is explaining this concept…",
+  "aiExplainRetry": "Try again",
+  "aiStudioCharCount": "{count} chars",
+  "@aiStudioCharCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "aiStudioCharCountNeedMore": "{count} chars (need {more} more)",
+  "@aiStudioCharCountNeedMore": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "more": { "type": "int" }
+    }
+  },
+  "aiStudioStatusFailed": "Failed",
+  "aiStudioStatusCancelled": "Cancelled",
+  "aiStudioStatusPending": "Pending",
+  "aiStudioStatusProcessing": "Processing",
+  "aiStudioCardsCount": "{count} cards",
+  "@aiStudioCardsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "aiSaveErrorNoName": "Enter a deck name.",
+  "aiSaveErrorNoDeck": "Select a deck first.",
+  "streakEvolutionRoadmap": "Evolution Roadmap",
+  "streakMilestoneAchievements": "Milestone Achievements",
+  "streakConsistencyHistory": "Consistency History (Last 30 Days)",
+  "streakClaimedRewardsHistory": "Claimed Rewards History",
+  "streakActiveBadge": "ACTIVE",
+  "streakMaximized": "Legendary Tree Maximized! 👑",
+  "streakNoRewards": "No milestone rewards claimed yet.",
+  "streakDaysRemaining": "{count} days until {stage}",
+  "@streakDaysRemaining": {
+    "description": "Days remaining to next evolution stage",
+    "placeholders": {
+      "count": { "type": "int" },
+      "stage": { "type": "String" }
+    }
+  },
+  "streakGrowthStage": "Growth Stage: {stage}",
+  "@streakGrowthStage": {
+    "description": "Growth Stage title",
+    "placeholders": {
+      "stage": { "type": "String" }
+    }
+  },
+  "streakCurrentDays": "{count} Day Active Streak",
+  "@streakCurrentDays": {
+    "description": "Current active day count",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "streakDayCount": "{count} Day Streak",
+  "@streakDayCount": {
+    "description": "General day count label",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "streakStageSeed": "Seed",
+  "streakStageSprout": "Sprout",
+  "streakStageYoungTree": "Young Tree",
+  "streakStageBloomingTree": "Blooming Tree",
+  "streakStageAncientTree": "Ancient Tree",
+  "streakStageLegendaryTree": "Legendary Tree",
+  "streakLastReward": "Last Reward: {reward}",
+  "@streakLastReward": {
+    "description": "Last milestone reward claimed",
+    "placeholders": {
+      "reward": { "type": "String" }
+    }
+  },
+  "streakNextReward": "Next Reward: {reward}",
+  "@streakNextReward": {
+    "description": "Next milestone reward",
+    "placeholders": {
+      "reward": { "type": "String" }
+    }
+  },
+  "streakNoLastReward": "Last Reward: None",
+  "streakMaxReward": "Next Reward: None (Max Level)",
+  "streakProgressDays": "{current} / {target} Days ({pct}%)"
+}
