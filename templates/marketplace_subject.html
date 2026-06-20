@@ -66,9 +66,9 @@
                 {% if p.difficulty == 'beginner' %}bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300
                 {% elif p.difficulty == 'intermediate' %}bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300
                 {% else %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% endif %}">
-                {% if p.difficulty == 'beginner' %}🟢 Beginner
-                {% elif p.difficulty == 'intermediate' %}🟡 Intermediate
-                {% else %}🔴 Advanced{% endif %}
+                {% if p.difficulty == 'beginner' %}🟢 {{ t('lvl_beginner') }}
+                {% elif p.difficulty == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
+                {% else %}🔴 {{ t('lvl_advanced') }}{% endif %}
               </span>
               {% if p.estimated_hours %}
               <span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold">⏱ {{ p.estimated_hours }}{{ t('mk_hours_short') }}</span>
@@ -92,12 +92,12 @@
         <a href="/marketplace/subject/{{ subj.slug }}"
           class="px-3 py-1.5 rounded-full text-sm font-semibold transition
             bg-indigo-600 text-white">{{ t('mk_all') }}</a>
-        {% for lvl, label, emoji in [('beginner','Beginner','🟢'),('intermediate','Intermediate','🟡'),('advanced','Advanced','🔴')] %}
+        {% for lvl, emoji in [('beginner','🟢'),('intermediate','🟡'),('advanced','🔴')] %}
         {% if collections | selectattr('level', 'equalto', lvl) | list %}
         <a href="/marketplace/search?subject={{ subj.slug }}&level={{ lvl }}"
           class="px-3 py-1.5 rounded-full text-sm font-semibold transition
             bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30">
-          {{ emoji }} {{ label }}
+          {{ emoji }} {{ t('lvl_' ~ lvl) }}
         </a>
         {% endif %}
         {% endfor %}
@@ -115,9 +115,9 @@
               <div class="text-4xl">{{ c.icon }}</div>
               {% if c.level %}
               <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-semibold">
-                {% if c.level == 'beginner' %}🟢 Beginner
-                {% elif c.level == 'intermediate' %}🟡 Intermediate
-                {% elif c.level == 'advanced' %}🔴 Advanced
+                {% if c.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}
+                {% elif c.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
+                {% elif c.level == 'advanced' %}🔴 {{ t('lvl_advanced') }}
                 {% else %}{{ c.level }}{% endif %}
               </span>
               {% endif %}

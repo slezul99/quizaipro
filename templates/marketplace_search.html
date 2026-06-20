@@ -32,9 +32,9 @@
           <!-- Level filter -->
           <select name="level" class="input-premium text-sm py-2" style="width:auto;min-width:140px;">
             <option value="">{{ t('mk_all_levels') }}</option>
-            <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>🟢 Beginner</option>
-            <option value="intermediate" {% if level == 'intermediate' %}selected{% endif %}>🟡 Intermediate</option>
-            <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>🔴 Advanced</option>
+            <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>🟢 {{ t('lvl_beginner') }}</option>
+            <option value="intermediate" {% if level == 'intermediate' %}selected{% endif %}>🟡 {{ t('lvl_intermediate') }}</option>
+            <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>🔴 {{ t('lvl_advanced') }}</option>
           </select>
         </div>
       </form>

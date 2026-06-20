@@ -30,9 +30,9 @@
           </span>
           <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold
             {% if path.difficulty == 'beginner' %}{% elif path.difficulty == 'intermediate' %}{% endif %}">
-            {% if path.difficulty == 'beginner' %}🟢 Beginner
-            {% elif path.difficulty == 'intermediate' %}🟡 Intermediate
-            {% else %}🔴 Advanced{% endif %}
+            {% if path.difficulty == 'beginner' %}🟢 {{ t('lvl_beginner') }}
+            {% elif path.difficulty == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
+            {% else %}🔴 {{ t('lvl_advanced') }}{% endif %}
           </span>
           {% if path.estimated_hours %}
           <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">⏱ {{ t('mk_hours_approx') }}{{ path.estimated_hours }} {{ t('mk_hours_word') }}</span>
