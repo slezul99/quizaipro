@@ -41,6 +41,12 @@ class StudyScreen extends ConsumerWidget {
         message: e is Failure ? e.userMessage : e.toString(),
       ),
       data: (state) {
+        // Queue came back empty (e.g. tapped "review fading" but nothing local
+        // is actually fading) — show a friendly all-caught-up state instead of
+        // a fake completion trophy for zero cards.
+        if (state.stats.total == 0) {
+          return _StudyEmptyScaffold(deckTitle: deckTitle);
+        }
         if (state.isComplete) {
           return StudyCompletionScreen(
             stats: state.stats,
@@ -314,6 +320,87 @@ class _ErrorScaffold extends StatelessWidget {
                         message,
                         style: tt.bodyMedium
                             ?.copyWith(color: tokens.textSecondary),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: tokens.space24),
+                      FilledButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(l10n.back),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown when a study session is launched but its queue is empty — e.g. the
+/// user tapped "review fading" yet nothing local is actually below target
+/// retention. Friendlier than a completion trophy for zero cards.
+class _StudyEmptyScaffold extends StatelessWidget {
+  const _StudyEmptyScaffold({required this.deckTitle});
+
+  final String deckTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.aurora;
+    final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      backgroundColor: tokens.backgroundCanvas,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(tokens.space16),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(Icons.close_rounded, color: tokens.textSecondary),
+                  ),
+                  SizedBox(width: tokens.space8),
+                  Text(
+                    deckTitle,
+                    style: tt.titleMedium?.copyWith(
+                      color: tokens.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(tokens.space32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: tokens.stateSuccessSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.check_circle_outline_rounded,
+                            color: tokens.stateSuccess, size: 36),
+                      ),
+                      SizedBox(height: tokens.space16),
+                      Text(
+                        l10n.dashboardAllCaughtUp,
+                        style: tt.titleMedium?.copyWith(
+                          color: tokens.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: tokens.space24),
