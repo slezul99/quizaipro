@@ -6020,6 +6020,56 @@ def api_diagnose_answer():
     return jsonify({"ok": True, "diagnosis": diagnosis})
 
 
+@app.route("/api/followup-question", methods=["POST"])
+@login_required
+def api_followup_question():
+    """Generiruet novyy trenirovochnyy vopros na temu oshibki — chtoby srazu
+    zakrepit' ponimanie posle razbora (cikl 'oshibsya → ponyal → zakrepil')."""
+    if not ai_gen.is_available():
+        return jsonify({"error": "ai_unavailable"}), 503
+    user = current_user()
+    answer_id = request.form.get("answer_id", type=int)
+    if not answer_id:
+        return jsonify({"error": "no_answer"}), 400
+    misconception = (request.form.get("misconception") or "").strip()[:300]
+    conn = db.get_conn()
+    row = conn.execute("""
+        SELECT aa.* FROM test_attempt_answers aa
+        JOIN test_attempts ta ON ta.id = aa.attempt_id
+        WHERE aa.id=? AND ta.user_id=?
+    """, (answer_id, user["id"])).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"error": "forbidden"}), 403
+    if not rate_limit(f"followup:{user['id']}", max_attempts=10, window_seconds=60):
+        return jsonify({"error": "rate_limit", "msg": "Слишком много запросов. Подождите минуту."}), 429
+
+    ad = dict(row)
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]?\s+(.+)$")
+    opts = {}
+    source = (ad.get("note") or "").strip() or (ad.get("back") or "")
+    for line in source.split("\n"):
+        m = _opt_re.match(line.strip())
+        if m:
+            opts[m.group(1).upper()] = m.group(2).strip()
+    correct_letter = (ad.get("correct") or "").strip().upper()
+    correct_text = opts.get(correct_letter) or ad.get("correct") or ad.get("back") or ""
+
+    fu = ai_gen.generate_followup(
+        ad.get("front", ""), correct_text, misconception, session.get("lang", "ru"))
+    if not fu:
+        return jsonify({"error": "ai_failed"}), 500
+    # Prevrashchaem v bukvy (A/B/C...) dlya UI
+    letters = ["A", "B", "C", "D", "E", "F"]
+    options = [{"letter": letters[i], "text": t} for i, t in enumerate(fu["options"])]
+    return jsonify({"ok": True, "followup": {
+        "question": fu["question"],
+        "options": options,
+        "correct_letter": letters[fu["correct_index"]],
+        "explanation": fu["explanation"],
+    }})
+
+
 @app.route("/api/daily-goal", methods=["POST"])
 @login_required
 def api_daily_goal():

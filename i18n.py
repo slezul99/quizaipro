@@ -1002,6 +1002,10 @@ T = {
         "td_diag_misconception": "Вероятное заблуждение",
         "td_diag_tip": "Как запомнить",
         "td_diag_error": "Не удалось разобрать ошибку. Попробуйте позже.",
+        "td_fu_btn": "Закрепить: похожий вопрос",
+        "td_fu_correct": "✓ Верно!",
+        "td_fu_wrong": "✗ Неверно",
+        "td_fu_error": "Не удалось создать вопрос. Попробуйте позже.",
         # match
         "mt_back_deck": "К колоде",
         "mt_h": "Сопоставь пары",
@@ -2816,6 +2820,10 @@ T = {
         "td_diag_misconception": "Likely misconception",
         "td_diag_tip": "How to remember",
         "td_diag_error": "Couldn't analyze the mistake. Try again later.",
+        "td_fu_btn": "Practice: similar question",
+        "td_fu_correct": "✓ Correct!",
+        "td_fu_wrong": "✗ Incorrect",
+        "td_fu_error": "Couldn't create a question. Try again later.",
         # match
         "mt_back_deck": "Back to deck",
         "mt_h": "Match the pairs",
@@ -4620,6 +4628,10 @@ T = {
         "td_diag_misconception": "Ehtimoliy xato tushuncha",
         "td_diag_tip": "Qanday eslab qolish",
         "td_diag_error": "Xatoni tahlil qilib boʻlmadi. Keyinroq urining.",
+        "td_fu_btn": "Mustahkamlash: oʻxshash savol",
+        "td_fu_correct": "✓ Toʻgʻri!",
+        "td_fu_wrong": "✗ Notoʻgʻri",
+        "td_fu_error": "Savol yaratib boʻlmadi. Keyinroq urining.",
         # match
         "mt_back_deck": "Toʻplamga qaytish",
         "mt_h": "Juftlikni topish",

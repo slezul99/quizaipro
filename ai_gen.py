@@ -1495,6 +1495,67 @@ def diagnose_mistake(question: str, chosen: str, correct: str, lang: str = "ru")
     }
 
 
+def generate_followup(question: str, correct: str, misconception: str = "", lang: str = "ru") -> dict | None:
+    """Generiruet NOVYY trenirovochnyy vopros na tu zhe temu, chto i tot, gde
+    student oshibsya — chtoby srazu zakrepit' ponimanie (cikl 'oshibsya → ponyal
+    → zakrepil'). Esli izvestno zabluzhdenie (iz diagnose_mistake), tselim
+    vopros imenno v nego.
+
+    Vozvrashchaet {question, options:[str,...], correct_index, explanation} ili None.
+    """
+    if not is_available():
+        return None
+    lang_name = {"ru": "русском", "en": "English", "uz": "узбекском"}.get(lang, "русском")
+    mis_block = f"\nТипичное заблуждение, которое надо проверить: {misconception}" if misconception else ""
+
+    prompt = f"""Студент ошибся в вопросе теста. Составь ОДИН новый похожий вопрос с выбором ответа на ту же тему, чтобы закрепить понимание. Вопрос должен проверять ту же концепцию, но не быть дословной копией. Пиши на {lang_name} языке.
+
+ИСХОДНЫЙ ВОПРОС: {question}
+ПРАВИЛЬНЫЙ ОТВЕТ на исходный: {correct}{mis_block}
+
+Верни ТОЛЬКО JSON-объект (без markdown, без ```):
+{{"question": "текст нового вопроса",
+  "options": ["вариант 1", "вариант 2", "вариант 3", "вариант 4"],
+  "correct_index": 0,
+  "explanation": "1-2 предложения: почему верный вариант правильный"}}
+
+Ровно 4 варианта. correct_index — индекс (0-3) правильного варианта. Варианты короткие и правдоподобные."""
+
+    try:
+        raw = _call_gemini(prompt, max_tokens=900)
+    except Exception as e:
+        print(f"[AI followup] {type(e).__name__}: {e}")
+        return None
+    if not raw:
+        return None
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+    try:
+        data = json.loads(cleaned)
+    except Exception:
+        return None
+    if not isinstance(data, dict):
+        return None
+    opts = data.get("options")
+    if not isinstance(opts, list) or len(opts) < 2:
+        return None
+    opts = [str(o).strip() for o in opts if str(o).strip()][:6]
+    try:
+        ci = int(data.get("correct_index"))
+    except (TypeError, ValueError):
+        return None
+    if not (0 <= ci < len(opts)):
+        return None
+    q = str(data.get("question") or "").strip()
+    if not q:
+        return None
+    return {
+        "question": q,
+        "options": opts,
+        "correct_index": ci,
+        "explanation": str(data.get("explanation") or "").strip(),
+    }
+
+
 def find_answers(question: str, deck_context: str = "", lang: str = "ru") -> dict | None:
     """AI-pomoshnik: otvechaet na svobodnyy vopros studenta s kratkimi key points.
     Ispol'zuyet tu zhe infrastrukturu (_call_gemini), chto i generatsiya kart —
