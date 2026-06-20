@@ -13,6 +13,7 @@ class RetentionCard extends StatelessWidget {
     required this.title,
     required this.forecastLabel,
     required this.fadingLabel,
+    this.onReviewFading,
   });
 
   final RetentionSummary retention;
@@ -20,6 +21,9 @@ class RetentionCard extends StatelessWidget {
   final String title;
   final String forecastLabel;
   final String fadingLabel;
+
+  /// Tapping the card (when something is fading) starts a focused review.
+  final VoidCallback? onReviewFading;
 
   static const _amber = Color(0xFFf59e0b);
 
@@ -33,6 +37,19 @@ class RetentionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = retention.now ?? 0;
+    final tappable = onReviewFading != null && retention.fading > 0;
+    return Material(
+      color: tokens.surfaceCard,
+      borderRadius: BorderRadius.circular(tokens.radiusL),
+      child: InkWell(
+        onTap: tappable ? onReviewFading : null,
+        borderRadius: BorderRadius.circular(tokens.radiusL),
+        child: _content(now),
+      ),
+    );
+  }
+
+  Widget _content(int now) {
     return Container(
       padding: EdgeInsets.all(tokens.space16),
       decoration: BoxDecoration(
@@ -88,6 +105,8 @@ class RetentionCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (onReviewFading != null)
+                  Icon(Icons.chevron_right_rounded, size: 18, color: _amber),
               ],
             ],
           ),

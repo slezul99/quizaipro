@@ -173,6 +173,7 @@ class _StudyContent extends ConsumerWidget {
         StudyMode.review => l10n.flashcardsModeReview,
         StudyMode.difficult => l10n.flashcardsModeDifficult,
         StudyMode.favorite => l10n.flashcardsModeFavorite,
+        StudyMode.fading => l10n.flashcardsModeFading,
       };
 
   Future<void> _confirmQuit(BuildContext context) async {

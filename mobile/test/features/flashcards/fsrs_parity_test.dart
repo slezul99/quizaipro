@@ -49,4 +49,25 @@ void main() {
       expect(d, closeTo(expected[i][1] as double, 0.01), reason: 'difficulty @step $i');
     }
   });
+
+  test('cardRetrievability matches Python fsrs.card_retrievability', () {
+    // (stability, interval, elapsedDays, expectedR) — expectedR from fsrs.py.
+    // stability == null seeds from the interval (legacy SM-2 cards).
+    const cases = [
+      [10.0, 0, 20.0, 0.825029],
+      [null, 5, 40.0, 0.589610],
+      [50.0, 0, 2.0, 0.995341],
+      [null, 1, 100.0, 0.202209],
+      [5.0, 0, 40.0, 0.589610],
+    ];
+    for (final c in cases) {
+      final r = FsrsAlgorithm.cardRetrievability(
+        stability: c[0] as double?,
+        interval: c[1] as int,
+        elapsedDays: c[2] as double,
+      );
+      expect(r, closeTo(c[3] as double, 0.0001),
+          reason: 'R for stability=${c[0]} interval=${c[1]} elapsed=${c[2]}');
+    }
+  });
 }

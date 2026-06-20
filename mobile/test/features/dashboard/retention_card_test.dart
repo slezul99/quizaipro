@@ -52,4 +52,29 @@ void main() {
     expect(find.text('92%'), findsOneWidget);
     expect(find.textContaining('fading'), findsNothing);
   });
+
+  testWidgets('tapping the card starts a fading review when something is fading',
+      (tester) async {
+    var tapped = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.light().copyWith(extensions: const [AuroraTokens.light]),
+        home: Scaffold(
+          body: RetentionCard(
+            retention: const RetentionSummary(now: 34, forecast: 31, fading: 33, studied: 33),
+            tokens: AuroraTokens.light,
+            title: 'Retention',
+            forecastLabel: 'in a week',
+            fadingLabel: 'fading',
+            onReviewFading: () => tapped = true,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('34%'));
+    await tester.pumpAndSettle();
+    expect(tapped, isTrue);
+  });
 }

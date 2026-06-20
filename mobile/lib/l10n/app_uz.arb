@@ -327,6 +327,7 @@
   "flashcardsModeReview": "Takrorlash",
   "flashcardsModeDifficult": "Qiyin",
   "flashcardsModeFavorite": "Sevimlilar",
+  "flashcardsModeFading": "So'nayotgan",
   "flashcardsLoadError": "Kartochkalarni yuklab bo'lmadi",
   "flashcardsQuit": "Sessiyani tugatish",
   "flashcardsQuitConfirm": "Bu o'quv sessiyasini tugatmoqchimisiz?",

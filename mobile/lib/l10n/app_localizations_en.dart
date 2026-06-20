@@ -706,6 +706,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flashcardsModeFavorite => 'Favorites';
 
   @override
+  String get flashcardsModeFading => 'Fading';
+
+  @override
   String get flashcardsLoadError => 'Failed to load cards';
 
   @override

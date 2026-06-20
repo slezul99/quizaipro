@@ -708,6 +708,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get flashcardsModeFavorite => 'Sevimlilar';
 
   @override
+  String get flashcardsModeFading => 'So\'nayotgan';
+
+  @override
   String get flashcardsLoadError => 'Kartochkalarni yuklab bo\'lmadi';
 
   @override

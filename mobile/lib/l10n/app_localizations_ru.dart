@@ -710,6 +710,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get flashcardsModeFavorite => 'Избранное';
 
   @override
+  String get flashcardsModeFading => 'Остывают';
+
+  @override
   String get flashcardsLoadError => 'Не удалось загрузить карточки';
 
   @override

@@ -3,5 +3,6 @@ enum StudyMode {
   newCards,
   review,
   difficult,
-  favorite;
+  favorite,
+  fading;    // studied cards slipping below target retention, most-forgotten first
 }

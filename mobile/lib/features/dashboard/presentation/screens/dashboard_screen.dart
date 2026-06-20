@@ -6,6 +6,7 @@ import 'package:quizaipro_mobile/core/router/app_routes.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/streak_summary.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/xp_summary.dart';
+import 'package:quizaipro_mobile/features/flashcards/domain/entities/study_mode.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_notifier.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/daily_goal_card.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/dashboard_error_view.dart';
@@ -113,6 +114,13 @@ class DashboardScreen extends ConsumerWidget {
                         title: l10n.dashboardRetention,
                         forecastLabel: l10n.dashboardRetentionForecast,
                         fadingLabel: l10n.dashboardRetentionFading,
+                        onReviewFading: () => context.pushNamed(
+                          AppRoutes.studySessionName,
+                          queryParameters: {
+                            'mode': StudyMode.fading.name,
+                            'deckTitle': l10n.dashboardRetention,
+                          },
+                        ),
                       ),
                     ],
                     SizedBox(height: tokens.space20),

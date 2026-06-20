@@ -721,6 +721,8 @@
 
   "flashcardsModeFavorite": "Favorites",
   "@flashcardsModeFavorite": { "description": "Favorites mode label" },
+  "flashcardsModeFading": "Fading",
+  "@flashcardsModeFading": { "description": "Study mode reviewing cards slipping below target retention" },
 
   "flashcardsLoadError": "Failed to load cards",
   "@flashcardsLoadError": { "description": "Error loading cards" },

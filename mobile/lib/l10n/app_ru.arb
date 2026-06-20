@@ -328,6 +328,7 @@
   "flashcardsModeReview": "Повторение",
   "flashcardsModeDifficult": "Трудные",
   "flashcardsModeFavorite": "Избранное",
+  "flashcardsModeFading": "Остывают",
   "flashcardsLoadError": "Не удалось загрузить карточки",
   "flashcardsQuit": "Завершить сессию",
   "flashcardsQuitConfirm": "Завершить эту учебную сессию?",

@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 
 import 'package:quizaipro_mobile/core/error/failures.dart';
 import 'package:quizaipro_mobile/core/usecase/usecase.dart';
+import 'package:quizaipro_mobile/features/flashcards/domain/algorithms/fsrs_algorithm.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/flashcard.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/study_card.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/study_mode.dart';
@@ -90,11 +91,37 @@ class LoadStudyQueueUseCase
       StudyMode.review => dueCards.take(size).toList(),
       StudyMode.difficult => difficultCards.take(size).toList(),
       StudyMode.favorite => favoriteCards.take(size).toList(),
+      StudyMode.fading => _fadingCards(all, now).take(size).toList(),
       StudyMode.smart =>
         _smartMix(newCards, difficultCards, dueCards, size),
     };
 
     return selected.map(_toStudyCard).toList();
+  }
+
+  /// Studied cards whose recall probability has slipped below the FSRS target,
+  /// ordered most-forgotten first (lowest retrievability). Mirrors the web
+  /// `only_fading` flashcards filter — the highest-yield cards to review.
+  List<Flashcard> _fadingCards(List<Flashcard> all, DateTime now) {
+    final rById = <String, double>{};
+    final fading = <Flashcard>[];
+    for (final c in all) {
+      if (c.repetitions <= 0) continue; // only cards studied at least once
+      final elapsed = c.lastStudiedAt == null
+          ? 0.0
+          : now.difference(c.lastStudiedAt!).inSeconds / 86400.0;
+      final r = FsrsAlgorithm.cardRetrievability(
+        stability: c.stability,
+        interval: c.interval,
+        elapsedDays: elapsed,
+      );
+      if (r < FsrsAlgorithm.targetRetention) {
+        rById[c.id] = r;
+        fading.add(c);
+      }
+    }
+    fading.sort((a, b) => rById[a.id]!.compareTo(rById[b.id]!));
+    return fading;
   }
 
   List<Flashcard> _smartMix(

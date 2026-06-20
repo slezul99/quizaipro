@@ -1384,6 +1384,12 @@ abstract class AppLocalizations {
   /// **'Favorites'**
   String get flashcardsModeFavorite;
 
+  /// Study mode reviewing cards slipping below target retention
+  ///
+  /// In en, this message translates to:
+  /// **'Fading'**
+  String get flashcardsModeFading;
+
   /// Error loading cards
   ///
   /// In en, this message translates to:

@@ -51,6 +51,20 @@ abstract final class FsrsAlgorithm {
         .toDouble();
   }
 
+  /// Recall probability for a card right now, seeding stability from the legacy
+  /// interval when FSRS hasn't scheduled it yet. Mirrors fsrs.card_retrievability;
+  /// used to rank "fading" cards (lowest first = most likely already forgotten).
+  static double cardRetrievability({
+    double? stability,
+    required int interval,
+    required double elapsedDays,
+  }) {
+    final s = (stability == null || stability <= 0)
+        ? math.max(interval.toDouble(), 1.0)
+        : stability;
+    return retrievability(elapsedDays, s);
+  }
+
   static int _intervalFor(double stability) {
     final ivl = (stability / factor) *
         (math.pow(targetRetention, 1.0 / decay).toDouble() - 1.0);
