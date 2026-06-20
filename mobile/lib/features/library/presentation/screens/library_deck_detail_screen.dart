@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:quizaipro_mobile/core/router/app_routes.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/core/utils/mcq_text.dart';
+import 'package:quizaipro_mobile/features/flashcards/domain/algorithms/retention_calculator.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/flashcard.dart';
+import 'package:quizaipro_mobile/features/flashcards/domain/entities/study_mode.dart';
 import 'package:quizaipro_mobile/features/flashcards/presentation/providers/flashcard_providers.dart';
 import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
 import 'package:quizaipro_mobile/features/library/presentation/providers/deck_cards_provider.dart';
@@ -297,6 +299,31 @@ class _DeckDetailBody extends ConsumerWidget {
                     ),
                   ],
                 ),
+                cardsAsync.maybeWhen(
+                  data: (cards) {
+                    final r = RetentionCalculator.forCards(cards);
+                    if (!r.hasData) return const SizedBox.shrink();
+                    return Padding(
+                      padding: EdgeInsets.only(top: tokens.space16),
+                      child: _DeckRetentionBadge(
+                        result: r,
+                        tokens: tokens,
+                        l: l,
+                        onReviewFading: r.fading > 0
+                            ? () => context.pushNamed(
+                                  AppRoutes.studySessionName,
+                                  queryParameters: {
+                                    'deckId': deck.id,
+                                    'mode': StudyMode.fading.name,
+                                    'deckTitle': deck.title,
+                                  },
+                                )
+                            : null,
+                      ),
+                    );
+                  },
+                  orElse: () => const SizedBox.shrink(),
+                ),
                 SizedBox(height: tokens.space24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -336,6 +363,94 @@ class _DeckDetailBody extends ConsumerWidget {
     } catch (_) {
       return const Color(0xFF6366F1);
     }
+  }
+}
+
+/// Compact per-deck FSRS retention badge: how much of this deck the user
+/// remembers now, the one-week forecast, and a tap-through to review the
+/// fading cards. Computed locally from the deck's cards (offline-first).
+class _DeckRetentionBadge extends StatelessWidget {
+  const _DeckRetentionBadge({
+    required this.result,
+    required this.tokens,
+    required this.l,
+    this.onReviewFading,
+  });
+
+  final DeckRetentionResult result;
+  final AuroraTokens tokens;
+  final AppLocalizations l;
+  final VoidCallback? onReviewFading;
+
+  static const _amber = Color(0xFFf59e0b);
+
+  Color get _accent {
+    final now = result.now ?? 0;
+    if (now >= 80) return tokens.stateSuccess;
+    if (now >= 50) return _amber;
+    return tokens.stateError;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = result.now ?? 0;
+    final tappable = onReviewFading != null && result.fading > 0;
+    return Material(
+      color: tokens.surfaceSubtle,
+      borderRadius: BorderRadius.circular(tokens.radiusMd),
+      child: InkWell(
+        onTap: tappable ? onReviewFading : null,
+        borderRadius: BorderRadius.circular(tokens.radiusMd),
+        child: Padding(
+          padding: EdgeInsets.all(tokens.space16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('🧠', style: TextStyle(fontSize: 18)),
+                  SizedBox(width: tokens.space8),
+                  Expanded(
+                    child: Text(
+                      l.dashboardRetention,
+                      style: tokens.titleSmall.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Text(
+                    '$now%',
+                    style: tokens.titleMedium.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: _accent,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: tokens.space8),
+              Row(
+                children: [
+                  Text(
+                    '${l.dashboardRetentionForecast} ${result.forecast ?? now}%',
+                    style: tokens.bodySmall.copyWith(color: tokens.textSecondary),
+                  ),
+                  if (result.fading > 0) ...[
+                    const Spacer(),
+                    Text(
+                      '${result.fading} ${l.dashboardRetentionFading}',
+                      style: tokens.bodySmall.copyWith(
+                        color: _amber,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (onReviewFading != null)
+                      Icon(Icons.chevron_right_rounded, size: 18, color: _amber),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
