@@ -2009,9 +2009,10 @@ def flashcards_view(deck_id):
         flash("В этой колоде нет словарных карт. Используйте режим Тест.", "info")
         return redirect(url_for("deck_view", deck_id=deck_id))
 
-    # Filtry: only_favorites, only_difficult
+    # Filtry: only_favorites, only_difficult, only_fading (FSRS — ostyvayushchie)
     only_fav = request.args.get("only_fav", "0") == "1"
     only_hard = request.args.get("only_hard", "0") == "1"
+    only_fading = request.args.get("only_fading", "0") == "1"
 
     where = "c.deck_id=?"
     params = [deck_id]
@@ -2027,7 +2028,8 @@ def flashcards_view(deck_id):
                 c.front_en, c.front_uz, c.back_en, c.back_uz, c.note_en, c.note_uz,
                 COALESCE(p.is_favorite, 0) AS is_favorite,
                 COALESCE(p.is_difficult, 0) AS is_difficult,
-                COALESCE(p.reviews, 0) AS reviews
+                COALESCE(p.reviews, 0) AS reviews,
+                p.stability, p.last_reviewed, p.interval_days, p.ef
             FROM cards c {join}
             WHERE {where}
             ORDER BY c.id""",
@@ -2038,11 +2040,28 @@ def flashcards_view(deck_id):
     # Localize: if user lang is en/uz and translation exists, swap into front/back/note
     lang = session.get("lang", "ru")
     cards_list = [_localize_card_fields(dict(c), lang) for c in cards]
+
+    if only_fading:
+        # Tol'ko ostyvayushchie izuchennye karty, snachala samye zabytye (nizkiy R).
+        scored = []
+        for c in cards_list:
+            if (c.get("reviews") or 0) <= 0:
+                continue
+            r = fsrs.card_retrievability(c)
+            if r < fsrs.TARGET_RETENTION:
+                scored.append((r, c))
+        scored.sort(key=lambda x: x[0])
+        cards_list = [c for _, c in scored]
+        if not cards_list:
+            flash("Нет остывающих карт — память свежа! 🧠", "info")
+            return redirect(url_for("deck_view", deck_id=deck_id))
+
     return render_template("flashcards.html",
         deck=dict(deck),
         cards=cards_list,
         only_fav=only_fav,
-        only_hard=only_hard)
+        only_hard=only_hard,
+        only_fading=only_fading)
 
 
 @app.route("/api/card/<int:card_id>/favorite", methods=["POST"])

@@ -285,8 +285,8 @@
   <div class="flex gap-2 mb-5 text-sm flex-wrap">
     <a href="/deck/{{ deck.id }}/flashcards"
       class="px-3 py-1.5 rounded-full border transition
-        {% if not only_fav and not only_hard %}bg-indigo-500 text-white border-indigo-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-indigo-300{% endif %}">
-      {{ t('fc_filter_all') }} ({{ cards|length if (only_fav or only_hard) else cards|length }})
+        {% if not only_fav and not only_hard and not only_fading %}bg-indigo-500 text-white border-indigo-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-indigo-300{% endif %}">
+      {{ t('fc_filter_all') }}
     </a>
     <a href="/deck/{{ deck.id }}/flashcards?only_fav=1"
       class="px-3 py-1.5 rounded-full border transition
@@ -297,6 +297,11 @@
       class="px-3 py-1.5 rounded-full border transition
         {% if only_hard %}bg-red-500 text-white border-red-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-red-300{% endif %}">
       {{ t('fc_filter_hard') }}
+    </a>
+    <a href="/deck/{{ deck.id }}/flashcards?only_fading=1&force=1"
+      class="px-3 py-1.5 rounded-full border transition
+        {% if only_fading %}bg-amber-500 text-white border-amber-500{% else %}bg-white/70 border-indigo-100 text-slate-700 hover:border-amber-300{% endif %}">
+      🧠 {{ t('fc_filter_fading') }}
     </a>
   </div>
 

@@ -491,7 +491,7 @@ function deckEditor() {
           {{ t('dk_retention_week') }} <b class="text-slate-700 dark:text-slate-200">{{ retention.forecast }}%</b>
         </span>
         {% if retention.fading > 0 %}
-        <a href="/deck/{{ deck['id'] }}/flashcards" class="text-amber-600 dark:text-amber-400 font-semibold hover:underline">
+        <a href="/deck/{{ deck['id'] }}/flashcards?only_fading=1&force=1" class="text-amber-600 dark:text-amber-400 font-semibold hover:underline">
           · {{ retention.fading }} {{ t('dk_retention_fading') }}
         </a>
         {% endif %}

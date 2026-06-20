@@ -185,6 +185,17 @@ def calc_fsrs(card: dict, grade: int, now: datetime = None) -> dict:
     return out
 
 
+def card_retrievability(card: dict, now: datetime = None) -> float:
+    """Probability of recalling a single card right now (0..1), seeding FSRS
+    state from legacy SM-2 fields when a card hasn't been scheduled by FSRS yet.
+    Used to rank "fading" cards (lowest first = most likely already forgotten)."""
+    now = now or datetime.utcnow()
+    s = card.get("stability")
+    if not s:
+        s, _ = _seed_from_sm2(card)
+    return retrievability(_elapsed_days(card, now), s)
+
+
 def deck_retention(cards: list, now: datetime = None, horizon_days: int = 7) -> dict:
     """Aggregate memory state for a deck (list of user_card_progress dicts).
 
