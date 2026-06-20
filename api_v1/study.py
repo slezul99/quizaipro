@@ -501,11 +501,20 @@ def _validate_grade_payload(body):
     if next_review_at > graded_at + timedelta(days=_INTERVAL_MAX):
         return None, "next_review_at is out of range"
 
+    # FSRS scheduler state (optional — older clients won't send these).
+    def _opt_float(v):
+        try:
+            return float(v) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+
     return {
         "card_id": card_id,
         "deck_id": deck_id,
         "grade": grade,
         "ease_factor": round(ease_factor, 3),
+        "stability": _opt_float(body.get("new_stability")),
+        "difficulty": _opt_float(body.get("new_difficulty")),
         "interval": interval,
         "repetitions": repetitions,
         "next_review_at": next_review_at.isoformat(),
@@ -589,6 +598,12 @@ def post_grade():
                   parsed["grade"], parsed["graded_at"],
                   prior["is_favorite"] if prior else 0,
                   prior["is_difficult"] if prior else 0))
+            # FSRS state, when the client computed it (older clients omit it).
+            if parsed["stability"] is not None and parsed["difficulty"] is not None:
+                conn.execute(
+                    "UPDATE user_card_progress SET stability=?, difficulty=? "
+                    "WHERE user_id=? AND card_id=?",
+                    (parsed["stability"], parsed["difficulty"], user["id"], parsed["card_id"]))
             conn.execute(
                 "INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, ?, ?, ?)",
                 (user["id"], parsed["card_id"], parsed["grade"], parsed["graded_at"]))

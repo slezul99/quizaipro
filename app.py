@@ -27,6 +27,7 @@ from werkzeug.utils import secure_filename
 
 import db
 import sm2
+import fsrs
 import importer
 import i18n
 import config
@@ -2082,7 +2083,7 @@ def api_card_grade(card_id):
     p = conn.execute("SELECT * FROM user_card_progress WHERE user_id=? AND card_id=?",
                      (user["id"], card_id)).fetchone()
     cur_state = dict(p) if p else {"ef": 2.5, "interval_days": 0, "reviews": 0, "lapses": 0}
-    new_state = sm2.calc_sm2(cur_state, grade)
+    new_state = fsrs.calc_fsrs(cur_state, grade)
     conn.execute("""INSERT OR REPLACE INTO user_card_progress
         (user_id, card_id, ef, interval_days, reviews, lapses, due_at, last_grade, last_reviewed,
          is_favorite, is_difficult)
@@ -2093,6 +2094,8 @@ def api_card_grade(card_id):
          new_state["reviews"], new_state["lapses"], new_state["due_at"],
          grade, datetime.utcnow().isoformat(),
          user["id"], card_id, user["id"], card_id))
+    conn.execute("UPDATE user_card_progress SET stability=?, difficulty=? WHERE user_id=? AND card_id=?",
+                 (new_state["stability"], new_state["difficulty"], user["id"], card_id))
     conn.execute("INSERT INTO reviews (user_id, card_id, grade) VALUES (?, ?, ?)",
                  (user["id"], card_id, grade))
     xp_gain = 5 if grade == 5 else 3 if grade == 4 else 1
@@ -2256,13 +2259,15 @@ def study_grade():
     p = conn.execute("SELECT * FROM user_card_progress WHERE user_id=? AND card_id=?",
                      (user["id"], card_id)).fetchone()
     cur_state = dict(p) if p else {"ef": 2.5, "interval_days": 0, "reviews": 0, "lapses": 0}
-    new_state = sm2.calc_sm2(cur_state, grade)
+    new_state = fsrs.calc_fsrs(cur_state, grade)
     conn.execute("""INSERT OR REPLACE INTO user_card_progress
         (user_id, card_id, ef, interval_days, reviews, lapses, due_at, last_grade, last_reviewed)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (user["id"], card_id, new_state["ef"], new_state["interval_days"],
          new_state["reviews"], new_state["lapses"], new_state["due_at"],
          grade, datetime.utcnow().isoformat()))
+    conn.execute("UPDATE user_card_progress SET stability=?, difficulty=? WHERE user_id=? AND card_id=?",
+                 (new_state["stability"], new_state["difficulty"], user["id"], card_id))
     conn.execute("INSERT INTO reviews (user_id, card_id, grade) VALUES (?, ?, ?)",
                  (user["id"], card_id, grade))
     xp_gain = 5 if grade == 5 else 3 if grade == 4 else 1 if grade == 3 else 0
@@ -2527,13 +2532,15 @@ def test_answer():
     p = conn.execute("SELECT * FROM user_card_progress WHERE user_id=? AND card_id=?",
                      (user["id"], card_id)).fetchone()
     cur_state = dict(p) if p else {"ef": 2.5, "interval_days": 0, "reviews": 0, "lapses": 0}
-    new_state = sm2.calc_sm2(cur_state, grade)
+    new_state = fsrs.calc_fsrs(cur_state, grade)
     conn.execute("""INSERT OR REPLACE INTO user_card_progress
         (user_id, card_id, ef, interval_days, reviews, lapses, due_at, last_grade, last_reviewed)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (user["id"], card_id, new_state["ef"], new_state["interval_days"],
          new_state["reviews"], new_state["lapses"], new_state["due_at"],
          grade, datetime.utcnow().isoformat()))
+    conn.execute("UPDATE user_card_progress SET stability=?, difficulty=? WHERE user_id=? AND card_id=?",
+                 (new_state["stability"], new_state["difficulty"], user["id"], card_id))
     conn.execute("INSERT INTO reviews (user_id, card_id, grade) VALUES (?, ?, ?)",
                  (user["id"], card_id, grade))
     if is_correct:

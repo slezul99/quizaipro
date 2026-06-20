@@ -118,6 +118,8 @@ def init_db():
         user_id      INTEGER NOT NULL,
         card_id      INTEGER NOT NULL,
         ef           REAL DEFAULT 2.5,
+        stability    REAL,
+        difficulty   REAL,
         interval_days INTEGER DEFAULT 0,
         reviews      INTEGER DEFAULT 0,
         lapses       INTEGER DEFAULT 0,
@@ -512,6 +514,16 @@ def init_db():
     # Duels: shuffle_seed
     try:
         c.execute("ALTER TABLE duels ADD COLUMN shuffle_seed INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    # FSRS scheduler state (replaces single SM-2 ease factor). Existing rows
+    # keep ef/interval_days; fsrs.calc_fsrs seeds S/D from them on first review.
+    try:
+        c.execute("ALTER TABLE user_card_progress ADD COLUMN stability REAL")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE user_card_progress ADD COLUMN difficulty REAL")
     except sqlite3.OperationalError:
         pass
     # Tablitsa schyotchikov igr per-user
