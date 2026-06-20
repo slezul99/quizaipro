@@ -1444,6 +1444,138 @@ abstract class AppLocalizations {
   /// **'Couldn\'t delete the card'**
   String get cardDeleteFailed;
 
+  /// Label of the new-deck floating action button
+  ///
+  /// In en, this message translates to:
+  /// **'Deck'**
+  String get libraryNewDeckFab;
+
+  /// Card editor title when creating
+  ///
+  /// In en, this message translates to:
+  /// **'New question'**
+  String get cardEditorTitleNew;
+
+  /// Card editor title when editing
+  ///
+  /// In en, this message translates to:
+  /// **'Edit question'**
+  String get cardEditorTitleEdit;
+
+  /// Question field label
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get cardEditorQuestionLabel;
+
+  /// Question field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a question…'**
+  String get cardEditorQuestionHint;
+
+  /// Options section label
+  ///
+  /// In en, this message translates to:
+  /// **'Answer options'**
+  String get cardEditorOptionsLabel;
+
+  /// Hint to mark the correct option
+  ///
+  /// In en, this message translates to:
+  /// **'Mark the correct option'**
+  String get cardEditorMarkCorrect;
+
+  /// Add-option button
+  ///
+  /// In en, this message translates to:
+  /// **'Add option'**
+  String get cardEditorAddOption;
+
+  /// Shown when the max option count is reached
+  ///
+  /// In en, this message translates to:
+  /// **'Max {count}'**
+  String cardEditorMaxOptions(int count);
+
+  /// Hint for an option input
+  ///
+  /// In en, this message translates to:
+  /// **'Option {letter}'**
+  String cardEditorOptionHint(String letter);
+
+  /// Explanation field label
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation (optional)'**
+  String get cardEditorExplanationLabel;
+
+  /// Explanation field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Why this answer is correct…'**
+  String get cardEditorExplanationHint;
+
+  /// Validation: empty question
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a question'**
+  String get cardEditorErrorQuestion;
+
+  /// Validation: too few options
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least {count} options'**
+  String cardEditorErrorMinOptions(int count);
+
+  /// Validation: no correct option marked
+  ///
+  /// In en, this message translates to:
+  /// **'Mark the correct option (it must not be empty)'**
+  String get cardEditorErrorMarkCorrect;
+
+  /// Save failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Check your connection.'**
+  String get cardEditorErrorSave;
+
+  /// Deck editor title when creating
+  ///
+  /// In en, this message translates to:
+  /// **'New deck'**
+  String get deckEditorTitleNew;
+
+  /// Validation: empty deck name
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a deck name'**
+  String get deckEditorErrorName;
+
+  /// Deck name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get deckEditorNameLabel;
+
+  /// Deck name field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. History of Uzbekistan'**
+  String get deckEditorNameHint;
+
+  /// Deck description field label
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get deckEditorDescLabel;
+
+  /// Create-deck button
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get deckEditorCreate;
+
   /// Again grade button
   ///
   /// In en, this message translates to:

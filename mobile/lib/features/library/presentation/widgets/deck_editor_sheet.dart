@@ -7,6 +7,7 @@ import 'package:quizaipro_mobile/features/library/presentation/providers/library
 import 'package:quizaipro_mobile/features/library/presentation/providers/library_favorites_notifier.dart';
 import 'package:quizaipro_mobile/features/library/presentation/providers/library_providers.dart';
 import 'package:quizaipro_mobile/features/library/presentation/providers/recent_decks_notifier.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 /// Bottom sheet to create a new deck or edit an existing one's title/description.
 /// Returns true if a deck was created/updated.
@@ -45,9 +46,10 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
   }
 
   Future<void> _save() async {
+    final l = AppLocalizations.of(context)!;
     final title = _title.text.trim();
     if (title.isEmpty) {
-      setState(() => _error = 'Введите название колоды');
+      setState(() => _error = l.deckEditorErrorName);
       return;
     }
     setState(() {
@@ -64,7 +66,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
     result.fold(
       (failure) => setState(() {
         _saving = false;
-        _error = 'Не удалось сохранить. Проверьте соединение.';
+        _error = l.cardEditorErrorSave;
       }),
       (_) {
         ref.read(libraryDecksNotifierProvider.notifier).refresh();
@@ -79,6 +81,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
   Widget build(BuildContext context) {
     final t = context.aurora;
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
@@ -104,7 +107,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
             ),
             SizedBox(height: t.space20),
             Text(
-              _isEdit ? 'Редактировать колоду' : 'Новая колода',
+              _isEdit ? l.libraryDeckEditTooltip : l.deckEditorTitleNew,
               style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             SizedBox(height: t.space16),
@@ -113,8 +116,8 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
               autofocus: !_isEdit,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'Название',
-                hintText: 'Например: История Узбекистана',
+                labelText: l.deckEditorNameLabel,
+                hintText: l.deckEditorNameHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(t.radiusMd),
                 ),
@@ -127,7 +130,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'Описание (необязательно)',
+                labelText: l.deckEditorDescLabel,
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(t.radiusMd),
@@ -159,7 +162,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white),
                       )
-                    : Text(_isEdit ? 'Сохранить' : 'Создать'),
+                    : Text(_isEdit ? l.save : l.deckEditorCreate),
               ),
             ),
           ],

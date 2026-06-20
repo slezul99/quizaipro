@@ -60,7 +60,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
         backgroundColor: t.brandPrimary,
         foregroundColor: t.textOnBrand,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Колода'),
+        label: Text(l.libraryNewDeckFab),
       ),
       body: NestedScrollView(
         headerSliverBuilder: (_, __) => [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 /// Library deck card — emblem-led layout. Instead of a flat colour banner the
 /// deck colour now lives in a rounded gradient emblem carrying the deck's
@@ -24,6 +25,7 @@ class LibraryDeckCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
     final cover = _hexToColor(deck.coverColorHex);
     final initial =
         deck.title.trim().isNotEmpty ? deck.title.trim()[0].toUpperCase() : '?';
@@ -144,14 +146,14 @@ class LibraryDeckCard extends StatelessWidget {
                 if (deck.hasFlashcards)
                   _TypeBadge(
                     icon: Icons.style_rounded,
-                    label: 'Карты',
+                    label: l.marketplaceCards,
                     color: tokens.brandGradientStart,
                     tokens: tokens,
                   ),
                 if (deck.hasTests)
                   _TypeBadge(
                     icon: Icons.fact_check_rounded,
-                    label: 'Тест',
+                    label: l.cardTileQuizChip,
                     color: tokens.stateInfo,
                     tokens: tokens,
                   ),

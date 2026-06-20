@@ -741,6 +741,79 @@ class AppLocalizationsUz extends AppLocalizations {
   String get cardDeleteFailed => 'Kartani o\'chirib bo\'lmadi';
 
   @override
+  String get libraryNewDeckFab => 'Toplam';
+
+  @override
+  String get cardEditorTitleNew => 'Yangi savol';
+
+  @override
+  String get cardEditorTitleEdit => 'Savolni tahrirlash';
+
+  @override
+  String get cardEditorQuestionLabel => 'Savol';
+
+  @override
+  String get cardEditorQuestionHint => 'Savol kiriting…';
+
+  @override
+  String get cardEditorOptionsLabel => 'Javob variantlari';
+
+  @override
+  String get cardEditorMarkCorrect => 'To\'g\'ri variantni belgilang';
+
+  @override
+  String get cardEditorAddOption => 'Variant qo\'shish';
+
+  @override
+  String cardEditorMaxOptions(int count) {
+    return 'Ko\'pi bilan $count';
+  }
+
+  @override
+  String cardEditorOptionHint(String letter) {
+    return 'Variant $letter';
+  }
+
+  @override
+  String get cardEditorExplanationLabel => 'Izoh (ixtiyoriy)';
+
+  @override
+  String get cardEditorExplanationHint => 'Nega bu javob to\'g\'ri…';
+
+  @override
+  String get cardEditorErrorQuestion => 'Savol kiriting';
+
+  @override
+  String cardEditorErrorMinOptions(int count) {
+    return 'Kamida $count ta variant qo\'shing';
+  }
+
+  @override
+  String get cardEditorErrorMarkCorrect =>
+      'To\'g\'ri variantni belgilang (u bo\'sh bo\'lmasligi kerak)';
+
+  @override
+  String get cardEditorErrorSave => 'Saqlab bo\'lmadi. Aloqani tekshiring.';
+
+  @override
+  String get deckEditorTitleNew => 'Yangi toplam';
+
+  @override
+  String get deckEditorErrorName => 'Toplam nomini kiriting';
+
+  @override
+  String get deckEditorNameLabel => 'Nomi';
+
+  @override
+  String get deckEditorNameHint => 'Masalan: O\'zbekiston tarixi';
+
+  @override
+  String get deckEditorDescLabel => 'Tavsif (ixtiyoriy)';
+
+  @override
+  String get deckEditorCreate => 'Yaratish';
+
+  @override
   String get flashcardsAgain => 'Qayta';
 
   @override

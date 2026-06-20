@@ -743,6 +743,80 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cardDeleteFailed => 'Не удалось удалить карточку';
 
   @override
+  String get libraryNewDeckFab => 'Колода';
+
+  @override
+  String get cardEditorTitleNew => 'Новый вопрос';
+
+  @override
+  String get cardEditorTitleEdit => 'Редактировать вопрос';
+
+  @override
+  String get cardEditorQuestionLabel => 'Вопрос';
+
+  @override
+  String get cardEditorQuestionHint => 'Введите вопрос…';
+
+  @override
+  String get cardEditorOptionsLabel => 'Варианты ответа';
+
+  @override
+  String get cardEditorMarkCorrect => 'Отметьте кружком правильный вариант';
+
+  @override
+  String get cardEditorAddOption => 'Добавить вариант';
+
+  @override
+  String cardEditorMaxOptions(int count) {
+    return 'Максимум $count';
+  }
+
+  @override
+  String cardEditorOptionHint(String letter) {
+    return 'Вариант $letter';
+  }
+
+  @override
+  String get cardEditorExplanationLabel => 'Объяснение (необязательно)';
+
+  @override
+  String get cardEditorExplanationHint => 'Почему этот ответ верный…';
+
+  @override
+  String get cardEditorErrorQuestion => 'Введите вопрос';
+
+  @override
+  String cardEditorErrorMinOptions(int count) {
+    return 'Добавьте минимум $count варианта';
+  }
+
+  @override
+  String get cardEditorErrorMarkCorrect =>
+      'Отметьте правильный вариант (он не должен быть пустым)';
+
+  @override
+  String get cardEditorErrorSave =>
+      'Не удалось сохранить. Проверьте соединение.';
+
+  @override
+  String get deckEditorTitleNew => 'Новая колода';
+
+  @override
+  String get deckEditorErrorName => 'Введите название колоды';
+
+  @override
+  String get deckEditorNameLabel => 'Название';
+
+  @override
+  String get deckEditorNameHint => 'Например: История Узбекистана';
+
+  @override
+  String get deckEditorDescLabel => 'Описание (необязательно)';
+
+  @override
+  String get deckEditorCreate => 'Создать';
+
+  @override
   String get flashcardsAgain => 'Снова';
 
   @override

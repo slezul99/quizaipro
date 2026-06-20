@@ -739,6 +739,79 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardDeleteFailed => 'Couldn\'t delete the card';
 
   @override
+  String get libraryNewDeckFab => 'Deck';
+
+  @override
+  String get cardEditorTitleNew => 'New question';
+
+  @override
+  String get cardEditorTitleEdit => 'Edit question';
+
+  @override
+  String get cardEditorQuestionLabel => 'Question';
+
+  @override
+  String get cardEditorQuestionHint => 'Enter a question…';
+
+  @override
+  String get cardEditorOptionsLabel => 'Answer options';
+
+  @override
+  String get cardEditorMarkCorrect => 'Mark the correct option';
+
+  @override
+  String get cardEditorAddOption => 'Add option';
+
+  @override
+  String cardEditorMaxOptions(int count) {
+    return 'Max $count';
+  }
+
+  @override
+  String cardEditorOptionHint(String letter) {
+    return 'Option $letter';
+  }
+
+  @override
+  String get cardEditorExplanationLabel => 'Explanation (optional)';
+
+  @override
+  String get cardEditorExplanationHint => 'Why this answer is correct…';
+
+  @override
+  String get cardEditorErrorQuestion => 'Enter a question';
+
+  @override
+  String cardEditorErrorMinOptions(int count) {
+    return 'Add at least $count options';
+  }
+
+  @override
+  String get cardEditorErrorMarkCorrect =>
+      'Mark the correct option (it must not be empty)';
+
+  @override
+  String get cardEditorErrorSave => 'Couldn\'t save. Check your connection.';
+
+  @override
+  String get deckEditorTitleNew => 'New deck';
+
+  @override
+  String get deckEditorErrorName => 'Enter a deck name';
+
+  @override
+  String get deckEditorNameLabel => 'Name';
+
+  @override
+  String get deckEditorNameHint => 'e.g. History of Uzbekistan';
+
+  @override
+  String get deckEditorDescLabel => 'Description (optional)';
+
+  @override
+  String get deckEditorCreate => 'Create';
+
+  @override
   String get flashcardsAgain => 'Again';
 
   @override

@@ -7,6 +7,7 @@ import 'package:quizaipro_mobile/features/flashcards/domain/entities/flashcard.d
 import 'package:quizaipro_mobile/features/flashcards/presentation/providers/flashcard_providers.dart';
 import 'package:quizaipro_mobile/features/library/presentation/providers/deck_cards_provider.dart';
 import 'package:quizaipro_mobile/features/library/presentation/providers/library_decks_notifier.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 const int _kDefaultOptions = 4;
 const int _kMaxOptions = 10;
@@ -124,9 +125,10 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
   }
 
   Future<void> _save() async {
+    final l = AppLocalizations.of(context)!;
     final question = _question.text.trim();
     if (question.isEmpty) {
-      setState(() => _error = 'Введите вопрос');
+      setState(() => _error = l.cardEditorErrorQuestion);
       return;
     }
 
@@ -141,11 +143,11 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
     }
 
     if (filled.length < _kMinOptions) {
-      setState(() => _error = 'Добавьте минимум $_kMinOptions варианта');
+      setState(() => _error = l.cardEditorErrorMinOptions(_kMinOptions));
       return;
     }
     if (correctInFilled == null) {
-      setState(() => _error = 'Отметьте правильный вариант (он не должен быть пустым)');
+      setState(() => _error = l.cardEditorErrorMarkCorrect);
       return;
     }
 
@@ -183,7 +185,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
     result.fold(
       (failure) => setState(() {
         _saving = false;
-        _error = 'Не удалось сохранить. Проверьте соединение.';
+        _error = l.cardEditorErrorSave;
       }),
       (_) {
         ref.invalidate(deckCardsProvider(widget.deckId));
@@ -197,6 +199,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
   Widget build(BuildContext context) {
     final t = context.aurora;
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
     final canAdd = _options.length < _kMaxOptions;
 
     return Padding(
@@ -227,13 +230,13 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
               ),
               SizedBox(height: t.space20),
               Text(
-                _isEdit ? 'Редактировать вопрос' : 'Новый вопрос',
+                _isEdit ? l.cardEditorTitleEdit : l.cardEditorTitleNew,
                 style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
               SizedBox(height: t.space16),
 
               // Question
-              _FieldLabel('Вопрос', tokens: t),
+              _FieldLabel(l.cardEditorQuestionLabel, tokens: t),
               SizedBox(height: t.space8),
               TextField(
                 controller: _question,
@@ -241,7 +244,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
                 maxLines: 4,
                 minLines: 2,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: _inputDecoration(t, hint: 'Введите вопрос…'),
+                decoration: _inputDecoration(t, hint: l.cardEditorQuestionHint),
               ),
               SizedBox(height: t.space20),
 
@@ -249,7 +252,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _FieldLabel('Варианты ответа', tokens: t),
+                  _FieldLabel(l.cardEditorOptionsLabel, tokens: t),
                   Text(
                     '${_options.length}/$_kMaxOptions',
                     style: tt.labelSmall?.copyWith(color: t.textTertiary),
@@ -258,7 +261,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
               ),
               SizedBox(height: t.space4),
               Text(
-                'Отметьте кружком правильный вариант',
+                l.cardEditorMarkCorrect,
                 style: tt.bodySmall?.copyWith(color: t.textTertiary),
               ),
               SizedBox(height: t.space12),
@@ -272,7 +275,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
                   onPressed: canAdd ? _addOption : null,
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
                   label: Text(
-                    canAdd ? 'Добавить вариант' : 'Максимум $_kMaxOptions',
+                    canAdd ? l.cardEditorAddOption : l.cardEditorMaxOptions(_kMaxOptions),
                   ),
                   style: TextButton.styleFrom(
                     foregroundColor: canAdd ? t.brandPrimary : t.textTertiary,
@@ -282,14 +285,14 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
               SizedBox(height: t.space12),
 
               // Explanation
-              _FieldLabel('Объяснение (необязательно)', tokens: t),
+              _FieldLabel(l.cardEditorExplanationLabel, tokens: t),
               SizedBox(height: t.space8),
               TextField(
                 controller: _note,
                 maxLines: 3,
                 minLines: 2,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: _inputDecoration(t, hint: 'Почему этот ответ верный…'),
+                decoration: _inputDecoration(t, hint: l.cardEditorExplanationHint),
               ),
 
               if (_error != null) ...[
@@ -325,7 +328,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white),
                         )
-                      : Text(_isEdit ? 'Сохранить' : 'Добавить'),
+                      : Text(_isEdit ? l.save : l.libraryDeckAddCard),
                 ),
               ),
             ],
@@ -376,7 +379,7 @@ class _CardEditorSheetState extends ConsumerState<_CardEditorSheet> {
               textCapitalization: TextCapitalization.sentences,
               decoration: _inputDecoration(
                 t,
-                hint: 'Вариант ${_letterFor(i)}',
+                hint: AppLocalizations.of(context)!.cardEditorOptionHint(_letterFor(i)),
                 dense: true,
                 focusColor: isCorrect ? t.stateSuccess : null,
               ),
