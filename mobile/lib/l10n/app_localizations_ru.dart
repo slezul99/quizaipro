@@ -674,6 +674,75 @@ class AppLocalizationsRu extends AppLocalizations {
   String get libraryDeckDetailNoCards => 'В этой колоде пока нет карточек.';
 
   @override
+  String get commonEdit => 'Редактировать';
+
+  @override
+  String get commonGotIt => 'Понятно';
+
+  @override
+  String get libraryDeckEditTooltip => 'Редактировать колоду';
+
+  @override
+  String get libraryDeckDeleteTooltip => 'Удалить колоду';
+
+  @override
+  String get libraryDeckAddCard => 'Добавить';
+
+  @override
+  String get cardTileQuizChip => 'Тест';
+
+  @override
+  String get cardTileFlashcardChip => 'Флешкарта';
+
+  @override
+  String get cardTileShowOptions => 'Варианты';
+
+  @override
+  String get cardTileHideOptions => 'Скрыть варианты';
+
+  @override
+  String get cardTileShowAnswer => 'Показать ответ';
+
+  @override
+  String get cardTileHideAnswer => 'Скрыть ответ';
+
+  @override
+  String get cardTileExplanation => 'ОБЪЯСНЕНИЕ';
+
+  @override
+  String get deckNoTestsTitle => 'В этой колоде нет тестов';
+
+  @override
+  String get deckNoTestsBody =>
+      'Добавьте карточки с вариантами ответов (A, B, C…), чтобы пройти тест.';
+
+  @override
+  String get deckNoFlashcardsTitle => 'В этой колоде нет флешкарт';
+
+  @override
+  String get deckNoFlashcardsBody =>
+      'Добавьте флешкарты, чтобы начать изучение этой колоды.';
+
+  @override
+  String get deckDeleteTitle => 'Удалить колоду?';
+
+  @override
+  String get deckDeleteBody =>
+      'Колода и все её карточки будут удалены безвозвратно.';
+
+  @override
+  String get deckDeleteFailed => 'Не удалось удалить колоду';
+
+  @override
+  String get cardDeleteTitle => 'Удалить карточку?';
+
+  @override
+  String get cardDeleteBody => 'Это действие нельзя отменить.';
+
+  @override
+  String get cardDeleteFailed => 'Не удалось удалить карточку';
+
+  @override
   String get flashcardsAgain => 'Снова';
 
   @override

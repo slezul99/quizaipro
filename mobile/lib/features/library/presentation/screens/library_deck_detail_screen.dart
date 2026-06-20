@@ -59,12 +59,12 @@ class LibraryDeckDetailScreen extends ConsumerWidget {
             : [
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  tooltip: 'Редактировать колоду',
+                  tooltip: l.libraryDeckEditTooltip,
                   onPressed: () => showDeckEditorSheet(context, deck: deck),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),
-                  tooltip: 'Удалить колоду',
+                  tooltip: l.libraryDeckDeleteTooltip,
                   onPressed: () => _confirmDeleteDeck(context, ref, deck.id),
                 ),
               ],
@@ -333,7 +333,7 @@ class _DeckDetailBody extends ConsumerWidget {
                       onPressed: () =>
                           showCardEditorSheet(context, deckId: deck.id),
                       icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Добавить'),
+                      label: Text(l.libraryDeckAddCard),
                       style: TextButton.styleFrom(
                         foregroundColor: tokens.brandPrimary,
                       ),
@@ -599,6 +599,7 @@ class _FlashcardTileState extends State<_FlashcardTile> {
   @override
   Widget build(BuildContext context) {
     final t = widget.tokens;
+    final l = AppLocalizations.of(context)!;
     final card = widget.card;
     final stem = mcqStem(card.front);
     // Options may be inlined in the front (most decks) or in the note/hint.
@@ -660,7 +661,7 @@ class _FlashcardTileState extends State<_FlashcardTile> {
                     ),
                     SizedBox(width: t.space4),
                     Text(
-                      isMcq ? 'Тест' : 'Флешкарта',
+                      isMcq ? l.cardTileQuizChip : l.cardTileFlashcardChip,
                       style: t.labelSmall.copyWith(
                         color: accent,
                         fontWeight: FontWeight.w700,
@@ -684,11 +685,11 @@ class _FlashcardTileState extends State<_FlashcardTile> {
                     },
                     itemBuilder: (_) => [
                       if (widget.onEdit != null)
-                        const PopupMenuItem(
-                            value: 'edit', child: Text('Редактировать')),
+                        PopupMenuItem(
+                            value: 'edit', child: Text(l.commonEdit)),
                       if (widget.onDelete != null)
-                        const PopupMenuItem(
-                            value: 'delete', child: Text('Удалить')),
+                        PopupMenuItem(
+                            value: 'delete', child: Text(l.delete)),
                     ],
                   ),
                 ),
@@ -709,7 +710,7 @@ class _FlashcardTileState extends State<_FlashcardTile> {
               icon: _showOptions
                   ? Icons.expand_less_rounded
                   : Icons.format_list_bulleted_rounded,
-              label: _showOptions ? 'Скрыть варианты' : 'Варианты',
+              label: _showOptions ? l.cardTileHideOptions : l.cardTileShowOptions,
               color: accent,
               tokens: t,
               onTap: () => setState(() => _showOptions = !_showOptions),
@@ -739,7 +740,7 @@ class _FlashcardTileState extends State<_FlashcardTile> {
             icon: _revealed
                 ? Icons.visibility_off_rounded
                 : Icons.visibility_rounded,
-            label: _revealed ? 'Скрыть ответ' : 'Показать ответ',
+            label: _revealed ? l.cardTileHideAnswer : l.cardTileShowAnswer,
             color: t.brandGradientStart,
             tokens: t,
             onTap: () => setState(() => _revealed = !_revealed),
@@ -791,7 +792,7 @@ class _FlashcardTileState extends State<_FlashcardTile> {
                             size: 14, color: t.textSecondary),
                         SizedBox(width: t.space4),
                         Text(
-                          'ОБЪЯСНЕНИЕ',
+                          l.cardTileExplanation,
                           style: t.labelSmall.copyWith(
                             color: t.textSecondary,
                             fontWeight: FontWeight.w700,
@@ -883,6 +884,7 @@ void _showNoContentSheet(
     ),
     builder: (ctx) {
       final tt = Theme.of(ctx).textTheme;
+      final l = AppLocalizations.of(ctx)!;
       return SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -919,17 +921,13 @@ void _showNoContentSheet(
               ),
               SizedBox(height: tokens.space16),
               Text(
-                isTest
-                    ? 'В этой колоде нет тестов'
-                    : 'В этой колоде нет флешкарт',
+                isTest ? l.deckNoTestsTitle : l.deckNoFlashcardsTitle,
                 textAlign: TextAlign.center,
                 style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               SizedBox(height: tokens.space8),
               Text(
-                isTest
-                    ? 'Добавьте карточки с вариантами ответов (A, B, C…), чтобы пройти тест.'
-                    : 'Добавьте флешкарты, чтобы начать изучение этой колоды.',
+                isTest ? l.deckNoTestsBody : l.deckNoFlashcardsBody,
                 textAlign: TextAlign.center,
                 style: tt.bodyMedium?.copyWith(color: tokens.textSecondary),
               ),
@@ -946,7 +944,7 @@ void _showNoContentSheet(
                       borderRadius: BorderRadius.circular(tokens.radiusMd),
                     ),
                   ),
-                  child: const Text('Понятно'),
+                  child: Text(l.commonGotIt),
                 ),
               ),
             ],
@@ -964,38 +962,42 @@ Future<bool> _confirmDelete(
 }) async {
   final ok = await showDialog<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(title),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Отмена'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
-          child: const Text('Удалить'),
-        ),
-      ],
-    ),
+    builder: (ctx) {
+      final l = AppLocalizations.of(ctx)!;
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: Text(l.delete),
+          ),
+        ],
+      );
+    },
   );
   return ok ?? false;
 }
 
 Future<void> _confirmDeleteDeck(
     BuildContext context, WidgetRef ref, String deckId) async {
+  final l = AppLocalizations.of(context)!;
   final confirmed = await _confirmDelete(
     context,
-    title: 'Удалить колоду?',
-    message: 'Колода и все её карточки будут удалены безвозвратно.',
+    title: l.deckDeleteTitle,
+    message: l.deckDeleteBody,
   );
   if (!confirmed) return;
   final result = await ref.read(libraryRepositoryProvider).deleteDeck(deckId);
   if (!context.mounted) return;
   result.fold(
     (_) => ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Не удалось удалить колоду')),
+      SnackBar(content: Text(l.deckDeleteFailed)),
     ),
     (_) {
       ref.read(libraryDecksNotifierProvider.notifier).refresh();
@@ -1008,10 +1010,11 @@ Future<void> _confirmDeleteDeck(
 
 Future<void> _confirmDeleteCard(BuildContext context, WidgetRef ref,
     String deckId, String cardId) async {
+  final l = AppLocalizations.of(context)!;
   final confirmed = await _confirmDelete(
     context,
-    title: 'Удалить карточку?',
-    message: 'Это действие нельзя отменить.',
+    title: l.cardDeleteTitle,
+    message: l.cardDeleteBody,
   );
   if (!confirmed) return;
   final result = await ref
@@ -1020,7 +1023,7 @@ Future<void> _confirmDeleteCard(BuildContext context, WidgetRef ref,
   if (!context.mounted) return;
   result.fold(
     (_) => ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Не удалось удалить карточку')),
+      SnackBar(content: Text(l.cardDeleteFailed)),
     ),
     (_) {
       ref.invalidate(deckCardsProvider(deckId));

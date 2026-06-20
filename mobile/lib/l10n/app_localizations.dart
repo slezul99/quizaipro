@@ -1312,6 +1312,138 @@ abstract class AppLocalizations {
   /// **'No cards in this deck yet.'**
   String get libraryDeckDetailNoCards;
 
+  /// Generic edit action
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get commonEdit;
+
+  /// Acknowledge / dismiss button
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get commonGotIt;
+
+  /// Tooltip for the edit-deck button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit deck'**
+  String get libraryDeckEditTooltip;
+
+  /// Tooltip for the delete-deck button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete deck'**
+  String get libraryDeckDeleteTooltip;
+
+  /// Add-card button on the deck detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get libraryDeckAddCard;
+
+  /// Chip marking an MCQ card
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get cardTileQuizChip;
+
+  /// Chip marking a plain flashcard
+  ///
+  /// In en, this message translates to:
+  /// **'Flashcard'**
+  String get cardTileFlashcardChip;
+
+  /// Reveal MCQ options
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get cardTileShowOptions;
+
+  /// Hide MCQ options
+  ///
+  /// In en, this message translates to:
+  /// **'Hide options'**
+  String get cardTileHideOptions;
+
+  /// Reveal the answer
+  ///
+  /// In en, this message translates to:
+  /// **'Show answer'**
+  String get cardTileShowAnswer;
+
+  /// Hide the answer
+  ///
+  /// In en, this message translates to:
+  /// **'Hide answer'**
+  String get cardTileHideAnswer;
+
+  /// Explanation section label on a card
+  ///
+  /// In en, this message translates to:
+  /// **'EXPLANATION'**
+  String get cardTileExplanation;
+
+  /// Title when a deck has no MCQ cards
+  ///
+  /// In en, this message translates to:
+  /// **'This deck has no quizzes'**
+  String get deckNoTestsTitle;
+
+  /// Body when a deck has no MCQ cards
+  ///
+  /// In en, this message translates to:
+  /// **'Add cards with answer options (A, B, C…) to take a quiz.'**
+  String get deckNoTestsBody;
+
+  /// Title when a deck has no flashcards
+  ///
+  /// In en, this message translates to:
+  /// **'This deck has no flashcards'**
+  String get deckNoFlashcardsTitle;
+
+  /// Body when a deck has no flashcards
+  ///
+  /// In en, this message translates to:
+  /// **'Add flashcards to start studying this deck.'**
+  String get deckNoFlashcardsBody;
+
+  /// Delete-deck confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete deck?'**
+  String get deckDeleteTitle;
+
+  /// Delete-deck confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'The deck and all its cards will be permanently deleted.'**
+  String get deckDeleteBody;
+
+  /// Delete-deck failure snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the deck'**
+  String get deckDeleteFailed;
+
+  /// Delete-card confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete card?'**
+  String get cardDeleteTitle;
+
+  /// Delete-card confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'This action can\'t be undone.'**
+  String get cardDeleteBody;
+
+  /// Delete-card failure snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the card'**
+  String get cardDeleteFailed;
+
   /// Again grade button
   ///
   /// In en, this message translates to:

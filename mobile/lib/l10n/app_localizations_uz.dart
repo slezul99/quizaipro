@@ -672,6 +672,75 @@ class AppLocalizationsUz extends AppLocalizations {
   String get libraryDeckDetailNoCards => 'Bu dastada hozircha kartalar yo\'q.';
 
   @override
+  String get commonEdit => 'Tahrirlash';
+
+  @override
+  String get commonGotIt => 'Tushunarli';
+
+  @override
+  String get libraryDeckEditTooltip => 'Toplamni tahrirlash';
+
+  @override
+  String get libraryDeckDeleteTooltip => 'Toplamni o\'chirish';
+
+  @override
+  String get libraryDeckAddCard => 'Qo\'shish';
+
+  @override
+  String get cardTileQuizChip => 'Test';
+
+  @override
+  String get cardTileFlashcardChip => 'Fleshkarta';
+
+  @override
+  String get cardTileShowOptions => 'Variantlar';
+
+  @override
+  String get cardTileHideOptions => 'Variantlarni yashirish';
+
+  @override
+  String get cardTileShowAnswer => 'Javobni ko\'rsatish';
+
+  @override
+  String get cardTileHideAnswer => 'Javobni yashirish';
+
+  @override
+  String get cardTileExplanation => 'IZOH';
+
+  @override
+  String get deckNoTestsTitle => 'Bu toplamda testlar yo\'q';
+
+  @override
+  String get deckNoTestsBody =>
+      'Test topshirish uchun javob variantli (A, B, C…) kartalar qo\'shing.';
+
+  @override
+  String get deckNoFlashcardsTitle => 'Bu toplamda fleshkartalar yo\'q';
+
+  @override
+  String get deckNoFlashcardsBody =>
+      'Bu toplamni o\'rganishni boshlash uchun fleshkartalar qo\'shing.';
+
+  @override
+  String get deckDeleteTitle => 'Toplam o\'chirilsinmi?';
+
+  @override
+  String get deckDeleteBody =>
+      'Toplam va uning barcha kartalari butunlay o\'chiriladi.';
+
+  @override
+  String get deckDeleteFailed => 'Toplamni o\'chirib bo\'lmadi';
+
+  @override
+  String get cardDeleteTitle => 'Karta o\'chirilsinmi?';
+
+  @override
+  String get cardDeleteBody => 'Bu amalni qaytarib bo\'lmaydi.';
+
+  @override
+  String get cardDeleteFailed => 'Kartani o\'chirib bo\'lmadi';
+
+  @override
   String get flashcardsAgain => 'Qayta';
 
   @override

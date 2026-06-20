@@ -670,6 +670,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryDeckDetailNoCards => 'No cards in this deck yet.';
 
   @override
+  String get commonEdit => 'Edit';
+
+  @override
+  String get commonGotIt => 'Got it';
+
+  @override
+  String get libraryDeckEditTooltip => 'Edit deck';
+
+  @override
+  String get libraryDeckDeleteTooltip => 'Delete deck';
+
+  @override
+  String get libraryDeckAddCard => 'Add';
+
+  @override
+  String get cardTileQuizChip => 'Quiz';
+
+  @override
+  String get cardTileFlashcardChip => 'Flashcard';
+
+  @override
+  String get cardTileShowOptions => 'Options';
+
+  @override
+  String get cardTileHideOptions => 'Hide options';
+
+  @override
+  String get cardTileShowAnswer => 'Show answer';
+
+  @override
+  String get cardTileHideAnswer => 'Hide answer';
+
+  @override
+  String get cardTileExplanation => 'EXPLANATION';
+
+  @override
+  String get deckNoTestsTitle => 'This deck has no quizzes';
+
+  @override
+  String get deckNoTestsBody =>
+      'Add cards with answer options (A, B, C…) to take a quiz.';
+
+  @override
+  String get deckNoFlashcardsTitle => 'This deck has no flashcards';
+
+  @override
+  String get deckNoFlashcardsBody =>
+      'Add flashcards to start studying this deck.';
+
+  @override
+  String get deckDeleteTitle => 'Delete deck?';
+
+  @override
+  String get deckDeleteBody =>
+      'The deck and all its cards will be permanently deleted.';
+
+  @override
+  String get deckDeleteFailed => 'Couldn\'t delete the deck';
+
+  @override
+  String get cardDeleteTitle => 'Delete card?';
+
+  @override
+  String get cardDeleteBody => 'This action can\'t be undone.';
+
+  @override
+  String get cardDeleteFailed => 'Couldn\'t delete the card';
+
+  @override
   String get flashcardsAgain => 'Again';
 
   @override
