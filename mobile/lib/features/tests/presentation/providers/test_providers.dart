@@ -2,8 +2,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:quizaipro_mobile/core/di/providers.dart';
 import 'package:quizaipro_mobile/features/tests/data/local/test_local_data_source.dart';
+import 'package:quizaipro_mobile/features/tests/data/remote/diagnosis_remote_data_source.dart';
 import 'package:quizaipro_mobile/features/tests/data/remote/test_remote_data_source.dart';
+import 'package:quizaipro_mobile/features/tests/data/repositories/diagnosis_repository_impl.dart';
 import 'package:quizaipro_mobile/features/tests/data/repositories/test_repository_impl.dart';
+import 'package:quizaipro_mobile/features/tests/domain/repositories/diagnosis_repository.dart';
 import 'package:quizaipro_mobile/features/tests/domain/repositories/test_repository.dart';
 import 'package:quizaipro_mobile/features/tests/domain/usecases/get_test_history_use_case.dart';
 import 'package:quizaipro_mobile/features/tests/domain/usecases/load_test_questions_use_case.dart';
@@ -33,6 +36,20 @@ TestLocalDataSource testLocalDataSource(TestLocalDataSourceRef ref) =>
 TestRepository testRepository(TestRepositoryRef ref) => TestRepositoryImpl(
       remoteDataSource: ref.watch(testRemoteDataSourceProvider),
       localDataSource: ref.watch(testLocalDataSourceProvider),
+    );
+
+// ── AI mistake diagnosis + reinforcing follow-up (test review screen) ────────
+
+@Riverpod(keepAlive: true)
+DiagnosisRemoteDataSource diagnosisRemoteDataSource(
+  DiagnosisRemoteDataSourceRef ref,
+) =>
+    DiagnosisRemoteDataSourceImpl(ref.watch(dioProvider));
+
+@Riverpod(keepAlive: true)
+DiagnosisRepository diagnosisRepository(DiagnosisRepositoryRef ref) =>
+    DiagnosisRepositoryImpl(
+      remoteDataSource: ref.watch(diagnosisRemoteDataSourceProvider),
     );
 
 // ── L2: Use Cases ─────────────────────────────────────────────────────────────

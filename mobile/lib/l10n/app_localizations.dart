@@ -1624,6 +1624,72 @@ abstract class AppLocalizations {
   /// **'Review Answers'**
   String get testsReviewTitle;
 
+  /// Button to ask AI to diagnose a wrong answer
+  ///
+  /// In en, this message translates to:
+  /// **'Why did I get this wrong?'**
+  String get testsDiagnoseButton;
+
+  /// Loading label while AI analyzes the mistake
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing…'**
+  String get testsDiagnoseLoading;
+
+  /// Diagnosis section heading
+  ///
+  /// In en, this message translates to:
+  /// **'Why your answer is wrong'**
+  String get testsDiagnoseWhyWrong;
+
+  /// Diagnosis section heading
+  ///
+  /// In en, this message translates to:
+  /// **'Why the correct answer is right'**
+  String get testsDiagnoseWhyCorrect;
+
+  /// Diagnosis section heading
+  ///
+  /// In en, this message translates to:
+  /// **'Likely misconception'**
+  String get testsDiagnoseMisconception;
+
+  /// Diagnosis section heading
+  ///
+  /// In en, this message translates to:
+  /// **'How to remember'**
+  String get testsDiagnoseTip;
+
+  /// Diagnosis failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t analyze the mistake. Try again later.'**
+  String get testsDiagnoseError;
+
+  /// Button to generate a reinforcing follow-up question
+  ///
+  /// In en, this message translates to:
+  /// **'Practice: similar question'**
+  String get testsFollowupButton;
+
+  /// Shown when the follow-up answer is right
+  ///
+  /// In en, this message translates to:
+  /// **'Correct!'**
+  String get testsFollowupCorrect;
+
+  /// Shown when the follow-up answer is wrong
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect'**
+  String get testsFollowupWrong;
+
+  /// Follow-up generation failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create a question. Try again later.'**
+  String get testsFollowupError;
+
   /// History screen title
   ///
   /// In en, this message translates to:

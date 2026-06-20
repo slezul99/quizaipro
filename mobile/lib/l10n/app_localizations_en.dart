@@ -826,6 +826,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get testsReviewTitle => 'Review Answers';
 
   @override
+  String get testsDiagnoseButton => 'Why did I get this wrong?';
+
+  @override
+  String get testsDiagnoseLoading => 'Analyzing…';
+
+  @override
+  String get testsDiagnoseWhyWrong => 'Why your answer is wrong';
+
+  @override
+  String get testsDiagnoseWhyCorrect => 'Why the correct answer is right';
+
+  @override
+  String get testsDiagnoseMisconception => 'Likely misconception';
+
+  @override
+  String get testsDiagnoseTip => 'How to remember';
+
+  @override
+  String get testsDiagnoseError =>
+      'Couldn\'t analyze the mistake. Try again later.';
+
+  @override
+  String get testsFollowupButton => 'Practice: similar question';
+
+  @override
+  String get testsFollowupCorrect => 'Correct!';
+
+  @override
+  String get testsFollowupWrong => 'Incorrect';
+
+  @override
+  String get testsFollowupError =>
+      'Couldn\'t create a question. Try again later.';
+
+  @override
   String get testsHistoryTitle => 'Test History';
 
   @override

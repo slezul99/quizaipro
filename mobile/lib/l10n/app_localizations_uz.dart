@@ -828,6 +828,40 @@ class AppLocalizationsUz extends AppLocalizations {
   String get testsReviewTitle => 'Javoblarni ko\'rish';
 
   @override
+  String get testsDiagnoseButton => 'Nega xato qildim?';
+
+  @override
+  String get testsDiagnoseLoading => 'Tahlil qilinmoqda…';
+
+  @override
+  String get testsDiagnoseWhyWrong => 'Javobing nega noto\'g\'ri';
+
+  @override
+  String get testsDiagnoseWhyCorrect => 'To\'g\'ri javob nega to\'g\'ri';
+
+  @override
+  String get testsDiagnoseMisconception => 'Ehtimoliy xato tushuncha';
+
+  @override
+  String get testsDiagnoseTip => 'Qanday eslab qolish';
+
+  @override
+  String get testsDiagnoseError =>
+      'Xatoni tahlil qilib bo\'lmadi. Keyinroq urining.';
+
+  @override
+  String get testsFollowupButton => 'Mustahkamlash: o\'xshash savol';
+
+  @override
+  String get testsFollowupCorrect => 'To\'g\'ri!';
+
+  @override
+  String get testsFollowupWrong => 'Noto\'g\'ri';
+
+  @override
+  String get testsFollowupError => 'Savol yaratib bo\'lmadi. Keyinroq urining.';
+
+  @override
   String get testsHistoryTitle => 'Test tarixi';
 
   @override

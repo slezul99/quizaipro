@@ -830,6 +830,41 @@ class AppLocalizationsRu extends AppLocalizations {
   String get testsReviewTitle => 'Просмотр ответов';
 
   @override
+  String get testsDiagnoseButton => 'Почему я ошибся?';
+
+  @override
+  String get testsDiagnoseLoading => 'Анализирую…';
+
+  @override
+  String get testsDiagnoseWhyWrong => 'Почему твой ответ неверен';
+
+  @override
+  String get testsDiagnoseWhyCorrect => 'Почему верный ответ правильный';
+
+  @override
+  String get testsDiagnoseMisconception => 'Вероятное заблуждение';
+
+  @override
+  String get testsDiagnoseTip => 'Как запомнить';
+
+  @override
+  String get testsDiagnoseError =>
+      'Не удалось разобрать ошибку. Попробуйте позже.';
+
+  @override
+  String get testsFollowupButton => 'Закрепить: похожий вопрос';
+
+  @override
+  String get testsFollowupCorrect => 'Верно!';
+
+  @override
+  String get testsFollowupWrong => 'Неверно';
+
+  @override
+  String get testsFollowupError =>
+      'Не удалось создать вопрос. Попробуйте позже.';
+
+  @override
   String get testsHistoryTitle => 'История тестов';
 
   @override

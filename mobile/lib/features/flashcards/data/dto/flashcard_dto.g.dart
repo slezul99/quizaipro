@@ -15,6 +15,8 @@ FlashcardDto _$FlashcardDtoFromJson(Map<String, dynamic> json) => FlashcardDto(
       easeFactor: (json['ease_factor'] as num).toDouble(),
       interval: (json['interval'] as num).toInt(),
       repetitions: (json['repetitions'] as num).toInt(),
+      stability: (json['stability'] as num?)?.toDouble(),
+      difficulty: (json['difficulty'] as num?)?.toDouble(),
       nextReviewAt: json['next_review_at'] == null
           ? null
           : DateTime.parse(json['next_review_at'] as String),
@@ -37,6 +39,8 @@ Map<String, dynamic> _$FlashcardDtoToJson(FlashcardDto instance) =>
       'ease_factor': instance.easeFactor,
       'interval': instance.interval,
       'repetitions': instance.repetitions,
+      'stability': instance.stability,
+      'difficulty': instance.difficulty,
       'next_review_at': instance.nextReviewAt?.toIso8601String(),
       'last_studied_at': instance.lastStudiedAt?.toIso8601String(),
       'is_favorite': instance.isFavorite,

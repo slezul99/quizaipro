@@ -450,3 +450,76 @@ def post_stream_message():
         "Cache-Control": "no-cache",
         "X-Accel-Buffering": "no",
     })
+
+
+# ---------------------------------------------------------------------------
+# POST /api/v1/tutor/diagnose  — explain the student's SPECIFIC test mistake
+# POST /api/v1/tutor/followup  — generate a reinforcing question on the topic
+#
+# Mobile mirror of the web routes /api/diagnose-answer and /api/followup-question.
+# The mobile review screen already holds the question + the chosen/correct option
+# text locally (the test runs offline), so — unlike the web routes which take a
+# server-side answer_id and reconstruct from the DB — these accept the texts
+# directly in the JSON body. Both reuse the SAME ai_gen functions as the web,
+# so the AI tutoring logic is shared across platforms (no duplication).
+# ---------------------------------------------------------------------------
+
+_DIAG_TEXT_MAX = 2000
+
+
+@tutor_bp.route("/diagnose", methods=["POST"])
+@jwt_auth.jwt_required
+def post_diagnose():
+    user = g.current_user
+    if not ai_gen.is_available():
+        return _err("ai_unavailable", "AI не настроен", 503)
+
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Ожидается JSON-тело запроса", 400)
+    question = (body.get("question") or "").strip()[:_DIAG_TEXT_MAX]
+    chosen = (body.get("chosen") or "").strip()[:_DIAG_TEXT_MAX]
+    correct = (body.get("correct") or "").strip()[:_DIAG_TEXT_MAX]
+    if not question or not correct:
+        return _err("validation_error", "question and correct are required", 400)
+
+    if not rate_limit(f"api_diagnose:{user['id']}", max_attempts=10, window_seconds=60):
+        return _err("rate_limited", "Слишком много запросов. Подождите минуту.", 429)
+
+    diagnosis = ai_gen.diagnose_mistake(question, chosen, correct, _resolve_lang(user))
+    if not diagnosis or not diagnosis.get("why_wrong"):
+        return _err("ai_failed", "AI не ответил. Попробуйте позже.", 502)
+    return jsonify({"data": diagnosis})
+
+
+@tutor_bp.route("/followup", methods=["POST"])
+@jwt_auth.jwt_required
+def post_followup():
+    user = g.current_user
+    if not ai_gen.is_available():
+        return _err("ai_unavailable", "AI не настроен", 503)
+
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Ожидается JSON-тело запроса", 400)
+    question = (body.get("question") or "").strip()[:_DIAG_TEXT_MAX]
+    correct = (body.get("correct") or "").strip()[:_DIAG_TEXT_MAX]
+    misconception = (body.get("misconception") or "").strip()[:300]
+    if not question or not correct:
+        return _err("validation_error", "question and correct are required", 400)
+
+    if not rate_limit(f"api_followup:{user['id']}", max_attempts=10, window_seconds=60):
+        return _err("rate_limited", "Слишком много запросов. Подождите минуту.", 429)
+
+    fu = ai_gen.generate_followup(question, correct, misconception, _resolve_lang(user))
+    if not fu:
+        return _err("ai_failed", "AI не ответил. Попробуйте позже.", 502)
+
+    letters = ["A", "B", "C", "D", "E", "F"]
+    options = [{"letter": letters[i], "text": t} for i, t in enumerate(fu["options"])]
+    return jsonify({"data": {
+        "question": fu["question"],
+        "options": options,
+        "correct_letter": letters[fu["correct_index"]],
+        "explanation": fu["explanation"],
+    }})

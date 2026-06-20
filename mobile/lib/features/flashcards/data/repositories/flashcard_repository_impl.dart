@@ -57,6 +57,8 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
               easeFactor: Value(d.easeFactor),
               interval: Value(d.interval),
               repetitions: Value(d.repetitions),
+              stability: Value(d.stability),
+              difficulty: Value(d.difficulty),
               nextReviewAt: Value(d.nextReviewAt),
               lastStudiedAt: Value(d.lastStudiedAt),
               isFavorite: Value(d.isFavorite),

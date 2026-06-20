@@ -59,6 +59,43 @@ final testRepositoryProvider = Provider<TestRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TestRepositoryRef = ProviderRef<TestRepository>;
+String _$diagnosisRemoteDataSourceHash() =>
+    r'112d03af74f6e8448b369c236f80fe7ebb1b96cd';
+
+/// See also [diagnosisRemoteDataSource].
+@ProviderFor(diagnosisRemoteDataSource)
+final diagnosisRemoteDataSourceProvider =
+    Provider<DiagnosisRemoteDataSource>.internal(
+  diagnosisRemoteDataSource,
+  name: r'diagnosisRemoteDataSourceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$diagnosisRemoteDataSourceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DiagnosisRemoteDataSourceRef = ProviderRef<DiagnosisRemoteDataSource>;
+String _$diagnosisRepositoryHash() =>
+    r'77109ce191e82913f0581ebfa73fe377ad475b92';
+
+/// See also [diagnosisRepository].
+@ProviderFor(diagnosisRepository)
+final diagnosisRepositoryProvider = Provider<DiagnosisRepository>.internal(
+  diagnosisRepository,
+  name: r'diagnosisRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$diagnosisRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DiagnosisRepositoryRef = ProviderRef<DiagnosisRepository>;
 String _$loadTestQuestionsUseCaseHash() =>
     r'fe2712ec641f08cf6240170731fe0370502a3e50';
 
