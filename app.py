@@ -1325,6 +1325,13 @@ def _student_dashboard(user):
     """, (user["id"],)).fetchone()["c"] or 0
     daily_goal = user["daily_goal"] if "daily_goal" in user.keys() else 20
     daily_goal = daily_goal or 20
+    # Obshchee uderzhanie (FSRS) po vsem izuchennym kartam — "skol'ko ty pomnish' seychas"
+    ret_rows = conn.execute("""
+        SELECT p.reviews, p.stability, p.last_reviewed, p.interval_days, p.ef
+        FROM user_card_progress p
+        WHERE p.user_id=? AND p.reviews IS NOT NULL AND p.reviews > 0
+    """, (user["id"],)).fetchall()
+    retention = fsrs.deck_retention([dict(r) for r in ret_rows])
     by_category = {}
     for d in decks:
         # Esli kategoriya — eto podkategoriya, gruppiruem po "Roditel' → Dochka"
@@ -1355,6 +1362,7 @@ def _student_dashboard(user):
         total_reviews=total_reviews, by_category=by_category,
         all_categories=all_cats,
         today_reviews=today_reviews, daily_goal=daily_goal,
+        retention=retention,
     )
 
 

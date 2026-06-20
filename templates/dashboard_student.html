@@ -94,6 +94,29 @@
       </div>
     </div>
 
+    <!-- ============ RETENTION (FSRS) — skol'ko ty pomnish' seychas ============ -->
+    {% if retention and retention.studied > 0 %}
+    <div class="goal-card mb-6" title="{{ t('dk_retention_hint') }}">
+      <div class="flex justify-between items-center flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🧠</span>
+          <span class="font-bold text-slate-900 dark:text-slate-100">{{ t('dk_retention') }}</span>
+        </div>
+        <div class="flex items-center gap-3 text-sm flex-wrap">
+          <span class="font-extrabold text-lg
+            {% if retention.now >= 80 %}text-emerald-600 dark:text-emerald-400
+            {% elif retention.now >= 50 %}text-amber-600 dark:text-amber-400
+            {% else %}text-rose-600 dark:text-rose-400{% endif %}">{{ retention.now }}%</span>
+          <span class="text-slate-500 dark:text-slate-400">{{ t('dk_retention_week') }} <b class="text-slate-700 dark:text-slate-200">{{ retention.forecast }}%</b></span>
+          {% if retention.fading > 0 %}
+          <span class="text-amber-600 dark:text-amber-400 font-semibold">· {{ retention.fading }} {{ t('dk_retention_fading') }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="progress-bar h-2 mt-2"><div style="width: {{ retention.now }}%"></div></div>
+    </div>
+    {% endif %}
+
     <!-- ============ DAILY GOAL (compact) ============ -->
     <div class="goal-card mb-6"
       x-data="{
