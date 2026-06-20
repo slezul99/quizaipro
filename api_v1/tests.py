@@ -326,6 +326,40 @@ def _serialize_test_attempt(row):
     }
 
 
+def _save_attempt_answers(conn, attempt_id, answers):
+    """Persist per-question answers into test_attempt_answers (mirrors the web
+    flow in app.py) so the dashboard activity feed can show the full Q&A.
+
+    Lenient by design: a malformed/missing answers list never breaks result
+    submission — the attempt summary is what matters for XP/streak."""
+    if not attempt_id or not isinstance(answers, list):
+        return
+    for pos, ans in enumerate(answers, 1):
+        if not isinstance(ans, dict):
+            continue
+        try:
+            position = int(ans.get("position", pos))
+            is_correct = 1 if ans.get("is_correct") else 0
+            ans_xp = TEST_XP_PER_CORRECT if is_correct else 0
+            card_id = ans.get("card_id")
+            card_id = int(card_id) if card_id is not None else None
+            conn.execute("""
+                INSERT INTO test_attempt_answers
+                (attempt_id, position, card_id, front, back, note, chosen, correct, is_correct, xp_earned)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                attempt_id, position, card_id,
+                str(ans.get("front") or "")[:4000],
+                str(ans.get("back") or "")[:4000],
+                str(ans.get("note") or "")[:4000],
+                str(ans.get("chosen") or ""),
+                str(ans.get("correct") or ""),
+                is_correct, ans_xp,
+            ))
+        except Exception as e:
+            print(f"[test_result answers] skipped answer {pos}: {e}")
+
+
 @tests_bp.route("/results", methods=["POST"])
 @jwt_auth.jwt_required
 def post_test_result():
@@ -367,6 +401,8 @@ def post_test_result():
         already_applied = cur.rowcount == 0
 
         if not already_applied:
+            attempt_id = cur.lastrowid
+            _save_attempt_answers(conn, attempt_id, body.get("answers"))
             bump_streak(conn, user, xp_gain, completed_at.isoformat())
             ach_mod.award_test_completed(conn, user["id"], perfect=(is_perfect == 1))
             ach_mod.check_and_award(conn, user["id"])
