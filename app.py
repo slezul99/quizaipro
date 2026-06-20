@@ -5970,6 +5970,56 @@ def api_explain_card():
     return jsonify({"ok": True, "explanation": explanation})
 
 
+@app.route("/api/diagnose-answer", methods=["POST"])
+@login_required
+def api_diagnose_answer():
+    """AI-diagnostika konkretnoy oshibki v testе.
+
+    Beryom sokhranennyy otvet popytki (test_attempt_answers), vosstanavlivaem
+    TEKST vybrannogo studentom varianta i pravil'nogo varianta i prosim AI
+    ob'yasnit' imenno EGO oshibku (a ne prosto pereskazat' otvet)."""
+    if not ai_gen.is_available():
+        return jsonify({"error": "ai_unavailable"}), 503
+    user = current_user()
+    answer_id = request.form.get("answer_id", type=int)
+    if not answer_id:
+        return jsonify({"error": "no_answer"}), 400
+    conn = db.get_conn()
+    row = conn.execute("""
+        SELECT aa.* FROM test_attempt_answers aa
+        JOIN test_attempts ta ON ta.id = aa.attempt_id
+        WHERE aa.id=? AND ta.user_id=?
+    """, (answer_id, user["id"])).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"error": "forbidden"}), 403
+    if row["is_correct"] == 1:
+        return jsonify({"error": "not_wrong"}), 400
+    # Rate limit: 10 razborov v minutu na user
+    if not rate_limit(f"diagnose:{user['id']}", max_attempts=10, window_seconds=60):
+        return jsonify({"error": "rate_limit", "msg": "Слишком много запросов. Подождите минуту."}), 429
+
+    ad = dict(row)
+    # Vosstanavlivaem tekst variantov (kak v test_attempt_detail)
+    _opt_re = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]?\s+(.+)$")
+    opts = {}
+    source = (ad.get("note") or "").strip() or (ad.get("back") or "")
+    for line in source.split("\n"):
+        m = _opt_re.match(line.strip())
+        if m:
+            opts[m.group(1).upper()] = m.group(2).strip()
+    chosen_letter = (ad.get("chosen") or "").strip().upper()
+    correct_letter = (ad.get("correct") or "").strip().upper()
+    chosen_text = opts.get(chosen_letter) or ad.get("chosen") or ""
+    correct_text = opts.get(correct_letter) or ad.get("correct") or ad.get("back") or ""
+
+    diagnosis = ai_gen.diagnose_mistake(
+        ad.get("front", ""), chosen_text, correct_text, session.get("lang", "ru"))
+    if not diagnosis or not diagnosis.get("why_wrong"):
+        return jsonify({"error": "ai_failed"}), 500
+    return jsonify({"ok": True, "diagnosis": diagnosis})
+
+
 @app.route("/api/daily-goal", methods=["POST"])
 @login_required
 def api_daily_goal():

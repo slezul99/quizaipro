@@ -1436,6 +1436,65 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
     return None
 
 
+def diagnose_mistake(question: str, chosen: str, correct: str, lang: str = "ru") -> dict | None:
+    """AI-diagnostika konkretnoy oshibki studenta.
+
+    V otlichie ot explain_question (kotoryy prosto ob'yasnyaet pravil'nyy otvet),
+    eta funktsiya VIDIT, chto imenno vybral student, i ob'yasnyaet pochemu ego
+    vybor neveren + nazyvaet veroyatnoye zabluzhdeniye. Eto prevrashchaet razbor
+    oshibok v personalizirovannogo repetitora, a ne v spravochnik.
+
+    Vozvrashchaet dict {why_wrong, why_correct, misconception, tip} ili None.
+    """
+    if not is_available():
+        return None
+    lang_name = {"ru": "русском", "en": "English", "uz": "узбекском"}.get(lang, "русском")
+
+    def _clean(text):
+        first = (text or "").strip().split("\n")[0].strip()
+        m = re.match(r"^([A-Za-zА-Яа-яЁё0-9]+)\s*[\)\.\:\-]\s*(.+)$", first)
+        return m.group(2).strip() if m else first
+
+    chosen_c = _clean(chosen)
+    correct_c = _clean(correct)
+
+    prompt = f"""Студент ответил на вопрос теста НЕВЕРНО. Разбери его конкретную ошибку как доброжелательный репетитор. Пиши на {lang_name} языке.
+
+ВОПРОС: {question}
+ОТВЕТ СТУДЕНТА (неверный): {chosen_c}
+ПРАВИЛЬНЫЙ ОТВЕТ: {correct_c}
+
+Верни ТОЛЬКО JSON-объект (без markdown, без ```):
+{{"why_wrong": "1-2 предложения: почему именно ВЫБРАННЫЙ студентом вариант неверен (обращайся на «ты»)",
+  "why_correct": "1-2 предложения: почему правильный ответ верен",
+  "misconception": "короткая формулировка вероятного заблуждения, которое привело к ошибке (до 15 слов)",
+  "tip": "короткий практический совет/мнемоника, как не ошибиться снова (до 15 слов)"}}
+
+Говори по существу, без вступлений. Если ответ студента пуст — считай, что он не ответил."""
+
+    try:
+        raw = _call_gemini(prompt, max_tokens=900)
+    except Exception as e:
+        print(f"[AI diagnose] {type(e).__name__}: {e}")
+        return None
+    if not raw:
+        return None
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+    try:
+        data = json.loads(cleaned)
+    except Exception:
+        # Model ne vernula chistyy JSON — otdadim hot' chto-to v why_wrong.
+        return {"why_wrong": raw.strip()[:600], "why_correct": "", "misconception": "", "tip": ""}
+    if not isinstance(data, dict):
+        return None
+    return {
+        "why_wrong": str(data.get("why_wrong") or "").strip(),
+        "why_correct": str(data.get("why_correct") or "").strip(),
+        "misconception": str(data.get("misconception") or "").strip(),
+        "tip": str(data.get("tip") or "").strip(),
+    }
+
+
 def find_answers(question: str, deck_context: str = "", lang: str = "ru") -> dict | None:
     """AI-pomoshnik: otvechaet na svobodnyy vopros studenta s kratkimi key points.
     Ispol'zuyet tu zhe infrastrukturu (_call_gemini), chto i generatsiya kart —
