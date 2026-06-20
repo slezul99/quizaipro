@@ -325,6 +325,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardDailyGoalCompleted => 'Цель достигнута!';
 
   @override
+  String get dashboardRetention => 'Удержание';
+
+  @override
+  String get dashboardRetentionForecast => 'через неделю';
+
+  @override
+  String get dashboardRetentionFading => 'остывают';
+
+  @override
   String get dashboardReadyToStudy => 'Готово к изучению';
 
   @override

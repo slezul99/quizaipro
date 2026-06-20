@@ -14,6 +14,7 @@ import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/dashboa
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/due_reviews_card.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/quick_actions_section.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/recent_activity_section.dart';
+import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/retention_card.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/level_up_celebration.dart';
 import 'package:go_router/go_router.dart';
 
@@ -104,6 +105,16 @@ class DashboardScreen extends ConsumerWidget {
                       startLabel: l10n.dashboardStartStudying,
                       allCaughtUpLabel: l10n.dashboardAllCaughtUp,
                     ),
+                    if (state.summary.retention?.hasData ?? false) ...[
+                      SizedBox(height: tokens.space16),
+                      RetentionCard(
+                        retention: state.summary.retention!,
+                        tokens: tokens,
+                        title: l10n.dashboardRetention,
+                        forecastLabel: l10n.dashboardRetentionForecast,
+                        fadingLabel: l10n.dashboardRetentionFading,
+                      ),
+                    ],
                     SizedBox(height: tokens.space20),
                     Text(
                       l10n.dashboardQuickActions,

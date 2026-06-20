@@ -312,8 +312,20 @@ def get_dashboard():
             "SELECT COUNT(*) AS c FROM notifications WHERE user_id=? AND is_read=0",
             (user["id"],)
         ).fetchone()["c"] or 0
+
+        # FSRS retention over all studied cards — same source of truth as the
+        # web dashboard/deck pages (fsrs.deck_retention), so mobile never
+        # recomputes the algorithm; it just renders what the backend returns.
+        ret_rows = conn.execute("""
+            SELECT p.reviews, p.stability, p.last_reviewed, p.interval_days, p.ef
+            FROM user_card_progress p
+            WHERE p.user_id=? AND p.reviews IS NOT NULL AND p.reviews > 0
+        """, (user["id"],)).fetchall()
     finally:
         conn.close()
+
+    import fsrs
+    retention = fsrs.deck_retention([dict(r) for r in ret_rows])
 
     daily_goal = user["daily_goal"] or 20
     display_name = user["full_name"] or user["username"]
@@ -326,6 +338,12 @@ def get_dashboard():
             "total_due": total_due,
             "overdue": overdue,
             "due_today": max(total_due - overdue, 0),
+        },
+        "retention": {
+            "now": retention["now"],
+            "forecast": retention["forecast"],
+            "fading": retention["fading"],
+            "studied": retention["studied"],
         },
         "user_display_name": display_name,
         "unread_notifications": unread,

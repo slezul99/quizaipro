@@ -321,6 +321,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardDailyGoalCompleted => 'Goal achieved!';
 
   @override
+  String get dashboardRetention => 'Retention';
+
+  @override
+  String get dashboardRetentionForecast => 'in a week';
+
+  @override
+  String get dashboardRetentionFading => 'fading';
+
+  @override
   String get dashboardReadyToStudy => 'Ready to study';
 
   @override

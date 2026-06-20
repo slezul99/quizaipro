@@ -22,6 +22,7 @@ mixin _$DashboardSummary {
   DueReviewsSummary get dueReviews => throw _privateConstructorUsedError;
   String get userDisplayName => throw _privateConstructorUsedError;
   int get unreadNotifications => throw _privateConstructorUsedError;
+  RetentionSummary? get retention => throw _privateConstructorUsedError;
 
   /// Create a copy of DashboardSummary
   /// with the given fields replaced by the non-null parameter values.
@@ -42,12 +43,14 @@ abstract class $DashboardSummaryCopyWith<$Res> {
       DailyGoalProgress dailyGoal,
       DueReviewsSummary dueReviews,
       String userDisplayName,
-      int unreadNotifications});
+      int unreadNotifications,
+      RetentionSummary? retention});
 
   $XpSummaryCopyWith<$Res> get xp;
   $StreakSummaryCopyWith<$Res> get streak;
   $DailyGoalProgressCopyWith<$Res> get dailyGoal;
   $DueReviewsSummaryCopyWith<$Res> get dueReviews;
+  $RetentionSummaryCopyWith<$Res>? get retention;
 }
 
 /// @nodoc
@@ -71,6 +74,7 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
     Object? dueReviews = null,
     Object? userDisplayName = null,
     Object? unreadNotifications = null,
+    Object? retention = freezed,
   }) {
     return _then(_value.copyWith(
       xp: null == xp
@@ -97,6 +101,10 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
           ? _value.unreadNotifications
           : unreadNotifications // ignore: cast_nullable_to_non_nullable
               as int,
+      retention: freezed == retention
+          ? _value.retention
+          : retention // ignore: cast_nullable_to_non_nullable
+              as RetentionSummary?,
     ) as $Val);
   }
 
@@ -139,6 +147,20 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
       return _then(_value.copyWith(dueReviews: value) as $Val);
     });
   }
+
+  /// Create a copy of DashboardSummary
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RetentionSummaryCopyWith<$Res>? get retention {
+    if (_value.retention == null) {
+      return null;
+    }
+
+    return $RetentionSummaryCopyWith<$Res>(_value.retention!, (value) {
+      return _then(_value.copyWith(retention: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -155,7 +177,8 @@ abstract class _$$DashboardSummaryImplCopyWith<$Res>
       DailyGoalProgress dailyGoal,
       DueReviewsSummary dueReviews,
       String userDisplayName,
-      int unreadNotifications});
+      int unreadNotifications,
+      RetentionSummary? retention});
 
   @override
   $XpSummaryCopyWith<$Res> get xp;
@@ -165,6 +188,8 @@ abstract class _$$DashboardSummaryImplCopyWith<$Res>
   $DailyGoalProgressCopyWith<$Res> get dailyGoal;
   @override
   $DueReviewsSummaryCopyWith<$Res> get dueReviews;
+  @override
+  $RetentionSummaryCopyWith<$Res>? get retention;
 }
 
 /// @nodoc
@@ -186,6 +211,7 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
     Object? dueReviews = null,
     Object? userDisplayName = null,
     Object? unreadNotifications = null,
+    Object? retention = freezed,
   }) {
     return _then(_$DashboardSummaryImpl(
       xp: null == xp
@@ -212,6 +238,10 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
           ? _value.unreadNotifications
           : unreadNotifications // ignore: cast_nullable_to_non_nullable
               as int,
+      retention: freezed == retention
+          ? _value.retention
+          : retention // ignore: cast_nullable_to_non_nullable
+              as RetentionSummary?,
     ));
   }
 }
@@ -225,7 +255,8 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
       required this.dailyGoal,
       required this.dueReviews,
       required this.userDisplayName,
-      this.unreadNotifications = 0});
+      this.unreadNotifications = 0,
+      this.retention});
 
   @override
   final XpSummary xp;
@@ -240,10 +271,12 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
   @override
   @JsonKey()
   final int unreadNotifications;
+  @override
+  final RetentionSummary? retention;
 
   @override
   String toString() {
-    return 'DashboardSummary(xp: $xp, streak: $streak, dailyGoal: $dailyGoal, dueReviews: $dueReviews, userDisplayName: $userDisplayName, unreadNotifications: $unreadNotifications)';
+    return 'DashboardSummary(xp: $xp, streak: $streak, dailyGoal: $dailyGoal, dueReviews: $dueReviews, userDisplayName: $userDisplayName, unreadNotifications: $unreadNotifications, retention: $retention)';
   }
 
   @override
@@ -260,12 +293,14 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
             (identical(other.userDisplayName, userDisplayName) ||
                 other.userDisplayName == userDisplayName) &&
             (identical(other.unreadNotifications, unreadNotifications) ||
-                other.unreadNotifications == unreadNotifications));
+                other.unreadNotifications == unreadNotifications) &&
+            (identical(other.retention, retention) ||
+                other.retention == retention));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, xp, streak, dailyGoal,
-      dueReviews, userDisplayName, unreadNotifications);
+      dueReviews, userDisplayName, unreadNotifications, retention);
 
   /// Create a copy of DashboardSummary
   /// with the given fields replaced by the non-null parameter values.
@@ -284,7 +319,8 @@ abstract class _DashboardSummary implements DashboardSummary {
       required final DailyGoalProgress dailyGoal,
       required final DueReviewsSummary dueReviews,
       required final String userDisplayName,
-      final int unreadNotifications}) = _$DashboardSummaryImpl;
+      final int unreadNotifications,
+      final RetentionSummary? retention}) = _$DashboardSummaryImpl;
 
   @override
   XpSummary get xp;
@@ -298,6 +334,8 @@ abstract class _DashboardSummary implements DashboardSummary {
   String get userDisplayName;
   @override
   int get unreadNotifications;
+  @override
+  RetentionSummary? get retention;
 
   /// Create a copy of DashboardSummary
   /// with the given fields replaced by the non-null parameter values.

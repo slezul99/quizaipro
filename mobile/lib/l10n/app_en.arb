@@ -323,6 +323,12 @@
   "dashboardDailyGoalCompleted": "Goal achieved!",
   "@dashboardDailyGoalCompleted": { "description": "Daily goal completed label" },
 
+  "dashboardRetention": "Retention",
+  "@dashboardRetention": { "description": "Dashboard retention card title" },
+  "dashboardRetentionForecast": "in a week",
+  "@dashboardRetentionForecast": { "description": "Prefix for the one-week retention forecast" },
+  "dashboardRetentionFading": "fading",
+  "@dashboardRetentionFading": { "description": "Label after the count of cards fading below target retention" },
   "dashboardReadyToStudy": "Ready to study",
   "@dashboardReadyToStudy": { "description": "Ready-to-study card title" },
 

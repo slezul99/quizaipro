@@ -142,6 +142,9 @@
       "count": { "type": "int" }
     }
   },
+  "dashboardRetention": "Eslab qolish",
+  "dashboardRetentionForecast": "bir haftadan keyin",
+  "dashboardRetentionFading": "so'nmoqda",
   "dashboardReadyToStudy": "O'rganishga tayyor",
   "dashboardAllCaughtUp": "Hammasi tugallandi! 🎉",
   "dashboardOverdue": "muddati o'tgan",

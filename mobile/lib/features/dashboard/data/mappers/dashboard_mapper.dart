@@ -2,12 +2,14 @@ import 'package:quizaipro_mobile/features/dashboard/data/dto/activity_item_dto.d
 import 'package:quizaipro_mobile/features/dashboard/data/dto/daily_goal_progress_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/dashboard_summary_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/due_reviews_summary_dto.dart';
+import 'package:quizaipro_mobile/features/dashboard/data/dto/retention_summary_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/streak_summary_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/xp_summary_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/activity_item.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/daily_goal_progress.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/due_reviews_summary.dart';
+import 'package:quizaipro_mobile/features/dashboard/domain/entities/retention_summary.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/streak_summary.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/xp_summary.dart';
 
@@ -20,6 +22,7 @@ abstract final class DashboardMapper {
         dueReviews: _dueReviewsFromDto(dto.dueReviews),
         userDisplayName: dto.userDisplayName,
         unreadNotifications: dto.unreadNotifications,
+        retention: dto.retention != null ? _retentionFromDto(dto.retention!) : null,
       );
 
   static DashboardSummaryDto summaryToDto(DashboardSummary entity) =>
@@ -30,6 +33,7 @@ abstract final class DashboardMapper {
         dueReviews: _dueReviewsToDto(entity.dueReviews),
         userDisplayName: entity.userDisplayName,
         unreadNotifications: entity.unreadNotifications,
+        retention: entity.retention != null ? _retentionToDto(entity.retention!) : null,
       );
 
   static ActivityItem activityFromDto(ActivityItemDto dto) {
@@ -193,5 +197,21 @@ abstract final class DashboardMapper {
         totalDue: e.totalDue,
         overdue: e.overdue,
         dueToday: e.dueToday,
+      );
+
+  static RetentionSummary _retentionFromDto(RetentionSummaryDto dto) =>
+      RetentionSummary(
+        now: dto.now,
+        forecast: dto.forecast,
+        fading: dto.fading ?? 0,
+        studied: dto.studied ?? 0,
+      );
+
+  static RetentionSummaryDto _retentionToDto(RetentionSummary e) =>
+      RetentionSummaryDto(
+        now: e.now,
+        forecast: e.forecast,
+        fading: e.fading,
+        studied: e.studied,
       );
 }

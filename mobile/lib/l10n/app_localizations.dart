@@ -676,6 +676,24 @@ abstract class AppLocalizations {
   /// **'Goal achieved!'**
   String get dashboardDailyGoalCompleted;
 
+  /// Dashboard retention card title
+  ///
+  /// In en, this message translates to:
+  /// **'Retention'**
+  String get dashboardRetention;
+
+  /// Prefix for the one-week retention forecast
+  ///
+  /// In en, this message translates to:
+  /// **'in a week'**
+  String get dashboardRetentionForecast;
+
+  /// Label after the count of cards fading below target retention
+  ///
+  /// In en, this message translates to:
+  /// **'fading'**
+  String get dashboardRetentionFading;
+
   /// Ready-to-study card title
   ///
   /// In en, this message translates to:

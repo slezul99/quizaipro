@@ -324,6 +324,15 @@ class AppLocalizationsUz extends AppLocalizations {
   String get dashboardDailyGoalCompleted => 'Maqsadga erishdingiz!';
 
   @override
+  String get dashboardRetention => 'Eslab qolish';
+
+  @override
+  String get dashboardRetentionForecast => 'bir haftadan keyin';
+
+  @override
+  String get dashboardRetentionFading => 'so\'nmoqda';
+
+  @override
   String get dashboardReadyToStudy => 'O\'rganishga tayyor';
 
   @override

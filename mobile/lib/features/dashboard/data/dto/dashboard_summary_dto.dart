@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'package:quizaipro_mobile/features/dashboard/data/dto/daily_goal_progress_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/due_reviews_summary_dto.dart';
+import 'package:quizaipro_mobile/features/dashboard/data/dto/retention_summary_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/streak_summary_dto.dart';
 import 'package:quizaipro_mobile/features/dashboard/data/dto/xp_summary_dto.dart';
 
@@ -16,6 +17,7 @@ class DashboardSummaryDto {
     required this.dueReviews,
     required this.userDisplayName,
     this.unreadNotifications = 0,
+    this.retention,
   });
 
   final XpSummaryDto xp;
@@ -26,6 +28,9 @@ class DashboardSummaryDto {
 
   @JsonKey(name: 'due_reviews')
   final DueReviewsSummaryDto dueReviews;
+
+  /// Null when talking to an older backend that doesn't send retention.
+  final RetentionSummaryDto? retention;
 
   @JsonKey(name: 'user_display_name')
   final String userDisplayName;
