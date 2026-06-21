@@ -21,6 +21,20 @@ from . import jwt_auth
 
 dashboard_bp = Blueprint("api_v1_dashboard", __name__, url_prefix="/api/v1/dashboard")
 
+# Mechanical XP-event labels for the level-journey feed. The branded reward
+# titles (titles/frames/themes) stay Russian by product decision; only these
+# template phrases are localized.
+_XP_EVENT_PHRASES = {
+    "ru": {"card_studied": "Изучена карта", "test_passed": "Пройден тест", "achievement": "Достижение"},
+    "en": {"card_studied": "Card studied", "test_passed": "Test passed", "achievement": "Achievement"},
+    "uz": {"card_studied": "Karta o‘rganildi", "test_passed": "Test topshirildi", "achievement": "Yutuq"},
+}
+
+
+def _resolve_lang(user):
+    lang = request.args.get("lang") or (user["lang"] if user and "lang" in user.keys() else None)
+    return lang if lang in ("ru", "en", "uz") else "ru"
+
 def _xp_summary(xp):
     import achievements as ach_mod
     info = ach_mod.calculate_level_info(xp)
@@ -90,6 +104,7 @@ def _streak_summary(user_row):
 @jwt_auth.jwt_required
 def get_level_journey():
     user = g.current_user
+    phrases = _XP_EVENT_PHRASES[_resolve_lang(user)]
     import achievements as ach_mod
     info = ach_mod.calculate_level_info(user["xp"])
     
@@ -127,7 +142,6 @@ def get_level_journey():
         # Fetch reviews, tests, achievements
         review_rows = conn.execute("""
             SELECT 'flashcard_review' AS event_type,
-                   'Изучена карта' AS description,
                    (CASE WHEN grade=5 THEN 5 WHEN grade=4 THEN 3 WHEN grade=3 THEN 1 ELSE 0 END) AS xp_gained,
                    reviewed_at AS timestamp
             FROM reviews
@@ -138,7 +152,7 @@ def get_level_journey():
 
         test_rows = conn.execute("""
             SELECT 'test_attempt' AS event_type,
-                   'Пройден тест: ' || scope_name AS description,
+                   scope_name AS scope_name,
                    COALESCE(xp_earned, (correct * 3 + (CASE WHEN is_perfect = 1 THEN 5 ELSE 0 END))) AS xp_gained,
                    finished_at AS timestamp
             FROM test_attempts
@@ -163,14 +177,14 @@ def get_level_journey():
     for r in review_rows:
         events.append({
             "event_type": r["event_type"],
-            "description": r["description"],
+            "description": phrases["card_studied"],
             "xp_gained": r["xp_gained"],
             "timestamp": r["timestamp"]
         })
     for r in test_rows:
         events.append({
             "event_type": r["event_type"],
-            "description": r["description"],
+            "description": f"{phrases['test_passed']}: {r['scope_name']}",
             "xp_gained": r["xp_gained"],
             "timestamp": r["timestamp"]
         })
@@ -181,7 +195,7 @@ def get_level_journey():
         xp_gained = ach_def["xp"] if ach_def else 0
         events.append({
             "event_type": r["event_type"],
-            "description": f"Достижение: {name}",
+            "description": f"{phrases['achievement']}: {name}",
             "xp_gained": xp_gained,
             "timestamp": r["timestamp"]
         })
