@@ -2274,31 +2274,64 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
 
 
 # === Agentic tutor: function calling ========================================
-# v1 tool: when the student asks to be tested / to practice, the model calls
-# make_practice_quiz and we generate a real quiz with the validated pipeline,
-# then weave it into the reply. Gated to likely-quiz messages so normal chat
-# keeps streaming.
+# The model can call tools: generate a practice quiz, create a deck, or open an
+# existing deck. Quiz is handled inside ai_gen (generation only); create_deck /
+# open_deck need DB + user, so the route passes a tool_executor callback.
+# Gated by intent so normal chat keeps token-streaming.
 
-_QUIZ_TOOL = {
-    "functionDeclarations": [{
-        "name": "make_practice_quiz",
-        "description": ("Generate a short practice quiz for the student on a study "
-                        "topic. Call this ONLY when the student asks to be tested, "
-                        "quizzed, checked, or to practice on a topic."),
-        "parameters": {
-            "type": "OBJECT",
-            "properties": {
-                "topic": {"type": "STRING", "description": "Study topic to quiz on"},
-                "count": {"type": "INTEGER", "description": "Number of questions (3-7)"},
+_TUTOR_TOOLS = [{
+    "functionDeclarations": [
+        {
+            "name": "make_practice_quiz",
+            "description": ("Generate a short practice quiz for the student on a "
+                            "topic. Call when the student asks to be tested, "
+                            "quizzed, checked, or to practice."),
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "topic": {"type": "STRING", "description": "Study topic"},
+                    "count": {"type": "INTEGER", "description": "Questions (3-7)"},
+                },
+                "required": ["topic"],
             },
-            "required": ["topic"],
         },
-    }]
-}
+        {
+            "name": "create_deck",
+            "description": ("Create a new flashcard deck for the student and fill "
+                            "it with AI-generated cards on a topic. Call when the "
+                            "student asks to create/make a deck or a set of cards."),
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "name": {"type": "STRING", "description": "Deck name"},
+                    "topic": {"type": "STRING", "description": "Topic for the cards"},
+                    "count": {"type": "INTEGER", "description": "Number of cards (5-20)"},
+                },
+                "required": ["topic"],
+            },
+        },
+        {
+            "name": "open_deck",
+            "description": ("Find and open one of the student's existing decks by "
+                            "name. Call when the student asks to open/show a deck."),
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "query": {"type": "STRING", "description": "Deck name or keywords"},
+                },
+                "required": ["query"],
+            },
+        },
+    ]
+}]
 
-_QUIZ_INTENT = re.compile(
+_TOOL_INTENT = re.compile(
     r"(провер|тест|викторин|опрос|испыта|потренир|зада(й|ть).*вопрос|"
-    r"quiz|test me|check me|practice|qiz|sina)", re.IGNORECASE)
+    r"созда(й|ть).*(колод|карточ)|сдела(й|ть).*(колод|карточ)|"
+    r"откро?й.*колод|покажи.*колод|"
+    r"quiz|test me|check me|practice|qiz|sina|"
+    r"creat.*(deck|card)|make.*(deck|card)|open.*deck|show.*deck)",
+    re.IGNORECASE)
 
 _QUIZ_INTRO = {
     "ru": "Лови мини-тест для проверки 👇 Сначала ответь сам, ответы — ниже.",
@@ -2347,59 +2380,73 @@ def _gemini_generate_raw(system_prompt: str, contents: list, tools: list = None,
     return None
 
 
-def _agentic_quiz_reply(system_prompt: str, messages: list, lang: str):
-    """If the model decides to call make_practice_quiz, run it and return the
-    formatted quiz text. Returns None to fall back to the normal chat flow."""
+def _agentic_reply(system_prompt: str, messages: list, lang: str, tool_executor=None):
+    """If the model calls a tool, run it and return the reply text. quiz is run
+    internally; create_deck/open_deck are delegated to tool_executor(name, args)
+    -> str (provided by the route, which has DB + user). Returns None to fall
+    back to the normal chat flow."""
     contents = []
     for m in messages:
         role = "model" if m["role"] == "assistant" else "user"
         contents.append({"role": role, "parts": [{"text": m["content"]}]})
 
-    cand = _gemini_generate_raw(system_prompt, contents, tools=[_QUIZ_TOOL], label="tutor_tool")
+    cand = _gemini_generate_raw(system_prompt, contents, tools=_TUTOR_TOOLS, label="tutor_tool")
     if not cand:
         return None
     parts = cand.get("content", {}).get("parts", [])
     fc = next((p["functionCall"] for p in parts if isinstance(p, dict) and "functionCall" in p), None)
-    if not fc or fc.get("name") != "make_practice_quiz":
-        return None  # model chose to just answer → let the normal flow handle it
-
+    if not fc:
+        return None  # model chose to just answer → normal flow handles it
+    name = fc.get("name")
     args = fc.get("args") or {}
-    topic = (args.get("topic") or "").strip()
-    if not topic:
-        return None
-    try:
-        count = int(args.get("count") or 5)
-    except (TypeError, ValueError):
-        count = 5
-    count = max(3, min(7, count))
-    try:
-        cards = generate_from_topic(topic, count=count, output_lang=lang)[:count]
-    except Exception as e:
-        print(f"[AI tutor tool] quiz gen failed: {e}")
-        return None
-    if not cards:
-        return None
-    return _format_quiz(cards, lang)
+
+    if name == "make_practice_quiz":
+        topic = (args.get("topic") or "").strip()
+        if not topic:
+            return None
+        try:
+            count = max(3, min(7, int(args.get("count") or 5)))
+        except (TypeError, ValueError):
+            count = 5
+        try:
+            cards = generate_from_topic(topic, count=count, output_lang=lang)[:count]
+        except Exception as e:
+            print(f"[AI tutor tool] quiz gen failed: {e}")
+            return None
+        return _format_quiz(cards, lang) if cards else None
+
+    if name in ("create_deck", "open_deck"):
+        if tool_executor is None:
+            return None  # route didn't provide DB executor → normal flow
+        try:
+            return tool_executor(name, args)
+        except Exception as e:
+            print(f"[AI tutor tool] {name} executor failed: {e}")
+            return None
+
+    return None
 
 
-def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "", learner_context: str = ""):
+def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "", learner_context: str = "", tool_executor=None):
     """Streaming-versiya tutor'a. Yield-it text chunki po mere generatsii.
 
     provider: "" (avto), "deepseek" (tolko DeepSeek), "gemini" (tolko Gemini).
+    tool_executor: optional callback(name, args)->str for DB tools (create_deck,
+    open_deck) provided by the route.
     """
     system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang, learner_context)
 
-    # Agentic path: if the student seems to ask for a quiz/practice, let the
-    # model call make_practice_quiz and stream the generated quiz instead of a
-    # plain answer. Gated by intent so normal chat keeps token-streaming.
-    if vertex_enabled() and _QUIZ_INTENT.search(user_message or ""):
+    # Agentic path: if the student seems to want a tool (quiz / create / open a
+    # deck), let the model call it and yield the result instead of a plain
+    # answer. Gated by intent so normal chat keeps token-streaming.
+    if vertex_enabled() and _TOOL_INTENT.search(user_message or ""):
         try:
-            quiz = _agentic_quiz_reply(system_prompt, messages, lang)
+            tool_reply = _agentic_reply(system_prompt, messages, lang, tool_executor)
         except Exception as e:
             print(f"[AI tutor agentic] {type(e).__name__}: {e}")
-            quiz = None
-        if quiz:
-            yield quiz
+            tool_reply = None
+        if tool_reply:
+            yield tool_reply
             return
 
     # DeepSeek only ever runs when it's actually enabled (is_deepseek_available).

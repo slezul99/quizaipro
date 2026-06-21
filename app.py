@@ -6031,6 +6031,63 @@ def api_tutor_ask():
         conv_id = _tutor_get_or_create_conv(user["id"], message)
         _tutor_save_message(conv_id, user["id"], "user", message)
 
+        def _web_tool_executor(name, args):
+            """DB-backed agentic-tutor tools (create_deck / open_deck) for web."""
+            c2 = db.get_conn()
+            try:
+                if name == "create_deck":
+                    topic = (args.get("topic") or "").strip()
+                    if not topic:
+                        return None
+                    deck_name = (str(args.get("name") or topic).strip() or topic)[:120]
+                    try:
+                        cnt = max(5, min(20, int(args.get("count") or 10)))
+                    except (TypeError, ValueError):
+                        cnt = 10
+                    cards = ai_gen.generate_from_topic(topic, count=cnt, output_lang=lang)
+                    if not cards:
+                        return None
+                    if user.get("org_id"):
+                        cur2 = c2.execute(
+                            "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                            (user["org_id"], deck_name, "🤖"))
+                    else:
+                        cur2 = c2.execute(
+                            "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                            (user["id"], deck_name, "🤖"))
+                    did = cur2.lastrowid
+                    for cc in cards:
+                        c2.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+                                   (did, cc["front"], cc["back"], cc.get("note", "")))
+                    refresh_deck_content_flags(c2, did)
+                    c2.commit()
+                    return {
+                        "ru": f"✅ Создал колоду «{deck_name}» — {len(cards)} карточек: [открыть](/deck/{did})",
+                        "en": f"✅ Created the deck “{deck_name}” — {len(cards)} cards: [open](/deck/{did})",
+                        "uz": f"✅ «{deck_name}» to'plamini yaratdim — {len(cards)} karta: [ochish](/deck/{did})",
+                    }.get(lang, f"✅ Колода «{deck_name}» создана: /deck/{did}")
+                if name == "open_deck":
+                    q = (args.get("query") or "").strip()
+                    if not q:
+                        return None
+                    row = c2.execute(
+                        "SELECT id, name FROM decks WHERE owner_id=? AND name LIKE ? ORDER BY id DESC LIMIT 1",
+                        (user["id"], f"%{q}%")).fetchone()
+                    if not row:
+                        return {
+                            "ru": f"Не нашёл колоду по запросу «{q}».",
+                            "en": f"Couldn't find a deck matching “{q}”.",
+                            "uz": f"«{q}» bo'yicha to'plam topilmadi.",
+                        }.get(lang, f"Не нашёл колоду «{q}».")
+                    return {
+                        "ru": f"Вот колода «{row['name']}»: [открыть](/deck/{row['id']})",
+                        "en": f"Here's the deck “{row['name']}”: [open](/deck/{row['id']})",
+                        "uz": f"«{row['name']}» to'plami: [ochish](/deck/{row['id']})",
+                    }.get(lang, f"Колода «{row['name']}»: /deck/{row['id']}")
+            finally:
+                c2.close()
+            return None
+
         def _stream():
             full = []
             try:
@@ -6041,6 +6098,7 @@ def api_tutor_ask():
                     lang=lang,
                     provider=provider_override,
                     learner_context=learner_context,
+                    tool_executor=_web_tool_executor,
                 ):
                     full.append(chunk)
                     yield chunk

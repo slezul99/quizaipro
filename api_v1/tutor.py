@@ -422,10 +422,70 @@ def post_stream_message():
     finally:
         conn.close()
 
+    def _tool_executor(name, args):
+        """DB-backed tools for the agentic tutor (create_deck / open_deck).
+        Opens its own connection — the request connection is already closed by
+        the time the streaming generator runs."""
+        from .study import _recalc_deck_flags
+        c2 = db.get_conn()
+        try:
+            if name == "create_deck":
+                topic = (args.get("topic") or "").strip()
+                if not topic:
+                    return None
+                deck_name = (str(args.get("name") or topic).strip() or topic)[:120]
+                try:
+                    cnt = max(5, min(20, int(args.get("count") or 10)))
+                except (TypeError, ValueError):
+                    cnt = 10
+                cards = ai_gen.generate_from_topic(topic, count=cnt, output_lang=lang)
+                if not cards:
+                    return None
+                if user["org_id"]:
+                    cur2 = c2.execute(
+                        "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                        (user["org_id"], deck_name, "🤖"))
+                else:
+                    cur2 = c2.execute(
+                        "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                        (user["id"], deck_name, "🤖"))
+                did = cur2.lastrowid
+                for cc in cards:
+                    c2.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+                               (did, cc["front"], cc["back"], cc.get("note", "")))
+                _recalc_deck_flags(c2, did)
+                c2.commit()
+                return {
+                    "ru": f"✅ Создал колоду «{deck_name}» — {len(cards)} карточек. Найдёшь её в Библиотеке.",
+                    "en": f"✅ Created the deck “{deck_name}” — {len(cards)} cards. Find it in your Library.",
+                    "uz": f"✅ «{deck_name}» to'plamini yaratdim — {len(cards)} karta. Kutubxonada topasiz.",
+                }.get(lang, f"✅ Колода «{deck_name}» создана ({len(cards)} карточек).")
+            if name == "open_deck":
+                q = (args.get("query") or "").strip()
+                if not q:
+                    return None
+                row = c2.execute(
+                    "SELECT id, name FROM decks WHERE owner_id=? AND name LIKE ? ORDER BY id DESC LIMIT 1",
+                    (user["id"], f"%{q}%")).fetchone()
+                if not row:
+                    return {
+                        "ru": f"Не нашёл колоду по запросу «{q}». Загляни в Библиотеку.",
+                        "en": f"Couldn't find a deck matching “{q}”. Check your Library.",
+                        "uz": f"«{q}» bo'yicha to'plam topilmadi. Kutubxonaga qarang.",
+                    }.get(lang, f"Не нашёл колоду «{q}».")
+                return {
+                    "ru": f"Нашёл колоду «{row['name']}» — открой её в Библиотеке.",
+                    "en": f"Found the deck “{row['name']}” — open it in your Library.",
+                    "uz": f"«{row['name']}» topildi — Kutubxonadan oching.",
+                }.get(lang, f"Колода «{row['name']}».")
+        finally:
+            c2.close()
+        return None
+
     def _generate():
         chunks = []
         try:
-            for chunk in ai_gen.chat_tutor_stream(content, deck_context=deck_context, history=history, lang=lang, learner_context=learner_context):
+            for chunk in ai_gen.chat_tutor_stream(content, deck_context=deck_context, history=history, lang=lang, learner_context=learner_context, tool_executor=_tool_executor):
                 if chunk:
                     chunks.append(chunk)
                     yield _sse_event({"delta": chunk})
