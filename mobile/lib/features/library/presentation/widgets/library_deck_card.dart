@@ -1,13 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
 import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
-/// Library deck card — "deck cover" layout. A coloured cover band carries the
-/// deck initial and content-type marks; a clean white info strip below holds
-/// the title and a single calm stats line. Built from scratch to read like a
-/// real deck of cards rather than a busy data tile.
+/// Library deck card — built from scratch to the picked recipe:
+///  • shape/style of a stacked deck (cards peeking out behind it),
+///  • a light, friendly soft-colour palette (white card, pastel accents),
+///  • a progress ring + bar showing how much of the deck is mastered.
 class LibraryDeckCard extends StatelessWidget {
   const LibraryDeckCard({
     super.key,
@@ -30,106 +32,88 @@ class LibraryDeckCard extends StatelessWidget {
     final initial =
         deck.title.trim().isNotEmpty ? deck.title.trim()[0].toUpperCase() : '?';
 
-    return Material(
-      color: tokens.backgroundSurface,
-      borderRadius: BorderRadius.circular(tokens.radiusLg),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(tokens.radiusLg),
-            border: Border.all(color: tokens.borderSubtle),
+    // "Mastered" share = cards that aren't currently due. New decks → 0%.
+    final mastered = deck.cardCount > 0
+        ? ((deck.cardCount - deck.dueCount).clamp(0, deck.cardCount)) /
+            deck.cardCount
+        : 0.0;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        children: [
+          // ── Stacked-deck layers peeking out behind the main card ────────
+          Positioned(
+            top: 0,
+            left: 18,
+            right: 6,
+            child: _StackLayer(color: cover.withValues(alpha: 0.22), height: 34),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Cover band ──────────────────────────────────────────────
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        cover,
-                        Color.lerp(cover, Colors.black, 0.32)!,
-                      ],
-                    ),
+          Positioned(
+            top: 7,
+            left: 10,
+            right: 6,
+            child: _StackLayer(color: cover.withValues(alpha: 0.40), height: 34),
+          ),
+          // ── Main (light) card ───────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: Container(
+              decoration: BoxDecoration(
+                color: tokens.backgroundSurface,
+                borderRadius: BorderRadius.circular(tokens.radiusLg),
+                border: Border.all(color: cover.withValues(alpha: 0.22)),
+                boxShadow: [
+                  BoxShadow(
+                    color: cover.withValues(alpha: 0.14),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
                   ),
-                  child: Stack(
-                    children: [
-                      // Big watermark initial.
-                      Positioned(
-                        left: tokens.space12,
-                        bottom: -6,
-                        child: Text(
-                          initial,
-                          style: tt.displayLarge?.copyWith(
-                            fontSize: 72,
-                            height: 1,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white.withValues(alpha: 0.92),
-                          ),
-                        ),
-                      ),
-                      // Favourite + overflow controls.
-                      Positioned(
-                        top: tokens.space4,
-                        right: tokens.space4,
-                        child: Row(
-                          children: [
-                            if (deck.isFavorite)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 2),
-                                child: Icon(Icons.favorite_rounded,
-                                    size: 16, color: Colors.white),
-                              ),
-                            _GlassIconButton(
-                              icon: Icons.more_horiz_rounded,
-                              onTap: onActionsTap,
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Content-type marks.
-                      Positioned(
-                        bottom: tokens.space8,
-                        right: tokens.space8,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (deck.hasFlashcards)
-                              const _CoverMark(icon: Icons.style_rounded),
-                            if (deck.hasTests) ...[
-                              SizedBox(width: tokens.space4),
-                              const _CoverMark(icon: Icons.fact_check_rounded),
-                            ],
-                            if (deck.isArchived) ...[
-                              SizedBox(width: tokens.space4),
-                              const _CoverMark(icon: Icons.archive_rounded),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-              // ── Info strip ──────────────────────────────────────────────
-              Padding(
+              child: Padding(
                 padding: EdgeInsets.all(tokens.space12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _RingBadge(
+                          progress: mastered,
+                          color: cover,
+                          initial: initial,
+                        ),
+                        const Spacer(),
+                        if (deck.isFavorite)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 2, top: 2),
+                            child: Icon(Icons.favorite_rounded,
+                                size: 15, color: tokens.stateError),
+                          ),
+                        GestureDetector(
+                          onTap: onActionsTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 2),
+                            child: Icon(Icons.more_horiz_rounded,
+                                size: 20, color: tokens.textTertiary),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
                     Text(
                       deck.title,
-                      style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      style: tt.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: tokens.space8),
+                    SizedBox(height: tokens.space4),
                     Row(
                       children: [
                         Text(
@@ -139,34 +123,62 @@ class LibraryDeckCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const Spacer(),
-                        if (deck.dueCount > 0)
+                        if (deck.dueCount > 0) ...[
+                          SizedBox(width: tokens.space8),
                           Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: tokens.space8,
-                              vertical: 2,
-                            ),
+                            width: 6,
+                            height: 6,
                             decoration: BoxDecoration(
-                              color: tokens.stateError.withValues(alpha: 0.12),
-                              borderRadius:
-                                  BorderRadius.circular(tokens.radiusFull),
+                              color: tokens.stateError,
+                              shape: BoxShape.circle,
                             ),
-                            child: Text(
-                              '${deck.dueCount}',
-                              style: tt.labelSmall?.copyWith(
-                                color: tokens.stateError,
-                                fontWeight: FontWeight.w800,
+                          ),
+                          SizedBox(width: tokens.space4),
+                          Text(
+                            '${deck.dueCount}',
+                            style: tt.labelSmall?.copyWith(
+                              color: tokens.stateError,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                        if (deck.isArchived) ...[
+                          SizedBox(width: tokens.space8),
+                          Icon(Icons.archive_rounded,
+                              size: 12, color: tokens.textTertiary),
+                        ],
+                      ],
+                    ),
+                    SizedBox(height: tokens.space10),
+                    // Progress bar — how much of the deck is mastered.
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(tokens.radiusFull),
+                      child: Stack(
+                        children: [
+                          Container(height: 5, color: tokens.surfaceSubtle),
+                          FractionallySizedBox(
+                            widthFactor: mastered.clamp(0.04, 1.0),
+                            child: Container(
+                              height: 5,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    cover,
+                                    Color.lerp(cover, Colors.white, 0.30)!,
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -181,49 +193,105 @@ class LibraryDeckCard extends StatelessWidget {
   }
 }
 
-/// Small translucent white circular icon button shown over the cover band.
-class _GlassIconButton extends StatelessWidget {
-  const _GlassIconButton({required this.icon, required this.onTap});
+/// One of the offset "cards" peeking out from behind the main deck card.
+class _StackLayer extends StatelessWidget {
+  const _StackLayer({required this.color, required this.height});
 
-  final IconData icon;
-  final VoidCallback onTap;
+  final Color color;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 28,
-        height: 28,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.22),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 16, color: Colors.white),
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
     );
   }
 }
 
-/// A frosted content-type pill on the cover (flashcards / quiz / archived).
-class _CoverMark extends StatelessWidget {
-  const _CoverMark({required this.icon});
+/// A soft progress ring with the deck initial on a pastel disc in its centre.
+class _RingBadge extends StatelessWidget {
+  const _RingBadge({
+    required this.progress,
+    required this.color,
+    required this.initial,
+  });
 
-  final IconData icon;
+  final double progress;
+  final Color color;
+  final String initial;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 22,
-      height: 22,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(7),
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: CustomPaint(
+        painter: _RingPainter(progress: progress.clamp(0.0, 1.0), color: color),
+        child: Center(
+          child: Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              initial,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ),
       ),
-      child: Icon(icon, size: 13, color: Colors.white),
     );
   }
+}
+
+class _RingPainter extends CustomPainter {
+  _RingPainter({required this.progress, required this.color});
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = size.width / 2 - 2;
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..color = color.withValues(alpha: 0.16);
+    final arc = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round
+      ..shader = SweepGradient(
+        startAngle: -math.pi / 2,
+        endAngle: math.pi * 1.5,
+        colors: [color, Color.lerp(color, Colors.white, 0.4)!],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    canvas.drawCircle(center, radius, track);
+    if (progress > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        2 * math.pi * progress,
+        false,
+        arc,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter old) =>
+      old.progress != progress || old.color != color;
 }
