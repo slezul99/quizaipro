@@ -33,133 +33,191 @@ class LibraryDeckCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(tokens.space12),
         decoration: BoxDecoration(
           color: tokens.backgroundSurface,
           borderRadius: BorderRadius.circular(tokens.radiusLg),
-          border: Border.all(color: tokens.borderSubtle),
+          border: Border.all(color: cover.withValues(alpha: 0.20)),
           boxShadow: [
             BoxShadow(
-              color: cover.withValues(alpha: 0.10),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: cover.withValues(alpha: 0.16),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // Emblem with deck initial
-                Container(
-                  width: 46,
-                  height: 46,
-                  alignment: Alignment.center,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(tokens.radiusLg),
+          child: Stack(
+            children: [
+              // Faint oversized initial fills the empty space and gives the
+              // card a clear colour identity tied to the deck.
+              Positioned(
+                right: -10,
+                bottom: -26,
+                child: Text(
+                  initial,
+                  style: tt.displayLarge?.copyWith(
+                    fontSize: 110,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    color: cover.withValues(alpha: 0.07),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  tokens.space12,
+                  tokens.space12,
+                  tokens.space12,
+                  tokens.space12 + 4, // room above the spine strip
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        // Emblem with deck initial
+                        Container(
+                          width: 46,
+                          height: 46,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                cover,
+                                Color.lerp(cover, Colors.black, 0.22)!
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(tokens.radiusMd),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cover.withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            initial,
+                            style: tt.titleLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        if (deck.isFavorite)
+                          Padding(
+                            padding: EdgeInsets.only(right: tokens.space4),
+                            child: Icon(Icons.favorite_rounded,
+                                size: 15, color: tokens.stateError),
+                          ),
+                        GestureDetector(
+                          onTap: onActionsTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: Icon(Icons.more_vert_rounded,
+                              size: 20, color: tokens.textTertiary),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: tokens.space12),
+                    Text(
+                      deck.title,
+                      style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: tokens.space8),
+                    // Count + due
+                    Row(
+                      children: [
+                        Icon(Icons.style_rounded,
+                            size: 13, color: tokens.textTertiary),
+                        SizedBox(width: tokens.space4),
+                        Text(
+                          '${deck.cardCount}',
+                          style:
+                              tt.labelSmall?.copyWith(color: tokens.textTertiary),
+                        ),
+                        if (deck.dueCount > 0) ...[
+                          SizedBox(width: tokens.space8),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: tokens.space8,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: tokens.stateError.withValues(alpha: 0.12),
+                              borderRadius:
+                                  BorderRadius.circular(tokens.radiusFull),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.schedule_rounded,
+                                    size: 11, color: tokens.stateError),
+                                SizedBox(width: tokens.space4),
+                                Text(
+                                  '${deck.dueCount}',
+                                  style: tt.labelSmall?.copyWith(
+                                    color: tokens.stateError,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if (deck.isArchived) ...[
+                          SizedBox(width: tokens.space8),
+                          Icon(Icons.archive_outlined,
+                              size: 13, color: tokens.textTertiary),
+                        ],
+                      ],
+                    ),
+                    const Spacer(),
+                    // Content-type badges
+                    Wrap(
+                      spacing: tokens.space4,
+                      runSpacing: tokens.space4,
+                      children: [
+                        if (deck.hasFlashcards)
+                          _TypeBadge(
+                            icon: Icons.style_rounded,
+                            label: l.marketplaceCards,
+                            color: tokens.brandGradientStart,
+                            tokens: tokens,
+                          ),
+                        if (deck.hasTests)
+                          _TypeBadge(
+                            icon: Icons.fact_check_rounded,
+                            label: l.cardTileQuizChip,
+                            color: tokens.stateInfo,
+                            tokens: tokens,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Deck "spine" — a thin colour strip pinned to the bottom edge.
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  height: 4,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [cover, Color.lerp(cover, Colors.black, 0.22)!],
-                    ),
-                    borderRadius: BorderRadius.circular(tokens.radiusMd),
-                    boxShadow: [
-                      BoxShadow(
-                        color: cover.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    initial,
-                    style: tt.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
+                      colors: [cover, Color.lerp(cover, Colors.black, 0.3)!],
                     ),
                   ),
                 ),
-                const Spacer(),
-                if (deck.isFavorite)
-                  Padding(
-                    padding: EdgeInsets.only(right: tokens.space4),
-                    child: Icon(Icons.favorite_rounded,
-                        size: 15, color: tokens.stateError),
-                  ),
-                GestureDetector(
-                  onTap: onActionsTap,
-                  child: Icon(Icons.more_vert_rounded,
-                      size: 20, color: tokens.textTertiary),
-                ),
-              ],
-            ),
-            SizedBox(height: tokens.space12),
-            Text(
-              deck.title,
-              style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: tokens.space8),
-            // Count + due
-            Row(
-              children: [
-                Icon(Icons.style_rounded, size: 13, color: tokens.textTertiary),
-                SizedBox(width: tokens.space4),
-                Text(
-                  '${deck.cardCount}',
-                  style: tt.labelSmall?.copyWith(color: tokens.textTertiary),
-                ),
-                if (deck.dueCount > 0) ...[
-                  SizedBox(width: tokens.space8),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: tokens.space8,
-                      vertical: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: tokens.stateError.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(tokens.radiusFull),
-                    ),
-                    child: Text(
-                      '${deck.dueCount}',
-                      style: tt.labelSmall?.copyWith(
-                        color: tokens.stateError,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ],
-                if (deck.isArchived) ...[
-                  SizedBox(width: tokens.space8),
-                  Icon(Icons.archive_outlined,
-                      size: 13, color: tokens.textTertiary),
-                ],
-              ],
-            ),
-            SizedBox(height: tokens.space10),
-            // Content-type badges
-            Wrap(
-              spacing: tokens.space4,
-              runSpacing: tokens.space4,
-              children: [
-                if (deck.hasFlashcards)
-                  _TypeBadge(
-                    icon: Icons.style_rounded,
-                    label: l.marketplaceCards,
-                    color: tokens.brandGradientStart,
-                    tokens: tokens,
-                  ),
-                if (deck.hasTests)
-                  _TypeBadge(
-                    icon: Icons.fact_check_rounded,
-                    label: l.cardTileQuizChip,
-                    color: tokens.stateInfo,
-                    tokens: tokens,
-                  ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

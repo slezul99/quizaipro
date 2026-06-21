@@ -23,6 +23,8 @@ class LibraryDeckListTile extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
     final coverColor = _hexToColor(deck.coverColorHex);
+    final initial =
+        deck.title.trim().isNotEmpty ? deck.title.trim()[0].toUpperCase() : '?';
 
     return GestureDetector(
       onTap: onTap,
@@ -30,7 +32,14 @@ class LibraryDeckListTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: tokens.backgroundSurface,
           borderRadius: BorderRadius.circular(tokens.radiusLg),
-          border: Border.all(color: tokens.borderSubtle),
+          border: Border.all(color: coverColor.withValues(alpha: 0.20)),
+          boxShadow: [
+            BoxShadow(
+              color: coverColor.withValues(alpha: 0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         padding: EdgeInsets.symmetric(
           horizontal: tokens.space12,
@@ -38,21 +47,32 @@ class LibraryDeckListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Color swatch
+            // Emblem with deck initial
             Container(
               width: 48,
               height: 48,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: coverColor,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [coverColor, Color.lerp(coverColor, Colors.black, 0.22)!],
+                ),
                 borderRadius: BorderRadius.circular(tokens.radiusMd),
               ),
               child: deck.isArchived
                   ? Icon(
                       Icons.archive_outlined,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.85),
                       size: 20,
                     )
-                  : null,
+                  : Text(
+                      initial,
+                      style: tt.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
             ),
             SizedBox(width: tokens.space12),
             // Title & stats
