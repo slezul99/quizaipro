@@ -3745,6 +3745,34 @@ def collection_view(slug):
     return render_template("collection.html", coll=coll, decks=decks)
 
 
+@app.route("/marketplace/deck/<int:deck_id>/preview")
+@login_required
+def marketplace_deck_preview(deck_id):
+    """Sample cards for the marketplace preview modal — lets users see what's
+    inside a deck before cloning (localized question + answer, up to 3)."""
+    conn = db.get_conn()
+    deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+    if not deck or not deck["is_public"]:
+        conn.close()
+        return jsonify({"error": "not_found"}), 404
+    total = conn.execute("SELECT COUNT(*) AS c FROM cards WHERE deck_id=?", (deck_id,)).fetchone()["c"]
+    rows = conn.execute(
+        """SELECT front, back, note, front_en, front_uz, back_en, back_uz
+           FROM cards WHERE deck_id=? ORDER BY id LIMIT 3""", (deck_id,)).fetchall()
+    conn.close()
+    lang = session.get("lang", "ru")
+    cards = []
+    for r in rows:
+        c = _localize_card_fields(dict(r), lang)
+        # For MCQ the correct answer often carries an "A) " prefix — strip it.
+        back = (c.get("back") or "").strip()
+        m = re.match(r"^[A-Za-zА-Яа-яЁё0-9]+\s*[\)\.\:\-]\s*(.+)$", back.split("\n")[0])
+        if m:
+            back = m.group(1).strip()
+        cards.append({"front": (c.get("front") or "").strip(), "back": back})
+    return jsonify({"ok": True, "total": total, "cards": cards})
+
+
 # === Admin: manage collections ===
 @app.route("/admin/collections")
 @login_required
