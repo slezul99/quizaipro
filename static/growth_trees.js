@@ -179,6 +179,12 @@
     var bgCv = document.getElementById("gt-bg-canvas");
     if (bgCv) { var bfx = new TreeFX(bgCv, { scale: 1.9 }); bgCv._fx = bfx; cards.push(bfx); }
 
+    // Honour reduced-motion: render a single static frame, no animation loop.
+    if (reduce) {
+      cards.forEach(function (x) { try { x.draw(0.35); } catch (e) {} });
+      return;
+    }
+
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { var f = cards.find(function (x){return x.c===e.target;}); if (f) f.visible = e.isIntersecting; });
     }, { threshold: 0.04 });
