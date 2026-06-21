@@ -115,7 +115,7 @@
 </script>
 <style>
   /* Garantiruem chto fon stranitsy seras' tochno otkroyetsya v pravil'nom tsvete */
-  html { background: #87ceeb; }
+  html { background: #faf8f4; }
   html.dark { background: #0f1729; }
   html.dark body { background: #0f1729; }
   /* Pri navigatsii — bystro skryvaem belyy fleshk */
@@ -1383,7 +1383,7 @@
   /* Fon na landing — uberyom 2400px Unsplash */
   html.lite-mode .hero-wrap,
   html.lite-mode .hero-bg {
-    background-image: linear-gradient(135deg, #87ceeb 0%, #b3d9f2 50%, #fef0c7 100%) !important;
+    background-image: linear-gradient(135deg, #edf5f2 0%, #fdf6ee 55%, #fef0e0 100%) !important;
   }
   html.dark.lite-mode .hero-wrap,
   html.lite-mode.dark .hero-wrap {
@@ -1931,7 +1931,7 @@ function toggleDarkMode() {
   const isDark = html.classList.contains('dark');
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
   // Sinkhroniziruem html.style.background — chtoby ne bylo flash pri navigatsii
-  html.style.background = isDark ? '#0f1729' : '#87ceeb';
+  html.style.background = isDark ? '#0f1729' : '#faf8f4';
   html.style.colorScheme = isDark ? 'dark' : 'light';
   // Pereklyuchaem ikonki luna/solntse
   const lightIcon = document.getElementById('theme-icon-light');
