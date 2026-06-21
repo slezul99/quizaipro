@@ -136,6 +136,7 @@
       lightbox.open = false; o.classList.remove("show");
       document.body.style.overflow = "";
       setTimeout(function () { o.style.display = "none"; }, 350);
+      if (lightbox.opener && lightbox.opener.focus) lightbox.opener.focus();
     }
     o.addEventListener("click", function (e) {
       if (e.target === lightbox.img || e.target === lightbox.canvas ||
@@ -151,6 +152,7 @@
   function openLightbox(card) {
     if (!lightbox) buildLightbox();
     var lb = lightbox;
+    lb.opener = card;  // restore focus here when the lightbox closes
     lb.img.src = card.dataset.wide || card.dataset.img;
     lb.title.textContent = card.dataset.title;
     lb.title.style.color = card.dataset.accent;
@@ -167,6 +169,7 @@
       if (!lb.fx) lb.fx = new TreeFX(lb.canvas, { scale: reduce ? 1 : 2.4 });
       else { lb.fx.scale = reduce ? 1 : 2.4; lb.fx.resize(); lb.fx.refresh(); }
       lb.open = true;
+      var btn = lb.el.querySelector(".gt-lb-close"); if (btn) btn.focus();
     });
     document.body.style.overflow = "hidden";
   }
@@ -178,6 +181,13 @@
     });
     var bgCv = document.getElementById("gt-bg-canvas");
     if (bgCv) { var bfx = new TreeFX(bgCv, { scale: 1.9 }); bgCv._fx = bfx; cards.push(bfx); }
+
+    // Keyboard access for the stage cards (they are role=button tabindex=0).
+    document.querySelectorAll(".gt-card").forEach(function (card) {
+      card.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openLightbox(card); }
+      });
+    });
 
     // Honour reduced-motion: render a single static frame, no animation loop.
     if (reduce) {

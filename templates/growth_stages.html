@@ -239,6 +239,7 @@
       {% set unlocked = streak >= s.start %}
       <div class="gt-card {{ 'is-current' if s.key == current_key }} {{ 'is-next' if s.key == next_key }} {{ 'is-locked' if not unlocked }}"
            style="--gt-accent: {{ s.accent }};"
+           tabindex="0" role="button" aria-label="{{ s.title }} · {{ s.range }}"
            data-img="{{ url_for('static', filename='trees/' + s.img) }}"
            data-wide="{{ wide(s.img) }}"
            data-fx="{{ s.particle }}" data-glow="{{ s.glow }}" data-colors="{{ s.colors }}"
@@ -399,6 +400,14 @@
       document.getElementById('gt-share').addEventListener('click', function () {
         this.classList.remove('show');
       });
+      // Esc closes the share / celebration overlays (lightbox handles its own).
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        ['gt-share', 'gt-celebrate'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.classList.remove('show');
+        });
+      });
       document.getElementById('gt-share-download').onclick = downloadCard;
       document.getElementById('gt-share-copy').onclick = function () {
         navigator.clipboard && navigator.clipboard.writeText(S.url);
@@ -417,5 +426,5 @@
     });
   })();
 </script>
-<script src="{{ url_for('static', filename='growth_trees.js') }}?v=6" defer></script>
+<script src="{{ url_for('static', filename='growth_trees.js') }}?v=7" defer></script>
 {% endblock %}
