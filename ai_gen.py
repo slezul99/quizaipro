@@ -65,17 +65,53 @@ def is_available() -> bool:
     return bool(_key())
 
 
-def _call_gemini(prompt: str, max_tokens: int = 4000) -> str | None:
+# Controlled-generation schema for flashcard output. With this set, Gemini is
+# constrained to emit a clean JSON array of cards, so the brittle regex recovery
+# in _parse_cards_json becomes a belt-and-suspenders fallback rather than the
+# primary path. Type names are the Gemini Schema enum (uppercase).
+_FLASHCARD_LIST_SCHEMA = {
+    "type": "ARRAY",
+    "items": {
+        "type": "OBJECT",
+        "properties": {
+            "question": {"type": "STRING"},
+            "answer": {"type": "STRING"},
+            "note": {"type": "STRING"},
+        },
+        "required": ["question", "answer"],
+    },
+}
+
+# Same as above plus an English image search query (generate_with_photos).
+_FLASHCARD_PHOTO_SCHEMA = {
+    "type": "ARRAY",
+    "items": {
+        "type": "OBJECT",
+        "properties": {
+            "question": {"type": "STRING"},
+            "answer": {"type": "STRING"},
+            "note": {"type": "STRING"},
+            "image_query": {"type": "STRING"},
+        },
+        "required": ["question", "answer"],
+    },
+}
+
+
+def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | None = None) -> str | None:
     key = _key()
     if not key:
         return None
+    gen_config = {
+        "temperature": 0.5,
+        "maxOutputTokens": max_tokens,
+        "responseMimeType": "application/json",
+    }
+    if response_schema is not None:
+        gen_config["responseSchema"] = response_schema
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.5,
-            "maxOutputTokens": max_tokens,
-            "responseMimeType": "application/json",
-        },
+        "generationConfig": gen_config,
     }
     data = json.dumps(body).encode("utf-8")
 
@@ -256,7 +292,7 @@ Vyhod TOL'KO JSON:
 VHODNYE KARTY:
 {cards_json}"""
 
-    raw = _call_gemini(prompt, max_tokens=8000)
+    raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_LIST_SCHEMA)
     if not raw:
         return cards  # Fallback: vozvrashchaem kak est' esli kritik upal
 
@@ -338,7 +374,7 @@ Output ONLY a JSON array:
 TEXT:
 {text[:8000]}"""
 
-    raw = _call_gemini(prompt, max_tokens=8000)
+    raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_LIST_SCHEMA)
     cards = _parse_cards_json(raw or "")
     if quality and cards:
         cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
@@ -448,7 +484,7 @@ ANSWER FORMAT:
 Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
-    raw = _call_gemini(prompt, max_tokens=8000)
+    raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_LIST_SCHEMA)
     cards = _parse_cards_json(raw or "")
     if quality and cards:
         cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
@@ -897,7 +933,7 @@ Output ONLY a JSON array:
   "image_query": "short english search query"
 }}, ...]"""
 
-    raw = _call_gemini(prompt, max_tokens=8000)
+    raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_PHOTO_SCHEMA)
     if not raw:
         return []
 
