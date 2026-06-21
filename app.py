@@ -7782,6 +7782,9 @@ def _save_vision_cards_to_deck(job_id: str, cards: list[dict]) -> int:
                 conn.close()
                 raise RuntimeError("Deck not found")
             target_id = target["id"]
+            # Appending to an existing deck → drop near-duplicate questions.
+            existing = conn.execute("SELECT front FROM cards WHERE deck_id=?", (target_id,)).fetchall()
+            cards = ai_gen.dedup_against_existing(cards, [r["front"] for r in existing])
         else:
             if user_d["org_id"]:
                 cur = conn.execute(
@@ -8034,6 +8037,9 @@ def ai_page():
                     if not target:
                         raise ValueError("Колода не найдена")
                     target_id = target["id"]
+                    # Appending to an existing deck → drop near-duplicate questions.
+                    _existing = conn.execute("SELECT front FROM cards WHERE deck_id=?", (target_id,)).fetchall()
+                    cards = ai_gen.dedup_against_existing(cards, [r["front"] for r in _existing])
                 else:
                     tname = _new_deck_name or f"AI {datetime.now():%Y-%m-%d %H:%M}"
                     if _org_id:

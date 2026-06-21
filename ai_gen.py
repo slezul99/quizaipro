@@ -23,6 +23,11 @@ DEEPSEEK_KEY_FILE = BASE / "deepseek_key.txt"
 _GEMINI_MODEL = "gemini-3.5-flash"
 _GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models/"
 
+# Prompt set version — bump on any meaningful prompt change. Logged with every
+# call (AI-METRIC pv=...) so quality/cost in the logs can be correlated with the
+# prompt version, and so eval results are attributable to a specific revision.
+PROMPTS_VERSION = "2025-06-22.1"
+
 API_URL = f"{_GEMINI_BASE}{_GEMINI_MODEL}:generateContent"
 API_URL_FALLBACK = API_URL
 API_URL_VISION_PRIMARY = API_URL
@@ -220,7 +225,8 @@ def _log_metric(*, label, model, latency_ms, ok, usage=None, finish=None, error=
     """One structured line per Gemini call → greppable in Railway logs
     (`grep AI-METRIC`). Captures model, latency, token usage, finishReason and
     errors so cost/latency/quality can actually be measured per change."""
-    parts = [f"label={label}", f"model={model}", f"ms={latency_ms}", f"ok={int(bool(ok))}"]
+    parts = [f"label={label}", f"model={model}", f"pv={PROMPTS_VERSION}",
+             f"ms={latency_ms}", f"ok={int(bool(ok))}"]
     if usage:
         parts.append(f"in_tok={usage.get('promptTokenCount', '?')}")
         parts.append(f"out_tok={usage.get('candidatesTokenCount', '?')}")
@@ -1011,6 +1017,30 @@ def _validate_cards(cards: list[dict], max_len: int = 1500) -> list[dict]:
         print(f"[AI-METRIC] label=validate of={len(cards or [])} kept={len(deduped)} "
               f"dropped={dropped}", flush=True)
     return deduped
+
+
+def dedup_against_existing(new_cards: list[dict], existing_fronts) -> list[dict]:
+    """Drop generated cards whose question is a near-duplicate of one already in
+    the target deck (normalized text — cheap, no embeddings). Use when appending
+    AI cards to an existing deck so users don't get the same question twice."""
+    seen = set()
+    for f in (existing_fronts or []):
+        k = re.sub(r"\W+", "", (f or "").lower())[:80]
+        if k:
+            seen.add(k)
+    out = []
+    dropped = 0
+    for c in new_cards or []:
+        key = re.sub(r"\W+", "", (c.get("front") or "").lower())[:80]
+        if key and key in seen:
+            dropped += 1
+            continue
+        if key:
+            seen.add(key)
+        out.append(c)
+    if dropped:
+        print(f"[AI-METRIC] label=dedup_existing dropped={dropped} kept={len(out)}", flush=True)
+    return out
 
 
 def _fold_sources(cards: list[dict]) -> list[dict]:
@@ -2138,7 +2168,9 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
         "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
         "generationConfig": {
             "temperature": 0.7,
-            "maxOutputTokens": 4000,
+            # 6000: gemini-3.5-flash spends part of the budget on "thinking", so
+            # 4000 truncated longer tutor explanations.
+            "maxOutputTokens": 6000,
         },
     }
     data = json.dumps(body).encode("utf-8")
@@ -2324,7 +2356,7 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
     full_prompt = "\n".join(full_prompt_parts)
 
     any_chunk = False
-    for chunk in _gemini_stream(full_prompt, max_tokens=4000, temperature=0.7):
+    for chunk in _gemini_stream(full_prompt, max_tokens=6000, temperature=0.7):
         any_chunk = True
         yield chunk
 
