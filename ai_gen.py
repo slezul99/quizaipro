@@ -54,7 +54,10 @@ def _key():
 # from a service account instead of ?key=. The Developer API key stays as a
 # fallback when no service account is configured.
 SA_FILE = BASE / "sa_key.json"
-VERTEX_PROJECT = os.environ.get("VERTEX_PROJECT", "musi-ai-caa65")
+# Empty → derive the project from the service-account JSON itself, so the
+# request always targets the SA's own project (where it has permissions) no
+# matter which project's key is configured.
+VERTEX_PROJECT = os.environ.get("VERTEX_PROJECT", "").strip()
 VERTEX_LOCATION = os.environ.get("VERTEX_LOCATION", "global")  # gemini-3.5 → global
 _vertex_creds_cache = None
 
@@ -97,6 +100,15 @@ def vertex_enabled() -> bool:
     return _vertex_creds() is not None
 
 
+def _vertex_project():
+    if VERTEX_PROJECT:
+        return VERTEX_PROJECT
+    info = _vertex_sa_info()
+    if info and info.get("project_id"):
+        return info["project_id"]
+    return "musi-ai-caa65"
+
+
 def _vertex_token():
     creds = _vertex_creds()
     if creds is None:
@@ -115,7 +127,7 @@ def _vertex_url(model: str, stream: bool = False) -> str:
     loc = VERTEX_LOCATION
     host = "aiplatform.googleapis.com" if loc == "global" else f"{loc}-aiplatform.googleapis.com"
     method = "streamGenerateContent" if stream else "generateContent"
-    return (f"https://{host}/v1/projects/{VERTEX_PROJECT}/locations/{loc}"
+    return (f"https://{host}/v1/projects/{_vertex_project()}/locations/{loc}"
             f"/publishers/google/models/{model}:{method}")
 
 
