@@ -5,6 +5,7 @@ Klyuch: gemini_key.txt v korne proekta.
 """
 import json
 import os
+import random
 import re
 import time
 from pathlib import Path
@@ -207,6 +208,13 @@ _GROUNDING_RULE = (
     "\"source_span\". If a fact is not in the source, do NOT create that card."
 )
 
+# Pedagogical balance — push the model past flat recall decks.
+_BALANCE_RULE = (
+    "DIFFICULTY & DEPTH MIX: vary difficulty across the set (~30% easy recall, "
+    "~50% medium, ~20% challenging) and cognitive level — don't only test "
+    "definitions/recall; include 'apply it', 'compare', and 'why/how' questions."
+)
+
 
 def _log_metric(*, label, model, latency_ms, ok, usage=None, finish=None, error=None):
     """One structured line per Gemini call → greppable in Railway logs
@@ -243,6 +251,15 @@ def _gemini_endpoints():
     return attempts
 
 
+_MAX_RETRIES = 3
+_RETRYABLE = {429, 500, 502, 503, 504}
+
+
+def _backoff_sleep(attempt: int):
+    """Exponential backoff with jitter: ~1s, 2s, 4s (capped 8s) + 0–0.6s."""
+    time.sleep(min(8.0, 2 ** attempt) + random.uniform(0, 0.6))
+
+
 def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | None = None,
                  label: str = "gen") -> str | None:
     gen_config = {
@@ -263,50 +280,58 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
     if not attempts:
         return None
 
-    # Vertex first, Developer-key fallback.
+    # Vertex first, Developer-key fallback. Each endpoint is retried a few times
+    # on transient errors (429/5xx/network) with exponential backoff + jitter
+    # before moving to the next.
     last_error = None
     for model, url, headers in attempts:
-        req = urlreq.Request(url, data=data, method="POST", headers=headers)
-        t0 = time.time()
-        try:
-            with urlreq.urlopen(req, timeout=90) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            ms = int((time.time() - t0) * 1000)
-            usage = payload.get("usageMetadata") or {}
-            cand = (payload.get("candidates") or [{}])[0]
-            finish = cand.get("finishReason")
+        for attempt in range(_MAX_RETRIES):
+            req = urlreq.Request(url, data=data, method="POST", headers=headers)
+            t0 = time.time()
             try:
-                text = cand["content"]["parts"][0]["text"]
-            except (KeyError, IndexError, TypeError):
-                text = None
-            if text and text.strip():
-                _log_metric(label=label, model=model, latency_ms=ms, ok=True,
-                            usage=usage, finish=finish)
-                return text
-            _log_metric(label=label, model=model, latency_ms=ms, ok=False,
-                        usage=usage, finish=finish, error="empty")
-            last_error = f"Empty response (finish={finish})"
-            print(f"[AI] {last_error[:300]}")
-            continue
-        except urlerr.HTTPError as e:
-            ms = int((time.time() - t0) * 1000)
-            err_body = ""
-            try:
-                err_body = e.read().decode("utf-8", errors="replace")[:300]
-            except Exception:
-                pass
-            last_error = f"HTTP {e.code} ({model}): {err_body}"
-            _log_metric(label=label, model=model, latency_ms=ms, ok=False,
-                        error=f"HTTP {e.code}: {err_body[:80]}")
-            print(f"[AI] {last_error}")
-            # Try the next endpoint (e.g. Vertex 403/quota → Developer key).
-            continue
-        except Exception as e:
-            ms = int((time.time() - t0) * 1000)
-            last_error = f"{type(e).__name__}: {e}"
-            _log_metric(label=label, model=model, latency_ms=ms, ok=False, error=last_error)
-            print(f"[AI] {last_error}")
-            continue
+                with urlreq.urlopen(req, timeout=90) as resp:
+                    payload = json.loads(resp.read().decode("utf-8"))
+                ms = int((time.time() - t0) * 1000)
+                usage = payload.get("usageMetadata") or {}
+                cand = (payload.get("candidates") or [{}])[0]
+                finish = cand.get("finishReason")
+                try:
+                    text = cand["content"]["parts"][0]["text"]
+                except (KeyError, IndexError, TypeError):
+                    text = None
+                if text and text.strip():
+                    _log_metric(label=label, model=model, latency_ms=ms, ok=True,
+                                usage=usage, finish=finish)
+                    return text
+                _log_metric(label=label, model=model, latency_ms=ms, ok=False,
+                            usage=usage, finish=finish, error="empty")
+                last_error = f"Empty response (finish={finish})"
+                print(f"[AI] {last_error[:300]}")
+                break  # empty/SAFETY won't fix on retry → next endpoint
+            except urlerr.HTTPError as e:
+                ms = int((time.time() - t0) * 1000)
+                err_body = ""
+                try:
+                    err_body = e.read().decode("utf-8", errors="replace")[:300]
+                except Exception:
+                    pass
+                last_error = f"HTTP {e.code} ({model}): {err_body}"
+                _log_metric(label=label, model=model, latency_ms=ms, ok=False,
+                            error=f"HTTP {e.code}: {err_body[:80]}")
+                print(f"[AI] {last_error}")
+                if e.code in _RETRYABLE and attempt < _MAX_RETRIES - 1:
+                    _backoff_sleep(attempt)
+                    continue
+                break  # non-retryable (403/400) or out of retries → next endpoint
+            except Exception as e:
+                ms = int((time.time() - t0) * 1000)
+                last_error = f"{type(e).__name__}: {e}"
+                _log_metric(label=label, model=model, latency_ms=ms, ok=False, error=last_error)
+                print(f"[AI] {last_error}")
+                if attempt < _MAX_RETRIES - 1:
+                    _backoff_sleep(attempt)
+                    continue
+                break
 
     if last_error:
         raise RuntimeError(f"Gemini API недоступен: {last_error[:200]}")
@@ -528,6 +553,8 @@ ANSWER FORMAT:
 
 {_GROUNDING_RULE}
 
+{_BALANCE_RULE}
+
 Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"...","source_span":"exact supporting sentence from the text"}}, ...]
 
@@ -612,6 +639,8 @@ ANSWER FORMAT:
 - Show the rule clearly
 - "note" field: memory trick, common mistake warning ⚠️, or fun fact
 
+{_BALANCE_RULE}
+
 Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
@@ -640,6 +669,8 @@ ANSWER FORMAT:
 - Direct answer first, then explanation
 - Use concrete, relatable examples
 - "note" field: memory trick, surprising fact, or common mistake ⚠️
+
+{_BALANCE_RULE}
 
 Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
@@ -749,6 +780,10 @@ VISION_EXTRACT_PROMPT = """Ты — извлекатель тестовых во
 
 🎯 ОЖИДАНИЕ: на типичной странице теста 5-15 вопросов. Если ты вернул < 5 — перепроверь, ты точно ничего не пропустил?
 
+⛔ ГРАУНДИНГ (строго): извлекай ТОЛЬКО то, что реально напечатано на странице.
+НЕ придумывай вопросы, варианты или правильные ответы, которых нет на изображении.
+Если правильный ответ на странице не отмечен — ставь "correct_letter": null.
+
 ВЫХОД — JSON-массив. Если 0 закрытых вопросов на странице → `[]`.
 НЕ ОБЪЯСНЯЙ, не пиши комментарии, ТОЛЬКО JSON:
 
@@ -789,7 +824,7 @@ _last_gemini_error = ""
 def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = None) -> str | None:
     """Otdelnyy zapros k Gemini Vision s nabor kartinok. Vozvrashchaet raw text otveta.
     prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT).
-    Probuet snachala gemini-3.5-flash (samaya posledniaya), potom gemini-2.5-flash (fallback)."""
+    Edinaya model' gemini-3.5-flash; Vertex AI pervym, Developer-key fallback."""
     global _last_gemini_error
     import base64
     parts = [{"text": prompt or VISION_EXTRACT_PROMPT}]
@@ -1277,15 +1312,14 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
         # Opredelyaem konkretnyy tip oshibki
         if "429" in gemini_err or "RESOURCE_EXHAUSTED" in gemini_err.upper() or "quota" in gemini_err.lower():
             raise RuntimeError(
-                "🚫 Дневной лимит Gemini AI исчерпан. "
-                "Free tier: gemini-3.5-flash и gemini-2.5-flash имеют дневные квоты. "
-                "Квота сбрасывается в полночь по Pacific Time (=11:00 утра в Ташкенте). "
-                "Для production-нагрузки нужен paid tier (~$0.10 за PDF). "
+                "🚫 Лимит запросов к Gemini временно исчерпан (rate limit). "
+                "Подождите минуту и попробуйте снова. "
                 f"\n\nПодробности от Google: {gemini_err[:300]}"
             )
         elif "401" in gemini_err or "403" in gemini_err or "API_KEY" in gemini_err.upper():
             raise RuntimeError(
-                "🔑 Проблема с API ключом Gemini. Проверьте GEMINI_API_KEY в Railway env. "
+                "🔑 Проблема с доступом к Gemini. Проверьте Vertex service account "
+                "(GOOGLE_SERVICE_ACCOUNT_JSON) или GEMINI_API_KEY в Railway env. "
                 f"\n\nПодробности: {gemini_err[:300]}"
             )
         elif "503" in gemini_err or "500" in gemini_err or "overload" in gemini_err.lower():
