@@ -150,11 +150,23 @@ def rate_limit(key: str, max_attempts: int = 5, window_seconds: int = 60) -> boo
 
 
 def get_client_ip():
-    """Poluchayem IP klienta s uchetom proxy (ngrok, cloudflared)."""
-    # Doveryaem tol'ko bezopasnym proxy-zagolovkam
+    """Real client IP behind Cloudflare + Railway.
+
+    Behind Cloudflare the only trustworthy client IP is `CF-Connecting-IP`:
+    X-Forwarded-For in this chain often starts with the Cloudflare *edge* IP
+    (the user's nearest datacenter — Warsaw, San Jose, …), which made analytics
+    geolocate everyone to those edge cities. Prefer CF's header, then other
+    real-IP headers, and only then fall back to the XFF chain / remote_addr.
+    """
+    for h in ("CF-Connecting-IP", "True-Client-IP", "X-Real-IP"):
+        v = (request.headers.get(h, "") or "").strip()
+        if v:
+            return v
     fwd = request.headers.get("X-Forwarded-For", "")
     if fwd:
-        return fwd.split(",")[0].strip()
+        parts = [p.strip() for p in fwd.split(",") if p.strip()]
+        if parts:
+            return parts[0]
     return request.remote_addr or "unknown"
 
 
