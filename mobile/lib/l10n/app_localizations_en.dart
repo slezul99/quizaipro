@@ -812,6 +812,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deckEditorCreate => 'Create';
 
   @override
+  String levelXpToNext(int xp, int level) {
+    return '$xp XP to level $level';
+  }
+
+  @override
+  String get levelUpNewLevel => 'NEW LEVEL!';
+
+  @override
+  String get levelUpEncouragement =>
+      'You\'re doing great! Keep it up to unlock the next milestone.';
+
+  @override
+  String get levelUpGreat => 'GREAT';
+
+  @override
+  String get levelJourneyLoadError => 'Couldn\'t load the level track.';
+
+  @override
+  String get levelJourneyRewardsRoad => 'REWARDS ROAD';
+
+  @override
+  String levelJourneyMilestone(int level) {
+    return 'Level $level milestone';
+  }
+
+  @override
+  String get levelJourneyXpHistory => 'XP HISTORY';
+
+  @override
+  String get levelJourneyXpHistoryEmpty => 'XP history is empty.';
+
+  @override
+  String levelJourneyLevel(int level) {
+    return 'Level $level';
+  }
+
+  @override
+  String levelJourneyXpRemaining(int xp) {
+    return '$xp XP left';
+  }
+
+  @override
   String get flashcardsAgain => 'Again';
 
   @override

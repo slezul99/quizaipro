@@ -814,6 +814,48 @@ class AppLocalizationsUz extends AppLocalizations {
   String get deckEditorCreate => 'Yaratish';
 
   @override
+  String levelXpToNext(int xp, int level) {
+    return '$level-darajagacha $xp XP';
+  }
+
+  @override
+  String get levelUpNewLevel => 'YANGI DARAJA!';
+
+  @override
+  String get levelUpEncouragement =>
+      'Ajoyib ketyapsiz! Keyingi bosqichni ochish uchun shu ruhda davom eting.';
+
+  @override
+  String get levelUpGreat => 'ZO\'R';
+
+  @override
+  String get levelJourneyLoadError => 'Darajalar shkalasini yuklab bo\'lmadi.';
+
+  @override
+  String get levelJourneyRewardsRoad => 'MUKOFOTLAR YO\'LI';
+
+  @override
+  String levelJourneyMilestone(int level) {
+    return '$level-daraja bosqichi';
+  }
+
+  @override
+  String get levelJourneyXpHistory => 'XP TARIXI';
+
+  @override
+  String get levelJourneyXpHistoryEmpty => 'XP tarixi bo\'sh.';
+
+  @override
+  String levelJourneyLevel(int level) {
+    return '$level-daraja';
+  }
+
+  @override
+  String levelJourneyXpRemaining(int xp) {
+    return '$xp XP qoldi';
+  }
+
+  @override
   String get flashcardsAgain => 'Qayta';
 
   @override

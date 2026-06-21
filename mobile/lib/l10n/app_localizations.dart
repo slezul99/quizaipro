@@ -1576,6 +1576,72 @@ abstract class AppLocalizations {
   /// **'Create'**
   String get deckEditorCreate;
 
+  /// XP remaining until the next level
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP to level {level}'**
+  String levelXpToNext(int xp, int level);
+
+  /// Level-up celebration title
+  ///
+  /// In en, this message translates to:
+  /// **'NEW LEVEL!'**
+  String get levelUpNewLevel;
+
+  /// Level-up celebration subtext
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re doing great! Keep it up to unlock the next milestone.'**
+  String get levelUpEncouragement;
+
+  /// Level-up celebration dismiss button
+  ///
+  /// In en, this message translates to:
+  /// **'GREAT'**
+  String get levelUpGreat;
+
+  /// Level journey load error
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the level track.'**
+  String get levelJourneyLoadError;
+
+  /// Milestones section header
+  ///
+  /// In en, this message translates to:
+  /// **'REWARDS ROAD'**
+  String get levelJourneyRewardsRoad;
+
+  /// Milestone fallback name
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level} milestone'**
+  String levelJourneyMilestone(int level);
+
+  /// XP history section header
+  ///
+  /// In en, this message translates to:
+  /// **'XP HISTORY'**
+  String get levelJourneyXpHistory;
+
+  /// Empty XP history
+  ///
+  /// In en, this message translates to:
+  /// **'XP history is empty.'**
+  String get levelJourneyXpHistoryEmpty;
+
+  /// Level label
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}'**
+  String levelJourneyLevel(int level);
+
+  /// XP remaining label
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP left'**
+  String levelJourneyXpRemaining(int xp);
+
   /// Again grade button
   ///
   /// In en, this message translates to:

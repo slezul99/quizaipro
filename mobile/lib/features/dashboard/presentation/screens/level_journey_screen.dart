@@ -5,6 +5,7 @@ import 'package:quizaipro_mobile/features/dashboard/domain/entities/level_journe
 import 'package:quizaipro_mobile/features/dashboard/domain/usecases/get_level_journey_use_case.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:quizaipro_mobile/core/usecase/usecase.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 final levelJourneyProvider = FutureProvider.autoDispose<LevelJourney>((ref) async {
   final useCase = ref.watch(getLevelJourneyUseCaseProvider);
@@ -18,6 +19,7 @@ class LevelJourneyScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.aurora;
+    final l = AppLocalizations.of(context)!;
     final detailsAsync = ref.watch(levelJourneyProvider);
 
     return Scaffold(
@@ -26,7 +28,7 @@ class LevelJourneyScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(
           child: Text(
-            'Не удалось загрузить шкалу уровней.',
+            l.levelJourneyLoadError,
             style: TextStyle(color: tokens.textSecondary),
           ),
         ),
@@ -53,6 +55,7 @@ class _LevelJourneyContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final currentTierColor = _getTierColor(details.level);
     final remainingXp =
         (details.xpForNextLevel - details.xpInCurrentLevel).clamp(0, 1 << 30);
@@ -84,7 +87,7 @@ class _LevelJourneyContent extends StatelessWidget {
             delegate: SliverChildListDelegate([
               // Roadmap title
               Text(
-                'ДОРОГА НАГРАД',
+                l.levelJourneyRewardsRoad,
                 style: tokens.titleMedium.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
@@ -152,7 +155,7 @@ class _LevelJourneyContent extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Миля уровня ${milestone.level}',
+                              l.levelJourneyMilestone(milestone.level),
                               style: tokens.titleSmall.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: milestone.unlocked ? tokens.textPrimary : tokens.textSecondary,
@@ -178,7 +181,7 @@ class _LevelJourneyContent extends StatelessWidget {
 
               // XP History Section
               Text(
-                'ИСТОРИЯ XP',
+                l.levelJourneyXpHistory,
                 style: tokens.titleMedium.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
@@ -196,7 +199,7 @@ class _LevelJourneyContent extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      'История XP пуста.',
+                      l.levelJourneyXpHistoryEmpty,
                       style: tokens.bodyMedium.copyWith(color: tokens.textSecondary),
                     ),
                   ),
@@ -300,6 +303,7 @@ class _LevelHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final topPad = MediaQuery.of(context).padding.top;
     return Container(
       padding: EdgeInsets.fromLTRB(20, topPad + 8, 20, 28),
@@ -407,7 +411,7 @@ class _LevelHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Уровень $level',
+                      l.levelJourneyLevel(level),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.85),
                         fontWeight: FontWeight.w600,
@@ -446,7 +450,7 @@ class _LevelHero extends StatelessWidget {
                 ),
               ),
               Text(
-                'осталось $remainingXp XP',
+                l.levelJourneyXpRemaining(remainingXp),
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,

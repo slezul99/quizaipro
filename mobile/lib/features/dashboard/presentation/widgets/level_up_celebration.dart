@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 class LevelUpCelebrationDialog extends StatefulWidget {
   const LevelUpCelebrationDialog({
@@ -89,6 +90,7 @@ class _LevelUpCelebrationDialogState extends State<LevelUpCelebrationDialog>
   @override
   Widget build(BuildContext context) {
     final tierColor = _getTierColor(widget.newLevel);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.black.withOpacity(0.85),
@@ -147,9 +149,9 @@ class _LevelUpCelebrationDialogState extends State<LevelUpCelebrationDialog>
                         const SizedBox(height: 20),
 
                         // Title
-                        const Text(
-                          'НОВЫЙ УРОВЕНЬ!',
-                          style: TextStyle(
+                        Text(
+                          l.levelUpNewLevel,
+                          style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -191,7 +193,7 @@ class _LevelUpCelebrationDialogState extends State<LevelUpCelebrationDialog>
 
                         // Subtext
                         Text(
-                          'Вы отлично справляетесь! Продолжайте в том же духе, чтобы разблокировать следующую милю.',
+                          l.levelUpEncouragement,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -216,9 +218,9 @@ class _LevelUpCelebrationDialogState extends State<LevelUpCelebrationDialog>
                             ),
                             elevation: 4,
                           ),
-                          child: const Text(
-                            'ОТЛИЧНО',
-                            style: TextStyle(
+                          child: Text(
+                            l.levelUpGreat,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.1,

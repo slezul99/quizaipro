@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizaipro_mobile/core/router/app_routes.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/xp_summary.dart';
+import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 class LevelCard extends StatefulWidget {
   const LevelCard({
@@ -109,6 +110,7 @@ class _LevelCardState extends State<LevelCard> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final tierColor = _getTierColor();
     final tierName = _getTierName();
+    final l = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () => context.pushNamed(AppRoutes.levelJourneyName),
@@ -252,7 +254,7 @@ class _LevelCardState extends State<LevelCard> with SingleTickerProviderStateMix
                       
                       // Bottom label
                       Text(
-                        '${widget.xp.xpToNextLevel} XP до уровня ${widget.xp.level + 1}',
+                        l.levelXpToNext(widget.xp.xpToNextLevel, widget.xp.level + 1),
                         style: widget.tokens.bodySmall.copyWith(
                           color: widget.tokens.textTertiary,
                           fontWeight: FontWeight.bold,

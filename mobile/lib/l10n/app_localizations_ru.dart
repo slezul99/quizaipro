@@ -817,6 +817,48 @@ class AppLocalizationsRu extends AppLocalizations {
   String get deckEditorCreate => 'Создать';
 
   @override
+  String levelXpToNext(int xp, int level) {
+    return '$xp XP до уровня $level';
+  }
+
+  @override
+  String get levelUpNewLevel => 'НОВЫЙ УРОВЕНЬ!';
+
+  @override
+  String get levelUpEncouragement =>
+      'Вы отлично справляетесь! Продолжайте в том же духе, чтобы разблокировать следующую милю.';
+
+  @override
+  String get levelUpGreat => 'ОТЛИЧНО';
+
+  @override
+  String get levelJourneyLoadError => 'Не удалось загрузить шкалу уровней.';
+
+  @override
+  String get levelJourneyRewardsRoad => 'ДОРОГА НАГРАД';
+
+  @override
+  String levelJourneyMilestone(int level) {
+    return 'Миля уровня $level';
+  }
+
+  @override
+  String get levelJourneyXpHistory => 'ИСТОРИЯ XP';
+
+  @override
+  String get levelJourneyXpHistoryEmpty => 'История XP пуста.';
+
+  @override
+  String levelJourneyLevel(int level) {
+    return 'Уровень $level';
+  }
+
+  @override
+  String levelJourneyXpRemaining(int xp) {
+    return 'осталось $xp XP';
+  }
+
+  @override
   String get flashcardsAgain => 'Снова';
 
   @override
