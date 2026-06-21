@@ -151,7 +151,7 @@
   function openLightbox(card) {
     if (!lightbox) buildLightbox();
     var lb = lightbox;
-    lb.img.src = card.dataset.img;
+    lb.img.src = card.dataset.wide || card.dataset.img;
     lb.title.textContent = card.dataset.title;
     lb.title.style.color = card.dataset.accent;
     lb.range.innerHTML = "⚡ " + card.dataset.range;
@@ -176,8 +176,8 @@
     document.querySelectorAll(".gt-card canvas[data-fx]").forEach(function (cv) {
       var fx = new TreeFX(cv, { scale: 1.2 }); cv._fx = fx; cards.push(fx);
     });
-    var heroCv = document.getElementById("gt-hero-canvas");
-    if (heroCv) { var hfx = new TreeFX(heroCv, { scale: 1.6 }); heroCv._fx = hfx; cards.push(hfx); }
+    var bgCv = document.getElementById("gt-bg-canvas");
+    if (bgCv) { var bfx = new TreeFX(bgCv, { scale: 1.9 }); bgCv._fx = bfx; cards.push(bfx); }
 
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { var f = cards.find(function (x){return x.c===e.target;}); if (f) f.visible = e.isIntersecting; });
