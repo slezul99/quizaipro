@@ -14,27 +14,25 @@ BASE = Path(__file__).resolve().parent
 KEY_FILE = BASE / "gemini_key.txt"
 DEEPSEEK_KEY_FILE = BASE / "deepseek_key.txt"
 
-API_URL = ("https://generativelanguage.googleapis.com/v1beta/models/"
-           "gemini-3.5-flash:generateContent")
-# Fallback model esli osnovnaya zabita (rate limit)
-API_URL_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                    "gemini-2.5-flash:generateContent")
-# Vision URLs.
-# Maj 2026: Gemini 3.5 Flash uzhe v free tier, podderzhivaet vision
-# (text+image+video+audio+pdf, 1M context, 65k output).
-# - gemini-3.5-flash:        primary (samaya posledniaya, mnogofunkcional'naya)
-# - gemini-2.5-flash:        fallback (proverennyy backup, 250 RPD free)
-# - gemini-2.5-flash-lite:   ekstrennyy backup (1000 RPD free, lite versiya)
-API_URL_VISION_PRIMARY = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                          "gemini-3.5-flash:generateContent")
-API_URL_VISION_FALLBACK = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                           "gemini-2.5-flash:generateContent")
+# Single model across the whole app: gemini-3.5-flash (per product decision —
+# mirror Musi AI, no mixed/older models). The *_FALLBACK aliases are kept so the
+# retry loops and app.py diagnostics keep working, but they point at the SAME
+# 3.5-flash model — a retry, never a downgrade to 2.5/lite.
+_GEMINI_MODEL = "gemini-3.5-flash"
+_GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models/"
+
+API_URL = f"{_GEMINI_BASE}{_GEMINI_MODEL}:generateContent"
+API_URL_FALLBACK = API_URL
+API_URL_VISION_PRIMARY = API_URL
+API_URL_VISION_FALLBACK = API_URL
+API_URL_STREAM = f"{_GEMINI_BASE}{_GEMINI_MODEL}:streamGenerateContent"
 
 # === DeepSeek API (OpenAI-sovmestimyy endpoint) ===
-# Ispolzuetsya tolko dlya tekstovogo chata (AI Tutor).
-# Vision i generatsia kolod ostalis na Gemini.
+# DISABLED — the app now uses gemini-3.5-flash for everything, including the AI
+# Tutor chat (see is_deepseek_available below). Kept only so existing references
+# don't break.
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
-DEEPSEEK_MODEL = "deepseek-v4-flash"  # bystryy + deshyovyy, $0.14/$0.28 za 1M tokens
+DEEPSEEK_MODEL = "deepseek-v4-flash"
 
 
 def _key():
@@ -59,7 +57,8 @@ def _deepseek_key():
 
 
 def is_deepseek_available() -> bool:
-    return bool(_deepseek_key())
+    # DeepSeek intentionally disabled — everything runs on gemini-3.5-flash now.
+    return False
 
 
 def is_available() -> bool:
@@ -1814,6 +1813,40 @@ def _deepseek_chat_call(system_prompt: str, messages: list, max_tokens: int = 80
     return _gen()
 
 
+def _gemini_stream(full_prompt: str, max_tokens: int = 4000, temperature: float = 0.7):
+    """Streams gemini-3.5-flash output token-by-token via streamGenerateContent
+    (SSE). Yields text deltas; silent (no yields) on failure."""
+    key = _key()
+    if not key:
+        return
+    body = {
+        "contents": [{"parts": [{"text": full_prompt}]}],
+        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+    }
+    data = json.dumps(body).encode("utf-8")
+    url = f"{API_URL_STREAM}?alt=sse&key={key}"
+    req = urlreq.Request(url, data=data, method="POST",
+                         headers={"Content-Type": "application/json"})
+    try:
+        with urlreq.urlopen(req, timeout=90) as resp:
+            for raw in resp:
+                line = raw.decode("utf-8", errors="replace").strip()
+                if not line.startswith("data:"):
+                    continue
+                payload = line[5:].strip()
+                if not payload or payload == "[DONE]":
+                    continue
+                try:
+                    obj = json.loads(payload)
+                    text = obj["candidates"][0]["content"]["parts"][0]["text"]
+                    if text:
+                        yield text
+                except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+                    continue
+    except Exception as e:
+        print(f"[AI tutor stream Gemini] {type(e).__name__}: {e}")
+
+
 def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "") -> str | None:
     """AI-tutor: chat-bot kotoryy znayet o tekuschey kolode i mozhet podrobno ob'yasnyat'.
 
@@ -1904,7 +1937,22 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
             return  # Yavno DeepSeek — ne fallback
         print("[AI tutor stream] DeepSeek empty, fallback to Gemini")
 
-    # 2. Gemini fallback (NE streaming — otdaem celikom)
-    text = chat_tutor(user_message, deck_context, history, lang, provider="gemini")
-    if text:
-        yield text
+    # 2. Gemini streaming (gemini-3.5-flash) — token-by-token via SSE.
+    full_prompt_parts = [system_prompt, "\n\nИстория диалога:"]
+    for m in messages[:-1]:
+        role = "Студент" if m["role"] == "user" else "Репетитор"
+        full_prompt_parts.append(f"{role}: {m['content']}")
+    full_prompt_parts.append(f"Студент: {messages[-1]['content']}")
+    full_prompt_parts.append("Репетитор:")
+    full_prompt = "\n".join(full_prompt_parts)
+
+    any_chunk = False
+    for chunk in _gemini_stream(full_prompt, max_tokens=4000, temperature=0.7):
+        any_chunk = True
+        yield chunk
+
+    # Last-resort: non-streaming single shot if streaming yielded nothing.
+    if not any_chunk:
+        text = chat_tutor(user_message, deck_context, history, lang, provider="gemini")
+        if text:
+            yield text
