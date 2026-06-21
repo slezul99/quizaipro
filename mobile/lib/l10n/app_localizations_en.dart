@@ -330,6 +330,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardRetentionFading => 'fading';
 
   @override
+  String get dashboardRetentionInfo =>
+      'Retention shows how much of what you\'ve studied you remember right now — computed by the FSRS algorithm from each card\'s memory stability and the time since your last review. \"In a week\" is the forecast if you don\'t review. \"Fading\" are cards you\'ve likely started to forget; tap the card to review those first.';
+
+  @override
   String get dashboardReadyToStudy => 'Ready to study';
 
   @override

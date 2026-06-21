@@ -2,33 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/core/widgets/radial_progress_ring.dart';
+import 'package:quizaipro_mobile/core/widgets/streak_flame.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/streak_summary.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/xp_summary.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizaipro_mobile/core/router/app_routes.dart';
 
-
-/// Tier palette shared with the level page. The streak glyph borrows it so its
-/// colour visibly evolves as the learner climbs tiers — a small "your progress
-/// changes the world" touch fitting the study theme.
-({Color solid, List<Color> gradient}) _tierPalette(int level) {
-  if (level <= 5) {
-    return (solid: const Color(0xFFCD7F32), gradient: const [Color(0xFFF0B27A), Color(0xFFCD7F32)]);
-  }
-  if (level <= 15) {
-    return (solid: const Color(0xFF9CA3AF), gradient: const [Color(0xFFE5E7EB), Color(0xFF9CA3AF)]);
-  }
-  if (level <= 30) {
-    return (solid: const Color(0xFFF59E0B), gradient: const [Color(0xFFFFE259), Color(0xFFFFA751)]);
-  }
-  if (level <= 50) {
-    return (solid: const Color(0xFF14B8A6), gradient: const [Color(0xFF2DD4BF), Color(0xFF0D9488)]);
-  }
-  if (level <= 100) {
-    return (solid: const Color(0xFF10B981), gradient: const [Color(0xFF34D399), Color(0xFF059669)]);
-  }
-  return (solid: const Color(0xFF8B5CF6), gradient: const [Color(0xFFA78BFA), Color(0xFF7C3AED)]);
-}
 
 /// Compact chess.com-style stat chips (streak + level) shown in the dashboard
 /// header. Replaces the old full-width XP/streak cards: tapping either chip
@@ -52,53 +31,10 @@ class DashboardHeaderStats extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _StreakChip(streak: streak, level: xp.level, tokens: tokens),
+        _StreakChip(streak: streak, tokens: tokens),
         SizedBox(width: tokens.space8),
         _LevelChip(xp: xp, tokens: tokens),
       ],
-    );
-  }
-}
-
-/// Streak glyph — a "bolt of momentum" instead of the generic 🔥. It's drawn
-/// via a [ShaderMask] with the current tier gradient, so the streak mark shifts
-/// colour (bronze → silver → gold → teal → emerald → violet) as the learner
-/// levels up. A muted outline is shown once the streak has lapsed.
-class _StreakIcon extends StatelessWidget {
-  const _StreakIcon({
-    required this.active,
-    required this.size,
-    required this.level,
-    required this.tokens,
-  });
-
-  final bool active;
-  final double size;
-  final int level;
-  final AuroraTokens tokens;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!active) {
-      return Icon(
-        Icons.bolt_outlined,
-        size: size,
-        color: tokens.textTertiary,
-      );
-    }
-    final gradient = _tierPalette(level).gradient;
-    return ShaderMask(
-      shaderCallback: (rect) => LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: gradient,
-      ).createShader(rect),
-      blendMode: BlendMode.srcIn,
-      child: Icon(
-        Icons.bolt_rounded,
-        size: size,
-        color: Colors.white,
-      ),
     );
   }
 }
@@ -143,18 +79,16 @@ class _LevelBadge extends StatelessWidget {
 class _StreakChip extends StatelessWidget {
   const _StreakChip({
     required this.streak,
-    required this.level,
     required this.tokens,
   });
 
   final StreakSummary streak;
-  final int level;
   final AuroraTokens tokens;
 
   @override
   Widget build(BuildContext context) {
     final active = streak.isActive;
-    final tierColor = _tierPalette(level).solid;
+    final count = streak.currentStreak;
 
     return GestureDetector(
       onTap: () => context.pushNamed(AppRoutes.streakJourneyName),
@@ -169,13 +103,17 @@ class _StreakChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _StreakIcon(active: active, size: 18, level: level, tokens: tokens),
+            StreakFlame(
+                streak: count,
+                size: 18,
+                active: active,
+                inactiveColor: tokens.textTertiary),
             const SizedBox(width: 5),
             Text(
-              '${streak.currentStreak}',
+              '$count',
               style: tokens.titleSmall.copyWith(
                 fontWeight: FontWeight.w800,
-                color: active ? tierColor : tokens.textSecondary,
+                color: active ? streakFlameColor(count) : tokens.textSecondary,
               ),
             ),
           ],

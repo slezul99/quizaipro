@@ -13,6 +13,7 @@ class RetentionCard extends StatelessWidget {
     required this.title,
     required this.forecastLabel,
     required this.fadingLabel,
+    this.explanation,
     this.onReviewFading,
   });
 
@@ -21,6 +22,9 @@ class RetentionCard extends StatelessWidget {
   final String title;
   final String forecastLabel;
   final String fadingLabel;
+
+  /// Plain-language explanation shown when the "?" is tapped.
+  final String? explanation;
 
   /// Tapping the card (when something is fading) starts a focused review.
   final VoidCallback? onReviewFading;
@@ -44,12 +48,49 @@ class RetentionCard extends StatelessWidget {
       child: InkWell(
         onTap: tappable ? onReviewFading : null,
         borderRadius: BorderRadius.circular(tokens.radiusL),
-        child: _content(now),
+        child: _content(context, now),
       ),
     );
   }
 
-  Widget _content(int now) {
+  void _showInfo(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: tokens.backgroundSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(tokens.radiusL)),
+      ),
+      builder: (ctx) {
+        final tt = Theme.of(ctx).textTheme;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(tokens.space24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🧠', style: TextStyle(fontSize: 22)),
+                    SizedBox(width: tokens.space8),
+                    Text(title,
+                        style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+                  ],
+                ),
+                SizedBox(height: tokens.space12),
+                Text(explanation ?? '',
+                    style: tt.bodyMedium?.copyWith(
+                        color: tokens.textSecondary, height: 1.5)),
+                SizedBox(height: tokens.space8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _content(BuildContext context, int now) {
     return Container(
       padding: EdgeInsets.all(tokens.space16),
       decoration: BoxDecoration(
@@ -70,6 +111,16 @@ class RetentionCard extends StatelessWidget {
                   style: tokens.titleMedium.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
+              if (explanation != null)
+                GestureDetector(
+                  onTap: () => _showInfo(context),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: tokens.space8),
+                    child: Icon(Icons.help_outline_rounded,
+                        size: 18, color: tokens.textTertiary),
+                  ),
+                ),
               Text(
                 '$now%',
                 style: tokens.headlineSmall.copyWith(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -97,33 +99,130 @@ class AppShell extends StatelessWidget {
   }
 }
 
-class _TutorFab extends StatelessWidget {
+/// AssistiveTouch-style AI button: a small, semi-transparent bubble that stays
+/// out of the way until tapped, then fades in fully and reveals a little menu
+/// of AI actions (Tutor / Generator). Auto-collapses after a few idle seconds.
+class _TutorFab extends StatefulWidget {
   const _TutorFab({required this.tokens});
 
   final AuroraTokens tokens;
 
   @override
+  State<_TutorFab> createState() => _TutorFabState();
+}
+
+class _TutorFabState extends State<_TutorFab> {
+  bool _expanded = false;
+  Timer? _collapseTimer;
+
+  @override
+  void dispose() {
+    _collapseTimer?.cancel();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    _collapseTimer?.cancel();
+    if (_expanded) {
+      _collapseTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) setState(() => _expanded = false);
+      });
+    }
+  }
+
+  void _go(String routeName) {
+    _collapseTimer?.cancel();
+    setState(() => _expanded = false);
+    context.pushNamed(routeName);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.pushNamed(AppRoutes.tutorName),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: tokens.brandGradient,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: tokens.brandGradientStart.withAlpha(77),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    final t = widget.tokens;
+    final l = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedSize(
+          duration: const Duration(milliseconds: 160),
+          alignment: Alignment.bottomLeft,
+          curve: Curves.easeOut,
+          child: _expanded
+              ? Padding(
+                  padding: EdgeInsets.only(bottom: t.space12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _action(t, Icons.auto_awesome_rounded,
+                          l.dashboardActionAiTutor,
+                          () => _go(AppRoutes.tutorName)),
+                      SizedBox(height: t.space8),
+                      _action(t, Icons.auto_fix_high_rounded,
+                          l.dashboardActionAiStudio,
+                          () => _go(AppRoutes.aiGenerationStudioName)),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
-        child: const Icon(
-          Icons.auto_awesome_rounded,
-          color: Colors.white,
-          size: 24,
+        AnimatedOpacity(
+          duration: const Duration(milliseconds: 180),
+          opacity: _expanded ? 1.0 : 0.42,
+          child: GestureDetector(
+            onTap: _toggle,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: t.brandGradient,
+                shape: BoxShape.circle,
+                boxShadow: _expanded
+                    ? [
+                        BoxShadow(
+                          color: t.brandGradientStart.withAlpha(77),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Icon(
+                _expanded ? Icons.close_rounded : Icons.auto_awesome_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _action(
+      AuroraTokens t, IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: t.space12, vertical: t.space8),
+        decoration: BoxDecoration(
+          color: t.surfaceCard,
+          borderRadius: BorderRadius.circular(t.radiusFull),
+          boxShadow: t.shadowCard,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: t.brandGradientStart),
+            SizedBox(width: t.space8),
+            Text(label,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+          ],
         ),
       ),
     );

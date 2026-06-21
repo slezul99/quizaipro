@@ -694,6 +694,12 @@ abstract class AppLocalizations {
   /// **'fading'**
   String get dashboardRetentionFading;
 
+  /// Explanation shown when tapping the retention card's help icon
+  ///
+  /// In en, this message translates to:
+  /// **'Retention shows how much of what you\'ve studied you remember right now — computed by the FSRS algorithm from each card\'s memory stability and the time since your last review. \"In a week\" is the forecast if you don\'t review. \"Fading\" are cards you\'ve likely started to forget; tap the card to review those first.'**
+  String get dashboardRetentionInfo;
+
   /// Ready-to-study card title
   ///
   /// In en, this message translates to:

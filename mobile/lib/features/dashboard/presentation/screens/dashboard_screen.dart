@@ -114,6 +114,7 @@ class DashboardScreen extends ConsumerWidget {
                         title: l10n.dashboardRetention,
                         forecastLabel: l10n.dashboardRetentionForecast,
                         fadingLabel: l10n.dashboardRetentionFading,
+                        explanation: l10n.dashboardRetentionInfo,
                         onReviewFading: () => context.pushNamed(
                           AppRoutes.studySessionName,
                           queryParameters: {

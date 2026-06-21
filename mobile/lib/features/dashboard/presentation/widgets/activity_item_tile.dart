@@ -22,35 +22,39 @@ class ActivityItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isTest = item.maybeMap(test: (_) => true, orElse: () => false);
+    final accent = isTest ? tokens.stateInfo : tokens.brandGradientStart;
+    final icon = isTest ? Icons.fact_check_rounded : Icons.style_rounded;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            tokens.backgroundSurface.withOpacity(0.85),
-            tokens.backgroundSurface.withOpacity(0.60),
-          ],
-        ),
-        border: Border.all(
-          color: tokens.borderDefault.withOpacity(0.4),
-          width: 1.2,
-        ),
-        borderRadius: BorderRadius.circular(tokens.radiusL),
-        boxShadow: tokens.shadowCard,
-      ),
+    return Material(
+      color: tokens.backgroundSurface,
+      borderRadius: BorderRadius.circular(tokens.radiusL),
       child: InkWell(
         borderRadius: BorderRadius.circular(tokens.radiusL),
         onTap: () => context.pushNamed(
           AppRoutes.activityDetailName,
           extra: item,
         ),
-        child: Padding(
-          padding: EdgeInsets.all(tokens.space16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(tokens.radiusL),
+            border: Border.all(color: tokens.borderSubtle),
+          ),
+          padding: EdgeInsets.all(tokens.space12),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Type avatar — distinguishes a study session from a test at a glance.
+              Container(
+                width: 42,
+                height: 42,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(tokens.radiusM),
+                ),
+                child: Icon(icon, color: accent, size: 22),
+              ),
+              SizedBox(width: tokens.space12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,25 +68,12 @@ class ActivityItemTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: tokens.space4),
-                    Row(
-                      children: [
-                        Text(
-                          _timeAgo(l10n, item.timestamp),
-                          style: tokens.bodySmall.copyWith(color: tokens.textTertiary),
-                        ),
-                        Text(
-                          '  ·  ',
-                          style: tokens.bodySmall.copyWith(color: tokens.textTertiary),
-                        ),
-                        Text(
-                          _summaryLabel(l10n),
-                          style: tokens.bodySmall.copyWith(
-                            color: tokens.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    SizedBox(height: 2),
+                    Text(
+                      '${_timeAgo(l10n, item.timestamp)}  ·  ${_summaryLabel(l10n)}',
+                      style: tokens.bodySmall.copyWith(color: tokens.textTertiary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -95,7 +86,7 @@ class ActivityItemTile extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: tokens.brandPrimary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(tokens.radiusXs),
+                  borderRadius: BorderRadius.circular(tokens.radiusFull),
                 ),
                 child: Text(
                   '+${item.xpEarned} XP',
@@ -104,11 +95,6 @@ class ActivityItemTile extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-              ),
-              SizedBox(width: tokens.space4),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: tokens.textTertiary,
               ),
             ],
           ),

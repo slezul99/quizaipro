@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
+import 'package:quizaipro_mobile/core/widgets/streak_flame.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/evolution_stage.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/streak_journey.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/usecases/get_streak_journey_use_case.dart';
@@ -107,6 +108,12 @@ class _StreakJourneyContent extends StatelessWidget {
               ),
               SizedBox(height: tokens.space24),
 
+              // DEMO: flame colour changes with the streak length (temporary —
+              // shows the user what the icon becomes at each milestone).
+              _buildSectionTitle('🔥 Цвет огонька по дням / Flame by days'),
+              _buildFlameLegend(),
+              SizedBox(height: tokens.space24),
+
               _buildSectionTitle(l10n.streakEvolutionRoadmap),
               _buildRoadmap(l10n),
               SizedBox(height: tokens.space24),
@@ -133,6 +140,29 @@ class _StreakJourneyContent extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: tokens.space12),
       child: Text(title, style: tokens.titleMedium.copyWith(fontWeight: FontWeight.w800)),
+    );
+  }
+
+  /// Temporary demo: the flame icon's colour at each streak length.
+  Widget _buildFlameLegend() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: tokens.space12),
+      child: Wrap(
+        spacing: tokens.space16,
+        runSpacing: tokens.space12,
+        children: streakFlameTiers.map((d) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              StreakFlame(streak: d, size: 32),
+              SizedBox(height: tokens.space4),
+              Text('$d+',
+                  style: tokens.labelSmall.copyWith(
+                      color: streakFlameColor(d), fontWeight: FontWeight.w800)),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 

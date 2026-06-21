@@ -334,6 +334,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardRetentionFading => 'остывают';
 
   @override
+  String get dashboardRetentionInfo =>
+      'Удержание показывает, какую часть изученного ты помнишь прямо сейчас — это считает алгоритм FSRS по стабильности памяти каждой карты и времени с последнего повторения. «Через неделю» — прогноз, если не повторять. «Остывают» — карты, которые ты, вероятно, уже начал забывать; нажми на карточку, чтобы повторить их в первую очередь.';
+
+  @override
   String get dashboardReadyToStudy => 'Готово к изучению';
 
   @override

@@ -333,6 +333,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get dashboardRetentionFading => 'so\'nmoqda';
 
   @override
+  String get dashboardRetentionInfo =>
+      'Eslab qolish — o\'rganganingizning qancha qismini hozir eslayotganingizni ko\'rsatadi; buni FSRS algoritmi har bir karta xotira barqarorligi va oxirgi takrordan o\'tgan vaqt bo\'yicha hisoblaydi. «Bir haftadan keyin» — takrorlamasangiz bo\'ladigan prognoz. «So\'nmoqda» — siz unutib borayotgan kartalar; avval ularni takrorlash uchun kartani bosing.';
+
+  @override
   String get dashboardReadyToStudy => 'O\'rganishga tayyor';
 
   @override
