@@ -317,10 +317,17 @@ def get_dashboard():
         total_due = due_row["total_due"] or 0
         overdue = due_row["overdue"] or 0
 
-        today_reviews = conn.execute("""
+        # Daily goal counts BOTH flashcards reviewed and test questions answered
+        # today — studying a test should move the goal just like flashcards do.
+        today_flashcards = conn.execute("""
             SELECT COUNT(*) AS c FROM reviews
             WHERE user_id=? AND DATE(reviewed_at) = DATE('now')
         """, (user["id"],)).fetchone()["c"] or 0
+        today_test_q = conn.execute("""
+            SELECT COALESCE(SUM(total_q), 0) AS c FROM test_attempts
+            WHERE user_id=? AND DATE(finished_at) = DATE('now')
+        """, (user["id"],)).fetchone()["c"] or 0
+        today_reviews = today_flashcards + today_test_q
 
         unread = conn.execute(
             "SELECT COUNT(*) AS c FROM notifications WHERE user_id=? AND is_read=0",

@@ -9,7 +9,7 @@ class StreakJourney with _$StreakJourney {
   const factory StreakJourney({
     required StreakSummary streak,
     required List<StreakMilestone> milestones,
-    required List<ClaimedReward> rewardsHistory,
+    @JsonKey(name: 'rewards_history') required List<ClaimedReward> rewardsHistory,
     required StreakCalendar calendar,
   }) = _StreakJourney;
 
@@ -26,7 +26,7 @@ class StreakMilestone with _$StreakMilestone {
     required String name,
     required String desc,
     required bool unlocked,
-    required String? unlockedAt,
+    @JsonKey(name: 'unlocked_at') required String? unlockedAt,
   }) = _StreakMilestone;
 
   factory StreakMilestone.fromJson(Map<String, dynamic> json) =>
@@ -39,7 +39,7 @@ class ClaimedReward with _$ClaimedReward {
     required String key,
     required String name,
     required int xp,
-    required String unlockedAt,
+    @JsonKey(name: 'unlocked_at') required String unlockedAt,
   }) = _ClaimedReward;
 
   factory ClaimedReward.fromJson(Map<String, dynamic> json) =>
@@ -49,9 +49,9 @@ class ClaimedReward with _$ClaimedReward {
 @freezed
 class StreakCalendar with _$StreakCalendar {
   const factory StreakCalendar({
-    required String startDate,
-    required String endDate,
-    required List<String> activeDates,
+    @JsonKey(name: 'start_date') required String startDate,
+    @JsonKey(name: 'end_date') required String endDate,
+    @JsonKey(name: 'active_dates') required List<String> activeDates,
   }) = _StreakCalendar;
 
   factory StreakCalendar.fromJson(Map<String, dynamic> json) =>

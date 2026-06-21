@@ -13,6 +13,7 @@ import 'package:quizaipro_mobile/features/tests/domain/entities/weak_area.dart';
 import 'package:quizaipro_mobile/features/tests/presentation/providers/test_providers.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_notifier.dart';
+import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:quizaipro_mobile/features/tests/presentation/providers/test_session_state.dart';
 
 part 'test_session_notifier.g.dart';
@@ -150,14 +151,18 @@ class TestSessionNotifier extends _$TestSessionNotifier {
 
     final submitUseCase = ref.read(submitTestUseCaseProvider);
     final submitResult = await submitUseCase(result);
+    // Drop the cached dashboard so the next view fetches fresh stats (it reads
+    // cache-first, so invalidating the provider alone re-reads stale cache —
+    // clear it first, THEN invalidate). Done regardless of submit outcome:
+    // even a queued result should reflect once synced.
+    await ref.read(dashboardLocalDataSourceProvider).clearCache();
     submitResult.fold(
       (failure) {
         // keep existing error handling
       },
-      (_) {
-        ref.invalidate(dashboardNotifierProvider);
-      },
+      (_) {},
     );
+    ref.invalidate(dashboardNotifierProvider);
   }
 
   void reset() {

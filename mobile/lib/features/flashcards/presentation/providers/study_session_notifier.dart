@@ -14,6 +14,7 @@ import 'package:quizaipro_mobile/features/flashcards/domain/usecases/load_study_
 import 'package:quizaipro_mobile/features/flashcards/domain/usecases/save_session_use_case.dart';
 import 'package:quizaipro_mobile/features/flashcards/presentation/providers/flashcard_providers.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_notifier.dart';
+import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:quizaipro_mobile/features/flashcards/presentation/providers/study_session_state.dart';
 
 part 'study_session_notifier.g.dart';
@@ -205,10 +206,7 @@ class StudySessionNotifier extends _$StudySessionNotifier {
         isSavingSession: false,
         saveError: failure.userMessage,
       )),
-      (_) {
-        state = AsyncData(updated.copyWith(isSavingSession: false));
-        ref.invalidate(dashboardNotifierProvider);
-      },
+      (_) => state = AsyncData(updated.copyWith(isSavingSession: false)),
     );
 
     // Flush any grades that failed to reach the backend during the session
@@ -219,5 +217,12 @@ class StudySessionNotifier extends _$StudySessionNotifier {
     // but never counts on the server/dashboard. Best-effort: still offline →
     // the queue simply survives for the next session/refresh.
     await ref.read(syncPendingGradesUseCaseProvider).call(const NoParams());
+
+    // Now that grades/session reached the server, drop the cached dashboard so
+    // the next view fetches fresh stats. The dashboard reads cache-first, so
+    // invalidating the provider alone would just re-read the stale cache —
+    // clear it first, THEN invalidate.
+    await ref.read(dashboardLocalDataSourceProvider).clearCache();
+    ref.invalidate(dashboardNotifierProvider);
   }
 }

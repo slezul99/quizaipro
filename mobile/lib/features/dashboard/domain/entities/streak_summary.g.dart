@@ -8,47 +8,48 @@ part of 'streak_summary.dart';
 
 _$StreakSummaryImpl _$$StreakSummaryImplFromJson(Map<String, dynamic> json) =>
     _$StreakSummaryImpl(
-      currentStreak: (json['currentStreak'] as num).toInt(),
-      maxStreak: (json['maxStreak'] as num).toInt(),
-      todayCompleted: json['todayCompleted'] as bool,
-      lastActivityDate: json['lastActivityDate'] == null
+      currentStreak: (json['current_streak'] as num).toInt(),
+      maxStreak: (json['max_streak'] as num).toInt(),
+      todayCompleted: json['today_completed'] as bool,
+      lastActivityDate: json['last_activity_date'] == null
           ? null
-          : DateTime.parse(json['lastActivityDate'] as String),
-      currentStage: json['currentStage'] == null
+          : DateTime.parse(json['last_activity_date'] as String),
+      currentStage: json['current_stage'] == null
           ? null
           : StreakStageInfo.fromJson(
-              json['currentStage'] as Map<String, dynamic>),
-      nextStage: json['nextStage'] == null
+              json['current_stage'] as Map<String, dynamic>),
+      nextStage: json['next_stage'] == null
           ? null
-          : StreakStageInfo.fromJson(json['nextStage'] as Map<String, dynamic>),
-      progressRatio: (json['progressRatio'] as num?)?.toDouble(),
-      daysRemaining: (json['daysRemaining'] as num?)?.toInt(),
+          : StreakStageInfo.fromJson(
+              json['next_stage'] as Map<String, dynamic>),
+      progressRatio: (json['progress_ratio'] as num?)?.toDouble(),
+      daysRemaining: (json['days_remaining'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$StreakSummaryImplToJson(_$StreakSummaryImpl instance) =>
     <String, dynamic>{
-      'currentStreak': instance.currentStreak,
-      'maxStreak': instance.maxStreak,
-      'todayCompleted': instance.todayCompleted,
-      'lastActivityDate': instance.lastActivityDate?.toIso8601String(),
-      'currentStage': instance.currentStage,
-      'nextStage': instance.nextStage,
-      'progressRatio': instance.progressRatio,
-      'daysRemaining': instance.daysRemaining,
+      'current_streak': instance.currentStreak,
+      'max_streak': instance.maxStreak,
+      'today_completed': instance.todayCompleted,
+      'last_activity_date': instance.lastActivityDate?.toIso8601String(),
+      'current_stage': instance.currentStage,
+      'next_stage': instance.nextStage,
+      'progress_ratio': instance.progressRatio,
+      'days_remaining': instance.daysRemaining,
     };
 
 _$StreakStageInfoImpl _$$StreakStageInfoImplFromJson(
         Map<String, dynamic> json) =>
     _$StreakStageInfoImpl(
       key: json['key'] as String,
-      startDays: (json['startDays'] as num).toInt(),
-      nextStageDays: (json['nextStageDays'] as num?)?.toInt(),
+      startDays: (json['start_days'] as num).toInt(),
+      nextStageDays: (json['next_stage_days'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$StreakStageInfoImplToJson(
         _$StreakStageInfoImpl instance) =>
     <String, dynamic>{
       'key': instance.key,
-      'startDays': instance.startDays,
-      'nextStageDays': instance.nextStageDays,
+      'start_days': instance.startDays,
+      'next_stage_days': instance.nextStageDays,
     };

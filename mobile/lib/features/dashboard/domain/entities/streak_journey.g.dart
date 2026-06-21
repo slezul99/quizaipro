@@ -12,7 +12,7 @@ _$StreakJourneyImpl _$$StreakJourneyImplFromJson(Map<String, dynamic> json) =>
       milestones: (json['milestones'] as List<dynamic>)
           .map((e) => StreakMilestone.fromJson(e as Map<String, dynamic>))
           .toList(),
-      rewardsHistory: (json['rewardsHistory'] as List<dynamic>)
+      rewardsHistory: (json['rewards_history'] as List<dynamic>)
           .map((e) => ClaimedReward.fromJson(e as Map<String, dynamic>))
           .toList(),
       calendar:
@@ -23,7 +23,7 @@ Map<String, dynamic> _$$StreakJourneyImplToJson(_$StreakJourneyImpl instance) =>
     <String, dynamic>{
       'streak': instance.streak,
       'milestones': instance.milestones,
-      'rewardsHistory': instance.rewardsHistory,
+      'rewards_history': instance.rewardsHistory,
       'calendar': instance.calendar,
     };
 
@@ -36,7 +36,7 @@ _$StreakMilestoneImpl _$$StreakMilestoneImplFromJson(
       name: json['name'] as String,
       desc: json['desc'] as String,
       unlocked: json['unlocked'] as bool,
-      unlockedAt: json['unlockedAt'] as String?,
+      unlockedAt: json['unlocked_at'] as String?,
     );
 
 Map<String, dynamic> _$$StreakMilestoneImplToJson(
@@ -48,7 +48,7 @@ Map<String, dynamic> _$$StreakMilestoneImplToJson(
       'name': instance.name,
       'desc': instance.desc,
       'unlocked': instance.unlocked,
-      'unlockedAt': instance.unlockedAt,
+      'unlocked_at': instance.unlockedAt,
     };
 
 _$ClaimedRewardImpl _$$ClaimedRewardImplFromJson(Map<String, dynamic> json) =>
@@ -56,7 +56,7 @@ _$ClaimedRewardImpl _$$ClaimedRewardImplFromJson(Map<String, dynamic> json) =>
       key: json['key'] as String,
       name: json['name'] as String,
       xp: (json['xp'] as num).toInt(),
-      unlockedAt: json['unlockedAt'] as String,
+      unlockedAt: json['unlocked_at'] as String,
     );
 
 Map<String, dynamic> _$$ClaimedRewardImplToJson(_$ClaimedRewardImpl instance) =>
@@ -64,14 +64,14 @@ Map<String, dynamic> _$$ClaimedRewardImplToJson(_$ClaimedRewardImpl instance) =>
       'key': instance.key,
       'name': instance.name,
       'xp': instance.xp,
-      'unlockedAt': instance.unlockedAt,
+      'unlocked_at': instance.unlockedAt,
     };
 
 _$StreakCalendarImpl _$$StreakCalendarImplFromJson(Map<String, dynamic> json) =>
     _$StreakCalendarImpl(
-      startDate: json['startDate'] as String,
-      endDate: json['endDate'] as String,
-      activeDates: (json['activeDates'] as List<dynamic>)
+      startDate: json['start_date'] as String,
+      endDate: json['end_date'] as String,
+      activeDates: (json['active_dates'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
     );
@@ -79,7 +79,7 @@ _$StreakCalendarImpl _$$StreakCalendarImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$StreakCalendarImplToJson(
         _$StreakCalendarImpl instance) =>
     <String, dynamic>{
-      'startDate': instance.startDate,
-      'endDate': instance.endDate,
-      'activeDates': instance.activeDates,
+      'start_date': instance.startDate,
+      'end_date': instance.endDate,
+      'active_dates': instance.activeDates,
     };
