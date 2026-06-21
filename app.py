@@ -671,6 +671,18 @@ def _card_is_mcq(card_row) -> bool:
     return False
 
 
+def _localize_deck_fields(deck_dict, lang):
+    """Swap a deck's name/description for their _en/_uz translation if one
+    exists (seeded marketplace decks). Mirrors _localize_card_fields — `name`
+    /`description` are the RU default, *_en/*_uz are overrides."""
+    if lang in ("en", "uz"):
+        for fld in ("name", "description"):
+            tr = deck_dict.get(f"{fld}_{lang}")
+            if tr:
+                deck_dict[fld] = tr
+    return deck_dict
+
+
 def _localize_card_fields(card_dict, lang):
     """Swap front/back/note for their _en/_uz translation if one exists.
 
@@ -1759,6 +1771,7 @@ def deck_view(deck_id):
                         (deck_id,)).fetchone()
     if not deck or not can_view_deck(user, dict(deck)):
         conn.close(); abort(404)
+    deck = _localize_deck_fields(dict(deck), session.get("lang", "ru"))
     cards_raw = conn.execute("""SELECT c.*, p.ef, p.interval_days, p.reviews, p.lapses,
         p.due_at, p.stability, p.last_reviewed
         FROM cards c LEFT JOIN user_card_progress p ON p.card_id=c.id AND p.user_id=?
@@ -2079,7 +2092,7 @@ def flashcards_view(deck_id):
             return redirect(url_for("deck_view", deck_id=deck_id))
 
     return render_template("flashcards.html",
-        deck=dict(deck),
+        deck=_localize_deck_fields(dict(deck), lang),
         cards=cards_list,
         only_fav=only_fav,
         only_hard=only_hard,
@@ -3679,7 +3692,7 @@ def marketplace():
         ORDER BY d.clones_count DESC, d.id DESC
         LIMIT 10
     """).fetchall()
-    trending = [dict(d) for d in trending_raw]
+    trending = [_localize_deck_fields(dict(d), lang) for d in trending_raw]
 
     # Legacy collections (no subject_id) — keep backward compat
     legacy_raw = conn.execute("""
@@ -3724,9 +3737,9 @@ def collection_view(slug):
         WHERE cd.collection_id=?
         ORDER BY cd.sort_order ASC
     """, (coll["id"],)).fetchall()
-    decks = [dict(d) for d in decks]
     conn.close()
     lang = session.get("lang", "ru")
+    decks = [_localize_deck_fields(dict(d), lang) for d in decks]
     coll["title"] = coll.get(f"title_{lang}") or coll["title_ru"]
     coll["desc"] = coll.get(f"desc_{lang}") or coll.get("desc_ru", "")
     return render_template("collection.html", coll=coll, decks=decks)
@@ -3995,7 +4008,7 @@ def marketplace_search():
             ORDER BY d.clones_count DESC, d.id DESC
             LIMIT 30
         """, (like, like)).fetchall()
-        decks = [dict(d) for d in decks_raw]
+        decks = [_localize_deck_fields(dict(d), session.get("lang", "ru")) for d in decks_raw]
 
     subjects = conn.execute(
         "SELECT * FROM mp_subjects WHERE is_active=1 ORDER BY sort_order"

@@ -59,11 +59,20 @@ def _localized(row, field, lang):
     return row.get(f"{field}_{lang}") or row.get(f"{field}_en") or row.get(f"{field}_ru") or ""
 
 
-def _serialize_deck_summary(d):
+def _deck_localized(d, field, lang):
+    """Deck name/description: base column is the RU default, *_en/*_uz override."""
+    if lang in ("en", "uz"):
+        tr = d.get(f"{field}_{lang}")
+        if tr:
+            return tr
+    return d.get(field) or ""
+
+
+def _serialize_deck_summary(d, lang="ru"):
     return {
         "id": str(d["id"]),
-        "title": d["name"],
-        "description": d["description"] or "",
+        "title": _deck_localized(d, "name", lang),
+        "description": _deck_localized(d, "description", lang),
         "author_name": d["author"] or "",
         "cover_color_hex": _palette_color(d["id"]),
         "card_count": d["card_count"] or 0,
@@ -151,13 +160,14 @@ def get_decks():
 
     order_by = _SORT_SQL.get(sort_key, _SORT_SQL["popular"])
 
+    lang = _resolve_lang(g.current_user)
     conn = db.get_conn()
     try:
         rows = _query_public_decks(conn, where, params, order_by)
     finally:
         conn.close()
 
-    items_all = [_serialize_deck_summary(d) for d in rows]
+    items_all = [_serialize_deck_summary(d, lang) for d in rows]
     page_items, page, total_pages, total_count = _paginate(items_all, page, page_size)
     return jsonify({"data": {
         "items": page_items,
@@ -189,12 +199,15 @@ def get_deck_detail(deck_id):
         return jsonify({"error": {"code": "not_found", "message": "Колода не найдена"}}), 404
 
     d = dict(row)
+    lang = _resolve_lang(g.current_user)
     card_count = d["card_count"] or 0
+    _name = _deck_localized(d, "name", lang)
+    _desc = _deck_localized(d, "description", lang)
     data = {
         "id": str(d["id"]),
-        "title": d["name"],
-        "description": d["description"] or "",
-        "full_description": d["description"] or "",
+        "title": _name,
+        "description": _desc,
+        "full_description": _desc,
         "author_name": d["author"] or "",
         "author_username": d["author_username"] or "",
         "author_avatar_url": None,
@@ -241,13 +254,14 @@ def search_decks():
 
     order_by = _SORT_SQL.get(sort_key, _SORT_SQL["popular"])
 
+    lang = _resolve_lang(g.current_user)
     conn = db.get_conn()
     try:
         rows = _query_public_decks(conn, where, params, order_by, limit=200)
     finally:
         conn.close()
 
-    items_all = [_serialize_deck_summary(d) for d in rows]
+    items_all = [_serialize_deck_summary(d, lang) for d in rows]
     page_items, page, total_pages, total_count = _paginate(items_all, page, page_size)
     return jsonify({"data": {
         "items": page_items,

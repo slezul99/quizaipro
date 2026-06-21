@@ -1103,6 +1103,20 @@ def init_db():
         pass
     c.execute("UPDATE users SET max_streak = streak WHERE max_streak IS NULL OR max_streak < streak")
 
+    # === Multi-lang titles/descriptions for the seeded marketplace decks ===
+    # Mirrors cards' front_en/_uz: `name`/`description` are the default (RU),
+    # *_en/*_uz hold translations. Shown via _localize_deck_fields by lang.
+    for col in ('name_en', 'name_uz', 'description_en', 'description_uz'):
+        try:
+            c.execute(f"ALTER TABLE decks ADD COLUMN {col} TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass
+    try:
+        import seed_deck_i18n
+        seed_deck_i18n.apply(conn)
+    except Exception as e:
+        print(f"[DB] deck i18n seed error: {e}")
+
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")
