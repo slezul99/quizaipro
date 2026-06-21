@@ -98,6 +98,31 @@ _FLASHCARD_PHOTO_SCHEMA = {
     },
 }
 
+# Grounded generation (text / PDF): every card must cite the exact supporting
+# snippet from the source in source_span. Forcing a citation makes the model
+# stay faithful to the material (less hallucination) and lets us show learners
+# where a card came from.
+_FLASHCARD_GROUNDED_SCHEMA = {
+    "type": "ARRAY",
+    "items": {
+        "type": "OBJECT",
+        "properties": {
+            "question": {"type": "STRING"},
+            "answer": {"type": "STRING"},
+            "note": {"type": "STRING"},
+            "source_span": {"type": "STRING"},
+        },
+        "required": ["question", "answer", "source_span"],
+    },
+}
+
+
+_GROUNDING_RULE = (
+    "GROUNDING (strict): use ONLY facts present in the source. For every card, "
+    "copy the exact sentence(s) from the source that justify the answer into "
+    "\"source_span\". If a fact is not in the source, do NOT create that card."
+)
+
 
 def _log_metric(*, label, model, latency_ms, ok, usage=None, finish=None, error=None):
     """One structured line per Gemini call → greppable in Railway logs
@@ -279,12 +304,16 @@ def _parse_cards_json(text: str) -> list[dict]:
             or item.get("hint")
             or ""
         )
+        src = item.get("source_span") or item.get("source") or ""
         # Stringify esli prishyol ne string
         q = str(q).strip() if q else ""
         a = str(a).strip() if a else ""
         n = str(n).strip() if n else ""
         if q and a:
-            out.append({"front": q, "back": a, "note": n})
+            card = {"front": q, "back": a, "note": n}
+            if src:
+                card["source_span"] = str(src).strip()[:300]
+            out.append(card)
     print(f"[AI parse] extracted {len(out)} cards from {len(data) if isinstance(data, list) else 0}")
     return out
 
@@ -405,14 +434,16 @@ ANSWER FORMAT:
 - "note" field: memory trick, surprising fact, or ⚠️ common mistake
 - Only use information from the text
 
+{_GROUNDING_RULE}
+
 Output ONLY a JSON array:
-[{{"question":"...","answer":"...","note":"..."}}, ...]
+[{{"question":"...","answer":"...","note":"...","source_span":"exact supporting sentence from the text"}}, ...]
 
 TEXT:
 {text[:8000]}"""
 
-    raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_LIST_SCHEMA)
-    cards = _validate_cards(_parse_cards_json(raw or ""))
+    raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_GROUNDED_SCHEMA)
+    cards = _fold_sources(_validate_cards(_parse_cards_json(raw or "")))
     if quality and cards:
         cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
     return cards
@@ -861,6 +892,21 @@ def _validate_cards(cards: list[dict], max_len: int = 1500) -> list[dict]:
         print(f"[AI-METRIC] label=validate of={len(cards or [])} kept={len(deduped)} "
               f"dropped={dropped}", flush=True)
     return deduped
+
+
+def _fold_sources(cards: list[dict]) -> list[dict]:
+    """For grounded generation: move each card's source citation into its note
+    (prefixed with 📖) and drop the internal source_span key, so the citation
+    reaches the learner without changing the {front, back, note} card shape."""
+    for c in cards or []:
+        src = (c.pop("source_span", "") or "").strip()
+        if not src:
+            continue
+        note = (c.get("note") or "").strip()
+        if src.lower() not in note.lower():
+            note = (note + ("\n" if note else "") + f"📖 {src}")[:1500]
+        c["note"] = note
+    return cards
 
 
 # === KONVERTATSIYA: Test → Flashcards i Flashcards → Test ====================
