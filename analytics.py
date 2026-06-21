@@ -596,3 +596,22 @@ def get_hourly_today() -> list[dict]:
         else:
             result.append({"hour": hh, "visits": 0, "uniq": 0})
     return result
+
+
+def reset_geo() -> int:
+    """Wipe stored geo (country/region/city) from all visits and the IP geo
+    cache. Used once after switching the client-IP source to CF-Connecting-IP:
+    older rows were geolocated to Cloudflare edge cities (Warsaw, San Jose, …).
+    Visit counts/devices/pages are kept; only the bad geo is cleared.
+    Returns the number of visit rows affected."""
+    conn = db.get_conn()
+    try:
+        cur = conn.execute(
+            "UPDATE visits SET country=NULL, country_name=NULL, region=NULL, city=NULL"
+        )
+        n = cur.rowcount or 0
+        conn.execute("DELETE FROM ip_geo_cache")
+        conn.commit()
+        return n
+    finally:
+        conn.close()

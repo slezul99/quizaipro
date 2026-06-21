@@ -8820,6 +8820,15 @@ def superadmin_analytics():
     )
 
 
+@app.route("/superadmin/analytics/reset-geo", methods=["POST"])
+@super_admin_required
+def superadmin_analytics_reset_geo():
+    """One-off cleanup: clear geo that was recorded from Cloudflare edge IPs."""
+    n = analytics.reset_geo()
+    flash(f"Гео-данные очищены у {n} записей. Новые визиты будут с правильной геолокацией.", "success")
+    return redirect(url_for("superadmin_analytics"))
+
+
 @app.route("/api/superadmin/analytics/live")
 @super_admin_required
 def superadmin_analytics_live():

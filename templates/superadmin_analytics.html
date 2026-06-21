@@ -10,7 +10,17 @@
       <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Аналитика</h1>
       <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Реальные посетители · без ботов · без API-вызовов</p>
     </div>
-    <a href="/superadmin" class="text-xs font-medium text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition">← Дашборд</a>
+    <div class="flex items-center gap-3">
+      <form method="POST" action="/superadmin/analytics/reset-geo"
+            onsubmit="return confirm('Очистить старую (неправильную) геолокацию у всех визитов? Счётчики визитов сохранятся, обновятся только страна/город. Новые визиты будут с верной геолокацией.');">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button type="submit"
+                class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25 transition">
+          🧹 Очистить геоданные
+        </button>
+      </form>
+      <a href="/superadmin" class="text-xs font-medium text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition">← Дашборд</a>
+    </div>
   </div>
 
   <!-- Period selector -->
