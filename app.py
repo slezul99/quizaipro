@@ -4114,23 +4114,48 @@ def marketplace_search():
         d["subj_title"] = d.get(f"subj_{lang}") or d.get("subj_en", "")
         colls.append(d)
 
-    # Search individual public decks too — collections-only search misses most content
-    decks = []
+    # Search/browse individual public decks with filters + sort — collections-only
+    # search misses most content, so this is the primary results section.
+    ctype = request.args.get("type", "")    # 'test' | 'cards'
+    sort = request.args.get("sort", "popular")
+    _DECK_SORT = {
+        "popular": "d.clones_count DESC, d.id DESC",
+        "rating": "(SELECT AVG(stars) FROM deck_reviews WHERE deck_id=d.id AND is_hidden=0) DESC, d.clones_count DESC",
+        "new": "d.id DESC",
+        "cards": "card_count DESC, d.id DESC",
+    }
+    where_d = ["d.is_public=1"]
+    params_d = []
     if q:
         like = f"%{q}%"
-        decks_raw = conn.execute("""
-            SELECT d.*,
-                (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
-                CASE WHEN d.org_id IS NOT NULL
-                     THEN (SELECT name FROM organizations WHERE id=d.org_id)
-                     ELSE (SELECT username FROM users WHERE id=d.owner_id)
-                END AS author
-            FROM decks d
-            WHERE d.is_public=1 AND (d.name LIKE ? OR d.description LIKE ?)
-            ORDER BY d.clones_count DESC, d.id DESC
-            LIMIT 30
-        """, (like, like)).fetchall()
-        decks = _attach_ratings(conn, [_localize_deck_fields(dict(d), session.get("lang", "ru")) for d in decks_raw])
+        where_d.append("(d.name LIKE ? OR d.description LIKE ?)")
+        params_d += [like, like]
+    if ctype == "test":
+        where_d.append("d.has_mcq=1")
+    elif ctype == "cards":
+        where_d.append("d.has_terms=1")
+    if subject_slug:
+        where_d.append("""EXISTS (SELECT 1 FROM collection_decks cd JOIN collections cc ON cc.id=cd.collection_id
+            WHERE cd.deck_id=d.id AND cc.subject_id=(SELECT id FROM mp_subjects WHERE slug=?))""")
+        params_d.append(subject_slug)
+    if level:
+        where_d.append("""EXISTS (SELECT 1 FROM collection_decks cd2 JOIN collections cc2 ON cc2.id=cd2.collection_id
+            WHERE cd2.deck_id=d.id AND cc2.level=?)""")
+        params_d.append(level)
+    order_d = _DECK_SORT.get(sort, _DECK_SORT["popular"])
+    decks_raw = conn.execute(f"""
+        SELECT d.*,
+            (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+            CASE WHEN d.org_id IS NOT NULL
+                 THEN (SELECT name FROM organizations WHERE id=d.org_id)
+                 ELSE (SELECT username FROM users WHERE id=d.owner_id)
+            END AS author
+        FROM decks d
+        WHERE {' AND '.join(where_d)}
+        ORDER BY {order_d}
+        LIMIT 30
+    """, params_d).fetchall()
+    decks = _attach_ratings(conn, [_localize_deck_fields(dict(d), lang) for d in decks_raw])
 
     subjects = conn.execute(
         "SELECT * FROM mp_subjects WHERE is_active=1 ORDER BY sort_order"
@@ -4142,7 +4167,8 @@ def marketplace_search():
     conn.close()
     return render_template("marketplace_search.html",
                            collections=colls, decks=decks, subjects=subjects,
-                           q=q, subject_slug=subject_slug, level=level)
+                           q=q, subject_slug=subject_slug, level=level,
+                           ctype=ctype, sort=sort)
 
 
 @app.route("/search")

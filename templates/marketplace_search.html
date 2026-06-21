@@ -22,7 +22,7 @@
         </div>
         <div class="flex flex-wrap gap-3">
           <!-- Subject filter -->
-          <select name="subject" class="input-premium text-sm py-2" style="width:auto;min-width:160px;">
+          <select name="subject" onchange="this.form.submit()" class="input-premium text-sm py-2" style="width:auto;min-width:160px;">
             <option value="">{{ t('mk_all_subjects') }}</option>
             {% for s in subjects %}
             <option value="{{ s.slug }}" {% if s.slug == subject_slug %}selected{% endif %}>
@@ -31,11 +31,24 @@
             {% endfor %}
           </select>
           <!-- Level filter -->
-          <select name="level" class="input-premium text-sm py-2" style="width:auto;min-width:140px;">
+          <select name="level" onchange="this.form.submit()" class="input-premium text-sm py-2" style="width:auto;min-width:140px;">
             <option value="">{{ t('mk_all_levels') }}</option>
             <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>🟢 {{ t('lvl_beginner') }}</option>
             <option value="intermediate" {% if level == 'intermediate' %}selected{% endif %}>🟡 {{ t('lvl_intermediate') }}</option>
             <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>🔴 {{ t('lvl_advanced') }}</option>
+          </select>
+          <!-- Content type filter -->
+          <select name="type" onchange="this.form.submit()" class="input-premium text-sm py-2" style="width:auto;min-width:140px;">
+            <option value="">{{ t('mk_all_types') }}</option>
+            <option value="test" {% if ctype == 'test' %}selected{% endif %}>📝 {{ t('mk_type_test') }}</option>
+            <option value="cards" {% if ctype == 'cards' %}selected{% endif %}>🃏 {{ t('mk_type_cards') }}</option>
+          </select>
+          <!-- Sort -->
+          <select name="sort" onchange="this.form.submit()" class="input-premium text-sm py-2" style="width:auto;min-width:150px;">
+            <option value="popular" {% if sort == 'popular' %}selected{% endif %}>🔥 {{ t('mk_sort_popular') }}</option>
+            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>⭐ {{ t('mk_sort_rating') }}</option>
+            <option value="new" {% if sort == 'new' %}selected{% endif %}>🆕 {{ t('mk_sort_new') }}</option>
+            <option value="cards" {% if sort == 'cards' %}selected{% endif %}>📚 {{ t('mk_sort_cards') }}</option>
           </select>
         </div>
       </form>
