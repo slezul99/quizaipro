@@ -360,6 +360,68 @@ def _save_attempt_answers(conn, attempt_id, answers):
             print(f"[test_result answers] skipped answer {pos}: {e}")
 
 
+# Anti-grind: a correct answer on a question (card) already seen today — in
+# tests OR flashcard reviews — is worth progressively less. New questions pay
+# full, so "same deck, different questions" still rewards properly. Resets daily.
+_DAILY_XP_DECAY = (1.0, 0.85, 0.7, 0.5, 0.25)
+
+
+def _decay_xp(base, prior):
+    if base <= 0:
+        return 0
+    mult = _DAILY_XP_DECAY[prior] if prior < len(_DAILY_XP_DECAY) else 0.1
+    return max(1, round(base * mult))
+
+
+def _compute_test_xp(conn, user_id, day_iso, answers, correct_count, is_perfect):
+    """Per-question diminishing XP. Falls back to the flat formula when the
+    client didn't send a usable answers list (older clients)."""
+    bonus = TEST_XP_PERFECT_BONUS if is_perfect else 0
+    if not isinstance(answers, list) or not answers:
+        return correct_count * TEST_XP_PER_CORRECT + bonus
+
+    correct_cards = []
+    correct_no_card = 0
+    for ans in answers:
+        if not isinstance(ans, dict) or not ans.get("is_correct"):
+            continue
+        cid = ans.get("card_id")
+        try:
+            cid = int(cid) if cid is not None else None
+        except (TypeError, ValueError):
+            cid = None
+        if cid is None:
+            correct_no_card += 1
+        else:
+            correct_cards.append(cid)
+
+    if not correct_cards:
+        return correct_no_card * TEST_XP_PER_CORRECT + bonus
+
+    ids = list(set(correct_cards))
+    ph = ",".join("?" for _ in ids)
+    prior = {cid: 0 for cid in ids}
+    for row in conn.execute(
+            f"SELECT taa.card_id AS cid, COUNT(*) AS c FROM test_attempt_answers taa "
+            f"JOIN test_attempts ta ON ta.id = taa.attempt_id "
+            f"WHERE ta.user_id=? AND substr(ta.finished_at,1,10)=? AND taa.card_id IN ({ph}) "
+            f"GROUP BY taa.card_id", (user_id, day_iso, *ids)):
+        prior[row["cid"]] = prior.get(row["cid"], 0) + (row["c"] or 0)
+    for row in conn.execute(
+            f"SELECT card_id AS cid, COUNT(*) AS c FROM reviews "
+            f"WHERE user_id=? AND substr(reviewed_at,1,10)=? AND card_id IN ({ph}) "
+            f"GROUP BY card_id", (user_id, day_iso, *ids)):
+        prior[row["cid"]] = prior.get(row["cid"], 0) + (row["c"] or 0)
+
+    total = correct_no_card * TEST_XP_PER_CORRECT
+    seen = {}
+    for cid in correct_cards:
+        p = prior.get(cid, 0) + seen.get(cid, 0)
+        total += _decay_xp(TEST_XP_PER_CORRECT, p)
+        seen[cid] = seen.get(cid, 0) + 1
+    return total + bonus
+
+
 @tests_bp.route("/results", methods=["POST"])
 @jwt_auth.jwt_required
 def post_test_result():
@@ -384,8 +446,11 @@ def post_test_result():
         score_pct = (parsed["correct_count"] / parsed["total_questions"] * 100.0) if parsed["total_questions"] else 0.0
         is_perfect = 1 if (wrong == 0 and parsed["correct_count"] > 0) else 0
 
-        # Balanced Option: 3 XP per correct answer + 5 XP perfect score bonus
-        xp_gain = (parsed["correct_count"] * TEST_XP_PER_CORRECT) + (TEST_XP_PERFECT_BONUS if is_perfect else 0)
+        # Diminishing returns per repeated question (resets daily); perfect
+        # bonus stays flat. Falls back to the flat formula for old clients.
+        xp_gain = _compute_test_xp(
+            conn, user["id"], completed_at.date().isoformat(),
+            body.get("answers"), parsed["correct_count"], is_perfect)
 
         # Idempotent by (user_id, client_result_id) — re-POSTing the same
         # client-generated id (a sync retry) is a no-op; we always return the

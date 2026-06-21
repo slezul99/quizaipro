@@ -890,6 +890,50 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get levelJourneyTiers => 'РАНГИ';
+
+  @override
+  String get levelJourneyTiersSubtitle =>
+      'Поднимай уровень — открывай новые ранги';
+
+  @override
+  String get levelJourneyYouAreHere => 'ТЫ ЗДЕСЬ';
+
+  @override
+  String levelJourneyFromLevel(Object level) {
+    return 'С ур. $level';
+  }
+
+  @override
+  String get levelJourneyNextGoal => 'СЛЕДУЮЩАЯ ЦЕЛЬ';
+
+  @override
+  String levelJourneyToLevel(Object level) {
+    return 'До уровня $level';
+  }
+
+  @override
+  String get levelJourneyAllRewards => 'Все награды открыты — ты на вершине!';
+
+  @override
+  String get levelTierBronze => 'Бронза';
+
+  @override
+  String get levelTierSilver => 'Серебро';
+
+  @override
+  String get levelTierGold => 'Золото';
+
+  @override
+  String get levelTierPlatinum => 'Платина';
+
+  @override
+  String get levelTierMaster => 'Мастер';
+
+  @override
+  String get levelTierLegend => 'Легенда';
+
+  @override
   String get flashcardsAgain => 'Снова';
 
   @override

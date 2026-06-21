@@ -624,14 +624,14 @@ class _FlashcardTileState extends State<_FlashcardTile> {
                       height: 26,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: t.surfaceSubtle,
+                        color: accent.withValues(alpha: 0.14),
                         shape: BoxShape.circle,
                       ),
                       child: Text(
                         '${widget.index}',
                         style: t.labelSmall.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: t.textSecondary,
+                          fontWeight: FontWeight.w800,
+                          color: accent,
                         ),
                       ),
                     ),
@@ -645,6 +645,12 @@ class _FlashcardTileState extends State<_FlashcardTile> {
                         ),
                       ),
                     ),
+                    Icon(
+                      isMcq ? Icons.fact_check_outlined : Icons.style_outlined,
+                      size: 15,
+                      color: t.textTertiary,
+                    ),
+                    SizedBox(width: t.space8),
                     SizedBox(width: t.space8),
                     AnimatedRotation(
                       turns: _expanded ? 0.5 : 0,

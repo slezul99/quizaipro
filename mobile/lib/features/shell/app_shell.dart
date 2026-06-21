@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:quizaipro_mobile/core/router/app_routes.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
+import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_decks_notifier.dart';
 import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
 /// 5-tab persistent shell using [StatefulShellRoute.indexedStack].
@@ -15,42 +18,6 @@ class AppShell extends StatelessWidget {
   const AppShell({required this.shell, super.key});
 
   final StatefulNavigationShell shell;
-
-  List<_Destination> _getDestinations(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return [
-      _Destination(
-        label: l10n.navHome,
-        icon: Icons.home_outlined,
-        activeIcon: Icons.home_rounded,
-        route: AppRoutes.homeName,
-      ),
-      _Destination(
-        label: l10n.navLibrary,
-        icon: Icons.library_books_outlined,
-        activeIcon: Icons.library_books_rounded,
-        route: AppRoutes.libraryName,
-      ),
-      _Destination(
-        label: l10n.navDiscover,
-        icon: Icons.explore_outlined,
-        activeIcon: Icons.explore_rounded,
-        route: AppRoutes.discoverName,
-      ),
-      _Destination(
-        label: l10n.navArena,
-        icon: Icons.sports_esports_outlined,
-        activeIcon: Icons.sports_esports_rounded,
-        route: AppRoutes.arenaName,
-      ),
-      _Destination(
-        label: l10n.navProfile,
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-        route: AppRoutes.profileName,
-      ),
-    ];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +32,7 @@ class AppShell extends StatelessWidget {
         }
       },
       child: Scaffold(
+      extendBody: true,
       // AI button — cross-cutting, not a tab. Rendered as a slim handle glued
       // flush to the left edge (a `Positioned.fill` + `Align`, so the empty
       // area around it stays transparent to taps and centered content beneath
@@ -75,29 +43,165 @@ class AppShell extends StatelessWidget {
           _TutorSideTab(tokens: tokens),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) => shell.goBranch(
-          index,
-          initialLocation: index == shell.currentIndex,
-        ),
-        backgroundColor: tokens.backgroundSurface,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        indicatorColor: tokens.brandGradientStart.withAlpha(26),
-        destinations: _getDestinations(context)
-            .map(
-              (d) => NavigationDestination(
-                icon: Icon(d.icon),
-                selectedIcon: Icon(d.activeIcon),
-                label: d.label,
-              ),
-            )
-            .toList(),
+      // Centre launcher — a quick way into Study / Test from anywhere.
+      floatingActionButton: _CenterLauncher(
+        tokens: tokens,
+        onTap: () => _showQuickStartSheet(context, tokens),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _BottomBar(shell: shell, tokens: tokens),
     ),
     );
   }
+}
+
+/// Custom bottom bar — four tabs (Arena is temporarily hidden) with a notch
+/// for the centre launcher FAB.
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({required this.shell, required this.tokens});
+
+  final StatefulNavigationShell shell;
+  final AuroraTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return BottomAppBar(
+      color: tokens.backgroundSurface,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withAlpha(20),
+      elevation: 10,
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 7,
+      height: 62,
+      padding: EdgeInsets.zero,
+      child: Row(
+        children: [
+          _BottomBarItem(
+            shell: shell,
+            tokens: tokens,
+            branch: 0,
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home_rounded,
+            label: l.navHome,
+          ),
+          _BottomBarItem(
+            shell: shell,
+            tokens: tokens,
+            branch: 1,
+            icon: Icons.library_books_outlined,
+            activeIcon: Icons.library_books_rounded,
+            label: l.navLibrary,
+          ),
+          const SizedBox(width: 64), // notch gap for the centre FAB
+          _BottomBarItem(
+            shell: shell,
+            tokens: tokens,
+            branch: 2,
+            icon: Icons.explore_outlined,
+            activeIcon: Icons.explore_rounded,
+            label: l.navDiscover,
+          ),
+          _BottomBarItem(
+            shell: shell,
+            tokens: tokens,
+            branch: 4,
+            icon: Icons.person_outline_rounded,
+            activeIcon: Icons.person_rounded,
+            label: l.navProfile,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomBarItem extends StatelessWidget {
+  const _BottomBarItem({
+    required this.shell,
+    required this.tokens,
+    required this.branch,
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+
+  final StatefulNavigationShell shell;
+  final AuroraTokens tokens;
+  final int branch;
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = shell.currentIndex == branch;
+    final color = selected ? tokens.brandGradientStart : tokens.textTertiary;
+    return Expanded(
+      child: InkWell(
+        onTap: () => shell.goBranch(branch, initialLocation: branch == shell.currentIndex),
+        customBorder: const StadiumBorder(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(selected ? activeIcon : icon, color: color, size: 24),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The raised centre button that launches the quick-start (Study / Test) sheet.
+class _CenterLauncher extends StatelessWidget {
+  const _CenterLauncher({required this.tokens, required this.onTap});
+
+  final AuroraTokens tokens;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          gradient: tokens.brandGradient,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: tokens.brandGradientStart.withAlpha(110),
+              blurRadius: 16,
+              spreadRadius: 1,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          border: Border.all(color: Colors.white.withAlpha(60), width: 1.5),
+        ),
+        child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 30),
+      ),
+    );
+  }
+}
+
+void _showQuickStartSheet(BuildContext rootContext, AuroraTokens tokens) {
+  showModalBottomSheet<void>(
+    context: rootContext,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _QuickStartSheet(rootContext: rootContext, tokens: tokens),
+  );
 }
 
 /// AI button as a slim handle glued to the left edge. Collapsed it's a
@@ -168,26 +272,26 @@ class _TutorSideTabState extends State<_TutorSideTab> {
       key: const ValueKey('handle'),
       onTap: _toggle,
       child: Opacity(
-        opacity: 0.55,
+        opacity: 0.5,
         child: Container(
-          width: 34,
-          height: 60,
+          width: 20,
+          height: 42,
           decoration: BoxDecoration(
             gradient: t.brandGradient,
             borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(18),
-              bottomRight: Radius.circular(18),
+              topRight: Radius.circular(12),
+              bottomRight: Radius.circular(12),
             ),
             boxShadow: [
               BoxShadow(
-                color: t.brandGradientStart.withAlpha(60),
-                blurRadius: 10,
-                offset: const Offset(2, 3),
+                color: t.brandGradientStart.withAlpha(50),
+                blurRadius: 8,
+                offset: const Offset(1, 2),
               ),
             ],
           ),
           child: const Icon(Icons.auto_awesome_rounded,
-              color: Colors.white, size: 20),
+              color: Colors.white, size: 14),
         ),
       ),
     );
@@ -285,16 +389,265 @@ class _TutorSideTabState extends State<_TutorSideTab> {
   }
 }
 
-class _Destination {
-  const _Destination({
-    required this.label,
+/// Quick-start sheet: pick a mode (Study / Test) then a deck, and jump straight
+/// into it — fewer taps than going Library → deck → button.
+class _QuickStartSheet extends ConsumerStatefulWidget {
+  const _QuickStartSheet({required this.rootContext, required this.tokens});
+
+  final BuildContext rootContext;
+  final AuroraTokens tokens;
+
+  @override
+  ConsumerState<_QuickStartSheet> createState() => _QuickStartSheetState();
+}
+
+class _QuickStartSheetState extends ConsumerState<_QuickStartSheet> {
+  bool _testMode = false;
+
+  void _launch(LibraryDeck deck) {
+    Navigator.of(context).pop();
+    final params = {'deckId': deck.id, 'deckTitle': deck.title};
+    widget.rootContext.pushNamed(
+      _testMode ? AppRoutes.testSetupName : AppRoutes.studySessionName,
+      queryParameters: params,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.tokens;
+    final l = AppLocalizations.of(context);
+    final decksAsync = ref.watch(libraryDecksNotifierProvider);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: t.backgroundSurface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(t.space20, t.space12, t.space20, t.space16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: t.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              SizedBox(height: t.space16),
+              // Mode toggle.
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: t.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(t.radiusFull),
+                ),
+                child: Row(
+                  children: [
+                    _ModeTab(
+                      tokens: t,
+                      icon: Icons.school_rounded,
+                      label: l.libraryActionStudy,
+                      selected: !_testMode,
+                      onTap: () => setState(() => _testMode = false),
+                    ),
+                    _ModeTab(
+                      tokens: t,
+                      icon: Icons.fact_check_rounded,
+                      label: l.libraryDeckDetailTest,
+                      selected: _testMode,
+                      onTap: () => setState(() => _testMode = true),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: t.space16),
+              Text(
+                l.libraryTabDecks,
+                style: t.labelMedium.copyWith(color: t.textSecondary),
+              ),
+              SizedBox(height: t.space8),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.42,
+                ),
+                child: decksAsync.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (_, __) => Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(l.errorNetwork,
+                        style: TextStyle(color: t.textSecondary)),
+                  ),
+                  data: (state) {
+                    final decks = state.items
+                        .where((d) => _testMode ? d.hasTests : d.hasFlashcards)
+                        .toList();
+                    if (decks.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          l.libraryNoDecks,
+                          style: TextStyle(color: t.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: decks.length,
+                      separatorBuilder: (_, __) => SizedBox(height: t.space8),
+                      itemBuilder: (_, i) => _QuickDeckRow(
+                        tokens: t,
+                        deck: decks[i],
+                        cardsLabel: l.marketplaceCardCount(decks[i].cardCount),
+                        onTap: () => _launch(decks[i]),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeTab extends StatelessWidget {
+  const _ModeTab({
+    required this.tokens,
     required this.icon,
-    required this.activeIcon,
-    required this.route,
+    required this.label,
+    required this.selected,
+    required this.onTap,
   });
 
-  final String label;
+  final AuroraTokens tokens;
   final IconData icon;
-  final IconData activeIcon;
-  final String route;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            gradient: selected ? tokens.brandGradient : null,
+            borderRadius: BorderRadius.circular(tokens.radiusFull),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 18,
+                  color: selected ? Colors.white : tokens.textSecondary),
+              SizedBox(width: tokens.space8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: selected ? Colors.white : tokens.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickDeckRow extends StatelessWidget {
+  const _QuickDeckRow({
+    required this.tokens,
+    required this.deck,
+    required this.cardsLabel,
+    required this.onTap,
+  });
+
+  final AuroraTokens tokens;
+  final LibraryDeck deck;
+  final String cardsLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cover = _hexToColor(deck.coverColorHex);
+    final initial =
+        deck.title.trim().isNotEmpty ? deck.title.trim()[0].toUpperCase() : '?';
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.all(tokens.space12),
+        decoration: BoxDecoration(
+          color: tokens.backgroundSurface,
+          borderRadius: BorderRadius.circular(tokens.radiusMd),
+          border: Border.all(color: tokens.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: cover.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(tokens.radiusSm),
+              ),
+              child: Text(
+                initial,
+                style: TextStyle(color: cover, fontWeight: FontWeight.w900),
+              ),
+            ),
+            SizedBox(width: tokens.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    deck.title,
+                    style: tokens.titleSmall.copyWith(fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(cardsLabel,
+                      style: tokens.labelSmall.copyWith(color: tokens.textTertiary)),
+                ],
+              ),
+            ),
+            Icon(Icons.play_circle_fill_rounded,
+                color: tokens.brandGradientStart, size: 28),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _hexToColor(String hex) {
+    final clean = hex.replaceAll('#', '');
+    try {
+      return Color(int.parse('FF$clean', radix: 16));
+    } catch (_) {
+      return const Color(0xFF6366F1);
+    }
+  }
 }

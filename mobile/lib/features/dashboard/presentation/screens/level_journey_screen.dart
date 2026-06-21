@@ -85,6 +85,31 @@ class _LevelJourneyContent extends StatelessWidget {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
+              // ── Next goal: the next locked reward, to aim for ──────────────
+              _NextGoalCard(
+                tokens: tokens,
+                level: details.level,
+                milestones: details.milestones,
+              ),
+              const SizedBox(height: 28),
+
+              // ── Tier ladder: all ranks, current highlighted, rest as goals ─
+              Text(
+                l.levelJourneyTiers,
+                style: tokens.titleMedium.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                l.levelJourneyTiersSubtitle,
+                style: tokens.bodySmall.copyWith(color: tokens.textSecondary),
+              ),
+              const SizedBox(height: 14),
+              _TierLadder(tokens: tokens, level: details.level),
+              const SizedBox(height: 28),
+
               // Roadmap title
               Text(
                 l.levelJourneyRewardsRoad,
@@ -484,6 +509,317 @@ class _CircleIconButton extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 18),
+      ),
+    );
+  }
+}
+
+// ── Tier ladder data ─────────────────────────────────────────────────────────
+
+class _TierInfo {
+  const _TierInfo(this.key, this.minLevel, this.color, this.icon);
+  final String key;
+  final int minLevel;
+  final Color color;
+  final IconData icon;
+}
+
+const List<_TierInfo> _kTiers = [
+  _TierInfo('bronze', 1, Color(0xFFCD7F32), Icons.shield_rounded),
+  _TierInfo('silver', 6, Color(0xFFB6C0CC), Icons.shield_moon_rounded),
+  _TierInfo('gold', 16, Color(0xFFF5B700), Icons.workspace_premium_rounded),
+  _TierInfo('platinum', 31, Color(0xFF14B8A6), Icons.diamond_rounded),
+  _TierInfo('master', 51, Color(0xFF10B981), Icons.military_tech_rounded),
+  _TierInfo('legend', 101, Color(0xFF8B5CF6), Icons.auto_awesome_rounded),
+];
+
+String _tierName(AppLocalizations l, String key) {
+  switch (key) {
+    case 'bronze':
+      return l.levelTierBronze;
+    case 'silver':
+      return l.levelTierSilver;
+    case 'gold':
+      return l.levelTierGold;
+    case 'platinum':
+      return l.levelTierPlatinum;
+    case 'master':
+      return l.levelTierMaster;
+    default:
+      return l.levelTierLegend;
+  }
+}
+
+/// Goal card pointing at the next locked milestone reward — gives a concrete
+/// thing to climb toward.
+class _NextGoalCard extends StatelessWidget {
+  const _NextGoalCard({
+    required this.tokens,
+    required this.level,
+    required this.milestones,
+  });
+
+  final AuroraTokens tokens;
+  final int level;
+  final List<LevelJourneyMilestone> milestones;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    LevelJourneyMilestone? next;
+    for (final m in milestones) {
+      if (!m.unlocked) {
+        next = m;
+        break;
+      }
+    }
+
+    if (next == null) {
+      return Container(
+        padding: EdgeInsets.all(tokens.space16),
+        decoration: BoxDecoration(
+          color: tokens.surfaceCard,
+          borderRadius: BorderRadius.circular(tokens.radiusM),
+          boxShadow: tokens.shadowCard,
+        ),
+        child: Row(
+          children: [
+            const Text('👑', style: TextStyle(fontSize: 22)),
+            SizedBox(width: tokens.space12),
+            Expanded(
+              child: Text(l.levelJourneyAllRewards,
+                  style: tokens.titleSmall.copyWith(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final levelsToGo = (next.level - level).clamp(0, 1 << 30);
+    return Container(
+      padding: EdgeInsets.all(tokens.space16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            tokens.brandGradientStart.withOpacity(0.16),
+            tokens.brandGradientStart.withOpacity(0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(tokens.radiusM),
+        border: Border.all(color: tokens.brandGradientStart.withOpacity(0.30)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.flag_rounded,
+                  size: 16, color: tokens.brandGradientStart),
+              SizedBox(width: tokens.space4),
+              Text(
+                l.levelJourneyNextGoal,
+                style: tokens.labelMedium.copyWith(
+                  color: tokens.brandGradientStart,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: tokens.brandGradientStart,
+                  borderRadius: BorderRadius.circular(tokens.radiusFull),
+                ),
+                child: Text(
+                  '+$levelsToGo',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: tokens.space8),
+          Text(
+            l.levelJourneyToLevel(next.level),
+            style: tokens.titleMedium.copyWith(fontWeight: FontWeight.w900),
+          ),
+          SizedBox(height: tokens.space4),
+          Text(
+            next.rewardDesc,
+            style: tokens.bodyMedium.copyWith(color: tokens.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Horizontal ladder of all tiers: passed tiers get a check, the current tier
+/// glows with a "you're here" marker, future tiers are dimmed goals.
+class _TierLadder extends StatelessWidget {
+  const _TierLadder({required this.tokens, required this.level});
+
+  final AuroraTokens tokens;
+  final int level;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    int currentIndex = 0;
+    for (var i = 0; i < _kTiers.length; i++) {
+      if (level >= _kTiers[i].minLevel) currentIndex = i;
+    }
+
+    return SizedBox(
+      height: 150,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _kTiers.length,
+        separatorBuilder: (_, __) => SizedBox(width: tokens.space12),
+        itemBuilder: (_, i) {
+          final tier = _kTiers[i];
+          final state = i < currentIndex
+              ? _TierState.passed
+              : (i == currentIndex ? _TierState.current : _TierState.locked);
+          return _TierCard(
+            tokens: tokens,
+            name: _tierName(l, tier.key),
+            fromLabel: l.levelJourneyFromLevel(tier.minLevel),
+            youHereLabel: l.levelJourneyYouAreHere,
+            color: tier.color,
+            icon: tier.icon,
+            state: state,
+          );
+        },
+      ),
+    );
+  }
+}
+
+enum _TierState { passed, current, locked }
+
+class _TierCard extends StatelessWidget {
+  const _TierCard({
+    required this.tokens,
+    required this.name,
+    required this.fromLabel,
+    required this.youHereLabel,
+    required this.color,
+    required this.icon,
+    required this.state,
+  });
+
+  final AuroraTokens tokens;
+  final String name;
+  final String fromLabel;
+  final String youHereLabel;
+  final Color color;
+  final IconData icon;
+  final _TierState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCurrent = state == _TierState.current;
+    final isLocked = state == _TierState.locked;
+    final tint = isLocked ? tokens.textTertiary : color;
+
+    return Container(
+      width: 118,
+      padding: EdgeInsets.all(tokens.space12),
+      decoration: BoxDecoration(
+        color: isCurrent ? null : tokens.surfaceCard,
+        gradient: isCurrent
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [color.withOpacity(0.20), color.withOpacity(0.04)],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(tokens.radiusM),
+        border: Border.all(
+          color: isCurrent ? color : tokens.borderSubtle,
+          width: isCurrent ? 1.6 : 1,
+        ),
+        boxShadow: isCurrent
+            ? [BoxShadow(color: color.withOpacity(0.30), blurRadius: 14)]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: tint.withOpacity(isLocked ? 0.10 : 0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isLocked ? Icons.lock_rounded : icon,
+                  color: tint,
+                  size: 22,
+                ),
+              ),
+              if (state == _TierState.passed)
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: tokens.stateSuccess,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: tokens.surfaceCard, width: 1.5),
+                    ),
+                    child: const Icon(Icons.check,
+                        color: Colors.white, size: 10),
+                  ),
+                ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            name,
+            style: tokens.titleSmall.copyWith(
+              fontWeight: FontWeight.w800,
+              color: isLocked ? tokens.textSecondary : tokens.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          if (isCurrent)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(tokens.radiusFull),
+              ),
+              child: Text(
+                youHereLabel,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            )
+          else
+            Text(
+              fromLabel,
+              style: tokens.labelSmall.copyWith(color: tokens.textTertiary),
+            ),
+        ],
       ),
     );
   }

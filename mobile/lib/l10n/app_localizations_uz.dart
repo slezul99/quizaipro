@@ -888,6 +888,51 @@ class AppLocalizationsUz extends AppLocalizations {
   }
 
   @override
+  String get levelJourneyTiers => 'DARAJALAR';
+
+  @override
+  String get levelJourneyTiersSubtitle =>
+      'Daraja oshiring — yangi darajalarni oching';
+
+  @override
+  String get levelJourneyYouAreHere => 'SIZ SHU YERDA';
+
+  @override
+  String levelJourneyFromLevel(Object level) {
+    return '$level-darajadan';
+  }
+
+  @override
+  String get levelJourneyNextGoal => 'KEYINGI MAQSAD';
+
+  @override
+  String levelJourneyToLevel(Object level) {
+    return '$level-darajagacha';
+  }
+
+  @override
+  String get levelJourneyAllRewards =>
+      'Barcha mukofotlar ochildi — siz cho\'qqidasiz!';
+
+  @override
+  String get levelTierBronze => 'Bronza';
+
+  @override
+  String get levelTierSilver => 'Kumush';
+
+  @override
+  String get levelTierGold => 'Oltin';
+
+  @override
+  String get levelTierPlatinum => 'Platina';
+
+  @override
+  String get levelTierMaster => 'Usta';
+
+  @override
+  String get levelTierLegend => 'Afsona';
+
+  @override
   String get flashcardsAgain => 'Qayta';
 
   @override

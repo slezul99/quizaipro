@@ -885,6 +885,50 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get levelJourneyTiers => 'TIERS';
+
+  @override
+  String get levelJourneyTiersSubtitle => 'Level up to unlock higher tiers';
+
+  @override
+  String get levelJourneyYouAreHere => 'YOU\'RE HERE';
+
+  @override
+  String levelJourneyFromLevel(Object level) {
+    return 'From lvl $level';
+  }
+
+  @override
+  String get levelJourneyNextGoal => 'NEXT GOAL';
+
+  @override
+  String levelJourneyToLevel(Object level) {
+    return 'To level $level';
+  }
+
+  @override
+  String get levelJourneyAllRewards =>
+      'All rewards unlocked — you\'re at the top!';
+
+  @override
+  String get levelTierBronze => 'Bronze';
+
+  @override
+  String get levelTierSilver => 'Silver';
+
+  @override
+  String get levelTierGold => 'Gold';
+
+  @override
+  String get levelTierPlatinum => 'Platinum';
+
+  @override
+  String get levelTierMaster => 'Master';
+
+  @override
+  String get levelTierLegend => 'Legend';
+
+  @override
   String get flashcardsAgain => 'Again';
 
   @override

@@ -530,6 +530,20 @@ def _xp_for_grade(grade):
     return 5 if grade == 5 else 3 if grade == 4 else 1 if grade == 3 else 0
 
 
+# Anti-grind: repeating the SAME card on the SAME (UTC) day yields less and less
+# XP, so users can't farm levels by replaying one deck. Resets every day, so
+# genuine daily review still pays. `prior` = times this card was already
+# reviewed today (0 = first time today → full XP).
+_DAILY_XP_DECAY = (1.0, 0.85, 0.7, 0.5, 0.25)
+
+
+def decay_xp(base, prior):
+    if base <= 0:
+        return 0
+    mult = _DAILY_XP_DECAY[prior] if prior < len(_DAILY_XP_DECAY) else 0.1
+    return max(1, round(base * mult))
+
+
 def bump_streak(conn, user, xp_gain, graded_at_iso):
     """Mirrors the existing web grading routes' streak/XP bookkeeping (app.py)."""
     new_xp = (user["xp"] or 0) + xp_gain
@@ -612,7 +626,14 @@ def post_grade():
                 "INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, ?, ?, ?)",
                 (user["id"], parsed["card_id"], parsed["grade"], parsed["graded_at"]))
 
-            xp_gain = _xp_for_grade(parsed["grade"])
+            # Diminishing returns: count today's reviews of THIS card (the row we
+            # just inserted is included, so subtract it to get prior repeats).
+            today_count = conn.execute(
+                "SELECT COUNT(*) AS c FROM reviews "
+                "WHERE user_id=? AND card_id=? AND substr(reviewed_at,1,10)=?",
+                (user["id"], parsed["card_id"], parsed["graded_at"][:10])).fetchone()["c"]
+            prior_today = max(0, (today_count or 1) - 1)
+            xp_gain = decay_xp(_xp_for_grade(parsed["grade"]), prior_today)
             streak = bump_streak(conn, user, xp_gain, parsed["graded_at"])
             ach_mod.check_and_award(conn, user["id"])
             conn.commit()

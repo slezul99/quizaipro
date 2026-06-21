@@ -1702,6 +1702,84 @@ abstract class AppLocalizations {
   /// **'{xp} XP left'**
   String levelJourneyXpRemaining(int xp);
 
+  /// No description provided for @levelJourneyTiers.
+  ///
+  /// In en, this message translates to:
+  /// **'TIERS'**
+  String get levelJourneyTiers;
+
+  /// No description provided for @levelJourneyTiersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Level up to unlock higher tiers'**
+  String get levelJourneyTiersSubtitle;
+
+  /// No description provided for @levelJourneyYouAreHere.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU\'RE HERE'**
+  String get levelJourneyYouAreHere;
+
+  /// No description provided for @levelJourneyFromLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'From lvl {level}'**
+  String levelJourneyFromLevel(Object level);
+
+  /// No description provided for @levelJourneyNextGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT GOAL'**
+  String get levelJourneyNextGoal;
+
+  /// No description provided for @levelJourneyToLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'To level {level}'**
+  String levelJourneyToLevel(Object level);
+
+  /// No description provided for @levelJourneyAllRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'All rewards unlocked — you\'re at the top!'**
+  String get levelJourneyAllRewards;
+
+  /// No description provided for @levelTierBronze.
+  ///
+  /// In en, this message translates to:
+  /// **'Bronze'**
+  String get levelTierBronze;
+
+  /// No description provided for @levelTierSilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver'**
+  String get levelTierSilver;
+
+  /// No description provided for @levelTierGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get levelTierGold;
+
+  /// No description provided for @levelTierPlatinum.
+  ///
+  /// In en, this message translates to:
+  /// **'Platinum'**
+  String get levelTierPlatinum;
+
+  /// No description provided for @levelTierMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get levelTierMaster;
+
+  /// No description provided for @levelTierLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend'**
+  String get levelTierLegend;
+
   /// Again grade button
   ///
   /// In en, this message translates to:
