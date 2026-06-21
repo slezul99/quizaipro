@@ -271,163 +271,226 @@ class TreePainter extends CustomPainter {
     canvas.restore();
   }
 
+  // ─── Shared tree-art helpers ────────────────────────────────────────────
+  // Origin is assumed translated to the base centre (0,0); up is negative y.
+
+  /// Soft ground shadow ellipse so the tree sits on the soil instead of
+  /// floating.
+  void _groundShadow(Canvas canvas, double scale, double halfWidth) {
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(0, -1.5 * scale),
+        width: halfWidth * 2,
+        height: 8 * scale,
+      ),
+      Paint()
+        ..color = Colors.black.withOpacity(0.12)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3 * scale),
+    );
+  }
+
+  /// A smoothly tapering trunk filled with a cylindrical (centre-lit) gradient
+  /// so it reads as a rounded volume rather than a flat stick.
+  void _trunk(
+    Canvas canvas,
+    double scale, {
+    required double topY,
+    required double topX,
+    required double baseHalf,
+    required double topHalf,
+    required Color light,
+    required Color dark,
+  }) {
+    final rect = Rect.fromLTRB(-baseHalf, topY, baseHalf, 0);
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [dark, light, dark],
+        stops: const [0.0, 0.45, 1.0],
+      ).createShader(rect);
+    final path = Path()
+      ..moveTo(-baseHalf, 0)
+      ..quadraticBezierTo(-baseHalf * 0.7, topY * 0.5, topX - topHalf, topY)
+      ..lineTo(topX + topHalf, topY)
+      ..quadraticBezierTo(baseHalf * 0.7, topY * 0.5, baseHalf, 0)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  /// A volumetric foliage blob: radial gradient with a top-left highlight and a
+  /// bottom-right shadow, giving each clump a 3-D sense of mass.
+  void _blob(Canvas canvas, Offset c, double r, Color color, {Color? highlight}) {
+    final rect = Rect.fromCircle(center: c, radius: r);
+    final hi = highlight ?? Color.lerp(color, Colors.white, 0.40)!;
+    final lo = Color.lerp(color, Colors.black, 0.24)!;
+    canvas.drawCircle(
+      c,
+      r,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.4, -0.5),
+          radius: 1.05,
+          colors: [hi, color, lo],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(rect),
+    );
+  }
+
+  /// A soft circular glow behind a canopy — used for the magical late stages.
+  void _glow(Canvas canvas, Offset c, double r, Color color) {
+    canvas.drawCircle(
+      c,
+      r,
+      Paint()
+        ..color = color
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.5),
+    );
+  }
+
+  /// A five-petal blossom with a warm centre — replaces flat pink dots.
+  void _blossom(Canvas canvas, Offset c, double r, Color color) {
+    final petal = Paint()..color = color;
+    for (var i = 0; i < 5; i++) {
+      final a = i * math.pi * 2 / 5 - math.pi / 2;
+      canvas.drawCircle(
+        c + Offset(math.cos(a), math.sin(a)) * r * 0.62,
+        r * 0.5,
+        petal,
+      );
+    }
+    canvas.drawCircle(c, r * 0.42, Paint()..color = const Color(0xFFFFE6A0));
+  }
+
   void _paintYoungTree(Canvas canvas, double cx, double cy, double scale, double sway) {
     canvas.save();
     canvas.translate(cx, cy - 2 * scale);
+    _groundShadow(canvas, scale, 20 * scale);
 
-    final trunkPaint = Paint()
-      ..color = const Color(0xFF7c5d3f)
-      ..strokeWidth = 5 * scale
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    final lean = sway * 6 * scale;
+    _trunk(canvas, scale,
+        topY: -42 * scale,
+        topX: lean,
+        baseHalf: 4 * scale,
+        topHalf: 2.4 * scale,
+        light: const Color(0xFF8a6a47),
+        dark: const Color(0xFF5a3f28));
 
-    final trunkPath = Path()
-      ..moveTo(0, 0)
-      ..quadraticBezierTo(sway * 20 * scale, -25 * scale, sway * 8 * scale, -50 * scale);
-    canvas.drawPath(trunkPath, trunkPaint);
-
-    canvas.translate(sway * 8 * scale, -50 * scale);
-
-    canvas.save();
-    canvas.rotate(-0.5 + sway);
-    final leftPath = Path()..moveTo(0, 0)..quadraticBezierTo(-10 * scale, -10 * scale, -15 * scale, -20 * scale);
-    canvas.drawPath(leftPath, trunkPaint);
-    canvas.drawCircle(Offset(-15 * scale, -20 * scale), 12 * scale, Paint()..color = const Color(0xFF0ea5e9));
-    canvas.restore();
-
-    canvas.save();
-    canvas.rotate(0.5 + sway);
-    final rightPath = Path()..moveTo(0, 0)..quadraticBezierTo(10 * scale, -10 * scale, 15 * scale, -20 * scale);
-    canvas.drawPath(rightPath, trunkPaint);
-    canvas.drawCircle(Offset(15 * scale, -20 * scale), 10 * scale, Paint()..color = const Color(0xFF0284c7));
-    canvas.restore();
-
-    canvas.drawCircle(Offset(0, -15 * scale), 14 * scale, Paint()..color = const Color(0xFF38bdf8));
+    canvas.translate(lean, -42 * scale);
+    _blob(canvas, Offset(-13 * scale, -6 * scale), 13 * scale, const Color(0xFF0ea5e9));
+    _blob(canvas, Offset(14 * scale, -4 * scale), 11 * scale, const Color(0xFF0284c7));
+    _blob(canvas, Offset(0, -16 * scale), 16 * scale, const Color(0xFF38bdf8));
     canvas.restore();
   }
 
   void _paintBloomingTree(Canvas canvas, double cx, double cy, double scale, double sway) {
     canvas.save();
     canvas.translate(cx, cy - 2 * scale);
+    _groundShadow(canvas, scale, 24 * scale);
 
-    final trunkPaint = Paint()
-      ..color = const Color(0xFF5c3a21)
-      ..strokeWidth = 7 * scale
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    final lean = sway * 5 * scale;
+    _trunk(canvas, scale,
+        topY: -50 * scale,
+        topX: lean,
+        baseHalf: 5.5 * scale,
+        topHalf: 3 * scale,
+        light: const Color(0xFF7a5435),
+        dark: const Color(0xFF4f3018));
 
-    final trunkPath = Path()
-      ..moveTo(0, 0)
-      ..quadraticBezierTo(sway * 15 * scale, -30 * scale, sway * 5 * scale, -55 * scale);
-    canvas.drawPath(trunkPath, trunkPaint);
+    canvas.translate(lean, -50 * scale);
+    _blob(canvas, Offset(-15 * scale, -12 * scale), 17 * scale, const Color(0xFF16a34a));
+    _blob(canvas, Offset(16 * scale, -10 * scale), 15 * scale, const Color(0xFF22c55e));
+    _blob(canvas, Offset(0, -28 * scale), 19 * scale, const Color(0xFF34d399));
 
-    canvas.translate(sway * 5 * scale, -55 * scale);
-
-    final leafPaint = Paint()..color = const Color(0xFF059669);
-    canvas.drawCircle(Offset(-15 * scale, -15 * scale), 16 * scale, leafPaint);
-    canvas.drawCircle(Offset(15 * scale, -12 * scale), 14 * scale, leafPaint);
-    canvas.drawCircle(Offset(0, -28 * scale), 18 * scale, leafPaint);
-
-    final blossomPaint = Paint()..color = const Color(0xFFf472b6);
-    canvas.drawCircle(Offset(-10 * scale, -25 * scale), 6 * scale, blossomPaint);
-    canvas.drawCircle(Offset(12 * scale, -20 * scale), 5 * scale, blossomPaint);
-    canvas.drawCircle(Offset(-18 * scale, -5 * scale), 5 * scale, blossomPaint);
-    canvas.drawCircle(Offset(2 * scale, -38 * scale), 6 * scale, blossomPaint);
-    canvas.drawCircle(Offset(18 * scale, -3 * scale), 4 * scale, blossomPaint);
+    _blossom(canvas, Offset(-12 * scale, -24 * scale), 7 * scale, const Color(0xFFf472b6));
+    _blossom(canvas, Offset(11 * scale, -18 * scale), 6 * scale, const Color(0xFFf9a8d4));
+    _blossom(canvas, Offset(-18 * scale, -6 * scale), 5.5 * scale, const Color(0xFFf472b6));
+    _blossom(canvas, Offset(3 * scale, -38 * scale), 6.5 * scale, const Color(0xFFf9a8d4));
+    _blossom(canvas, Offset(18 * scale, -4 * scale), 5 * scale, const Color(0xFFf472b6));
     canvas.restore();
   }
 
   void _paintAncientTree(Canvas canvas, double cx, double cy, double scale, double sway) {
     canvas.save();
     canvas.translate(cx, cy - 2 * scale);
+    _groundShadow(canvas, scale, 28 * scale);
 
-    final trunkPaint = Paint()
-      ..color = const Color(0xFF4c2f13)
-      ..strokeWidth = 9 * scale
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    final lean = sway * 4 * scale;
+    _trunk(canvas, scale,
+        topY: -56 * scale,
+        topX: lean,
+        baseHalf: 7 * scale,
+        topHalf: 3.5 * scale,
+        light: const Color(0xFF6b4520),
+        dark: const Color(0xFF3a230f));
 
-    final trunkPath = Path()
-      ..moveTo(0, 0)
-      ..quadraticBezierTo(sway * 10 * scale, -30 * scale, sway * 3 * scale, -60 * scale);
-    canvas.drawPath(trunkPath, trunkPaint);
-
-    canvas.translate(sway * 3 * scale, -60 * scale);
-
-    final f1 = Paint()..color = const Color(0xFFb45309);
-    final f2 = Paint()..color = const Color(0xFFd97706);
-    final f3 = Paint()..color = const Color(0xFFf59e0b);
-
-    canvas.drawCircle(Offset(-22 * scale, -10 * scale), 20 * scale, f1);
-    canvas.drawCircle(Offset(22 * scale, -8 * scale), 18 * scale, f1);
-    canvas.drawCircle(Offset(-12 * scale, -28 * scale), 22 * scale, f2);
-    canvas.drawCircle(Offset(12 * scale, -24 * scale), 20 * scale, f2);
-    canvas.drawCircle(Offset(0, -42 * scale), 24 * scale, f3);
+    canvas.translate(lean, -56 * scale);
+    _blob(canvas, Offset(-22 * scale, -8 * scale), 21 * scale, const Color(0xFFb45309));
+    _blob(canvas, Offset(22 * scale, -6 * scale), 19 * scale, const Color(0xFFc2680b));
+    _blob(canvas, Offset(-11 * scale, -26 * scale), 22 * scale, const Color(0xFFd97706));
+    _blob(canvas, Offset(13 * scale, -22 * scale), 20 * scale, const Color(0xFFea8a0c));
+    _blob(canvas, Offset(0, -40 * scale), 24 * scale, const Color(0xFFf59e0b));
     canvas.restore();
   }
 
   void _paintLegendaryTree(Canvas canvas, double cx, double cy, double scale, double sway) {
     canvas.save();
     canvas.translate(cx, cy - 2 * scale);
+    _groundShadow(canvas, scale, 30 * scale);
 
-    final trunkPaint = Paint()
-      ..color = const Color(0xFF311042)
-      ..strokeWidth = 10 * scale
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    final lean = sway * 4 * scale;
+    _trunk(canvas, scale,
+        topY: -58 * scale,
+        topX: lean,
+        baseHalf: 7.5 * scale,
+        topHalf: 4 * scale,
+        light: const Color(0xFF4a1f63),
+        dark: const Color(0xFF2a0e3a));
 
-    final trunkPath = Path()
-      ..moveTo(0, 0)
-      ..quadraticBezierTo(sway * 8 * scale, -30 * scale, sway * 2 * scale, -60 * scale);
-    canvas.drawPath(trunkPath, trunkPaint);
-
-    canvas.translate(sway * 2 * scale, -60 * scale);
-
-    final l1 = Paint()..color = const Color(0xFF4c1d95).withOpacity(0.9);
-    final l2 = Paint()..color = const Color(0xFF7c3aed).withOpacity(0.9);
-    final l3 = Paint()..color = const Color(0xFFec4899).withOpacity(0.85);
-
-    canvas.drawCircle(Offset(-25 * scale, -10 * scale), 22 * scale, l1);
-    canvas.drawCircle(Offset(25 * scale, -8 * scale), 20 * scale, l1);
-    canvas.drawCircle(Offset(-15 * scale, -32 * scale), 24 * scale, l2);
-    canvas.drawCircle(Offset(15 * scale, -28 * scale), 22 * scale, l2);
-    canvas.drawCircle(Offset(0, -46 * scale), 26 * scale, l3);
+    canvas.translate(lean, -58 * scale);
+    _glow(canvas, Offset(0, -28 * scale), 34 * scale,
+        const Color(0xFF7c3aed).withOpacity(0.35));
+    _blob(canvas, Offset(-24 * scale, -8 * scale), 22 * scale, const Color(0xFF6d28d9));
+    _blob(canvas, Offset(24 * scale, -6 * scale), 20 * scale, const Color(0xFF7c3aed));
+    _blob(canvas, Offset(-14 * scale, -30 * scale), 24 * scale, const Color(0xFF8b5cf6));
+    _blob(canvas, Offset(15 * scale, -26 * scale), 22 * scale, const Color(0xFFa855f7));
+    _blob(canvas, Offset(0, -46 * scale), 25 * scale, const Color(0xFFec4899));
     canvas.restore();
   }
 
-  /// 365+ "Eternal" tree: an obsidian trunk crowned with a golden canopy and a
-  /// luminous core — distinct from the violet legendary tree.
+  /// 365+ "Eternal" tree: an obsidian trunk crowned with a golden canopy, a
+  /// warm halo and a luminous core — distinct from the violet legendary tree.
   void _paintEternalTree(Canvas canvas, double cx, double cy, double scale, double sway) {
     canvas.save();
     canvas.translate(cx, cy - 2 * scale);
+    _groundShadow(canvas, scale, 32 * scale);
 
-    final trunkPaint = Paint()
-      ..color = const Color(0xFF0B1220)
-      ..strokeWidth = 11 * scale
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final trunkPath = Path()
-      ..moveTo(0, 0)
-      ..quadraticBezierTo(sway * 8 * scale, -32 * scale, sway * 2 * scale, -64 * scale);
-    canvas.drawPath(trunkPath, trunkPaint);
+    final lean = sway * 3 * scale;
+    _trunk(canvas, scale,
+        topY: -62 * scale,
+        topX: lean,
+        baseHalf: 8 * scale,
+        topHalf: 4.5 * scale,
+        light: const Color(0xFF243044),
+        dark: const Color(0xFF070b14));
 
-    canvas.translate(sway * 2 * scale, -64 * scale);
+    canvas.translate(lean, -62 * scale);
+    _glow(canvas, Offset(0, -32 * scale), 40 * scale,
+        const Color(0xFFF59E0B).withOpacity(0.40));
 
-    final base = Paint()..color = const Color(0xFF1F2937).withOpacity(0.95);
-    final gold1 = Paint()..color = const Color(0xFFB45309).withOpacity(0.95);
-    final gold2 = Paint()..color = const Color(0xFFF59E0B).withOpacity(0.95);
-    final gold3 = Paint()..color = const Color(0xFFFCD34D);
-
-    canvas.drawCircle(Offset(-27 * scale, -8 * scale), 24 * scale, base);
-    canvas.drawCircle(Offset(27 * scale, -6 * scale), 22 * scale, base);
-    canvas.drawCircle(Offset(-25 * scale, -10 * scale), 20 * scale, gold1);
-    canvas.drawCircle(Offset(25 * scale, -8 * scale), 18 * scale, gold1);
-    canvas.drawCircle(Offset(-15 * scale, -34 * scale), 24 * scale, gold2);
-    canvas.drawCircle(Offset(15 * scale, -30 * scale), 22 * scale, gold2);
-    canvas.drawCircle(Offset(0, -50 * scale), 26 * scale, gold3);
+    // Dark obsidian under-canopy for depth.
+    _blob(canvas, Offset(-26 * scale, -6 * scale), 24 * scale, const Color(0xFF1F2937));
+    _blob(canvas, Offset(26 * scale, -4 * scale), 22 * scale, const Color(0xFF1F2937));
+    // Golden crown.
+    _blob(canvas, Offset(-24 * scale, -10 * scale), 20 * scale, const Color(0xFFB45309));
+    _blob(canvas, Offset(24 * scale, -8 * scale), 18 * scale, const Color(0xFFc2680b));
+    _blob(canvas, Offset(-14 * scale, -32 * scale), 23 * scale, const Color(0xFFF59E0B));
+    _blob(canvas, Offset(15 * scale, -28 * scale), 21 * scale, const Color(0xFFf0a020));
+    _blob(canvas, Offset(0, -48 * scale), 25 * scale, const Color(0xFFFCD34D),
+        highlight: Colors.white);
     // Luminous crown core.
-    canvas.drawCircle(
-        Offset(0, -50 * scale), 7 * scale, Paint()..color = Colors.white.withOpacity(0.9));
+    _glow(canvas, Offset(0, -48 * scale), 10 * scale,
+        Colors.white.withOpacity(0.95));
     canvas.restore();
   }
 
