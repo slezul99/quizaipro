@@ -1865,6 +1865,21 @@ key_points — это 2-5 коротких (до 12 слов) тезисов, к
     return {"explanation": explanation, "key_points": key_points}
 
 
+def _budget_history(history: list, max_chars: int = 8000) -> list:
+    """Keep the most recent messages whose combined length fits max_chars
+    (a cheap token proxy), preserving order. Bounds tutor context cost on long
+    conversations without an extra summarisation call."""
+    out = []
+    total = 0
+    for h in reversed(history or []):
+        c = (h.get("content") or "")
+        if total + len(c) > max_chars and out:
+            break
+        total += len(c)
+        out.append(h)
+    return list(reversed(out))
+
+
 def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", learner_context: str = "") -> tuple[str, list]:
     """Stroit system prompt + soobshcheniya v formate ChatML."""
     history = history or []
@@ -1932,14 +1947,21 @@ def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list
             "пробелами и предложи повторить их. Не перечисляй их механически."
         )
 
-    # Esli istoriya dlinnaya — dobavlyaem pervoe soobshchenie kak kontekst temy
-    if len(history) > 10:
+    # History budgeting: keep the most recent turns that fit a character budget
+    # (proxy for tokens) instead of a flat -20, so long chats don't blow up the
+    # context cost. Older turns are summarised by a one-line topic anchor (the
+    # first user message) so continuity isn't lost.
+    windowed = _budget_history(history, max_chars=8000)
+    if len(windowed) < len(history):
         first_user = next((h["content"] for h in history if h["role"] == "user"), None)
         if first_user:
-            system_prompt += f"\n\nКонтекст: в начале разговора пользователь спросил: «{first_user[:400]}» — учитывай эту тему в ответах."
+            system_prompt += (
+                f"\n\nКонтекст (ранее в диалоге): пользователь начал с «{first_user[:400]}». "
+                "Учитывай эту тему, но опирайся на последние сообщения ниже."
+            )
 
     messages = []
-    for h in history[-20:]:
+    for h in windowed:
         role = "user" if h["role"] == "user" else "assistant"
         messages.append({"role": role, "content": h["content"]})
     messages.append({"role": "user", "content": user_message})
@@ -2189,3 +2211,14 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
         text = chat_tutor(user_message, deck_context, history, lang, provider="gemini")
         if text:
             yield text
+        else:
+            # Empty even non-streaming — usually a SAFETY block or overload.
+            # Give the user a clear, polite message instead of silence.
+            yield {
+                "ru": "Не получилось ответить на этот вопрос. Попробуй переформулировать "
+                      "или задай учебный вопрос — я помогу разобраться с темой.",
+                "en": "I couldn't answer that one. Try rephrasing, or ask a study "
+                      "question and I'll help you work through it.",
+                "uz": "Bu savolga javob bera olmadim. Boshqacha yozing yoki o'quv "
+                      "savol bering — mavzuni tushuntiraman.",
+            }.get(lang, "Не получилось ответить на этот вопрос. Попробуй переформулировать.")
