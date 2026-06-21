@@ -76,8 +76,8 @@ def _serialize_deck_summary(d, lang="ru"):
         "author_name": d["author"] or "",
         "cover_color_hex": _palette_color(d["id"]),
         "card_count": d["card_count"] or 0,
-        "rating": 0.0,
-        "rating_count": 0,
+        "rating": float(d["rating"]) if d.get("rating") is not None else 0.0,
+        "rating_count": d.get("rating_count") or 0,
         "clone_count": d["clones_count"] or 0,
         "tags": [],
         "language": "ru",
@@ -118,6 +118,8 @@ def _query_public_decks(conn, where, params, order_by, limit=None):
     sql = f"""
         SELECT d.*,
             (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+            (SELECT ROUND(AVG(stars), 1) FROM deck_reviews WHERE deck_id=d.id AND is_hidden=0) AS rating,
+            (SELECT COUNT(*) FROM deck_reviews WHERE deck_id=d.id AND is_hidden=0) AS rating_count,
             CASE WHEN d.org_id IS NOT NULL
                  THEN (SELECT name FROM organizations WHERE id=d.org_id)
                  ELSE (SELECT username FROM users WHERE id=d.owner_id) END AS author,
@@ -185,6 +187,8 @@ def get_deck_detail(deck_id):
         row = conn.execute("""
             SELECT d.*,
                 (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+                (SELECT ROUND(AVG(stars), 1) FROM deck_reviews WHERE deck_id=d.id AND is_hidden=0) AS rating,
+                (SELECT COUNT(*) FROM deck_reviews WHERE deck_id=d.id AND is_hidden=0) AS rating_count,
                 CASE WHEN d.org_id IS NOT NULL
                      THEN (SELECT name FROM organizations WHERE id=d.org_id)
                      ELSE (SELECT username FROM users WHERE id=d.owner_id) END AS author,
@@ -213,8 +217,8 @@ def get_deck_detail(deck_id):
         "author_avatar_url": None,
         "cover_color_hex": _palette_color(d["id"]),
         "card_count": card_count,
-        "rating": 0.0,
-        "rating_count": 0,
+        "rating": float(d["rating"]) if d.get("rating") is not None else 0.0,
+        "rating_count": d.get("rating_count") or 0,
         "clone_count": d["clones_count"] or 0,
         "like_count": 0,
         "tags": [],

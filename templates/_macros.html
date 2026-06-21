@@ -12,6 +12,9 @@
       {% elif d.has_terms %}
       <span class="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[11px] font-bold">🃏 {{ t('mk_type_cards') }}</span>
       {% endif %}
+      {% if d.rating_count and d.rating_count > 0 %}
+      <span class="text-xs font-bold text-amber-500 flex items-center gap-0.5">★ {{ d.rating }} <span class="text-slate-400 dark:text-slate-500 font-normal">({{ d.rating_count }})</span></span>
+      {% endif %}
       <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
       {% if d.clones_count and d.clones_count > 0 %}
       <span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1">📥 {{ d.clones_count }}</span>

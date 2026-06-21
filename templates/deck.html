@@ -732,6 +732,77 @@ function deckEditor() {
       <button type="button" id="page-next" class="page-btn" title="{{ t('dk_page_next') }}">→</button>
       <button type="button" id="page-last" class="page-btn" title="{{ t('dk_page_last') }}">⏭</button>
     </div>
+
+    {% if deck.is_public %}
+    <!-- ── REVIEWS ── -->
+    <div id="reviews" class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+      <div class="flex items-center gap-3 mb-6 flex-wrap">
+        <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100">⭐ {{ t('rv_section_h') }}</h2>
+        {% if rating.count > 0 %}
+        <span class="text-lg font-bold text-amber-500">★ {{ rating.avg }}</span>
+        <span class="text-sm text-slate-500 dark:text-slate-400">· {{ rating.count }}</span>
+        {% else %}
+        <span class="text-sm text-slate-400 dark:text-slate-500">{{ t('rv_no_ratings') }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Rate form -->
+      <form method="POST" action="/deck/{{ deck.id }}/review" class="glass-premium p-5 mb-6"
+            x-data="{ stars: {{ my_review.stars if my_review else 0 }}, hover: 0 }">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+          <span class="font-bold text-slate-800 dark:text-slate-100">{{ t('rv_rate_h') }}</span>
+          <div class="flex items-center gap-1" @mouseleave="hover = 0">
+            <template x-for="i in 5" :key="i">
+              <button type="button" @click="stars = i" @mouseenter="hover = i"
+                class="text-2xl leading-none transition-transform hover:scale-110"
+                :class="(hover || stars) >= i ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'"
+                x-text="(hover || stars) >= i ? '★' : '☆'"></button>
+            </template>
+          </div>
+        </div>
+        <input type="hidden" name="stars" :value="stars">
+        <textarea name="text" rows="2" maxlength="1000" placeholder="{{ t('rv_text_ph') }}"
+          class="input-premium w-full text-sm">{{ my_review.text if my_review else '' }}</textarea>
+        <div class="flex items-center gap-2 mt-3">
+          <button type="submit" :disabled="stars < 1"
+            class="btn-premium px-5 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ t('rv_update') if my_review else t('rv_submit') }}
+          </button>
+          {% if my_review %}
+          <button type="submit" formaction="/deck/{{ deck.id }}/review/delete" formnovalidate
+            class="text-sm text-rose-500 hover:text-rose-600 font-semibold px-3">{{ t('rv_delete') }}</button>
+          {% endif %}
+        </div>
+      </form>
+
+      <!-- Reviews list -->
+      {% if reviews %}
+      <div class="space-y-3">
+        {% for r in reviews %}
+        <div class="glass-premium p-4 {% if r.user_id == current_user.id %}ring-1 ring-indigo-300 dark:ring-indigo-600{% endif %}">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-bold text-slate-800 dark:text-slate-100 truncate">
+                {{ t('rv_you') if r.user_id == current_user.id else r.author }}
+              </span>
+              <span class="text-amber-400 text-sm whitespace-nowrap">{% for i in range(1,6) %}{{ '★' if i <= r.stars else '☆' }}{% endfor %}</span>
+            </div>
+            <span class="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap">{{ r.created_at|tashkent('%d.%m.%Y') }}</span>
+          </div>
+          {% if r.text %}<p class="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">{{ r.text }}</p>{% endif %}
+          {% if r.user_id != current_user.id %}
+          <form method="POST" action="/review/{{ r.id }}/report" class="mt-1">
+            <button type="submit" class="text-[11px] text-slate-400 hover:text-rose-500 transition">⚑ {{ t('rv_report') }}</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-400 dark:text-slate-500 text-center py-6">{{ t('rv_empty') }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 
   <!-- Test settings modal -->

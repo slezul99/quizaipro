@@ -1117,6 +1117,25 @@ def init_db():
     except Exception as e:
         print(f"[DB] deck i18n seed error: {e}")
 
+    # === MARKETPLACE DECK REVIEWS (ratings + text, one per user per deck) ===
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS deck_reviews (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            deck_id    INTEGER NOT NULL,
+            user_id    INTEGER NOT NULL,
+            stars      INTEGER NOT NULL CHECK(stars BETWEEN 1 AND 5),
+            text       TEXT DEFAULT '',
+            reports    INTEGER DEFAULT 0,
+            is_hidden  INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(deck_id, user_id),
+            FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    c.execute("CREATE INDEX IF NOT EXISTS idx_deck_reviews_deck ON deck_reviews(deck_id, is_hidden)")
+
     conn.commit()
     conn.close()
     print(f"[DB] Initialized: {DB_PATH}")

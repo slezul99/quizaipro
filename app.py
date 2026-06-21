@@ -1833,6 +1833,16 @@ def deck_view(deck_id):
         cats = conn.execute("SELECT * FROM categories WHERE org_id=?", (user["org_id"],)).fetchall()
     else:
         cats = conn.execute("SELECT * FROM categories WHERE owner_id=?", (user["id"],)).fetchall()
+    # Marketplace reviews/ratings (own review floated to the top).
+    rating = _decks_ratings(conn, [deck_id]).get(deck_id, {"avg": 0, "count": 0})
+    reviews = [dict(r) for r in conn.execute("""
+        SELECT r.id, r.stars, r.text, r.created_at, r.user_id,
+               COALESCE(NULLIF(u.full_name,''), u.username) AS author
+        FROM deck_reviews r JOIN users u ON u.id=r.user_id
+        WHERE r.deck_id=? AND r.is_hidden=0
+        ORDER BY (r.user_id=?) DESC, r.updated_at DESC LIMIT 50
+    """, (deck_id, user["id"])).fetchall()]
+    my_review = next((rv for rv in reviews if rv["user_id"] == user["id"]), None)
     conn.close()
     # Schitaem skol'ko v kolodе MCQ-kart i terms-kart na osnove faktov,
     # chtoby shablon mog pokazat' obe knopki esli oba tipa est'.
@@ -1842,6 +1852,7 @@ def deck_view(deck_id):
     retention = fsrs.deck_retention(cards)
     return render_template("deck.html", deck=deck, cards=cards, categories=cats,
                             can_edit=can_manage_content(user),
+                            rating=rating, reviews=reviews, my_review=my_review,
                             mcq_count=mcq_count, terms_count=terms_count,
                             retention=retention)
 
@@ -3692,7 +3703,7 @@ def marketplace():
         ORDER BY d.clones_count DESC, d.id DESC
         LIMIT 10
     """).fetchall()
-    trending = [_localize_deck_fields(dict(d), lang) for d in trending_raw]
+    trending = _attach_ratings(conn, [_localize_deck_fields(dict(d), lang) for d in trending_raw])
 
     # Legacy collections (no subject_id) — keep backward compat
     legacy_raw = conn.execute("""
@@ -3737,9 +3748,9 @@ def collection_view(slug):
         WHERE cd.collection_id=?
         ORDER BY cd.sort_order ASC
     """, (coll["id"],)).fetchall()
-    conn.close()
     lang = session.get("lang", "ru")
-    decks = [_localize_deck_fields(dict(d), lang) for d in decks]
+    decks = _attach_ratings(conn, [_localize_deck_fields(dict(d), lang) for d in decks])
+    conn.close()
     coll["title"] = coll.get(f"title_{lang}") or coll["title_ru"]
     coll["desc"] = coll.get(f"desc_{lang}") or coll.get("desc_ru", "")
     return render_template("collection.html", coll=coll, decks=decks)
@@ -3771,6 +3782,89 @@ def marketplace_deck_preview(deck_id):
             back = m.group(1).strip()
         cards.append({"front": (c.get("front") or "").strip(), "back": back})
     return jsonify({"ok": True, "total": total, "cards": cards})
+
+
+# ── Deck reviews (ratings) ─────────────────────────────────────────────────
+_REVIEW_AUTO_HIDE = 3  # reports before a review is auto-hidden (light moderation)
+
+
+def _decks_ratings(conn, deck_ids):
+    """Batched {deck_id: {'avg': float, 'count': int}} for a list of decks."""
+    deck_ids = [d for d in deck_ids if d is not None]
+    if not deck_ids:
+        return {}
+    ph = ",".join("?" * len(deck_ids))
+    rows = conn.execute(
+        f"""SELECT deck_id, ROUND(AVG(stars), 1) AS avg, COUNT(*) AS count
+            FROM deck_reviews WHERE is_hidden=0 AND deck_id IN ({ph})
+            GROUP BY deck_id""", list(deck_ids)).fetchall()
+    return {r["deck_id"]: {"avg": r["avg"], "count": r["count"]} for r in rows}
+
+
+def _attach_ratings(conn, decks):
+    """Add rating/rating_count to each deck dict for the card macro."""
+    ratings = _decks_ratings(conn, [d["id"] for d in decks])
+    for d in decks:
+        r = ratings.get(d["id"])
+        d["rating"] = (r["avg"] if r else 0) or 0
+        d["rating_count"] = (r["count"] if r else 0) or 0
+    return decks
+
+
+@app.route("/deck/<int:deck_id>/review", methods=["POST"])
+@login_required
+def deck_review(deck_id):
+    """Create or update the current user's star rating + optional review text."""
+    user = current_user()
+    conn = db.get_conn()
+    deck = conn.execute("SELECT id, is_public FROM decks WHERE id=?", (deck_id,)).fetchone()
+    if not deck or not deck["is_public"]:
+        conn.close(); abort(404)
+    try:
+        stars = int(request.form.get("stars", 0))
+    except (TypeError, ValueError):
+        stars = 0
+    if stars < 1 or stars > 5:
+        conn.close()
+        flash(t("rv_need_stars"), "error")
+        return redirect(url_for("deck_view", deck_id=deck_id) + "#reviews")
+    text = (request.form.get("text") or "").strip()[:1000]
+    conn.execute("""
+        INSERT INTO deck_reviews (deck_id, user_id, stars, text)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(deck_id, user_id)
+        DO UPDATE SET stars=excluded.stars, text=excluded.text, updated_at=CURRENT_TIMESTAMP
+    """, (deck_id, user["id"], stars, text))
+    conn.commit(); conn.close()
+    flash(t("rv_thanks"), "success")
+    return redirect(url_for("deck_view", deck_id=deck_id) + "#reviews")
+
+
+@app.route("/deck/<int:deck_id>/review/delete", methods=["POST"])
+@login_required
+def deck_review_delete(deck_id):
+    user = current_user()
+    conn = db.get_conn()
+    conn.execute("DELETE FROM deck_reviews WHERE deck_id=? AND user_id=?", (deck_id, user["id"]))
+    conn.commit(); conn.close()
+    return redirect(url_for("deck_view", deck_id=deck_id) + "#reviews")
+
+
+@app.route("/review/<int:review_id>/report", methods=["POST"])
+@login_required
+def review_report(review_id):
+    """Flag a review; auto-hide after a few reports (light moderation)."""
+    conn = db.get_conn()
+    row = conn.execute("SELECT deck_id FROM deck_reviews WHERE id=?", (review_id,)).fetchone()
+    if row:
+        conn.execute("UPDATE deck_reviews SET reports = reports + 1 WHERE id=?", (review_id,))
+        conn.execute("UPDATE deck_reviews SET is_hidden=1 WHERE id=? AND reports >= ?",
+                     (review_id, _REVIEW_AUTO_HIDE))
+        conn.commit()
+    did = row["deck_id"] if row else None
+    conn.close()
+    flash(t("rv_reported"), "info")
+    return redirect(url_for("deck_view", deck_id=did) + "#reviews" if did else url_for("marketplace"))
 
 
 # === Admin: manage collections ===
@@ -4036,7 +4130,7 @@ def marketplace_search():
             ORDER BY d.clones_count DESC, d.id DESC
             LIMIT 30
         """, (like, like)).fetchall()
-        decks = [_localize_deck_fields(dict(d), session.get("lang", "ru")) for d in decks_raw]
+        decks = _attach_ratings(conn, [_localize_deck_fields(dict(d), session.get("lang", "ru")) for d in decks_raw])
 
     subjects = conn.execute(
         "SELECT * FROM mp_subjects WHERE is_active=1 ORDER BY sort_order"
