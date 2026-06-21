@@ -2084,7 +2084,12 @@ def _gemini_stream(full_prompt: str, max_tokens: int = 4000, temperature: float 
     Yields text deltas; silent (no yields) on failure."""
     body = {
         "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
-        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+        "generationConfig": {
+            "temperature": temperature,
+            "maxOutputTokens": max_tokens,
+            # Cap "thinking" so it doesn't eat the visible-answer budget.
+            "thinkingConfig": {"thinkingBudget": 1024},
+        },
     }
     data = json.dumps(body).encode("utf-8")
 
@@ -2168,9 +2173,11 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
         "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
         "generationConfig": {
             "temperature": 0.7,
-            # 6000: gemini-3.5-flash spends part of the budget on "thinking", so
-            # 4000 truncated longer tutor explanations.
-            "maxOutputTokens": 6000,
+            # gemini-3.5-flash counts "thinking" against maxOutputTokens, so
+            # unbounded thinking truncated answers. Cap thinking (keeps reasoning
+            # quality) and give the visible answer plenty of room.
+            "maxOutputTokens": 8000,
+            "thinkingConfig": {"thinkingBudget": 1024},
         },
     }
     data = json.dumps(body).encode("utf-8")
@@ -2356,7 +2363,7 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
     full_prompt = "\n".join(full_prompt_parts)
 
     any_chunk = False
-    for chunk in _gemini_stream(full_prompt, max_tokens=6000, temperature=0.7):
+    for chunk in _gemini_stream(full_prompt, max_tokens=8000, temperature=0.7):
         any_chunk = True
         yield chunk
 
