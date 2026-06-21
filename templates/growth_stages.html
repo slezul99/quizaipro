@@ -79,6 +79,35 @@
   .gt-cel-hint { color: rgba(255,255,255,.55); font-size: 13px; margin-top: 18px; }
   .gt-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 10001; }
 
+  /* Share */
+  .gt-share-btn { align-self: flex-start; margin-top: 16px; display: inline-flex;
+    align-items: center; gap: 8px; padding: 11px 18px; border: none; cursor: pointer;
+    border-radius: 999px; font-size: 14px; font-weight: 800; color: #0b1220;
+    background: #fff; box-shadow: 0 10px 26px -8px rgba(0,0,0,.55);
+    transition: transform .2s; }
+  .gt-share-btn:hover { transform: translateY(-2px); }
+  .gt-share { position: fixed; inset: 0; z-index: 10002; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(5,7,13,.86); opacity: 0; transition: opacity .3s; }
+  .gt-share.show { display: flex; opacity: 1; }
+  .gt-share-box { background: #0e1422; border: 1px solid rgba(255,255,255,.1);
+    border-radius: 24px; padding: 20px; max-width: 420px; width: 100%;
+    max-height: 92vh; overflow: auto; text-align: center; }
+  .gt-share-box h3 { color: #fff; font-size: 18px; font-weight: 900; margin-bottom: 14px; }
+  .gt-share-preview { width: 100%; border-radius: 16px; display: block;
+    box-shadow: 0 20px 50px -16px rgba(0,0,0,.6); }
+  .gt-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .gt-share-actions button, .gt-share-actions a { display: inline-flex; align-items: center;
+    justify-content: center; gap: 7px; padding: 12px; border-radius: 14px; border: none;
+    cursor: pointer; font-size: 14px; font-weight: 700; text-decoration: none;
+    background: rgba(255,255,255,.08); color: #fff; transition: background .2s; }
+  .gt-share-actions button:hover, .gt-share-actions a:hover { background: rgba(255,255,255,.16); }
+  .gt-share-actions .primary { background: #6366f1; grid-column: 1 / -1; }
+  .gt-share-actions .tg { background: #229ED9; }
+  .gt-share-actions .wa { background: #25D366; color: #0b1220; }
+  .gt-share-close { margin-top: 12px; background: none; border: none; color: rgba(255,255,255,.6);
+    cursor: pointer; font-size: 13px; }
+
   /* Glass panel holding the grid, floats over the background. */
   .gt-panel { margin-top: 26px; padding: 26px 22px 30px; border-radius: 26px;
     background: rgba(10,14,24,.55); backdrop-filter: blur(14px);
@@ -176,6 +205,7 @@
     {% else %}
     <div class="gt-progress"><div class="gt-progress-top"><span>🏆 Максимальная стадия достигнута!</span></div></div>
     {% endif %}
+    <button class="gt-share-btn" onclick="gtShare()">📤 Поделиться деревом</button>
     <div class="tap">Нажмите на любую стадию ниже, чтобы открыть её во весь экран</div>
   </div>
 
@@ -276,6 +306,104 @@
     })();
   }
 })();
+</script>
+<!-- Share card -->
+<div class="gt-share" id="gt-share">
+  <div class="gt-share-box" onclick="event.stopPropagation();">
+    <h3>Поделиться деревом 🌳</h3>
+    <img id="gt-share-preview" class="gt-share-preview" alt="Моё дерево QuizAIPro">
+    <div class="gt-share-actions">
+      <button class="primary" id="gt-share-native">📤 Поделиться</button>
+      <button id="gt-share-download">⬇️ Скачать</button>
+      <button id="gt-share-copy">🔗 Скопировать ссылку</button>
+      <a class="tg" id="gt-share-tg" target="_blank" rel="noopener">✈️ Telegram</a>
+      <a class="wa" id="gt-share-wa" target="_blank" rel="noopener">🟢 WhatsApp</a>
+    </div>
+    <button class="gt-share-close" onclick="document.getElementById('gt-share').classList.remove('show')">Закрыть</button>
+  </div>
+</div>
+<img id="gt-share-src" src="{{ url_for('static', filename='trees/' + current.img) }}" style="display:none" alt="">
+
+<script>
+  window.GT_SHARE = {
+    streak: {{ streak }},
+    rank: {{ current.rank|tojson }},
+    title: {{ current.title|tojson }},
+    accent: {{ current.accent|tojson }},
+    user: {{ (current_user.username or '')|tojson }},
+    url: "https://quizaipro.com/growth"
+  };
+  (function () {
+    var S = window.GT_SHARE, blob = null;
+    function shareText() {
+      return "Моё дерево знаний — «" + S.title + "»! Серия " + S.streak +
+        " дней 🔥 Титул: " + S.rank + ". Учусь на QuizAIPro 🌳";
+    }
+    function buildCard(cb) {
+      var W = 1080, H = 1350, cv = document.createElement('canvas');
+      cv.width = W; cv.height = H; var x = cv.getContext('2d');
+      var img = document.getElementById('gt-share-src');
+      function draw() {
+        var iw = img.naturalWidth || 1, ih = img.naturalHeight || 1;
+        var sc = Math.max(W / iw, H / ih), dw = iw * sc, dh = ih * sc;
+        x.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+        var g = x.createLinearGradient(0, H * 0.42, 0, H);
+        g.addColorStop(0, 'rgba(5,7,13,0)'); g.addColorStop(1, 'rgba(5,7,13,0.94)');
+        x.fillStyle = g; x.fillRect(0, H * 0.4, W, H * 0.6);
+        x.strokeStyle = S.accent; x.lineWidth = 16; x.strokeRect(8, 8, W - 16, H - 16);
+        x.textAlign = 'left';
+        x.fillStyle = '#fff'; x.font = '800 42px Arial'; x.fillText('🌳 QuizAIPro', 54, 88);
+        x.fillStyle = S.accent; x.font = '800 36px Arial'; x.fillText(S.title.toUpperCase(), 56, H - 300);
+        x.fillStyle = '#fff'; x.font = '900 132px Arial'; x.fillText('🔥 ' + S.streak, 50, H - 168);
+        x.fillStyle = 'rgba(255,255,255,.85)'; x.font = '700 42px Arial'; x.fillText('дней серии', 58, H - 116);
+        x.fillStyle = '#fff'; x.font = '800 40px Arial'; x.fillText('🏅 ' + S.rank, 56, H - 60);
+        if (S.user) { x.textAlign = 'right'; x.fillStyle = 'rgba(255,255,255,.6)';
+          x.font = '600 32px Arial'; x.fillText('@' + S.user, W - 56, H - 60); }
+        cb(cv);
+      }
+      if (img.complete && img.naturalWidth) draw(); else img.onload = draw;
+    }
+    function downloadCard() {
+      if (!blob) return;
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'quizaipro-tree.png'; a.click();
+    }
+    window.gtShare = function () {
+      var modal = document.getElementById('gt-share');
+      modal.classList.add('show');
+      buildCard(function (cv) {
+        cv.toBlob(function (b) {
+          blob = b;
+          document.getElementById('gt-share-preview').src = URL.createObjectURL(b);
+        }, 'image/png');
+      });
+      var txt = shareText();
+      document.getElementById('gt-share-tg').href =
+        'https://t.me/share/url?url=' + encodeURIComponent(S.url) + '&text=' + encodeURIComponent(txt);
+      document.getElementById('gt-share-wa').href =
+        'https://wa.me/?text=' + encodeURIComponent(txt + ' ' + S.url);
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('gt-share').addEventListener('click', function () {
+        this.classList.remove('show');
+      });
+      document.getElementById('gt-share-download').onclick = downloadCard;
+      document.getElementById('gt-share-copy').onclick = function () {
+        navigator.clipboard && navigator.clipboard.writeText(S.url);
+        this.textContent = '✓ Скопировано';
+      };
+      document.getElementById('gt-share-native').onclick = function () {
+        if (blob && navigator.canShare) {
+          var f = new File([blob], 'quizaipro-tree.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [f] })) {
+            navigator.share({ files: [f], title: 'QuizAIPro', text: shareText() }).catch(function(){});
+            return;
+          }
+        }
+        downloadCard();
+      };
+    });
+  })();
 </script>
 <script src="{{ url_for('static', filename='growth_trees.js') }}?v=5" defer></script>
 {% endblock %}
