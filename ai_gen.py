@@ -412,7 +412,7 @@ TEXT:
 {text[:8000]}"""
 
     raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_LIST_SCHEMA)
-    cards = _parse_cards_json(raw or "")
+    cards = _validate_cards(_parse_cards_json(raw or ""))
     if quality and cards:
         cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
     return cards
@@ -522,7 +522,7 @@ Output ONLY a JSON array:
 [{{"question":"...","answer":"...","note":"..."}}, ...]"""
 
     raw = _call_gemini(prompt, max_tokens=8000, response_schema=_FLASHCARD_LIST_SCHEMA)
-    cards = _parse_cards_json(raw or "")
+    cards = _validate_cards(_parse_cards_json(raw or ""))
     if quality and cards:
         cards = _critique_and_improve(cards, lang=output_lang if output_lang not in ("auto", "source") else lang)
     return cards
@@ -833,6 +833,36 @@ def _dedupe_cards(cards: list[dict]) -> list[dict]:
     return out
 
 
+def _validate_cards(cards: list[dict], max_len: int = 1500) -> list[dict]:
+    """Quality gate run on every generated batch before it reaches the user:
+    drops empty/too-short fronts, question==answer giveaways and over-long
+    fields, then de-duplicates. Cheap, deterministic, no extra API cost — a
+    floor under generation quality. Logs how many it rejected (grep AI-METRIC)."""
+    def _norm(s):
+        return re.sub(r"\W+", "", (s or "").lower())
+
+    cleaned = []
+    for c in cards or []:
+        front = str(c.get("front") or "").strip()
+        back = str(c.get("back") or "").strip()
+        if len(front) < 5 or not back:
+            continue
+        if _norm(front) == _norm(back):
+            continue  # question literally equals the answer — useless card
+        nc = dict(c)
+        nc["front"] = front[:max_len]
+        nc["back"] = back[:max_len]
+        nc["note"] = str(c.get("note") or "").strip()[:max_len]
+        cleaned.append(nc)
+
+    deduped = _dedupe_cards(cleaned)
+    dropped = len(cards or []) - len(deduped)
+    if dropped > 0:
+        print(f"[AI-METRIC] label=validate of={len(cards or [])} kept={len(deduped)} "
+              f"dropped={dropped}", flush=True)
+    return deduped
+
+
 # === KONVERTATSIYA: Test → Flashcards i Flashcards → Test ====================
 
 def convert_tests_to_flashcards(cards: list[dict], lang: str = "ru") -> list[dict]:
@@ -874,7 +904,7 @@ VHODNYE TESTY:
 {cards_json}"""
 
     raw = _call_gemini(prompt, max_tokens=12000)
-    return _parse_cards_json(raw or "")
+    return _validate_cards(_parse_cards_json(raw or ""))
 
 
 def convert_flashcards_to_tests(cards: list[dict], lang: str = "ru") -> list[dict]:
@@ -918,7 +948,7 @@ VHODNYE SLOVARI:
 {cards_json}"""
 
     raw = _call_gemini(prompt, max_tokens=12000)
-    return _parse_cards_json(raw or "")
+    return _validate_cards(_parse_cards_json(raw or ""))
 
 
 # === AI GENERATION WITH PHOTOS ===============================================
