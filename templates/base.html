@@ -1411,9 +1411,9 @@
       <a href="/admin/students" class="nav-icon-btn hidden xl:flex" title="{{ t('au_h') }}">{{ icon('users', 19) }}</a>
       {% endif %}
 
-      <div class="nav-stat-pill streak hidden xl:flex" title="{{ t('st_streak_days') }}">
+      <a href="/growth" class="nav-stat-pill streak hidden xl:flex" style="text-decoration:none;cursor:pointer;" title="Стадии роста · серия {{ current_user.streak or 0 }} дн.">
         {{ icon('flame', 14) }} {{ current_user.streak or 0 }}
-      </div>
+      </a>
       <div class="nav-stat-pill xp hidden xl:flex" title="XP">
         {{ icon('star', 14) }} {{ current_user.xp or 0 }}
       </div>
