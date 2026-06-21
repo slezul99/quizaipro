@@ -123,13 +123,75 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ============ DESIGN TOKENS (single source of truth) ============ */
+  /* Values mirror the existing palette exactly, so adding them changes nothing
+     visually — they become the source the components are migrated onto. Dark
+     theme overrides only these variables (no more per-class !important walls). */
+  :root {
+    /* Brand */
+    --brand-1: #6366f1;
+    --brand-2: #8b5cf6;
+    --brand-3: #ec4899;
+    --brand-grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --brand-grad-tri: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    --success-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+    /* Text */
+    --text: #1a1a2e;
+    --text-2: #1e293b;
+    --text-muted: #64748b;
+
+    /* Surfaces / borders */
+    --surface: rgba(255, 255, 255, 0.82);
+    --surface-strong: rgba(255, 255, 255, 0.97);
+    --surface-ghost: rgba(255, 255, 255, 0.6);
+    --border: rgba(200, 190, 175, 0.4);
+    --border-soft: rgba(200, 190, 175, 0.3);
+    --nav-bg: rgba(250, 248, 244, 0.88);
+    --glass-inset: rgba(255, 255, 255, 0.8);
+
+    /* Radius scale */
+    --r-sm: 10px;
+    --r: 14px;
+    --r-lg: 20px;
+    --r-full: 999px;
+
+    /* Elevation */
+    --shadow-card: 0 8px 32px -8px rgba(100, 90, 70, 0.12);
+    --shadow-soft: 0 4px 24px -8px rgba(100, 90, 70, 0.1);
+    --shadow-raised: 0 24px 50px -15px rgba(99, 102, 241, 0.25);
+    --shadow-brand: 0 4px 14px -2px rgba(99, 102, 241, 0.4);
+
+    /* Motion */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-fast: 150ms;
+    --dur: 250ms;
+    --dur-slow: 400ms;
+  }
+  html.dark {
+    --text: #e2e8f0;
+    --text-2: #cbd5e1;
+    --text-muted: #94a3b8;
+    --surface: rgba(30, 41, 75, 0.7);
+    --surface-strong: rgba(20, 28, 56, 0.95);
+    --surface-ghost: rgba(30, 41, 75, 0.5);
+    --border: rgba(99, 102, 241, 0.2);
+    --border-soft: rgba(99, 102, 241, 0.15);
+    --nav-bg: rgba(15, 23, 41, 0.85);
+    --shadow-card: 0 12px 40px -8px rgba(0, 0, 0, 0.5);
+    --shadow-soft: 0 8px 28px -8px rgba(0, 0, 0, 0.45);
+    --glass-inset: rgba(255, 255, 255, 0.04);
+  }
+
   /* ============ BASE ============ */
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   html { scroll-behavior: smooth; min-height: 100%; }
   body {
     font-family: 'Inter', sans-serif;
-    color: #0a1838;
-    background: #87ceeb;
+    color: var(--text);
+    /* Neutral fallback (the real surface is .gradient-bg on <body>); was a
+       leftover sky-blue from the old "anime sky" theme. */
+    background: #faf8f4;
     overflow-x: hidden;
     transition: background-color 0.4s ease, color 0.4s ease;
     /* Sticky footer: body — flex kolonka, main rastyagivaetsya */
@@ -152,21 +214,8 @@
   html.dark .gradient-bg::before { display: none; }
   html.dark .gradient-bg::after { display: none; }
   html.dark .orb { opacity: 0.3; }
-  html.dark .glass {
-    background: rgba(30, 41, 75, 0.7);
-    border-color: rgba(99, 102, 241, 0.2);
-    color: #e2e8f0;
-    box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.5);
-  }
-  html.dark .glass-strong {
-    background: rgba(20, 28, 56, 0.95);
-    border-color: rgba(99, 102, 241, 0.25);
-    color: #f1f5f9;
-  }
-  html.dark .nav-blur {
-    background: rgba(15, 23, 41, 0.85);
-    border-bottom-color: rgba(99, 102, 241, 0.2);
-  }
+  /* .glass / .glass-strong / .nav-blur dark themes now come from the design
+     tokens above (--surface / --nav-bg / ...), no per-component override. */
   html.dark [x-show="mobileMenu"] {
     background: rgba(15, 23, 41, 0.98) !important;
   }
@@ -329,20 +378,20 @@
 
   /* ============ GLASS — on cream bg ============ */
   .glass {
-    background: rgba(255, 255, 255, 0.82);
+    background: var(--surface);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(200, 190, 175, 0.4);
-    color: #1a1a2e;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 8px 32px -8px rgba(100, 90, 70, 0.12);
+    border: 1px solid var(--border);
+    color: var(--text);
+    box-shadow: 0 1px 0 var(--glass-inset) inset, var(--shadow-card);
   }
   .glass-strong {
-    background: rgba(255, 255, 255, 0.97);
+    background: var(--surface-strong);
     backdrop-filter: blur(20px) saturate(150%);
     -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid rgba(200, 190, 175, 0.35);
-    color: #1a1a2e;
-    box-shadow: 0 4px 24px -8px rgba(100, 90, 70, 0.1);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
   }
   .glass-dark {
     background: rgba(10, 24, 56, 0.85);
@@ -355,15 +404,15 @@
   .nav-blur {
     backdrop-filter: saturate(150%) blur(16px);
     -webkit-backdrop-filter: saturate(150%) blur(16px);
-    background: rgba(250, 248, 244, 0.88);
-    border-bottom: 1px solid rgba(200, 190, 175, 0.3);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border-soft);
+    box-shadow: 0 1px 0 var(--glass-inset) inset;
   }
 
   /* ============ BUTTONS ============ */
   .btn {
     padding: 10px 20px;
-    border-radius: 14px;
+    border-radius: var(--r);
     font-weight: 500;
     font-size: 14px;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -376,9 +425,9 @@
   }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: var(--brand-grad);
     color: white;
-    box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    box-shadow: var(--shadow-brand), inset 0 1px 0 rgba(255,255,255,0.2);
   }
   .btn-primary:hover {
     transform: translateY(-1px);
@@ -397,7 +446,7 @@
     transform: translateY(-1px);
   }
   .btn-success {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--success-grad);
     color: white;
     box-shadow: 0 4px 14px -2px rgba(16, 185, 129, 0.4);
   }
@@ -426,7 +475,7 @@
   }
   .card-hover:hover {
     transform: translateY(-6px);
-    box-shadow: 0 24px 50px -15px rgba(99, 102, 241, 0.25);
+    box-shadow: var(--shadow-raised);
     border-color: rgba(99, 102, 241, 0.25);
   }
   .card-hover:hover::before { opacity: 1; }
@@ -439,7 +488,7 @@
     line-height: 1.05;
   }
   .text-gradient {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    background: var(--brand-grad-tri);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -1055,9 +1104,9 @@
   .nav-blur {
     backdrop-filter: saturate(150%) blur(16px);
     -webkit-backdrop-filter: saturate(150%) blur(16px);
-    background: rgba(250, 248, 244, 0.88);
-    border-bottom: 1px solid rgba(200, 190, 175, 0.3);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border-soft);
+    box-shadow: 0 1px 0 var(--glass-inset) inset;
   }
 
   .brand-logo {
