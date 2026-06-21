@@ -1854,7 +1854,11 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     """
     system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
 
-    use_deepseek = (provider == "deepseek") or (provider == "" and is_deepseek_available())
+    # DeepSeek only ever runs when it's actually enabled (is_deepseek_available).
+    # While it's disabled the whole app is on gemini-3.5-flash, so even an
+    # explicit provider="deepseek" (e.g. a stale saved preference) routes to
+    # Gemini instead of silently calling a turned-off provider.
+    use_deepseek = is_deepseek_available() and provider != "gemini"
     use_gemini_only = provider == "gemini"
 
     # 1. DeepSeek pervym (esli ne forced gemini)
@@ -1918,7 +1922,11 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
     """
     system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
 
-    use_deepseek = (provider == "deepseek") or (provider == "" and is_deepseek_available())
+    # DeepSeek only ever runs when it's actually enabled (is_deepseek_available).
+    # While it's disabled the whole app is on gemini-3.5-flash, so even an
+    # explicit provider="deepseek" (e.g. a stale saved preference) routes to
+    # Gemini instead of silently calling a turned-off provider.
+    use_deepseek = is_deepseek_available() and provider != "gemini"
     use_gemini_only = provider == "gemini"
 
     # 1. DeepSeek streaming

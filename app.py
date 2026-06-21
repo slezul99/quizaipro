@@ -6018,13 +6018,11 @@ def api_tutor_ask():
         # Stream: yield chunks po mere generatsii (DeepSeek native, Gemini fallback)
         from flask import Response
 
-        # Opredelyaem kakoy provider zapustitsya pervym (dlya header'a)
+        # Header reflects the provider that actually answers. DeepSeek only runs
+        # when it's enabled; while it's off everything is gemini-3.5-flash, so a
+        # stale provider="deepseek" preference must not mislabel a Gemini reply.
         used_provider = "gemini"
-        if provider_override == "deepseek":
-            used_provider = "deepseek"
-        elif provider_override == "gemini":
-            used_provider = "gemini"
-        elif ai_gen.is_deepseek_available():
+        if provider_override != "gemini" and ai_gen.is_deepseek_available():
             used_provider = "deepseek"
 
         # Poluchaem ili sozdaem chat v DB
