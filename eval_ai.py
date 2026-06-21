@@ -49,7 +49,9 @@ _JUDGE_SCHEMA = {
 def _judge(prompt: str) -> dict:
     import json
     try:
-        raw = ai_gen._call_gemini(prompt, max_tokens=500, response_schema=_JUDGE_SCHEMA, label="judge")
+        # 2000 not 500: gemini-3.5-flash spends budget on "thinking" first, so a
+        # small cap returns empty (finish=MAX_TOKENS) and the judge can't score.
+        raw = ai_gen._call_gemini(prompt, max_tokens=2000, response_schema=_JUDGE_SCHEMA, label="judge")
     except Exception as e:  # e.g. 429 quota — don't crash the whole run
         return {"score": 0, "verdict": "judge_error", "reason": f"{type(e).__name__}: {e}"[:120]}
     try:
