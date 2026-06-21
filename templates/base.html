@@ -1423,7 +1423,7 @@
       </button>
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="nav-link" style="padding: 6px 10px;">
-          <span class="avatar">{{ current_user.username[0]|upper }}</span>
+          <span class="avatar"{% if tree_status %} style="box-shadow: 0 0 0 2px {{ tree_status.accent }}, 0 0 10px -2px {{ tree_status.accent }};"{% endif %}>{{ current_user.username[0]|upper }}</span>
           <span class="hidden lg:inline font-bold">{{ current_user.username }}</span>
           {{ icon('chevron-down', 14, 'opacity-60') }}
         </button>

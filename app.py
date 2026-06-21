@@ -3364,16 +3364,42 @@ def achievements_page():
 # animations). The 9 stages are a client-side visual catalog keyed off the
 # user's streak; art lives in static/trees/.
 GROWTH_STAGES = [
-    {"key": "seed",      "title": "Семечко",            "range": "1–2 дня",     "start": 0,   "img": "1_seed.webp",      "accent": "#F59E0B", "glow": "#FFD16A", "particle": "sparks",       "colors": "#FFE08A,#FFFFFF"},
-    {"key": "sprout",    "title": "Росток",             "range": "3–6 дней",    "start": 3,   "img": "2_sprout.webp",    "accent": "#22C55E", "glow": "#86EFAC", "particle": "greenMotes",   "colors": "#86EFAC,#4ADE80"},
-    {"key": "young",     "title": "Молодое дерево",     "range": "7–13 дней",   "start": 7,   "img": "3_young.webp",     "accent": "#16A34A", "glow": "#FFE9A6", "particle": "sunRising",    "colors": "#FFE9A6,#FFD16A"},
-    {"key": "blooming",  "title": "Цветущее дерево",    "range": "14–29 дней",  "start": 14,  "img": "4_blooming.webp",  "accent": "#EC4899", "glow": "#F9A8D4", "particle": "petals",       "colors": "#F9A8D4,#F472B6,#FBCFE8"},
-    {"key": "mature",    "title": "Зрелое дерево",      "range": "30–59 дней",  "start": 30,  "img": "5_mature.webp",    "accent": "#F97316", "glow": "#FCB873", "particle": "autumnLeaves", "colors": "#EA8C2E,#D97706,#B45309"},
-    {"key": "rare",      "title": "Редкое дерево",      "range": "60–99 дней",  "start": 60,  "img": "6_rare.webp",      "accent": "#8B5CF6", "glow": "#C4B5FD", "particle": "purpleOrbit",  "colors": "#C4B5FD,#A78BFA"},
-    {"key": "legendary", "title": "Легендарное дерево", "range": "100–199 дней","start": 100, "img": "7_legendary.webp", "accent": "#F59E0B", "glow": "#FFD56A", "particle": "goldRising",   "colors": "#FFD56A,#FFB020", "ring": True},
-    {"key": "mythical",  "title": "Мифическое дерево",  "range": "200–364 дня", "start": 200, "img": "8_mythical.webp",  "accent": "#3B82F6", "glow": "#93C5FD", "particle": "crystals",     "colors": "#93C5FD,#60A5FA,#BAE6FD"},
-    {"key": "eternal",   "title": "Древо Вечности",     "range": "365+ дней",   "start": 365, "img": "9_eternal.webp",   "accent": "#A855F7", "glow": "#FFE08A", "particle": "stars",        "colors": "#FFE08A,#FFFFFF,#FCD34D", "ring": True},
+    {"key": "seed",      "title": "Семечко",            "rank": "Первое зерно",       "range": "1–2 дня",     "start": 0,   "img": "1_seed.webp",      "accent": "#F59E0B", "glow": "#FFD16A", "particle": "sparks",       "colors": "#FFE08A,#FFFFFF"},
+    {"key": "sprout",    "title": "Росток",             "rank": "Садовод",            "range": "3–6 дней",    "start": 3,   "img": "2_sprout.webp",    "accent": "#22C55E", "glow": "#86EFAC", "particle": "greenMotes",   "colors": "#86EFAC,#4ADE80"},
+    {"key": "young",     "title": "Молодое дерево",     "rank": "Хранитель ростка",   "range": "7–13 дней",   "start": 7,   "img": "3_young.webp",     "accent": "#16A34A", "glow": "#FFE9A6", "particle": "sunRising",    "colors": "#FFE9A6,#FFD16A"},
+    {"key": "blooming",  "title": "Цветущее дерево",    "rank": "Цветовод",           "range": "14–29 дней",  "start": 14,  "img": "4_blooming.webp",  "accent": "#EC4899", "glow": "#F9A8D4", "particle": "petals",       "colors": "#F9A8D4,#F472B6,#FBCFE8"},
+    {"key": "mature",    "title": "Зрелое дерево",      "rank": "Лесник",             "range": "30–59 дней",  "start": 30,  "img": "5_mature.webp",    "accent": "#F97316", "glow": "#FCB873", "particle": "autumnLeaves", "colors": "#EA8C2E,#D97706,#B45309"},
+    {"key": "rare",      "title": "Редкое дерево",      "rank": "Маг леса",           "range": "60–99 дней",  "start": 60,  "img": "6_rare.webp",      "accent": "#8B5CF6", "glow": "#C4B5FD", "particle": "purpleOrbit",  "colors": "#C4B5FD,#A78BFA"},
+    {"key": "legendary", "title": "Легендарное дерево", "rank": "Хранитель леса",     "range": "100–199 дней","start": 100, "img": "7_legendary.webp", "accent": "#F59E0B", "glow": "#FFD56A", "particle": "goldRising",   "colors": "#FFD56A,#FFB020", "ring": True},
+    {"key": "mythical",  "title": "Мифическое дерево",  "rank": "Повелитель стихий",  "range": "200–364 дня", "start": 200, "img": "8_mythical.webp",  "accent": "#3B82F6", "glow": "#93C5FD", "particle": "crystals",     "colors": "#93C5FD,#60A5FA,#BAE6FD"},
+    {"key": "eternal",   "title": "Древо Вечности",     "rank": "Древний",            "range": "365+ дней",   "start": 365, "img": "9_eternal.webp",   "accent": "#A855F7", "glow": "#FFE08A", "particle": "stars",        "colors": "#FFE08A,#FFFFFF,#FCD34D", "ring": True},
 ]
+
+
+def growth_stage_for(streak):
+    """The growth stage dict matching a streak length (highest reached)."""
+    cur = GROWTH_STAGES[0]
+    for s in GROWTH_STAGES:
+        if (streak or 0) >= s["start"]:
+            cur = s
+    return cur
+
+
+@app.context_processor
+def inject_tree_status():
+    """Exposes the logged-in user's tree status (rank title + colour) to every
+    template — used for the avatar ring and the growth page status."""
+    try:
+        u = current_user()
+        if not u:
+            return {}
+        st = growth_stage_for(u["streak"] if "streak" in u.keys() else 0)
+        return {"tree_status": {
+            "key": st["key"], "rank": st["rank"], "title": st["title"],
+            "accent": st["accent"], "glow": st["glow"],
+        }}
+    except Exception:
+        return {}
 
 
 @app.route("/growth")
