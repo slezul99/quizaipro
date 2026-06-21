@@ -508,6 +508,19 @@
   /* A11y + polish: a single intentional focus ring + branded text selection. */
   :focus-visible { outline: 2px solid var(--brand-1); outline-offset: 2px; border-radius: 4px; }
   ::selection { background: rgba(99, 102, 241, 0.22); color: inherit; }
+
+  /* Global reduced-motion: kill infinite animations (e.g. .text-gradient's
+     8s loop), tame transitions and smooth scroll for motion-sensitive users.
+     No effect for everyone else. */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
   .text-gradient {
     background: var(--brand-grad-tri);
     -webkit-background-clip: text;
