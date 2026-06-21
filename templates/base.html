@@ -51,12 +51,16 @@
 (function() {
   try {
     var saved = localStorage.getItem('theme');
-    if (saved === 'dark') {
+    // First visit (no saved choice) → follow the OS colour-scheme preference.
+    var prefersDark = window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'dark' || (!saved && prefersDark)) {
       document.documentElement.classList.add('dark');
       document.documentElement.style.background = '#0f1729';
       document.documentElement.style.colorScheme = 'dark';
     } else {
-      document.documentElement.style.background = '#87ceeb';
+      /* Cream anti-FOUC colour matching .gradient-bg (was a sky-blue flash). */
+      document.documentElement.style.background = '#faf8f4';
       document.documentElement.style.colorScheme = 'light';
     }
   } catch(e) {}
