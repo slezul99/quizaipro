@@ -7,7 +7,7 @@ part of 'test_session_notifier.dart';
 // **************************************************************************
 
 String _$testSessionNotifierHash() =>
-    r'0aee38721daa411f2796b04c5e7e5c19b6789b08';
+    r'95a7c7a9d78e79402c93e61e4c7c462dd1bb476a';
 
 /// See also [TestSessionNotifier].
 @ProviderFor(TestSessionNotifier)

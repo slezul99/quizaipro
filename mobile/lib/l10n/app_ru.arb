@@ -586,6 +586,7 @@
   "streakStageBloomingTree": "Цветущее дерево",
   "streakStageAncientTree": "Древнее дерево",
   "streakStageLegendaryTree": "Легендарное дерево",
+  "streakStageEternalTree": "Древо вечности",
   "streakLastReward": "Последняя награда: {reward}",
   "streakNextReward": "Следующая награда: {reward}",
   "streakNoLastReward": "Последняя награда: Нет",

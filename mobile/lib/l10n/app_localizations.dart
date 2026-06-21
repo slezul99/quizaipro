@@ -2824,11 +2824,17 @@ abstract class AppLocalizations {
   /// **'Ancient Tree'**
   String get streakStageAncientTree;
 
-  /// No description provided for @streakStageLegendaryTree.
+  /// Legendary evolution stage
   ///
   /// In en, this message translates to:
   /// **'Legendary Tree'**
   String get streakStageLegendaryTree;
+
+  /// 365+ day evolution stage
+  ///
+  /// In en, this message translates to:
+  /// **'Eternal Tree'**
+  String get streakStageEternalTree;
 
   /// Last milestone reward claimed
   ///

@@ -7,7 +7,8 @@ enum EvolutionStage {
   youngTree,
   bloomingTree,
   ancientTree,
-  legendaryTree;
+  legendaryTree,
+  eternalTree;
 
   static EvolutionStage fromKey(String key) {
     switch (key) {
@@ -16,6 +17,7 @@ enum EvolutionStage {
       case 'blooming_tree': return EvolutionStage.bloomingTree;
       case 'ancient_tree': return EvolutionStage.ancientTree;
       case 'legendary_tree': return EvolutionStage.legendaryTree;
+      case 'eternal_tree': return EvolutionStage.eternalTree;
       default: return EvolutionStage.seed;
     }
   }
@@ -28,6 +30,7 @@ enum EvolutionStage {
       case EvolutionStage.bloomingTree: return l10n.streakStageBloomingTree;
       case EvolutionStage.ancientTree: return l10n.streakStageAncientTree;
       case EvolutionStage.legendaryTree: return l10n.streakStageLegendaryTree;
+      case EvolutionStage.eternalTree: return l10n.streakStageEternalTree;
     }
   }
 
@@ -38,7 +41,8 @@ enum EvolutionStage {
       case EvolutionStage.youngTree: return '7-13 days';
       case EvolutionStage.bloomingTree: return '14-29 days';
       case EvolutionStage.ancientTree: return '30-59 days';
-      case EvolutionStage.legendaryTree: return '60+ days';
+      case EvolutionStage.legendaryTree: return '60-364 days';
+      case EvolutionStage.eternalTree: return '365+ days';
     }
   }
 
@@ -49,7 +53,8 @@ enum EvolutionStage {
       case EvolutionStage.youngTree: return EvolutionStage.bloomingTree;
       case EvolutionStage.bloomingTree: return EvolutionStage.ancientTree;
       case EvolutionStage.ancientTree: return EvolutionStage.legendaryTree;
-      case EvolutionStage.legendaryTree: return null;
+      case EvolutionStage.legendaryTree: return EvolutionStage.eternalTree;
+      case EvolutionStage.eternalTree: return null;
     }
   }
 
@@ -61,6 +66,7 @@ enum EvolutionStage {
       case EvolutionStage.bloomingTree: return 14;
       case EvolutionStage.ancientTree: return 30;
       case EvolutionStage.legendaryTree: return 60;
+      case EvolutionStage.eternalTree: return 365;
     }
   }
 
@@ -128,6 +134,17 @@ enum EvolutionStage {
           accent: Color(0xFF6366f1),
           gradient: LinearGradient(
             colors: [Color(0xFF4c1d95), Color(0xFFa855f7), Color(0xFFdb2777)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        );
+      case EvolutionStage.eternalTree:
+        return const EvolutionPalette(
+          primary: Color(0xFFFCD34D),
+          secondary: Color(0xFFB45309),
+          accent: Color(0xFF111827),
+          gradient: LinearGradient(
+            colors: [Color(0xFF0B1220), Color(0xFFB45309), Color(0xFFFCD34D)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

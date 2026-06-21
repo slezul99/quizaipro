@@ -15,6 +15,8 @@ import 'package:quizaipro_mobile/features/flashcards/domain/usecases/save_sessio
 import 'package:quizaipro_mobile/features/flashcards/presentation/providers/flashcard_providers.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_notifier.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_decks_notifier.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/recent_decks_notifier.dart';
 import 'package:quizaipro_mobile/features/flashcards/presentation/providers/study_session_state.dart';
 
 part 'study_session_notifier.g.dart';
@@ -224,5 +226,10 @@ class StudySessionNotifier extends _$StudySessionNotifier {
     // clear it first, THEN invalidate.
     await ref.read(dashboardLocalDataSourceProvider).clearCache();
     ref.invalidate(dashboardNotifierProvider);
+    // The Library tab lives in a persistent IndexedStack, so its deck list (and
+    // the red "due" counts) won't re-fetch on tab switch — invalidate it too so
+    // the counts reflect what was just studied.
+    ref.invalidate(libraryDecksNotifierProvider);
+    ref.invalidate(recentDecksNotifierProvider);
   }
 }

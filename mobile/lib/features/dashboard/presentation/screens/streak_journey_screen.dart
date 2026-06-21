@@ -16,6 +16,11 @@ final streakJourneyProvider = FutureProvider.autoDispose<StreakJourney>((ref) as
   return res.fold((fail) => throw fail, (data) => data);
 });
 
+/// TESTER ONLY — lets us tap a locked tree to preview its art. Set to `false`
+/// before shipping to production so the trees stay a locked surprise (the day
+/// flame stays visible to everyone as a stimulus).
+const bool kTesterUnlockStages = true;
+
 class StreakJourneyScreen extends ConsumerWidget {
   const StreakJourneyScreen({super.key});
 
@@ -40,20 +45,31 @@ class StreakJourneyScreen extends ConsumerWidget {
   }
 }
 
-class _StreakJourneyContent extends StatelessWidget {
+class _StreakJourneyContent extends StatefulWidget {
   const _StreakJourneyContent({required this.details, required this.tokens});
 
   final StreakJourney details;
   final AuroraTokens tokens;
 
   @override
+  State<_StreakJourneyContent> createState() => _StreakJourneyContentState();
+}
+
+class _StreakJourneyContentState extends State<_StreakJourneyContent> {
+  /// Tester-only preview of a not-yet-unlocked stage's tree.
+  EvolutionStage? _previewStage;
+  StreakJourney get details => widget.details;
+  AuroraTokens get tokens => widget.tokens;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     final stageKey = details.streak.currentStage?.key ?? 'seed';
     final currentStage = EvolutionStage.fromKey(stageKey);
+    final displayStage = _previewStage ?? currentStage;
 
-    final currentStageName = currentStage.getLocalizedName(l10n);
+    final currentStageName = displayStage.getLocalizedName(l10n);
 
     return CustomScrollView(
       slivers: [
@@ -75,7 +91,7 @@ class _StreakJourneyContent extends StatelessWidget {
                 child: SizedBox(
                   width: 140,
                   height: 140,
-                  child: EvolutionTreeAnimation(stage: currentStage, size: 140),
+                  child: EvolutionTreeAnimation(stage: displayStage, size: 140),
                 ),
               ),
             ),
@@ -92,7 +108,7 @@ class _StreakJourneyContent extends StatelessWidget {
                       l10n.streakGrowthStage(currentStageName),
                       style: tokens.headlineSmall.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: currentStage.palette.primary,
+                        color: displayStage.palette.primary,
                       ),
                     ),
                     SizedBox(height: tokens.space4),
@@ -166,6 +182,47 @@ class _StreakJourneyContent extends StatelessWidget {
     );
   }
 
+  /// TESTER ONLY — confirm, then show the chosen stage's tree art at the top
+  /// without actually having reached that streak.
+  Future<void> _previewStageDialog(EvolutionStage stage) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isUnlocked = details.streak.currentStreak >= stage.startDays;
+    final isCurrentPreview = _previewStage == stage;
+    final name = stage.getLocalizedName(l10n);
+
+    if (isCurrentPreview) {
+      setState(() => _previewStage = null);
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('🔓 $name'),
+        content: Text(
+          isUnlocked
+              ? 'Показать дерево «$name» вверху?'
+              : 'Тест-режим: открыть дерево «$name» (${stage.dayRangeText}) для предпросмотра? '
+                  'На проде эта стадия откроется только по достижении стрика.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Показать'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _previewStage = stage);
+    }
+  }
+
   Widget _buildRoadmap(AppLocalizations l10n) {
     final stages = EvolutionStage.values;
     final stageKey = details.streak.currentStage?.key ?? 'seed';
@@ -186,8 +243,9 @@ class _StreakJourneyContent extends StatelessWidget {
           final palette = s.palette;
 
           final displayName = s.getLocalizedName(l10n);
+          final isPreviewing = _previewStage == s;
 
-          return SizedBox(
+          final row = SizedBox(
             height: 64, // Fixed height - O(N) layout complexity
             child: Stack(
               children: [
@@ -250,7 +308,11 @@ class _StreakJourneyContent extends StatelessWidget {
                                 l10n.streakActiveBadge,
                                 style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
                               ),
-                            ),
+                            )
+                          else if (isPreviewing)
+                            Icon(Icons.visibility_rounded, size: 16, color: palette.primary)
+                          else if (kTesterUnlockStages && !isUnlocked)
+                            Icon(Icons.visibility_outlined, size: 16, color: tokens.textTertiary),
                         ],
                       ),
                     ),
@@ -258,6 +320,13 @@ class _StreakJourneyContent extends StatelessWidget {
                 ),
               ],
             ),
+          );
+
+          if (!kTesterUnlockStages) return row;
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _previewStageDialog(s),
+            child: row,
           );
         }),
       ),

@@ -43,94 +43,19 @@ class RecentActivitySection extends StatelessWidget {
             hasDueReviews: hasDueReviews,
           )
         else
-          ListView.builder(
+          ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: activity.length,
-            itemBuilder: (context, index) {
-              final isFirst = index == 0;
-              final isLast = index == activity.length - 1;
-              final item = activity[index];
-
-              return Stack(
-                children: [
-                  // Vertical Timeline Line segment (zero intrinsic height overhead)
-                  if (!(isFirst && isLast))
-                    Positioned(
-                      top: isFirst ? 28 : 0,
-                      bottom: isLast ? null : 0,
-                      height: isLast ? 28 : null,
-                      left: 20, // Center of 40px icon space
-                      child: Container(
-                        width: 2,
-                        color: tokens.borderStrong.withOpacity(0.3),
-                      ),
-                    ),
-                  // Row content
-                  Padding(
-                    padding: EdgeInsets.only(bottom: tokens.space16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Left Timeline Node Icon/Dot
-                        SizedBox(
-                          width: 42,
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: tokens.backgroundCanvas,
-                                border: Border.all(
-                                  color: _typeColor(item.type, tokens),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  _typeIcon(item.type),
-                                  size: 14,
-                                  color: _typeColor(item.type, tokens),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: tokens.space12),
-                        // Right Timeline Card
-                        Expanded(
-                          child: ActivityItemTile(
-                            item: item,
-                            tokens: tokens,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+            separatorBuilder: (_, __) => SizedBox(height: tokens.space12),
+            itemBuilder: (context, index) => ActivityItemTile(
+              item: activity[index],
+              tokens: tokens,
+            ),
           ),
       ],
     );
   }
-
-  IconData _typeIcon(ActivityType type) => switch (type) {
-        ActivityType.study => Icons.menu_book_rounded,
-        ActivityType.test => Icons.quiz_rounded,
-        ActivityType.duel => Icons.sports_esports_rounded,
-        ActivityType.aiTutor => Icons.smart_toy_rounded,
-      };
-
-  Color _typeColor(ActivityType type, AuroraTokens tokens) => switch (type) {
-        ActivityType.study => tokens.brandGradientStart,
-        ActivityType.test => tokens.brandGradientMid,
-        ActivityType.duel => tokens.brandGradientEnd,
-        ActivityType.aiTutor => tokens.stateInfo,
-      };
 }
 
 class _PremiumEmptyState extends StatelessWidget {

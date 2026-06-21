@@ -20,13 +20,21 @@ StreakSummary _$StreakSummaryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$StreakSummary {
+  @JsonKey(name: 'current_streak')
   int get currentStreak => throw _privateConstructorUsedError;
+  @JsonKey(name: 'max_streak')
   int get maxStreak => throw _privateConstructorUsedError;
+  @JsonKey(name: 'today_completed')
   bool get todayCompleted => throw _privateConstructorUsedError;
+  @JsonKey(name: 'last_activity_date')
   DateTime? get lastActivityDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'current_stage')
   StreakStageInfo? get currentStage => throw _privateConstructorUsedError;
+  @JsonKey(name: 'next_stage')
   StreakStageInfo? get nextStage => throw _privateConstructorUsedError;
+  @JsonKey(name: 'progress_ratio')
   double? get progressRatio => throw _privateConstructorUsedError;
+  @JsonKey(name: 'days_remaining')
   int? get daysRemaining => throw _privateConstructorUsedError;
 
   /// Serializes this StreakSummary to a JSON map.
@@ -46,14 +54,14 @@ abstract class $StreakSummaryCopyWith<$Res> {
       _$StreakSummaryCopyWithImpl<$Res, StreakSummary>;
   @useResult
   $Res call(
-      {int currentStreak,
-      int maxStreak,
-      bool todayCompleted,
-      DateTime? lastActivityDate,
-      StreakStageInfo? currentStage,
-      StreakStageInfo? nextStage,
-      double? progressRatio,
-      int? daysRemaining});
+      {@JsonKey(name: 'current_streak') int currentStreak,
+      @JsonKey(name: 'max_streak') int maxStreak,
+      @JsonKey(name: 'today_completed') bool todayCompleted,
+      @JsonKey(name: 'last_activity_date') DateTime? lastActivityDate,
+      @JsonKey(name: 'current_stage') StreakStageInfo? currentStage,
+      @JsonKey(name: 'next_stage') StreakStageInfo? nextStage,
+      @JsonKey(name: 'progress_ratio') double? progressRatio,
+      @JsonKey(name: 'days_remaining') int? daysRemaining});
 
   $StreakStageInfoCopyWith<$Res>? get currentStage;
   $StreakStageInfoCopyWith<$Res>? get nextStage;
@@ -157,14 +165,14 @@ abstract class _$$StreakSummaryImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int currentStreak,
-      int maxStreak,
-      bool todayCompleted,
-      DateTime? lastActivityDate,
-      StreakStageInfo? currentStage,
-      StreakStageInfo? nextStage,
-      double? progressRatio,
-      int? daysRemaining});
+      {@JsonKey(name: 'current_streak') int currentStreak,
+      @JsonKey(name: 'max_streak') int maxStreak,
+      @JsonKey(name: 'today_completed') bool todayCompleted,
+      @JsonKey(name: 'last_activity_date') DateTime? lastActivityDate,
+      @JsonKey(name: 'current_stage') StreakStageInfo? currentStage,
+      @JsonKey(name: 'next_stage') StreakStageInfo? nextStage,
+      @JsonKey(name: 'progress_ratio') double? progressRatio,
+      @JsonKey(name: 'days_remaining') int? daysRemaining});
 
   @override
   $StreakStageInfoCopyWith<$Res>? get currentStage;
@@ -235,34 +243,42 @@ class __$$StreakSummaryImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$StreakSummaryImpl extends _StreakSummary {
   const _$StreakSummaryImpl(
-      {required this.currentStreak,
-      required this.maxStreak,
-      required this.todayCompleted,
-      this.lastActivityDate,
-      required this.currentStage,
-      required this.nextStage,
-      required this.progressRatio,
-      required this.daysRemaining})
+      {@JsonKey(name: 'current_streak') required this.currentStreak,
+      @JsonKey(name: 'max_streak') required this.maxStreak,
+      @JsonKey(name: 'today_completed') required this.todayCompleted,
+      @JsonKey(name: 'last_activity_date') this.lastActivityDate,
+      @JsonKey(name: 'current_stage') required this.currentStage,
+      @JsonKey(name: 'next_stage') required this.nextStage,
+      @JsonKey(name: 'progress_ratio') required this.progressRatio,
+      @JsonKey(name: 'days_remaining') required this.daysRemaining})
       : super._();
 
   factory _$StreakSummaryImpl.fromJson(Map<String, dynamic> json) =>
       _$$StreakSummaryImplFromJson(json);
 
   @override
+  @JsonKey(name: 'current_streak')
   final int currentStreak;
   @override
+  @JsonKey(name: 'max_streak')
   final int maxStreak;
   @override
+  @JsonKey(name: 'today_completed')
   final bool todayCompleted;
   @override
+  @JsonKey(name: 'last_activity_date')
   final DateTime? lastActivityDate;
   @override
+  @JsonKey(name: 'current_stage')
   final StreakStageInfo? currentStage;
   @override
+  @JsonKey(name: 'next_stage')
   final StreakStageInfo? nextStage;
   @override
+  @JsonKey(name: 'progress_ratio')
   final double? progressRatio;
   @override
+  @JsonKey(name: 'days_remaining')
   final int? daysRemaining;
 
   @override
@@ -324,13 +340,15 @@ class _$StreakSummaryImpl extends _StreakSummary {
 
 abstract class _StreakSummary extends StreakSummary {
   const factory _StreakSummary(
-      {required final int currentStreak,
-      required final int maxStreak,
-      required final bool todayCompleted,
-      final DateTime? lastActivityDate,
+      {@JsonKey(name: 'current_streak') required final int currentStreak,
+      @JsonKey(name: 'max_streak') required final int maxStreak,
+      @JsonKey(name: 'today_completed') required final bool todayCompleted,
+      @JsonKey(name: 'last_activity_date') final DateTime? lastActivityDate,
+      @JsonKey(name: 'current_stage')
       required final StreakStageInfo? currentStage,
-      required final StreakStageInfo? nextStage,
-      required final double? progressRatio,
+      @JsonKey(name: 'next_stage') required final StreakStageInfo? nextStage,
+      @JsonKey(name: 'progress_ratio') required final double? progressRatio,
+      @JsonKey(name: 'days_remaining')
       required final int? daysRemaining}) = _$StreakSummaryImpl;
   const _StreakSummary._() : super._();
 
@@ -338,20 +356,28 @@ abstract class _StreakSummary extends StreakSummary {
       _$StreakSummaryImpl.fromJson;
 
   @override
+  @JsonKey(name: 'current_streak')
   int get currentStreak;
   @override
+  @JsonKey(name: 'max_streak')
   int get maxStreak;
   @override
+  @JsonKey(name: 'today_completed')
   bool get todayCompleted;
   @override
+  @JsonKey(name: 'last_activity_date')
   DateTime? get lastActivityDate;
   @override
+  @JsonKey(name: 'current_stage')
   StreakStageInfo? get currentStage;
   @override
+  @JsonKey(name: 'next_stage')
   StreakStageInfo? get nextStage;
   @override
+  @JsonKey(name: 'progress_ratio')
   double? get progressRatio;
   @override
+  @JsonKey(name: 'days_remaining')
   int? get daysRemaining;
 
   /// Create a copy of StreakSummary
@@ -369,7 +395,9 @@ StreakStageInfo _$StreakStageInfoFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$StreakStageInfo {
   String get key => throw _privateConstructorUsedError;
+  @JsonKey(name: 'start_days')
   int get startDays => throw _privateConstructorUsedError;
+  @JsonKey(name: 'next_stage_days')
   int? get nextStageDays => throw _privateConstructorUsedError;
 
   /// Serializes this StreakStageInfo to a JSON map.
@@ -388,7 +416,10 @@ abstract class $StreakStageInfoCopyWith<$Res> {
           StreakStageInfo value, $Res Function(StreakStageInfo) then) =
       _$StreakStageInfoCopyWithImpl<$Res, StreakStageInfo>;
   @useResult
-  $Res call({String key, int startDays, int? nextStageDays});
+  $Res call(
+      {String key,
+      @JsonKey(name: 'start_days') int startDays,
+      @JsonKey(name: 'next_stage_days') int? nextStageDays});
 }
 
 /// @nodoc
@@ -435,7 +466,10 @@ abstract class _$$StreakStageInfoImplCopyWith<$Res>
       __$$StreakStageInfoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String key, int startDays, int? nextStageDays});
+  $Res call(
+      {String key,
+      @JsonKey(name: 'start_days') int startDays,
+      @JsonKey(name: 'next_stage_days') int? nextStageDays});
 }
 
 /// @nodoc
@@ -476,7 +510,9 @@ class __$$StreakStageInfoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$StreakStageInfoImpl implements _StreakStageInfo {
   const _$StreakStageInfoImpl(
-      {required this.key, required this.startDays, this.nextStageDays});
+      {required this.key,
+      @JsonKey(name: 'start_days') required this.startDays,
+      @JsonKey(name: 'next_stage_days') this.nextStageDays});
 
   factory _$StreakStageInfoImpl.fromJson(Map<String, dynamic> json) =>
       _$$StreakStageInfoImplFromJson(json);
@@ -484,8 +520,10 @@ class _$StreakStageInfoImpl implements _StreakStageInfo {
   @override
   final String key;
   @override
+  @JsonKey(name: 'start_days')
   final int startDays;
   @override
+  @JsonKey(name: 'next_stage_days')
   final int? nextStageDays;
 
   @override
@@ -528,9 +566,10 @@ class _$StreakStageInfoImpl implements _StreakStageInfo {
 
 abstract class _StreakStageInfo implements StreakStageInfo {
   const factory _StreakStageInfo(
-      {required final String key,
-      required final int startDays,
-      final int? nextStageDays}) = _$StreakStageInfoImpl;
+          {required final String key,
+          @JsonKey(name: 'start_days') required final int startDays,
+          @JsonKey(name: 'next_stage_days') final int? nextStageDays}) =
+      _$StreakStageInfoImpl;
 
   factory _StreakStageInfo.fromJson(Map<String, dynamic> json) =
       _$StreakStageInfoImpl.fromJson;
@@ -538,8 +577,10 @@ abstract class _StreakStageInfo implements StreakStageInfo {
   @override
   String get key;
   @override
+  @JsonKey(name: 'start_days')
   int get startDays;
   @override
+  @JsonKey(name: 'next_stage_days')
   int? get nextStageDays;
 
   /// Create a copy of StreakStageInfo

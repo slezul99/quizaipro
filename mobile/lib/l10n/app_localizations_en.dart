@@ -1492,6 +1492,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get streakStageLegendaryTree => 'Legendary Tree';
 
   @override
+  String get streakStageEternalTree => 'Eternal Tree';
+
+  @override
   String streakLastReward(String reward) {
     return 'Last Reward: $reward';
   }

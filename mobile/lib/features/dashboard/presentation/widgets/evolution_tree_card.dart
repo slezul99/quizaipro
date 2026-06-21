@@ -84,6 +84,12 @@ class EvolutionTreeCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
+      case EvolutionStage.eternalTree:
+        return const LinearGradient(
+          colors: [Color(0xFF0B1220), Color(0xFF05080D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
     }
   }
 

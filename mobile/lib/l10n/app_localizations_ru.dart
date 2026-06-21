@@ -1498,6 +1498,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get streakStageLegendaryTree => 'Легендарное дерево';
 
   @override
+  String get streakStageEternalTree => 'Древо вечности';
+
+  @override
   String streakLastReward(String reward) {
     return 'Последняя награда: $reward';
   }

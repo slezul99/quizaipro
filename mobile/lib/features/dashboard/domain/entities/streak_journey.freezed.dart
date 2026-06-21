@@ -22,6 +22,7 @@ StreakJourney _$StreakJourneyFromJson(Map<String, dynamic> json) {
 mixin _$StreakJourney {
   StreakSummary get streak => throw _privateConstructorUsedError;
   List<StreakMilestone> get milestones => throw _privateConstructorUsedError;
+  @JsonKey(name: 'rewards_history')
   List<ClaimedReward> get rewardsHistory => throw _privateConstructorUsedError;
   StreakCalendar get calendar => throw _privateConstructorUsedError;
 
@@ -44,7 +45,7 @@ abstract class $StreakJourneyCopyWith<$Res> {
   $Res call(
       {StreakSummary streak,
       List<StreakMilestone> milestones,
-      List<ClaimedReward> rewardsHistory,
+      @JsonKey(name: 'rewards_history') List<ClaimedReward> rewardsHistory,
       StreakCalendar calendar});
 
   $StreakSummaryCopyWith<$Res> get streak;
@@ -123,7 +124,7 @@ abstract class _$$StreakJourneyImplCopyWith<$Res>
   $Res call(
       {StreakSummary streak,
       List<StreakMilestone> milestones,
-      List<ClaimedReward> rewardsHistory,
+      @JsonKey(name: 'rewards_history') List<ClaimedReward> rewardsHistory,
       StreakCalendar calendar});
 
   @override
@@ -177,6 +178,7 @@ class _$StreakJourneyImpl implements _StreakJourney {
   const _$StreakJourneyImpl(
       {required this.streak,
       required final List<StreakMilestone> milestones,
+      @JsonKey(name: 'rewards_history')
       required final List<ClaimedReward> rewardsHistory,
       required this.calendar})
       : _milestones = milestones,
@@ -197,6 +199,7 @@ class _$StreakJourneyImpl implements _StreakJourney {
 
   final List<ClaimedReward> _rewardsHistory;
   @override
+  @JsonKey(name: 'rewards_history')
   List<ClaimedReward> get rewardsHistory {
     if (_rewardsHistory is EqualUnmodifiableListView) return _rewardsHistory;
     // ignore: implicit_dynamic_type
@@ -254,6 +257,7 @@ abstract class _StreakJourney implements StreakJourney {
   const factory _StreakJourney(
       {required final StreakSummary streak,
       required final List<StreakMilestone> milestones,
+      @JsonKey(name: 'rewards_history')
       required final List<ClaimedReward> rewardsHistory,
       required final StreakCalendar calendar}) = _$StreakJourneyImpl;
 
@@ -265,6 +269,7 @@ abstract class _StreakJourney implements StreakJourney {
   @override
   List<StreakMilestone> get milestones;
   @override
+  @JsonKey(name: 'rewards_history')
   List<ClaimedReward> get rewardsHistory;
   @override
   StreakCalendar get calendar;
@@ -289,6 +294,7 @@ mixin _$StreakMilestone {
   String get name => throw _privateConstructorUsedError;
   String get desc => throw _privateConstructorUsedError;
   bool get unlocked => throw _privateConstructorUsedError;
+  @JsonKey(name: 'unlocked_at')
   String? get unlockedAt => throw _privateConstructorUsedError;
 
   /// Serializes this StreakMilestone to a JSON map.
@@ -314,7 +320,7 @@ abstract class $StreakMilestoneCopyWith<$Res> {
       String name,
       String desc,
       bool unlocked,
-      String? unlockedAt});
+      @JsonKey(name: 'unlocked_at') String? unlockedAt});
 }
 
 /// @nodoc
@@ -388,7 +394,7 @@ abstract class _$$StreakMilestoneImplCopyWith<$Res>
       String name,
       String desc,
       bool unlocked,
-      String? unlockedAt});
+      @JsonKey(name: 'unlocked_at') String? unlockedAt});
 }
 
 /// @nodoc
@@ -455,7 +461,7 @@ class _$StreakMilestoneImpl implements _StreakMilestone {
       required this.name,
       required this.desc,
       required this.unlocked,
-      required this.unlockedAt});
+      @JsonKey(name: 'unlocked_at') required this.unlockedAt});
 
   factory _$StreakMilestoneImpl.fromJson(Map<String, dynamic> json) =>
       _$$StreakMilestoneImplFromJson(json);
@@ -473,6 +479,7 @@ class _$StreakMilestoneImpl implements _StreakMilestone {
   @override
   final bool unlocked;
   @override
+  @JsonKey(name: 'unlocked_at')
   final String? unlockedAt;
 
   @override
@@ -520,13 +527,14 @@ class _$StreakMilestoneImpl implements _StreakMilestone {
 
 abstract class _StreakMilestone implements StreakMilestone {
   const factory _StreakMilestone(
-      {required final String key,
-      required final int days,
-      required final int xp,
-      required final String name,
-      required final String desc,
-      required final bool unlocked,
-      required final String? unlockedAt}) = _$StreakMilestoneImpl;
+          {required final String key,
+          required final int days,
+          required final int xp,
+          required final String name,
+          required final String desc,
+          required final bool unlocked,
+          @JsonKey(name: 'unlocked_at') required final String? unlockedAt}) =
+      _$StreakMilestoneImpl;
 
   factory _StreakMilestone.fromJson(Map<String, dynamic> json) =
       _$StreakMilestoneImpl.fromJson;
@@ -544,6 +552,7 @@ abstract class _StreakMilestone implements StreakMilestone {
   @override
   bool get unlocked;
   @override
+  @JsonKey(name: 'unlocked_at')
   String? get unlockedAt;
 
   /// Create a copy of StreakMilestone
@@ -563,6 +572,7 @@ mixin _$ClaimedReward {
   String get key => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   int get xp => throw _privateConstructorUsedError;
+  @JsonKey(name: 'unlocked_at')
   String get unlockedAt => throw _privateConstructorUsedError;
 
   /// Serializes this ClaimedReward to a JSON map.
@@ -581,7 +591,11 @@ abstract class $ClaimedRewardCopyWith<$Res> {
           ClaimedReward value, $Res Function(ClaimedReward) then) =
       _$ClaimedRewardCopyWithImpl<$Res, ClaimedReward>;
   @useResult
-  $Res call({String key, String name, int xp, String unlockedAt});
+  $Res call(
+      {String key,
+      String name,
+      int xp,
+      @JsonKey(name: 'unlocked_at') String unlockedAt});
 }
 
 /// @nodoc
@@ -633,7 +647,11 @@ abstract class _$$ClaimedRewardImplCopyWith<$Res>
       __$$ClaimedRewardImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String key, String name, int xp, String unlockedAt});
+  $Res call(
+      {String key,
+      String name,
+      int xp,
+      @JsonKey(name: 'unlocked_at') String unlockedAt});
 }
 
 /// @nodoc
@@ -682,7 +700,7 @@ class _$ClaimedRewardImpl implements _ClaimedReward {
       {required this.key,
       required this.name,
       required this.xp,
-      required this.unlockedAt});
+      @JsonKey(name: 'unlocked_at') required this.unlockedAt});
 
   factory _$ClaimedRewardImpl.fromJson(Map<String, dynamic> json) =>
       _$$ClaimedRewardImplFromJson(json);
@@ -694,6 +712,7 @@ class _$ClaimedRewardImpl implements _ClaimedReward {
   @override
   final int xp;
   @override
+  @JsonKey(name: 'unlocked_at')
   final String unlockedAt;
 
   @override
@@ -735,10 +754,11 @@ class _$ClaimedRewardImpl implements _ClaimedReward {
 
 abstract class _ClaimedReward implements ClaimedReward {
   const factory _ClaimedReward(
-      {required final String key,
-      required final String name,
-      required final int xp,
-      required final String unlockedAt}) = _$ClaimedRewardImpl;
+          {required final String key,
+          required final String name,
+          required final int xp,
+          @JsonKey(name: 'unlocked_at') required final String unlockedAt}) =
+      _$ClaimedRewardImpl;
 
   factory _ClaimedReward.fromJson(Map<String, dynamic> json) =
       _$ClaimedRewardImpl.fromJson;
@@ -750,6 +770,7 @@ abstract class _ClaimedReward implements ClaimedReward {
   @override
   int get xp;
   @override
+  @JsonKey(name: 'unlocked_at')
   String get unlockedAt;
 
   /// Create a copy of ClaimedReward
@@ -766,8 +787,11 @@ StreakCalendar _$StreakCalendarFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$StreakCalendar {
+  @JsonKey(name: 'start_date')
   String get startDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'end_date')
   String get endDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'active_dates')
   List<String> get activeDates => throw _privateConstructorUsedError;
 
   /// Serializes this StreakCalendar to a JSON map.
@@ -786,7 +810,10 @@ abstract class $StreakCalendarCopyWith<$Res> {
           StreakCalendar value, $Res Function(StreakCalendar) then) =
       _$StreakCalendarCopyWithImpl<$Res, StreakCalendar>;
   @useResult
-  $Res call({String startDate, String endDate, List<String> activeDates});
+  $Res call(
+      {@JsonKey(name: 'start_date') String startDate,
+      @JsonKey(name: 'end_date') String endDate,
+      @JsonKey(name: 'active_dates') List<String> activeDates});
 }
 
 /// @nodoc
@@ -833,7 +860,10 @@ abstract class _$$StreakCalendarImplCopyWith<$Res>
       __$$StreakCalendarImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String startDate, String endDate, List<String> activeDates});
+  $Res call(
+      {@JsonKey(name: 'start_date') String startDate,
+      @JsonKey(name: 'end_date') String endDate,
+      @JsonKey(name: 'active_dates') List<String> activeDates});
 }
 
 /// @nodoc
@@ -874,20 +904,23 @@ class __$$StreakCalendarImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$StreakCalendarImpl implements _StreakCalendar {
   const _$StreakCalendarImpl(
-      {required this.startDate,
-      required this.endDate,
-      required final List<String> activeDates})
+      {@JsonKey(name: 'start_date') required this.startDate,
+      @JsonKey(name: 'end_date') required this.endDate,
+      @JsonKey(name: 'active_dates') required final List<String> activeDates})
       : _activeDates = activeDates;
 
   factory _$StreakCalendarImpl.fromJson(Map<String, dynamic> json) =>
       _$$StreakCalendarImplFromJson(json);
 
   @override
+  @JsonKey(name: 'start_date')
   final String startDate;
   @override
+  @JsonKey(name: 'end_date')
   final String endDate;
   final List<String> _activeDates;
   @override
+  @JsonKey(name: 'active_dates')
   List<String> get activeDates {
     if (_activeDates is EqualUnmodifiableListView) return _activeDates;
     // ignore: implicit_dynamic_type
@@ -935,18 +968,22 @@ class _$StreakCalendarImpl implements _StreakCalendar {
 
 abstract class _StreakCalendar implements StreakCalendar {
   const factory _StreakCalendar(
-      {required final String startDate,
-      required final String endDate,
+      {@JsonKey(name: 'start_date') required final String startDate,
+      @JsonKey(name: 'end_date') required final String endDate,
+      @JsonKey(name: 'active_dates')
       required final List<String> activeDates}) = _$StreakCalendarImpl;
 
   factory _StreakCalendar.fromJson(Map<String, dynamic> json) =
       _$StreakCalendarImpl.fromJson;
 
   @override
+  @JsonKey(name: 'start_date')
   String get startDate;
   @override
+  @JsonKey(name: 'end_date')
   String get endDate;
   @override
+  @JsonKey(name: 'active_dates')
   List<String> get activeDates;
 
   /// Create a copy of StreakCalendar

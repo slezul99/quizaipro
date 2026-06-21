@@ -117,6 +117,9 @@ class TreePainter extends CustomPainter {
       case EvolutionStage.legendaryTree:
         _paintLegendaryTree(canvas, cx, cy, scale, sway);
         break;
+      case EvolutionStage.eternalTree:
+        _paintEternalTree(canvas, cx, cy, scale, sway);
+        break;
     }
 
     // 2. Paint foreground environment particles
@@ -198,6 +201,7 @@ class TreePainter extends CustomPainter {
             Paint()..color = const Color(0xFFfbbf24).withOpacity(pulse * 0.95),
           );
           break;
+        case EvolutionStage.eternalTree:
         case EvolutionStage.legendaryTree:
           // Twinkling white/purple celestial stars swirling upwards
           final px = cx + (random.nextDouble() - 0.5) * 95 * scale + math.sin(progress * math.pi * 4) * 8 * scale;
@@ -388,6 +392,42 @@ class TreePainter extends CustomPainter {
     canvas.drawCircle(Offset(-15 * scale, -32 * scale), 24 * scale, l2);
     canvas.drawCircle(Offset(15 * scale, -28 * scale), 22 * scale, l2);
     canvas.drawCircle(Offset(0, -46 * scale), 26 * scale, l3);
+    canvas.restore();
+  }
+
+  /// 365+ "Eternal" tree: an obsidian trunk crowned with a golden canopy and a
+  /// luminous core — distinct from the violet legendary tree.
+  void _paintEternalTree(Canvas canvas, double cx, double cy, double scale, double sway) {
+    canvas.save();
+    canvas.translate(cx, cy - 2 * scale);
+
+    final trunkPaint = Paint()
+      ..color = const Color(0xFF0B1220)
+      ..strokeWidth = 11 * scale
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final trunkPath = Path()
+      ..moveTo(0, 0)
+      ..quadraticBezierTo(sway * 8 * scale, -32 * scale, sway * 2 * scale, -64 * scale);
+    canvas.drawPath(trunkPath, trunkPaint);
+
+    canvas.translate(sway * 2 * scale, -64 * scale);
+
+    final base = Paint()..color = const Color(0xFF1F2937).withOpacity(0.95);
+    final gold1 = Paint()..color = const Color(0xFFB45309).withOpacity(0.95);
+    final gold2 = Paint()..color = const Color(0xFFF59E0B).withOpacity(0.95);
+    final gold3 = Paint()..color = const Color(0xFFFCD34D);
+
+    canvas.drawCircle(Offset(-27 * scale, -8 * scale), 24 * scale, base);
+    canvas.drawCircle(Offset(27 * scale, -6 * scale), 22 * scale, base);
+    canvas.drawCircle(Offset(-25 * scale, -10 * scale), 20 * scale, gold1);
+    canvas.drawCircle(Offset(25 * scale, -8 * scale), 18 * scale, gold1);
+    canvas.drawCircle(Offset(-15 * scale, -34 * scale), 24 * scale, gold2);
+    canvas.drawCircle(Offset(15 * scale, -30 * scale), 22 * scale, gold2);
+    canvas.drawCircle(Offset(0, -50 * scale), 26 * scale, gold3);
+    // Luminous crown core.
+    canvas.drawCircle(
+        Offset(0, -50 * scale), 7 * scale, Paint()..color = Colors.white.withOpacity(0.9));
     canvas.restore();
   }
 

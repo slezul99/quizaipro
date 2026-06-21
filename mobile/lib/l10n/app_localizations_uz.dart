@@ -1496,6 +1496,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get streakStageLegendaryTree => 'Afsonaviy daraxt';
 
   @override
+  String get streakStageEternalTree => 'Abadiyat daraxti';
+
+  @override
   String streakLastReward(String reward) {
     return 'Oxirgi mukofot: $reward';
   }

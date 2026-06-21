@@ -585,6 +585,7 @@
   "streakStageBloomingTree": "Gullayotgan daraxt",
   "streakStageAncientTree": "Qadimiy daraxt",
   "streakStageLegendaryTree": "Afsonaviy daraxt",
+  "streakStageEternalTree": "Abadiyat daraxti",
   "streakLastReward": "Oxirgi mukofot: {reward}",
   "streakNextReward": "Keyingi mukofot: {reward}",
   "streakNoLastReward": "Oxirgi mukofot: Yo'q",

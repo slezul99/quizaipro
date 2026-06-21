@@ -14,6 +14,8 @@ import 'package:quizaipro_mobile/features/tests/presentation/providers/test_prov
 import 'package:fpdart/fpdart.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_notifier.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/library_decks_notifier.dart';
+import 'package:quizaipro_mobile/features/library/presentation/providers/recent_decks_notifier.dart';
 import 'package:quizaipro_mobile/features/tests/presentation/providers/test_session_state.dart';
 
 part 'test_session_notifier.g.dart';
@@ -163,6 +165,10 @@ class TestSessionNotifier extends _$TestSessionNotifier {
       (_) {},
     );
     ref.invalidate(dashboardNotifierProvider);
+    // Library tab is a persistent IndexedStack — refresh its deck list so the
+    // red "due" counts update after a test, not only on manual pull-to-refresh.
+    ref.invalidate(libraryDecksNotifierProvider);
+    ref.invalidate(recentDecksNotifierProvider);
   }
 
   void reset() {

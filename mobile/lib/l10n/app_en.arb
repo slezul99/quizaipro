@@ -1220,6 +1220,9 @@
   "streakStageBloomingTree": "Blooming Tree",
   "streakStageAncientTree": "Ancient Tree",
   "streakStageLegendaryTree": "Legendary Tree",
+  "@streakStageLegendaryTree": { "description": "Legendary evolution stage" },
+  "streakStageEternalTree": "Eternal Tree",
+  "@streakStageEternalTree": { "description": "365+ day evolution stage" },
   "streakLastReward": "Last Reward: {reward}",
   "@streakLastReward": {
     "description": "Last milestone reward claimed",
