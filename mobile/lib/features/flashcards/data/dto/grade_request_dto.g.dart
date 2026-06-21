@@ -30,6 +30,6 @@ Map<String, dynamic> _$GradeRequestDtoToJson(GradeRequestDto instance) =>
       'new_difficulty': instance.newDifficulty,
       'new_interval': instance.newInterval,
       'new_repetitions': instance.newRepetitions,
-      'next_review_at': instance.nextReviewAt.toIso8601String(),
-      'graded_at': instance.gradedAt.toIso8601String(),
+      'next_review_at': dtoUtcIso(instance.nextReviewAt),
+      'graded_at': dtoUtcIso(instance.gradedAt),
     };

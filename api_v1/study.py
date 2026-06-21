@@ -90,7 +90,9 @@ study_bp = Blueprint("api_v1_study", __name__, url_prefix="/api/v1/study")
 # recompute or second-guess the SM-2 math.
 _VALID_GRADES = (1, 3, 4, 5)
 _EF_MIN, _EF_MAX = 1.3, 5.0
-_INTERVAL_MIN, _INTERVAL_MAX = 1, 36500
+# interval 0 is valid: FSRS (and SM-2 lapses) schedule an "Again" card for the
+# same day. The old min of 1 wrongly rejected every "Again" grade.
+_INTERVAL_MIN, _INTERVAL_MAX = 0, 36500
 _FUTURE_TOLERANCE = timedelta(minutes=5)
 _PAST_TOLERANCE = timedelta(days=90)
 
@@ -496,7 +498,9 @@ def _validate_grade_payload(body):
         return None, "graded_at is too far in the future"
     if graded_at < now - _PAST_TOLERANCE:
         return None, "graded_at is too far in the past"
-    if next_review_at < graded_at:
+    # For an interval-0 "Again" grade next_review_at == graded_at; the client
+    # computes the two from separate clock reads, so allow a small skew.
+    if next_review_at < graded_at - _FUTURE_TOLERANCE:
         return None, "next_review_at cannot be before graded_at"
     if next_review_at > graded_at + timedelta(days=_INTERVAL_MAX):
         return None, "next_review_at is out of range"

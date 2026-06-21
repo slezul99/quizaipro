@@ -56,6 +56,6 @@ Map<String, dynamic> _$TestResultRequestDtoToJson(
       'total_questions': instance.totalQuestions,
       'correct_count': instance.correctCount,
       'duration_seconds': instance.durationSeconds,
-      'completed_at': instance.completedAt.toIso8601String(),
+      'completed_at': _dtoUtcIso(instance.completedAt),
       'answers': instance.answers,
     };

@@ -2,6 +2,10 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'test_result_request_dto.g.dart';
 
+/// Serialize timestamps as UTC so the backend doesn't reject them as "in the
+/// future" for users east of UTC (DateTime.now() is local wall-clock).
+String _dtoUtcIso(DateTime d) => d.toUtc().toIso8601String();
+
 /// One answered question, persisted server-side into `test_attempt_answers`
 /// so the dashboard activity feed can show the full Q&A (mirrors the web flow).
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -49,6 +53,7 @@ class TestResultRequestDto {
   final int totalQuestions;
   final int correctCount;
   final int durationSeconds;
+  @JsonKey(toJson: _dtoUtcIso)
   final DateTime completedAt;
   final List<TestAnswerRequestDto> answers;
 

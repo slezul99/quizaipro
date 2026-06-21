@@ -33,5 +33,5 @@ Map<String, dynamic> _$SessionRequestDtoToJson(SessionRequestDto instance) =>
       'good_count': instance.goodCount,
       'easy_count': instance.easyCount,
       'duration_seconds': instance.durationSeconds,
-      'completed_at': instance.completedAt.toIso8601String(),
+      'completed_at': _dtoUtcIso(instance.completedAt),
     };
