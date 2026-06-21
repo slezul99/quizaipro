@@ -1019,6 +1019,78 @@ def _validate_cards(cards: list[dict], max_len: int = 1500) -> list[dict]:
     return deduped
 
 
+_EMBED_MODEL = "text-multilingual-embedding-002"  # RU/EN/UZ, dim 768
+
+
+def _embed_texts(texts: list[str]):
+    """Embed texts via Vertex multilingual embeddings. Returns a list of vectors
+    aligned to inputs, or None on any failure (caller falls back)."""
+    texts = [t or "" for t in texts]
+    if not texts or not vertex_enabled():
+        return None
+    tok = _vertex_token()
+    if not tok:
+        return None
+    loc = VERTEX_LOCATION
+    host = "aiplatform.googleapis.com" if loc == "global" else f"{loc}-aiplatform.googleapis.com"
+    url = (f"https://{host}/v1/projects/{_vertex_project()}/locations/{loc}"
+           f"/publishers/google/models/{_EMBED_MODEL}:predict")
+    out = []
+    for i in range(0, len(texts), 100):  # API caps instances per request
+        chunk = texts[i:i + 100]
+        body = {"instances": [{"content": (t or " ")[:2000]} for t in chunk]}
+        try:
+            req = urlreq.Request(url, data=json.dumps(body).encode("utf-8"), method="POST",
+                                 headers={"Authorization": f"Bearer {tok}",
+                                          "Content-Type": "application/json"})
+            with urlreq.urlopen(req, timeout=60) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            for pred in payload.get("predictions", []):
+                out.append(pred["embeddings"]["values"])
+        except Exception as e:
+            print(f"[embed] {type(e).__name__}: {e}")
+            return None
+    return out if len(out) == len(texts) else None
+
+
+def _cosine(a, b) -> float:
+    import math
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    return dot / (na * nb) if na and nb else 0.0
+
+
+def dedup_semantic(new_cards: list[dict], existing_fronts, threshold: float = 0.90) -> list[dict]:
+    """Drop generated cards whose question is a SEMANTIC near-duplicate (cosine
+    of multilingual embeddings) of an existing deck card or an earlier card in
+    the batch — catches paraphrases that text dedup misses. Falls back to the
+    cheap text dedup if embeddings are unavailable."""
+    new_cards = new_cards or []
+    if not new_cards:
+        return new_cards
+    new_fronts = [c.get("front", "") for c in new_cards]
+    existing = list(existing_fronts or [])
+    vecs = _embed_texts(new_fronts + existing)
+    if not vecs:
+        return dedup_against_existing(new_cards, existing)
+    n = len(new_fronts)
+    new_vecs, exist_vecs = vecs[:n], vecs[n:]
+    kept, kept_vecs, dropped = [], [], 0
+    for i, c in enumerate(new_cards):
+        v = new_vecs[i]
+        is_dup = (any(_cosine(v, ev) >= threshold for ev in exist_vecs)
+                  or any(_cosine(v, kv) >= threshold for kv in kept_vecs))
+        if is_dup:
+            dropped += 1
+            continue
+        kept.append(c)
+        kept_vecs.append(v)
+    if dropped:
+        print(f"[AI-METRIC] label=dedup_semantic dropped={dropped} kept={len(kept)}", flush=True)
+    return kept
+
+
 def dedup_against_existing(new_cards: list[dict], existing_fronts) -> list[dict]:
     """Drop generated cards whose question is a near-duplicate of one already in
     the target deck (normalized text — cheap, no embeddings). Use when appending
