@@ -2865,6 +2865,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{current} / {target} Days ({pct}%)'**
   String streakProgressDays(Object current, Object pct, Object target);
+
+  /// No description provided for @streakTreeGrewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your tree grew!'**
+  String get streakTreeGrewTitle;
+
+  /// No description provided for @streakTreeGrewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'New stage: {stage}. Keep it up — come back every day!'**
+  String streakTreeGrewBody(String stage);
+
+  /// No description provided for @streakTreeIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your tree is growing'**
+  String get streakTreeIntroTitle;
+
+  /// No description provided for @streakTreeIntroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Come back daily and hit your goal — your tree grows from a seed all the way to the Eternal Tree.'**
+  String get streakTreeIntroBody;
+
+  /// No description provided for @streakTreeIntroCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more'**
+  String get streakTreeIntroCta;
 }
 
 class _AppLocalizationsDelegate

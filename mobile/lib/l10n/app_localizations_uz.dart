@@ -1518,4 +1518,22 @@ class AppLocalizationsUz extends AppLocalizations {
   String streakProgressDays(Object current, Object pct, Object target) {
     return '$current / $target kun ($pct%)';
   }
+
+  @override
+  String get streakTreeGrewTitle => 'Daraxtingiz o\'sdi!';
+
+  @override
+  String streakTreeGrewBody(String stage) {
+    return 'Yangi bosqich: $stage. Shunday davom eting — har kuni kiring!';
+  }
+
+  @override
+  String get streakTreeIntroTitle => 'Daraxtingiz o\'smoqda';
+
+  @override
+  String get streakTreeIntroBody =>
+      'Har kuni kiring va maqsadingizni bajaring — daraxtingiz urug\'dan Abadiyat daraxtigacha o\'sadi.';
+
+  @override
+  String get streakTreeIntroCta => 'Batafsil';
 }

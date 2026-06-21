@@ -590,5 +590,11 @@
   "streakNextReward": "Keyingi mukofot: {reward}",
   "streakNoLastReward": "Oxirgi mukofot: Yo'q",
   "streakMaxReward": "Keyingi mukofot: Yo'q (Maks. daraja)",
-  "streakProgressDays": "{current} / {target} kun ({pct}%)"
+  "streakProgressDays": "{current} / {target} kun ({pct}%)",
+  "streakTreeGrewTitle": "Daraxtingiz o'sdi!",
+  "streakTreeGrewBody": "Yangi bosqich: {stage}. Shunday davom eting — har kuni kiring!",
+  "@streakTreeGrewBody": { "placeholders": { "stage": { "type": "String" } } },
+  "streakTreeIntroTitle": "Daraxtingiz o'smoqda",
+  "streakTreeIntroBody": "Har kuni kiring va maqsadingizni bajaring — daraxtingiz urug'dan Abadiyat daraxtigacha o'sadi.",
+  "streakTreeIntroCta": "Batafsil"
 }

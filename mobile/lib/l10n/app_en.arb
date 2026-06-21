@@ -1239,5 +1239,11 @@
   },
   "streakNoLastReward": "Last Reward: None",
   "streakMaxReward": "Next Reward: None (Max Level)",
-  "streakProgressDays": "{current} / {target} Days ({pct}%)"
+  "streakProgressDays": "{current} / {target} Days ({pct}%)",
+  "streakTreeGrewTitle": "Your tree grew!",
+  "streakTreeGrewBody": "New stage: {stage}. Keep it up — come back every day!",
+  "@streakTreeGrewBody": { "placeholders": { "stage": { "type": "String" } } },
+  "streakTreeIntroTitle": "Your tree is growing",
+  "streakTreeIntroBody": "Come back daily and hit your goal — your tree grows from a seed all the way to the Eternal Tree.",
+  "streakTreeIntroCta": "Learn more"
 }

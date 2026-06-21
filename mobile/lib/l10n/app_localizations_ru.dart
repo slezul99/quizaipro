@@ -1520,4 +1520,22 @@ class AppLocalizationsRu extends AppLocalizations {
   String streakProgressDays(Object current, Object pct, Object target) {
     return '$current / $target дн. ($pct%)';
   }
+
+  @override
+  String get streakTreeGrewTitle => 'Дерево выросло!';
+
+  @override
+  String streakTreeGrewBody(String stage) {
+    return 'Новая стадия: $stage. Так держать — заходи каждый день!';
+  }
+
+  @override
+  String get streakTreeIntroTitle => 'Твоё дерево растёт';
+
+  @override
+  String get streakTreeIntroBody =>
+      'Заходи каждый день и выполняй цель — твоё дерево вырастет от семечка до Древа вечности.';
+
+  @override
+  String get streakTreeIntroCta => 'Подробнее';
 }

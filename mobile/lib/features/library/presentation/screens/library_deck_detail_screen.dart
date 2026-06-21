@@ -598,260 +598,212 @@ class _FlashcardTileState extends State<_FlashcardTile> {
     final hasExplanation =
         hint.isNotEmpty && hint != card.back && !mcqHasOptions(hint);
 
+    // Calm, low-contrast tile: neutral surfaces, the type colour used only as a
+    // small accent so a long list of cards doesn't strain the eyes.
     return Container(
       margin: EdgeInsets.only(bottom: t.space12),
+      padding: EdgeInsets.all(t.space16),
       decoration: BoxDecoration(
         color: t.backgroundSurface,
         borderRadius: BorderRadius.circular(t.radiusLg),
         border: Border.all(color: t.borderSubtle),
-        boxShadow: t.shadowCard,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(t.radiusLg),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: index + muted type chip + overflow menu
+          Row(
             children: [
-              // Accent rail — flashcard vs. quiz at a glance.
-              Container(width: 4, color: accent),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(t.space16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header: index + content-type chip + overflow menu
-                      Row(
-                        children: [
-                          Container(
-                            width: 26,
-                            height: 26,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: accent.withValues(alpha: 0.14),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '${widget.index}',
-                              style: t.labelSmall.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: accent,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: t.space8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isMcq
-                                    ? Icons.fact_check_rounded
-                                    : Icons.style_rounded,
-                                size: 13,
-                                color: accent,
-                              ),
-                              SizedBox(width: t.space4),
-                              Text(
-                                isMcq
-                                    ? l.cardTileQuizChip
-                                    : l.cardTileFlashcardChip,
-                                style: t.labelSmall.copyWith(
-                                  color: accent,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (widget.onEdit != null ||
-                              widget.onDelete != null) ...[
-                            const Spacer(),
-                            SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: PopupMenuButton<String>(
-                                padding: EdgeInsets.zero,
-                                icon: Icon(Icons.more_horiz_rounded,
-                                    size: 18, color: t.textTertiary),
-                                onSelected: (v) {
-                                  if (v == 'edit') widget.onEdit?.call();
-                                  if (v == 'delete') widget.onDelete?.call();
-                                },
-                                itemBuilder: (_) => [
-                                  if (widget.onEdit != null)
-                                    PopupMenuItem(
-                                        value: 'edit', child: Text(l.commonEdit)),
-                                  if (widget.onDelete != null)
-                                    PopupMenuItem(
-                                        value: 'delete', child: Text(l.delete)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      SizedBox(height: t.space12),
-                      // Question
-                      Text(
-                        stem,
-                        style: t.titleSmall.copyWith(
-                          fontWeight: FontWeight.w700,
-                          height: 1.3,
-                        ),
-                      ),
-
-                      // MCQ options behind a toggle, shown as lettered choices
-                      if (isMcq) ...[
-                        SizedBox(height: t.space12),
-                        _PillButton(
-                          icon: _showOptions
-                              ? Icons.expand_less_rounded
-                              : Icons.format_list_bulleted_rounded,
-                          label: _showOptions
-                              ? l.cardTileHideOptions
-                              : l.cardTileShowOptions,
-                          color: accent,
-                          tokens: t,
-                          onTap: () =>
-                              setState(() => _showOptions = !_showOptions),
-                        ),
-                        if (_showOptions) ...[
-                          SizedBox(height: t.space8),
-                          for (var oi = 0; oi < options.length; oi++)
-                            Padding(
-                              padding: EdgeInsets.only(bottom: t.space4),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 22,
-                                    height: 22,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: accent.withValues(alpha: 0.14),
-                                      borderRadius:
-                                          BorderRadius.circular(t.radiusSm),
-                                    ),
-                                    child: Text(
-                                      String.fromCharCode(65 + oi),
-                                      style: t.labelSmall.copyWith(
-                                        color: accent,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: t.space8),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 2),
-                                      child:
-                                          Text(options[oi], style: t.bodyMedium),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ],
-
-                      SizedBox(height: t.space12),
-                      // Answer reveal
-                      _PillButton(
-                        icon: _revealed
-                            ? Icons.visibility_off_rounded
-                            : Icons.visibility_rounded,
-                        label: _revealed
-                            ? l.cardTileHideAnswer
-                            : l.cardTileShowAnswer,
-                        color: t.brandGradientStart,
-                        tokens: t,
-                        onTap: () => setState(() => _revealed = !_revealed),
-                      ),
-                      if (_revealed) ...[
-                        SizedBox(height: t.space8),
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(t.space12),
-                          decoration: BoxDecoration(
-                            color: t.brandGradientStart.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(t.radiusMd),
-                            border: Border.all(
-                                color: t.brandGradientStart
-                                    .withValues(alpha: 0.25)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.check_circle_rounded,
-                                      size: 14, color: t.brandGradientStart),
-                                  SizedBox(width: t.space4),
-                                  Text(
-                                    widget.backLabel.toUpperCase(),
-                                    style: t.labelSmall.copyWith(
-                                      color: t.brandGradientStart,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: t.space4),
-                              Text(
-                                card.back,
-                                style: t.bodyMedium
-                                    .copyWith(fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (hasExplanation) ...[
-                          SizedBox(height: t.space8),
-                          Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(t.space12),
-                            decoration: BoxDecoration(
-                              color: t.surfaceSubtle,
-                              borderRadius: BorderRadius.circular(t.radiusMd),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.lightbulb_outline_rounded,
-                                        size: 14, color: t.textSecondary),
-                                    SizedBox(width: t.space4),
-                                    Text(
-                                      l.cardTileExplanation,
-                                      style: t.labelSmall.copyWith(
-                                        color: t.textSecondary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: t.space4),
-                                Text(
-                                  hint,
-                                  style: t.bodyMedium.copyWith(
-                                    color: t.textSecondary,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ],
+              Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: t.surfaceSubtle,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '${widget.index}',
+                  style: t.labelSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: t.textSecondary,
                   ),
                 ),
               ),
+              SizedBox(width: t.space8),
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: t.space8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: t.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(t.radiusFull),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isMcq ? Icons.fact_check_rounded : Icons.style_rounded,
+                      size: 12,
+                      color: accent,
+                    ),
+                    SizedBox(width: t.space4),
+                    Text(
+                      isMcq ? l.cardTileQuizChip : l.cardTileFlashcardChip,
+                      style: t.labelSmall.copyWith(
+                        color: t.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.onEdit != null || widget.onDelete != null) ...[
+                const Spacer(),
+                SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(Icons.more_horiz_rounded,
+                        size: 18, color: t.textTertiary),
+                    onSelected: (v) {
+                      if (v == 'edit') widget.onEdit?.call();
+                      if (v == 'delete') widget.onDelete?.call();
+                    },
+                    itemBuilder: (_) => [
+                      if (widget.onEdit != null)
+                        PopupMenuItem(value: 'edit', child: Text(l.commonEdit)),
+                      if (widget.onDelete != null)
+                        PopupMenuItem(value: 'delete', child: Text(l.delete)),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
-        ),
+          SizedBox(height: t.space12),
+          // Question
+          Text(
+            stem,
+            style: t.titleSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+
+          // MCQ options behind a toggle, shown as lettered choices
+          if (isMcq) ...[
+            SizedBox(height: t.space12),
+            _PillButton(
+              icon: _showOptions
+                  ? Icons.expand_less_rounded
+                  : Icons.format_list_bulleted_rounded,
+              label: _showOptions ? l.cardTileHideOptions : l.cardTileShowOptions,
+              color: t.textSecondary,
+              tokens: t,
+              onTap: () => setState(() => _showOptions = !_showOptions),
+            ),
+            if (_showOptions) ...[
+              SizedBox(height: t.space8),
+              for (var oi = 0; oi < options.length; oi++)
+                Padding(
+                  padding: EdgeInsets.only(bottom: t.space4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: t.surfaceSubtle,
+                          borderRadius: BorderRadius.circular(t.radiusSm),
+                        ),
+                        child: Text(
+                          String.fromCharCode(65 + oi),
+                          style: t.labelSmall.copyWith(
+                            color: t.textSecondary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: t.space8),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 2),
+                          child: Text(options[oi], style: t.bodyMedium),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
+
+          SizedBox(height: t.space12),
+          // Answer reveal
+          _PillButton(
+            icon: _revealed
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded,
+            label: _revealed ? l.cardTileHideAnswer : l.cardTileShowAnswer,
+            color: t.textSecondary,
+            tokens: t,
+            onTap: () => setState(() => _revealed = !_revealed),
+          ),
+          if (_revealed) ...[
+            SizedBox(height: t.space8),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(t.space12),
+              decoration: BoxDecoration(
+                color: t.surfaceSubtle,
+                borderRadius: BorderRadius.circular(t.radiusMd),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.backLabel.toUpperCase(),
+                    style: t.labelSmall.copyWith(
+                      color: t.textTertiary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                  SizedBox(height: t.space4),
+                  Text(
+                    card.back,
+                    style: t.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: t.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasExplanation) ...[
+              SizedBox(height: t.space8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline_rounded,
+                      size: 14, color: t.textTertiary),
+                  SizedBox(width: t.space8),
+                  Expanded(
+                    child: Text(
+                      hint,
+                      style: t.bodySmall.copyWith(
+                        color: t.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ],
       ),
     );
   }

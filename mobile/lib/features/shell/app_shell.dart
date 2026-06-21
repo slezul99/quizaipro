@@ -65,15 +65,16 @@ class AppShell extends StatelessWidget {
         }
       },
       child: Scaffold(
-      // AI Tutor FAB — cross-cutting, not a tab. Previously a center-bottom
-      // `Positioned` overlay stacked above the shell body, which intercepted
-      // taps on full-width content beneath it (the Dashboard "Начать
-      // повторение" button resolved to AI Tutor instead of the Study Session).
-      // Hosting it as the Scaffold FAB at endFloat keeps it clear of centered
-      // content and lets the framework manage safe-area / nav-bar insets. (P0-2)
-      body: shell,
-      floatingActionButton: _TutorFab(tokens: tokens),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      // AI button — cross-cutting, not a tab. Rendered as a slim handle glued
+      // flush to the left edge (a `Positioned.fill` + `Align`, so the empty
+      // area around it stays transparent to taps and centered content beneath
+      // remains tappable). Tapping the handle slides out the AI actions panel.
+      body: Stack(
+        children: [
+          shell,
+          _TutorSideTab(tokens: tokens),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
         onDestinationSelected: (index) => shell.goBranch(
@@ -99,19 +100,20 @@ class AppShell extends StatelessWidget {
   }
 }
 
-/// AssistiveTouch-style AI button: a small, semi-transparent bubble that stays
-/// out of the way until tapped, then fades in fully and reveals a little menu
-/// of AI actions (Tutor / Generator). Auto-collapses after a few idle seconds.
-class _TutorFab extends StatefulWidget {
-  const _TutorFab({required this.tokens});
+/// AI button as a slim handle glued to the left edge. Collapsed it's a
+/// semi-transparent rounded tab that protrudes from the side; tapping it slides
+/// out a panel with the AI actions (Tutor / Studio). Auto-collapses after a few
+/// idle seconds.
+class _TutorSideTab extends StatefulWidget {
+  const _TutorSideTab({required this.tokens});
 
   final AuroraTokens tokens;
 
   @override
-  State<_TutorFab> createState() => _TutorFabState();
+  State<_TutorSideTab> createState() => _TutorSideTabState();
 }
 
-class _TutorFabState extends State<_TutorFab> {
+class _TutorSideTabState extends State<_TutorSideTab> {
   bool _expanded = false;
   Timer? _collapseTimer;
 
@@ -125,7 +127,7 @@ class _TutorFabState extends State<_TutorFab> {
     setState(() => _expanded = !_expanded);
     _collapseTimer?.cancel();
     if (_expanded) {
-      _collapseTimer = Timer(const Duration(seconds: 4), () {
+      _collapseTimer = Timer(const Duration(seconds: 5), () {
         if (mounted) setState(() => _expanded = false);
       });
     }
@@ -139,65 +141,115 @@ class _TutorFabState extends State<_TutorFab> {
 
   @override
   Widget build(BuildContext context) {
+    // Sits a little below vertical centre, flush to the left edge. The
+    // surrounding Align area is transparent to taps.
+    return Positioned.fill(
+      child: Align(
+        alignment: const Alignment(-1.0, 0.30),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          switchInCurve: Curves.easeOutBack,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: (child, anim) => SizeTransition(
+            axis: Axis.horizontal,
+            axisAlignment: -1,
+            sizeFactor: anim,
+            child: FadeTransition(opacity: anim, child: child),
+          ),
+          child: _expanded ? _buildPanel(context) : _buildHandle(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHandle(BuildContext context) {
+    final t = widget.tokens;
+    return GestureDetector(
+      key: const ValueKey('handle'),
+      onTap: _toggle,
+      child: Opacity(
+        opacity: 0.55,
+        child: Container(
+          width: 34,
+          height: 60,
+          decoration: BoxDecoration(
+            gradient: t.brandGradient,
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(18),
+              bottomRight: Radius.circular(18),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: t.brandGradientStart.withAlpha(60),
+                blurRadius: 10,
+                offset: const Offset(2, 3),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.auto_awesome_rounded,
+              color: Colors.white, size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPanel(BuildContext context) {
     final t = widget.tokens;
     final l = AppLocalizations.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AnimatedSize(
-          duration: const Duration(milliseconds: 160),
-          alignment: Alignment.bottomLeft,
-          curve: Curves.easeOut,
-          child: _expanded
-              ? Padding(
-                  padding: EdgeInsets.only(bottom: t.space12),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _action(t, Icons.auto_awesome_rounded,
-                          l.dashboardActionAiTutor,
-                          () => _go(AppRoutes.tutorName)),
-                      SizedBox(height: t.space8),
-                      _action(t, Icons.auto_fix_high_rounded,
-                          l.dashboardActionAiStudio,
-                          () => _go(AppRoutes.aiGenerationStudioName)),
-                    ],
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ),
-        AnimatedOpacity(
-          duration: const Duration(milliseconds: 180),
-          opacity: _expanded ? 1.0 : 0.42,
-          child: GestureDetector(
-            onTap: _toggle,
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                gradient: t.brandGradient,
-                shape: BoxShape.circle,
-                boxShadow: _expanded
-                    ? [
-                        BoxShadow(
-                          color: t.brandGradientStart.withAlpha(77),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Icon(
-                _expanded ? Icons.close_rounded : Icons.auto_awesome_rounded,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
+    return Material(
+      key: const ValueKey('panel'),
+      color: t.surfaceCard,
+      elevation: 8,
+      shadowColor: Colors.black.withAlpha(60),
+      borderRadius: const BorderRadius.only(
+        topRight: Radius.circular(20),
+        bottomRight: Radius.circular(20),
+      ),
+      child: Container(
+        width: 196,
+        padding: EdgeInsets.fromLTRB(
+            t.space12, t.space10, t.space12, t.space12),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
+          border: Border(
+            top: BorderSide(color: t.borderSubtle),
+            right: BorderSide(color: t.borderSubtle),
+            bottom: BorderSide(color: t.borderSubtle),
           ),
         ),
-      ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome_rounded,
+                    size: 16, color: t.brandGradientStart),
+                SizedBox(width: t.space4),
+                Text('AI',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: t.brandGradientStart)),
+                const Spacer(),
+                GestureDetector(
+                  onTap: _toggle,
+                  child: Icon(Icons.chevron_left_rounded,
+                      size: 20, color: t.textTertiary),
+                ),
+              ],
+            ),
+            SizedBox(height: t.space8),
+            _action(t, Icons.school_rounded, l.dashboardActionAiTutor,
+                () => _go(AppRoutes.tutorName)),
+            SizedBox(height: t.space8),
+            _action(t, Icons.auto_fix_high_rounded, l.dashboardActionAiStudio,
+                () => _go(AppRoutes.aiGenerationStudioName)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -206,22 +258,26 @@ class _TutorFabState extends State<_TutorFab> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: t.space12, vertical: t.space8),
+        width: double.infinity,
+        padding:
+            EdgeInsets.symmetric(horizontal: t.space12, vertical: t.space10),
         decoration: BoxDecoration(
-          color: t.surfaceCard,
-          borderRadius: BorderRadius.circular(t.radiusFull),
-          boxShadow: t.shadowCard,
+          color: t.brandGradientStart.withAlpha(20),
+          borderRadius: BorderRadius.circular(t.radiusMd),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 18, color: t.brandGradientStart),
             SizedBox(width: t.space8),
-            Text(label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.copyWith(fontWeight: FontWeight.w700)),
+            Flexible(
+              child: Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+            ),
           ],
         ),
       ),

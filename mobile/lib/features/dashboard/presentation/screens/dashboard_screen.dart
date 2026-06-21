@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:quizaipro_mobile/core/router/app_routes.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
+import 'package:quizaipro_mobile/features/dashboard/domain/entities/evolution_stage.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/streak_summary.dart';
 import 'package:quizaipro_mobile/features/dashboard/domain/entities/xp_summary.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/study_mode.dart';
@@ -17,6 +18,8 @@ import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/quick_a
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/recent_activity_section.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/retention_card.dart';
 import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/level_up_celebration.dart';
+import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/tree_growth_celebration.dart';
+import 'package:quizaipro_mobile/features/dashboard/presentation/widgets/tree_intro_card.dart';
 import 'package:go_router/go_router.dart';
 
 
@@ -46,6 +49,22 @@ class DashboardScreen extends ConsumerWidget {
                 newLevel: nextLvl,
               );
             },
+          );
+          return;
+        }
+
+        // Tree grew into a new evolution stage → celebrate it.
+        final prevStage = EvolutionStage.fromKey(
+            prevVal.summary.streak.currentStage?.key ?? 'seed');
+        final nextStage = EvolutionStage.fromKey(
+            nextVal.summary.streak.currentStage?.key ?? 'seed');
+        if (nextStage.index > prevStage.index) {
+          showGeneralDialog(
+            context: context,
+            barrierDismissible: true,
+            barrierColor: Colors.black.withOpacity(0.85),
+            pageBuilder: (context, anim1, anim2) =>
+                TreeGrowthCelebrationDialog(stage: nextStage),
           );
         }
       }
@@ -90,6 +109,19 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 sliver: SliverList.list(
                   children: [
+                    // New-user nudge: show the growing-tree intro while the
+                    // user is still at an early stage (seed / sprout).
+                    if (EvolutionStage.fromKey(
+                                state.summary.streak.currentStage?.key ?? 'seed')
+                            .index <=
+                        EvolutionStage.sprout.index) ...[
+                      TreeIntroCard(
+                        tokens: tokens,
+                        stage: EvolutionStage.fromKey(
+                            state.summary.streak.currentStage?.key ?? 'seed'),
+                      ),
+                      SizedBox(height: tokens.space16),
+                    ],
                     DailyGoalCard(
                       goal: state.summary.dailyGoal,
                       tokens: tokens,

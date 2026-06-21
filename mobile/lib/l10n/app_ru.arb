@@ -591,5 +591,11 @@
   "streakNextReward": "Следующая награда: {reward}",
   "streakNoLastReward": "Последняя награда: Нет",
   "streakMaxReward": "Следующая награда: Нет (Макс. уровень)",
-  "streakProgressDays": "{current} / {target} дн. ({pct}%)"
+  "streakProgressDays": "{current} / {target} дн. ({pct}%)",
+  "streakTreeGrewTitle": "Дерево выросло!",
+  "streakTreeGrewBody": "Новая стадия: {stage}. Так держать — заходи каждый день!",
+  "@streakTreeGrewBody": { "placeholders": { "stage": { "type": "String" } } },
+  "streakTreeIntroTitle": "Твоё дерево растёт",
+  "streakTreeIntroBody": "Заходи каждый день и выполняй цель — твоё дерево вырастет от семечка до Древа вечности.",
+  "streakTreeIntroCta": "Подробнее"
 }
