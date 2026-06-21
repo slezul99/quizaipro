@@ -3408,15 +3408,32 @@ def growth_page():
     """Стадии роста — анимированные деревья серии (web)."""
     user = current_user()
     streak = (user["streak"] if user and "streak" in user.keys() else 0) or 0
-    current = GROWTH_STAGES[0]
-    for s in GROWTH_STAGES:
+    idx = 0
+    for i, s in enumerate(GROWTH_STAGES):
         if streak >= s["start"]:
-            current = s
+            idx = i
+    current = GROWTH_STAGES[idx]
+    nxt = GROWTH_STAGES[idx + 1] if idx + 1 < len(GROWTH_STAGES) else None
+
+    # Progress within the current stage toward the next one.
+    if nxt:
+        span = max(1, nxt["start"] - current["start"])
+        done = streak - current["start"]
+        stage_progress = max(0.0, min(1.0, done / span))
+        days_to_next = max(0, nxt["start"] - streak)
+    else:
+        stage_progress = 1.0
+        days_to_next = 0
+
     return render_template(
         "growth_stages.html",
         stages=GROWTH_STAGES,
         streak=streak,
         current_key=current["key"],
+        next_key=(nxt["key"] if nxt else None),
+        next_title=(nxt["title"] if nxt else None),
+        days_to_next=days_to_next,
+        stage_progress=stage_progress,
     )
 
 
