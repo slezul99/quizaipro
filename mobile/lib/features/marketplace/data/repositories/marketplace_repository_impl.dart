@@ -8,6 +8,7 @@ import 'package:quizaipro_mobile/features/marketplace/data/mappers/marketplace_m
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/collection.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/deck_card_preview.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/deck_detail.dart';
+import 'package:quizaipro_mobile/features/marketplace/domain/entities/deck_review.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/deck_summary.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/learning_path.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/marketplace_filter.dart';
@@ -198,6 +199,53 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       await _local.cacheDeckDetail(deckId,
           (await _remote.getDeckDetail(deckId)));
       return Right(clonedId);
+    } on DioException catch (e) {
+      return Left(_fromDio(e));
+    } catch (e) {
+      return Left(const Failure.unknown());
+    }
+  }
+
+  @override
+  Future<Either<Failure, DeckReviewsResult>> getDeckReviews(String deckId) async {
+    try {
+      return Right(await _remote.getDeckReviews(deckId));
+    } on DioException catch (e) {
+      return Left(_fromDio(e));
+    } catch (e) {
+      return Left(const Failure.unknown());
+    }
+  }
+
+  @override
+  Future<Either<Failure, DeckReview>> submitDeckReview(
+      String deckId, int stars, String text) async {
+    try {
+      return Right(await _remote.submitDeckReview(deckId, stars, text));
+    } on DioException catch (e) {
+      return Left(_fromDio(e));
+    } catch (e) {
+      return Left(const Failure.unknown());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> deleteDeckReview(String deckId) async {
+    try {
+      await _remote.deleteDeckReview(deckId);
+      return const Right(unit);
+    } on DioException catch (e) {
+      return Left(_fromDio(e));
+    } catch (e) {
+      return Left(const Failure.unknown());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> reportReview(String reviewId) async {
+    try {
+      await _remote.reportReview(reviewId);
+      return const Right(unit);
     } on DioException catch (e) {
       return Left(_fromDio(e));
     } catch (e) {

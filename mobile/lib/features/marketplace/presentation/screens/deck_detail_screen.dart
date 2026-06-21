@@ -6,6 +6,7 @@ import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/deck_detail.dart';
 import 'package:quizaipro_mobile/features/marketplace/presentation/providers/deck_detail_notifier.dart';
 import 'package:quizaipro_mobile/features/marketplace/presentation/widgets/deck_preview_sheet.dart';
+import 'package:quizaipro_mobile/features/marketplace/presentation/widgets/deck_reviews_section.dart';
 import 'package:quizaipro_mobile/features/marketplace/presentation/widgets/marketplace_error_view.dart';
 import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
@@ -171,6 +172,8 @@ class _DeckDetailContent extends ConsumerWidget {
                         .cloneDeck(),
                   ),
 
+                  SizedBox(height: tokens.space32),
+                  DeckReviewsSection(deckId: deckId, tokens: tokens, l: l),
                   SizedBox(height: tokens.space32),
                 ],
               ),

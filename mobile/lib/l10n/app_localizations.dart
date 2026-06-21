@@ -958,6 +958,60 @@ abstract class AppLocalizations {
   /// **'Rating'**
   String get marketplaceRating;
 
+  /// Reviews section title
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get marketplaceReviews;
+
+  /// Rate-this-deck prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Rate this deck'**
+  String get marketplaceRateThis;
+
+  /// Review text field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Share your impression (optional)'**
+  String get marketplaceReviewHint;
+
+  /// Submit-review button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get marketplaceSubmitReview;
+
+  /// Update-review button
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get marketplaceUpdateReview;
+
+  /// Report-review button
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get marketplaceReportReview;
+
+  /// Empty reviews state
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet — be the first!'**
+  String get marketplaceNoReviews;
+
+  /// No ratings yet label
+  ///
+  /// In en, this message translates to:
+  /// **'No ratings'**
+  String get marketplaceNoRatings;
+
+  /// Label for the current user's own review
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get marketplaceYou;
+
   /// Clones stat label on deck detail
   ///
   /// In en, this message translates to:

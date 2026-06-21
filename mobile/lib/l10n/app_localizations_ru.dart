@@ -484,6 +484,33 @@ class AppLocalizationsRu extends AppLocalizations {
   String get marketplaceRating => 'Рейтинг';
 
   @override
+  String get marketplaceReviews => 'Отзывы';
+
+  @override
+  String get marketplaceRateThis => 'Оцените колоду';
+
+  @override
+  String get marketplaceReviewHint => 'Поделитесь впечатлением (необязательно)';
+
+  @override
+  String get marketplaceSubmitReview => 'Отправить';
+
+  @override
+  String get marketplaceUpdateReview => 'Обновить';
+
+  @override
+  String get marketplaceReportReview => 'Пожаловаться';
+
+  @override
+  String get marketplaceNoReviews => 'Пока нет отзывов — будьте первым!';
+
+  @override
+  String get marketplaceNoRatings => 'Нет оценок';
+
+  @override
+  String get marketplaceYou => 'Вы';
+
+  @override
   String get marketplaceClones => 'Копии';
 
   @override

@@ -479,6 +479,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get marketplaceRating => 'Rating';
 
   @override
+  String get marketplaceReviews => 'Reviews';
+
+  @override
+  String get marketplaceRateThis => 'Rate this deck';
+
+  @override
+  String get marketplaceReviewHint => 'Share your impression (optional)';
+
+  @override
+  String get marketplaceSubmitReview => 'Submit';
+
+  @override
+  String get marketplaceUpdateReview => 'Update';
+
+  @override
+  String get marketplaceReportReview => 'Report';
+
+  @override
+  String get marketplaceNoReviews => 'No reviews yet — be the first!';
+
+  @override
+  String get marketplaceNoRatings => 'No ratings';
+
+  @override
+  String get marketplaceYou => 'You';
+
+  @override
   String get marketplaceClones => 'Clones';
 
   @override

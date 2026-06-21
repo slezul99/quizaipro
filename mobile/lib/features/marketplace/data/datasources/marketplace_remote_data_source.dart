@@ -7,6 +7,7 @@ import 'package:quizaipro_mobile/features/marketplace/data/dto/deck_summary_dto.
 import 'package:quizaipro_mobile/features/marketplace/data/dto/learning_path_dto.dart';
 import 'package:quizaipro_mobile/features/marketplace/data/dto/paginated_dto.dart';
 import 'package:quizaipro_mobile/features/marketplace/data/dto/subject_dto.dart';
+import 'package:quizaipro_mobile/features/marketplace/domain/entities/deck_review.dart';
 import 'package:quizaipro_mobile/features/marketplace/domain/entities/marketplace_filter.dart';
 
 abstract interface class MarketplaceRemoteDataSource {
@@ -44,6 +45,11 @@ abstract interface class MarketplaceRemoteDataSource {
   });
 
   Future<String> cloneDeck(String deckId);
+
+  Future<DeckReviewsResult> getDeckReviews(String deckId);
+  Future<DeckReview> submitDeckReview(String deckId, int stars, String text);
+  Future<void> deleteDeckReview(String deckId);
+  Future<void> reportReview(String reviewId);
 }
 
 class MarketplaceRemoteDataSourceImpl implements MarketplaceRemoteDataSource {
@@ -175,5 +181,32 @@ class MarketplaceRemoteDataSourceImpl implements MarketplaceRemoteDataSource {
       '/marketplace/decks/$deckId/clone',
     );
     return (response.data!['data'] as Map<String, dynamic>)['deck_id'] as String;
+  }
+
+  @override
+  Future<DeckReviewsResult> getDeckReviews(String deckId) async {
+    final r = await _dio.get<Map<String, dynamic>>(
+        '/marketplace/decks/$deckId/reviews');
+    return DeckReviewsResult.fromJson(r.data!['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<DeckReview> submitDeckReview(
+      String deckId, int stars, String text) async {
+    final r = await _dio.post<Map<String, dynamic>>(
+      '/marketplace/decks/$deckId/reviews',
+      data: {'stars': stars, 'text': text},
+    );
+    return DeckReview.fromJson(r.data!['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> deleteDeckReview(String deckId) async {
+    await _dio.delete<void>('/marketplace/decks/$deckId/reviews');
+  }
+
+  @override
+  Future<void> reportReview(String reviewId) async {
+    await _dio.post<void>('/marketplace/reviews/$reviewId/report');
   }
 }

@@ -482,6 +482,34 @@ class AppLocalizationsUz extends AppLocalizations {
   String get marketplaceRating => 'Reyting';
 
   @override
+  String get marketplaceReviews => 'Sharhlar';
+
+  @override
+  String get marketplaceRateThis => 'Toplamni baholang';
+
+  @override
+  String get marketplaceReviewHint => 'Taassurotingizni yozing (ixtiyoriy)';
+
+  @override
+  String get marketplaceSubmitReview => 'Yuborish';
+
+  @override
+  String get marketplaceUpdateReview => 'Yangilash';
+
+  @override
+  String get marketplaceReportReview => 'Shikoyat';
+
+  @override
+  String get marketplaceNoReviews =>
+      'Hozircha sharhlar yo\'q — birinchi bo\'ling!';
+
+  @override
+  String get marketplaceNoRatings => 'Baholar yo\'q';
+
+  @override
+  String get marketplaceYou => 'Siz';
+
+  @override
   String get marketplaceClones => 'Nusxalar';
 
   @override

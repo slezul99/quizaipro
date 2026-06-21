@@ -332,3 +332,108 @@ def clone_deck(deck_id):
         conn.close()
 
     return jsonify({"data": {"deck_id": str(new_deck_id)}}), 201
+
+
+# ── Deck reviews (ratings) ─────────────────────────────────────────────────
+_REVIEW_AUTO_HIDE = 3
+_REVIEW_TEXT_MAX = 1000
+
+_REVIEW_SELECT = """
+    SELECT r.id, r.stars, r.text, r.created_at, r.user_id,
+           COALESCE(NULLIF(u.full_name,''), u.username) AS author
+    FROM deck_reviews r JOIN users u ON u.id=r.user_id
+"""
+
+
+def _serialize_review(r, current_user_id):
+    return {
+        "id": str(r["id"]),
+        "author": r["author"] or "",
+        "stars": r["stars"],
+        "text": r["text"] or "",
+        "created_at": r["created_at"],
+        "is_mine": r["user_id"] == current_user_id,
+    }
+
+
+@marketplace_bp.route("/decks/<int:deck_id>/reviews", methods=["GET"])
+@jwt_auth.jwt_required
+def get_deck_reviews(deck_id):
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        agg = conn.execute(
+            "SELECT ROUND(AVG(stars),1) AS rating, COUNT(*) AS count "
+            "FROM deck_reviews WHERE deck_id=? AND is_hidden=0", (deck_id,)).fetchone()
+        rows = conn.execute(
+            _REVIEW_SELECT +
+            " WHERE r.deck_id=? AND r.is_hidden=0 ORDER BY (r.user_id=?) DESC, r.updated_at DESC LIMIT 100",
+            (deck_id, user["id"])).fetchall()
+    finally:
+        conn.close()
+    reviews = [_serialize_review(r, user["id"]) for r in rows]
+    my_review = next((rv for rv in reviews if rv["is_mine"]), None)
+    return jsonify({"data": {
+        "rating": float(agg["rating"]) if agg and agg["rating"] is not None else 0.0,
+        "rating_count": (agg["count"] if agg else 0) or 0,
+        "my_review": my_review,
+        "reviews": reviews,
+    }})
+
+
+@marketplace_bp.route("/decks/<int:deck_id>/reviews", methods=["POST"])
+@jwt_auth.jwt_required
+def post_deck_review(deck_id):
+    user = g.current_user
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({"error": {"code": "validation_error", "message": "Ожидается JSON-тело"}}), 400
+    try:
+        stars = int(body.get("stars"))
+    except (TypeError, ValueError):
+        stars = 0
+    if stars < 1 or stars > 5:
+        return jsonify({"error": {"code": "validation_error", "message": "stars must be 1..5"}}), 400
+    text = (body.get("text") or "").strip()[:_REVIEW_TEXT_MAX]
+    conn = db.get_conn()
+    try:
+        if conn.execute("SELECT 1 FROM decks WHERE id=? AND is_public=1", (deck_id,)).fetchone() is None:
+            return jsonify({"error": {"code": "not_found", "message": "Колода не найдена"}}), 404
+        conn.execute("""
+            INSERT INTO deck_reviews (deck_id, user_id, stars, text) VALUES (?, ?, ?, ?)
+            ON CONFLICT(deck_id, user_id)
+            DO UPDATE SET stars=excluded.stars, text=excluded.text, updated_at=CURRENT_TIMESTAMP
+        """, (deck_id, user["id"], stars, text))
+        conn.commit()
+        row = conn.execute(_REVIEW_SELECT + " WHERE r.deck_id=? AND r.user_id=?",
+                           (deck_id, user["id"])).fetchone()
+    finally:
+        conn.close()
+    return jsonify({"data": _serialize_review(row, user["id"])}), 201
+
+
+@marketplace_bp.route("/decks/<int:deck_id>/reviews", methods=["DELETE"])
+@jwt_auth.jwt_required
+def delete_deck_review(deck_id):
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        conn.execute("DELETE FROM deck_reviews WHERE deck_id=? AND user_id=?", (deck_id, user["id"]))
+        conn.commit()
+    finally:
+        conn.close()
+    return "", 204
+
+
+@marketplace_bp.route("/reviews/<int:review_id>/report", methods=["POST"])
+@jwt_auth.jwt_required
+def report_review(review_id):
+    conn = db.get_conn()
+    try:
+        conn.execute("UPDATE deck_reviews SET reports = reports + 1 WHERE id=?", (review_id,))
+        conn.execute("UPDATE deck_reviews SET is_hidden=1 WHERE id=? AND reports >= ?",
+                     (review_id, _REVIEW_AUTO_HIDE))
+        conn.commit()
+    finally:
+        conn.close()
+    return "", 204
