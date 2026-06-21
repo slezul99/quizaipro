@@ -6,6 +6,7 @@ Klyuch: gemini_key.txt v korne proekta.
 import json
 import os
 import re
+import time
 from pathlib import Path
 from urllib import request as urlreq
 from urllib import error as urlerr
@@ -98,7 +99,27 @@ _FLASHCARD_PHOTO_SCHEMA = {
 }
 
 
-def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | None = None) -> str | None:
+def _log_metric(*, label, model, latency_ms, ok, usage=None, finish=None, error=None):
+    """One structured line per Gemini call → greppable in Railway logs
+    (`grep AI-METRIC`). Captures model, latency, token usage, finishReason and
+    errors so cost/latency/quality can actually be measured per change."""
+    parts = [f"label={label}", f"model={model}", f"ms={latency_ms}", f"ok={int(bool(ok))}"]
+    if usage:
+        parts.append(f"in_tok={usage.get('promptTokenCount', '?')}")
+        parts.append(f"out_tok={usage.get('candidatesTokenCount', '?')}")
+        parts.append(f"tot_tok={usage.get('totalTokenCount', '?')}")
+    if finish:
+        parts.append(f"finish={finish}")
+    if error:
+        parts.append(f"err={str(error)[:120]}")
+    try:
+        print("[AI-METRIC] " + " ".join(parts), flush=True)
+    except Exception:
+        pass
+
+
+def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | None = None,
+                 label: str = "gen") -> str | None:
     key = _key()
     if not key:
         return None
@@ -118,29 +139,43 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
     # Probuyem snachala osnovnuyu model', potom fallback
     last_error = None
     for url_template in [API_URL, API_URL_FALLBACK]:
+        model = url_template.split("/models/")[-1].split(":")[0]
         url = f"{url_template}?key={key}"
         req = urlreq.Request(url, data=data, method="POST",
                              headers={"Content-Type": "application/json"})
+        t0 = time.time()
         try:
             with urlreq.urlopen(req, timeout=90) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
+            ms = int((time.time() - t0) * 1000)
+            usage = payload.get("usageMetadata") or {}
+            cand = (payload.get("candidates") or [{}])[0]
+            finish = cand.get("finishReason")
             # Proverka chto otvet validnyy
             try:
-                text = payload["candidates"][0]["content"]["parts"][0]["text"]
-                if text and text.strip():
-                    return text
-            except (KeyError, IndexError, TypeError) as e:
-                # Mozhet byt' "finishReason": "SAFETY" ili pustoy otvet
-                last_error = f"Empty response: {payload}"
-                print(f"[AI] {last_error[:300]}")
-                continue
+                text = cand["content"]["parts"][0]["text"]
+            except (KeyError, IndexError, TypeError):
+                text = None
+            if text and text.strip():
+                _log_metric(label=label, model=model, latency_ms=ms, ok=True,
+                            usage=usage, finish=finish)
+                return text
+            # Pustoy otvet ili "finishReason": "SAFETY"
+            _log_metric(label=label, model=model, latency_ms=ms, ok=False,
+                        usage=usage, finish=finish, error="empty")
+            last_error = f"Empty response (finish={finish})"
+            print(f"[AI] {last_error[:300]}")
+            continue
         except urlerr.HTTPError as e:
+            ms = int((time.time() - t0) * 1000)
             err_body = ""
             try:
                 err_body = e.read().decode("utf-8", errors="replace")[:300]
             except Exception:
                 pass
-            last_error = f"HTTP {e.code} ({url_template.split('/')[-1].split(':')[0]}): {err_body}"
+            last_error = f"HTTP {e.code} ({model}): {err_body}"
+            _log_metric(label=label, model=model, latency_ms=ms, ok=False,
+                        error=f"HTTP {e.code}: {err_body[:80]}")
             print(f"[AI] {last_error}")
             # Esli 429 (rate limit) ili 503 (overload) — probuyem fallback
             if e.code in (429, 503, 500, 502, 504):
@@ -148,7 +183,9 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
             # Drugie oshibki — vykhodim
             return None
         except Exception as e:
+            ms = int((time.time() - t0) * 1000)
             last_error = f"{type(e).__name__}: {e}"
+            _log_metric(label=label, model=model, latency_ms=ms, ok=False, error=last_error)
             print(f"[AI] {last_error}")
             continue
 
