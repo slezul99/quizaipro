@@ -47,6 +47,78 @@ def _key():
     return ""
 
 
+# === Vertex AI (primary) ===================================================
+# Billed through the GCP project (musi-ai-caa65) so it uses the Cloud credits,
+# unlike the Gemini Developer API key which runs on a separate (empty) prepay
+# balance. Same gemini-3.5-flash model and request body; auth is a Bearer token
+# from a service account instead of ?key=. The Developer API key stays as a
+# fallback when no service account is configured.
+SA_FILE = BASE / "sa_key.json"
+VERTEX_PROJECT = os.environ.get("VERTEX_PROJECT", "musi-ai-caa65")
+VERTEX_LOCATION = os.environ.get("VERTEX_LOCATION", "global")  # gemini-3.5 → global
+_vertex_creds_cache = None
+
+
+def _vertex_sa_info():
+    raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+    if raw:
+        try:
+            return json.loads(raw)
+        except Exception as e:
+            print(f"[Vertex] bad GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+            return None
+    if SA_FILE.exists():
+        try:
+            return json.loads(SA_FILE.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"[Vertex] bad sa_key.json: {e}")
+            return None
+    return None
+
+
+def _vertex_creds():
+    global _vertex_creds_cache
+    if _vertex_creds_cache is not None:
+        return _vertex_creds_cache
+    info = _vertex_sa_info()
+    if not info:
+        return None
+    try:
+        from google.oauth2 import service_account
+        _vertex_creds_cache = service_account.Credentials.from_service_account_info(
+            info, scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        return _vertex_creds_cache
+    except Exception as e:
+        print(f"[Vertex] creds load failed: {e}")
+        return None
+
+
+def vertex_enabled() -> bool:
+    return _vertex_creds() is not None
+
+
+def _vertex_token():
+    creds = _vertex_creds()
+    if creds is None:
+        return None
+    try:
+        from google.auth.transport.requests import Request as _GReq
+        if not creds.valid:
+            creds.refresh(_GReq())
+        return creds.token
+    except Exception as e:
+        print(f"[Vertex] token refresh failed: {e}")
+        return None
+
+
+def _vertex_url(model: str, stream: bool = False) -> str:
+    loc = VERTEX_LOCATION
+    host = "aiplatform.googleapis.com" if loc == "global" else f"{loc}-aiplatform.googleapis.com"
+    method = "streamGenerateContent" if stream else "generateContent"
+    return (f"https://{host}/v1/projects/{VERTEX_PROJECT}/locations/{loc}"
+            f"/publishers/google/models/{model}:{method}")
+
+
 def _deepseek_key():
     """DeepSeek API klyuch. ENV var DEEPSEEK_API_KEY (Railway) ili lokal'nyy fayl."""
     env_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
@@ -63,7 +135,7 @@ def is_deepseek_available() -> bool:
 
 
 def is_available() -> bool:
-    return bool(_key())
+    return vertex_enabled() or bool(_key())
 
 
 # Controlled-generation schema for flashcard output. With this set, Gemini is
@@ -143,11 +215,24 @@ def _log_metric(*, label, model, latency_ms, ok, usage=None, finish=None, error=
         pass
 
 
+def _gemini_endpoints():
+    """Endpoints to try in order: Vertex AI first (billed via Cloud credits),
+    Developer API key as fallback. Each item is (model_label, url, headers)."""
+    attempts = []
+    if vertex_enabled():
+        tok = _vertex_token()
+        if tok:
+            attempts.append((f"vertex:{_GEMINI_MODEL}", _vertex_url(_GEMINI_MODEL),
+                             {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}))
+    key = _key()
+    if key:
+        attempts.append((f"dev:{_GEMINI_MODEL}", f"{API_URL}?key={key}",
+                         {"Content-Type": "application/json"}))
+    return attempts
+
+
 def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | None = None,
                  label: str = "gen") -> str | None:
-    key = _key()
-    if not key:
-        return None
     gen_config = {
         "temperature": 0.5,
         "maxOutputTokens": max_tokens,
@@ -156,18 +241,20 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
     if response_schema is not None:
         gen_config["responseSchema"] = response_schema
     body = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        # role is required by Vertex AI; the Developer API ignores it.
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": gen_config,
     }
     data = json.dumps(body).encode("utf-8")
 
-    # Probuyem snachala osnovnuyu model', potom fallback
+    attempts = _gemini_endpoints()
+    if not attempts:
+        return None
+
+    # Vertex first, Developer-key fallback.
     last_error = None
-    for url_template in [API_URL, API_URL_FALLBACK]:
-        model = url_template.split("/models/")[-1].split(":")[0]
-        url = f"{url_template}?key={key}"
-        req = urlreq.Request(url, data=data, method="POST",
-                             headers={"Content-Type": "application/json"})
+    for model, url, headers in attempts:
+        req = urlreq.Request(url, data=data, method="POST", headers=headers)
         t0 = time.time()
         try:
             with urlreq.urlopen(req, timeout=90) as resp:
@@ -176,7 +263,6 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
             usage = payload.get("usageMetadata") or {}
             cand = (payload.get("candidates") or [{}])[0]
             finish = cand.get("finishReason")
-            # Proverka chto otvet validnyy
             try:
                 text = cand["content"]["parts"][0]["text"]
             except (KeyError, IndexError, TypeError):
@@ -185,7 +271,6 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
                 _log_metric(label=label, model=model, latency_ms=ms, ok=True,
                             usage=usage, finish=finish)
                 return text
-            # Pustoy otvet ili "finishReason": "SAFETY"
             _log_metric(label=label, model=model, latency_ms=ms, ok=False,
                         usage=usage, finish=finish, error="empty")
             last_error = f"Empty response (finish={finish})"
@@ -202,11 +287,8 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
             _log_metric(label=label, model=model, latency_ms=ms, ok=False,
                         error=f"HTTP {e.code}: {err_body[:80]}")
             print(f"[AI] {last_error}")
-            # Esli 429 (rate limit) ili 503 (overload) — probuyem fallback
-            if e.code in (429, 503, 500, 502, 504):
-                continue
-            # Drugie oshibki — vykhodim
-            return None
+            # Try the next endpoint (e.g. Vertex 403/quota → Developer key).
+            continue
         except Exception as e:
             ms = int((time.time() - t0) * 1000)
             last_error = f"{type(e).__name__}: {e}"
@@ -214,9 +296,7 @@ def _call_gemini(prompt: str, max_tokens: int = 4000, response_schema: dict | No
             print(f"[AI] {last_error}")
             continue
 
-    # Vse modeli zafailili
     if last_error:
-        # Probrasyvayem oshibku v vyzyvayushchiy kod chtoby flash pokazal pol'zovatelyu
         raise RuntimeError(f"Gemini API недоступен: {last_error[:200]}")
     return None
 
@@ -699,11 +779,6 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
     prompt: kastomnyy promt (po default — VISION_EXTRACT_PROMPT).
     Probuet snachala gemini-3.5-flash (samaya posledniaya), potom gemini-2.5-flash (fallback)."""
     global _last_gemini_error
-    key = _key()
-    if not key:
-        _last_gemini_error = "GEMINI_API_KEY ne nastroen"
-        print("[AI vision] NO KEY — set GEMINI_API_KEY env var")
-        return None
     import base64
     parts = [{"text": prompt or VISION_EXTRACT_PROMPT}]
     for png in images:
@@ -714,7 +789,7 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
             }
         })
     body = {
-        "contents": [{"parts": parts}],
+        "contents": [{"role": "user", "parts": parts}],  # role required by Vertex
         "generationConfig": {
             "temperature": 0.1,
             "maxOutputTokens": 16000,
@@ -724,51 +799,48 @@ def _gemini_vision_call(images: list[bytes], timeout: int = 240, prompt: str = N
     data = json.dumps(body).encode("utf-8")
     print(f"[AI vision] sending {len(images)} images, body size: {len(data)//1024}KB")
 
+    endpoints = _gemini_endpoints()  # Vertex first (credits), Developer key fallback
+    if not endpoints:
+        _last_gemini_error = "net AI endpoint (Vertex SA / GEMINI_API_KEY ne nastroeny)"
+        print("[AI vision] " + _last_gemini_error)
+        return None
+
     last_err = None
-    # Probuyem 2 modeli: 2.0-flash (1500 RPD) -> 2.5-flash (250 RPD)
-    for model_idx, url_base in enumerate([API_URL_VISION_PRIMARY, API_URL_VISION_FALLBACK]):
-        model_name = url_base.split("/models/")[-1].split(":")[0]
-        url = f"{url_base}?key={key}"
-        for attempt in range(2):  # 2 retry na model'
-            req = urlreq.Request(url, data=data, method="POST",
-                                 headers={"Content-Type": "application/json"})
+    for model, url, headers in endpoints:
+        for attempt in range(2):  # 2 retry per endpoint (for 5xx)
+            req = urlreq.Request(url, data=data, method="POST", headers=headers)
             try:
                 with urlreq.urlopen(req, timeout=timeout) as resp:
                     payload = json.loads(resp.read().decode("utf-8"))
-                text = payload["candidates"][0]["content"]["parts"][0]["text"]
+                cand = (payload.get("candidates") or [{}])[0]
+                text = cand.get("content", {}).get("parts", [{}])[0].get("text")
                 if text and text.strip():
-                    print(f"[AI vision] OK on {model_name}, response {len(text)} chars")
+                    print(f"[AI vision] OK on {model}, response {len(text)} chars")
                     return text
                 last_err = f"empty response: {str(payload)[:200]}"
-                print(f"[AI vision] {model_name}: {last_err}")
+                print(f"[AI vision] {model}: {last_err}")
+                break  # empty → try next endpoint
             except urlerr.HTTPError as e:
                 err_body = ""
                 try:
                     err_body = e.read().decode("utf-8", errors="replace")[:500]
                 except Exception:
                     pass
-                last_err = f"{model_name} HTTP {e.code}: {err_body[:300]}"
+                last_err = f"{model} HTTP {e.code}: {err_body[:300]}"
                 _last_gemini_error = last_err
-                print(f"[AI vision] {model_name} attempt {attempt+1}/2: HTTP {e.code}: {err_body[:300]}")
-                if e.code == 429:
-                    # Rate limit — perehodim k sleduyushchey modeli
-                    print(f"[AI vision] {model_name} rate limited, switching to next model")
-                    break
+                print(f"[AI vision] {model} attempt {attempt+1}/2: HTTP {e.code}: {err_body[:200]}")
                 if e.code in (503, 500, 502, 504):
-                    import time
                     time.sleep(3 + attempt * 3)
                     continue
-                # Drugie HTTP oshibki (401, 403, 400) — probuyem fallback model'
-                break
+                break  # 429 / 4xx → next endpoint
             except Exception as e:
-                last_err = f"{model_name} {type(e).__name__}: {e}"
+                last_err = f"{model} {type(e).__name__}: {e}"
                 _last_gemini_error = last_err
-                print(f"[AI vision] {model_name} attempt {attempt+1}/2: {last_err}")
-                import time
+                print(f"[AI vision] {model} attempt {attempt+1}/2: {last_err}")
                 time.sleep(2)
                 continue
 
-    print(f"[AI vision] FAILED on all models: {last_err}")
+    print(f"[AI vision] FAILED on all endpoints: {last_err}")
     return None
 
 
@@ -1121,8 +1193,8 @@ def vision_pdf_to_cards(pdf_path: Path, lang: str = "ru",
     images = _pdf_to_images(pdf_path, max_pages=max_pages, dpi=175)
     if not images:
         raise RuntimeError("Не удалось отрендерить страницы PDF (PyMuPDF). Возможно, файл повреждён.")
-    if not _key():
-        raise RuntimeError("Gemini API ключ не настроен на сервере.")
+    if not is_available():
+        raise RuntimeError("AI не настроен на сервере (нет Vertex service account или GEMINI_API_KEY).")
 
     total_pages = len(images)
     all_cards = []
@@ -1548,39 +1620,33 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
 ПРАВИЛЬНЫЙ ОТВЕТ: {clean_answer}
 
 Объяснение:"""
-    key = _key()
-    if not key:
-        return None
     body = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {
             "temperature": 0.4,
-            "maxOutputTokens": 500,
+            # gemini-3.5-flash spends output budget on "thinking" first; a low
+            # cap (was 500) gets fully consumed by thinking → empty reply.
+            "maxOutputTokens": 2000,
         },
     }
     data = json.dumps(body).encode("utf-8")
 
-    # Probuyem 2 modeli: snachala flash-lite (besplatno), potom flash (esli rate-limit)
-    for url_template in (API_URL, API_URL_FALLBACK):
-        url = f"{url_template}?key={key}"
-        req = urlreq.Request(url, data=data, method="POST",
-                             headers={"Content-Type": "application/json"})
+    # Vertex first (Cloud credits), Developer key fallback.
+    for model, url, headers in _gemini_endpoints():
+        req = urlreq.Request(url, data=data, method="POST", headers=headers)
         try:
-            with urlreq.urlopen(req, timeout=30) as resp:
+            with urlreq.urlopen(req, timeout=40) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
-            text = payload["candidates"][0]["content"]["parts"][0]["text"].strip()
+            cand = (payload.get("candidates") or [{}])[0]
+            text = (cand.get("content", {}).get("parts", [{}])[0].get("text") or "").strip()
             if text:
                 return text
         except urlerr.HTTPError as e:
-            if e.code == 429:
-                print(f"[AI explain] {url_template.split('/models/')[1][:30]} -> 429, fallback")
-                continue
-            err_body = e.read().decode("utf-8", errors="replace")[:200]
-            print(f"[AI explain] HTTP {e.code}: {err_body}")
-            return None
+            print(f"[AI explain] {model} HTTP {e.code} — fallback")
+            continue
         except Exception as e:
-            print(f"[AI explain] {type(e).__name__}: {e}")
-            return None
+            print(f"[AI explain] {model} {type(e).__name__}: {e}")
+            continue
     return None
 
 
@@ -1621,7 +1687,7 @@ def diagnose_mistake(question: str, chosen: str, correct: str, lang: str = "ru")
 Говори по существу, без вступлений. Если ответ студента пуст — считай, что он не ответил."""
 
     try:
-        raw = _call_gemini(prompt, max_tokens=900)
+        raw = _call_gemini(prompt, max_tokens=2000)
     except Exception as e:
         print(f"[AI diagnose] {type(e).__name__}: {e}")
         return None
@@ -1670,7 +1736,7 @@ def generate_followup(question: str, correct: str, misconception: str = "", lang
 Ровно 4 варианта. correct_index — индекс (0-3) правильного варианта. Варианты короткие и правдоподобные."""
 
     try:
-        raw = _call_gemini(prompt, max_tokens=900)
+        raw = _call_gemini(prompt, max_tokens=2000)
     except Exception as e:
         print(f"[AI followup] {type(e).__name__}: {e}")
         return None
@@ -1724,7 +1790,7 @@ def find_answers(question: str, deck_context: str = "", lang: str = "ru") -> dic
 key_points — это 2-5 коротких (до 12 слов) тезисов, которые стоит запомнить."""
 
     try:
-        raw = _call_gemini(prompt, max_tokens=1200)
+        raw = _call_gemini(prompt, max_tokens=2000)
     except Exception as e:
         print(f"[AI find-answers] {type(e).__name__}: {e}")
         return None
@@ -1916,36 +1982,51 @@ def _deepseek_chat_call(system_prompt: str, messages: list, max_tokens: int = 80
 
 def _gemini_stream(full_prompt: str, max_tokens: int = 4000, temperature: float = 0.7):
     """Streams gemini-3.5-flash output token-by-token via streamGenerateContent
-    (SSE). Yields text deltas; silent (no yields) on failure."""
-    key = _key()
-    if not key:
-        return
+    (SSE). Tries Vertex AI first (Cloud credits), Developer key as fallback.
+    Yields text deltas; silent (no yields) on failure."""
     body = {
-        "contents": [{"parts": [{"text": full_prompt}]}],
+        "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
         "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
     }
     data = json.dumps(body).encode("utf-8")
-    url = f"{API_URL_STREAM}?alt=sse&key={key}"
-    req = urlreq.Request(url, data=data, method="POST",
-                         headers={"Content-Type": "application/json"})
-    try:
-        with urlreq.urlopen(req, timeout=90) as resp:
-            for raw in resp:
-                line = raw.decode("utf-8", errors="replace").strip()
-                if not line.startswith("data:"):
-                    continue
-                payload = line[5:].strip()
-                if not payload or payload == "[DONE]":
-                    continue
-                try:
-                    obj = json.loads(payload)
-                    text = obj["candidates"][0]["content"]["parts"][0]["text"]
-                    if text:
-                        yield text
-                except (KeyError, IndexError, TypeError, json.JSONDecodeError):
-                    continue
-    except Exception as e:
-        print(f"[AI tutor stream Gemini] {type(e).__name__}: {e}")
+
+    endpoints = []
+    if vertex_enabled():
+        tok = _vertex_token()
+        if tok:
+            endpoints.append((f"{_vertex_url(_GEMINI_MODEL, stream=True)}?alt=sse",
+                              {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}))
+    key = _key()
+    if key:
+        endpoints.append((f"{API_URL_STREAM}?alt=sse&key={key}",
+                          {"Content-Type": "application/json"}))
+
+    for url, headers in endpoints:
+        yielded_any = False
+        try:
+            req = urlreq.Request(url, data=data, method="POST", headers=headers)
+            with urlreq.urlopen(req, timeout=90) as resp:
+                for raw in resp:
+                    line = raw.decode("utf-8", errors="replace").strip()
+                    if not line.startswith("data:"):
+                        continue
+                    payload = line[5:].strip()
+                    if not payload or payload == "[DONE]":
+                        continue
+                    try:
+                        obj = json.loads(payload)
+                        text = obj["candidates"][0]["content"]["parts"][0]["text"]
+                        if text:
+                            yielded_any = True
+                            yield text
+                    except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+                        continue
+            return  # stream finished cleanly on this endpoint
+        except Exception as e:
+            print(f"[AI tutor stream] {type(e).__name__}: {e}")
+            if yielded_any:
+                return  # already streamed from this endpoint — don't duplicate
+            # otherwise fall through to the next endpoint
 
 
 def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "", learner_context: str = "") -> str | None:
@@ -1984,11 +2065,9 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     full_prompt_parts.append("Репетитор:")
     full_prompt = "\n".join(full_prompt_parts)
 
-    key = _key()
-    if not key:
-        return None
     body = {
-        "contents": [{"parts": [{"text": full_prompt}]}],
+        # Plain-text reply (no responseMimeType). role required by Vertex.
+        "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
         "generationConfig": {
             "temperature": 0.7,
             "maxOutputTokens": 4000,
@@ -1996,23 +2075,22 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     }
     data = json.dumps(body).encode("utf-8")
 
-    for url_template in (API_URL, API_URL_FALLBACK):
-        url = f"{url_template}?key={key}"
-        req = urlreq.Request(url, data=data, method="POST",
-                             headers={"Content-Type": "application/json"})
+    # Vertex first (Cloud credits), Developer key fallback.
+    for model, url, headers in _gemini_endpoints():
         try:
-            with urlreq.urlopen(req, timeout=30) as resp:
+            req = urlreq.Request(url, data=data, method="POST", headers=headers)
+            with urlreq.urlopen(req, timeout=60) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
-            return payload["candidates"][0]["content"]["parts"][0]["text"].strip()
+            cand = (payload.get("candidates") or [{}])[0]
+            txt = (cand.get("content", {}).get("parts", [{}])[0].get("text") or "").strip()
+            if txt:
+                return txt
         except urlerr.HTTPError as e:
-            if e.code == 429:
-                print(f"[AI tutor Gemini] {url_template.split('/models/')[1][:30]} -> 429, probuem fallback")
-                continue
-            print(f"[AI tutor Gemini] HTTP {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}")
-            return None
+            print(f"[AI tutor Gemini] {model} HTTP {e.code} — fallback")
+            continue
         except Exception as e:
-            print(f"[AI tutor Gemini] {type(e).__name__}: {e}")
-            return None
+            print(f"[AI tutor Gemini] {model} {type(e).__name__}: {e}")
+            continue
     return None
 
 
