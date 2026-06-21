@@ -402,6 +402,9 @@ def post_stream_message():
                     if cards:
                         deck_context = "\n".join(f"- {c['front']} → {c['back']}" for c in cards)
 
+        # Learner model (RAG): the user's weakest cards, for personalisation.
+        learner_context = db.tutor_learner_context(conn, user["id"])
+
         # History BEFORE the new user message — chat_tutor_stream appends
         # the current `content` itself (see _build_tutor_prompt).
         history_rows = conn.execute(
@@ -422,7 +425,7 @@ def post_stream_message():
     def _generate():
         chunks = []
         try:
-            for chunk in ai_gen.chat_tutor_stream(content, deck_context=deck_context, history=history, lang=lang):
+            for chunk in ai_gen.chat_tutor_stream(content, deck_context=deck_context, history=history, lang=lang, learner_context=learner_context):
                 if chunk:
                     chunks.append(chunk)
                     yield _sse_event({"delta": chunk})

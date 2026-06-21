@@ -6008,6 +6008,8 @@ def api_tutor_ask():
         "SELECT role, content FROM tutor_messages WHERE conversation_id=? ORDER BY created_at ASC",
         (conv_id,)
     ).fetchall()
+    # Learner model (RAG): the user's weakest cards, for personalisation.
+    learner_context = db.tutor_learner_context(conn, user["id"])
     conn.close()
     history = [{"role": m["role"], "content": m["content"]} for m in db_msgs]
 
@@ -6038,6 +6040,7 @@ def api_tutor_ask():
                     history=history,
                     lang=lang,
                     provider=provider_override,
+                    learner_context=learner_context,
                 ):
                     full.append(chunk)
                     yield chunk
@@ -6060,6 +6063,7 @@ def api_tutor_ask():
         history=history,
         lang=lang,
         provider=provider_override,
+        learner_context=learner_context,
     )
     if not answer:
         return jsonify({"error": "ai_failed", "msg": "AI не отвечает. Попробуйте позже."}), 500

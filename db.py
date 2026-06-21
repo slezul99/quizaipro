@@ -1141,5 +1141,40 @@ def init_db():
     print(f"[DB] Initialized: {DB_PATH}")
 
 
+def tutor_learner_context(conn, user_id, limit=6):
+    """Compact text of the cards this user struggles with most, from the
+    spaced-repetition signal (lapses / low last grade). Feeds the AI tutor so it
+    can personalise. Returns "" when there's nothing notable. Never raises."""
+    try:
+        rows = conn.execute(
+            """SELECT c.front AS front,
+                      COALESCE(p.lapses, 0) AS lapses,
+                      COALESCE(p.last_grade, 5) AS last_grade
+               FROM user_card_progress p
+               JOIN cards c ON c.id = p.card_id
+               WHERE p.user_id = ?
+                 AND (COALESCE(p.lapses, 0) > 0 OR COALESCE(p.last_grade, 5) <= 2)
+               ORDER BY COALESCE(p.lapses, 0) DESC,
+                        COALESCE(p.last_grade, 5) ASC,
+                        COALESCE(p.reviews, 0) DESC
+               LIMIT ?""",
+            (user_id, limit),
+        ).fetchall()
+    except Exception as e:
+        print(f"[tutor_learner_context] {type(e).__name__}: {e}")
+        return ""
+    lines = []
+    for r in rows:
+        front = (r["front"] or "").strip().replace("\n", " ")[:120]
+        if not front:
+            continue
+        lapses = r["lapses"] or 0
+        if lapses > 0:
+            lines.append(f'- "{front}" — ошибался {lapses} раз(а)')
+        else:
+            lines.append(f'- "{front}" — даётся трудно')
+    return "\n".join(lines)
+
+
 if __name__ == "__main__":
     init_db()

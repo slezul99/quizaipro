@@ -1707,7 +1707,7 @@ key_points — это 2-5 коротких (до 12 слов) тезисов, к
     return {"explanation": explanation, "key_points": key_points}
 
 
-def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru") -> tuple[str, list]:
+def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", learner_context: str = "") -> tuple[str, list]:
     """Stroit system prompt + soobshcheniya v formate ChatML."""
     history = history or []
 
@@ -1762,6 +1762,17 @@ def _build_tutor_prompt(user_message: str, deck_context: str = "", history: list
 
     if deck_context:
         system_prompt += f"\n\n---\n\n## Контекст текущей колоды пользователя:\n{deck_context[:2000]}"
+
+    # Learner model (RAG over the user's spaced-repetition data): the cards they
+    # struggle with most. Lets the tutor personalise — reference weak topics,
+    # suggest what to review — instead of being a generic chatbot.
+    if learner_context:
+        system_prompt += (
+            "\n\n---\n\n## Слабые места этого ученика (по интервальному повторению):\n"
+            f"{learner_context[:1500]}\n"
+            "Учитывай это: если тема релевантна — мягко свяжи объяснение с этими "
+            "пробелами и предложи повторить их. Не перечисляй их механически."
+        )
 
     # Esli istoriya dlinnaya — dobavlyaem pervoe soobshchenie kak kontekst temy
     if len(history) > 10:
@@ -1891,12 +1902,12 @@ def _gemini_stream(full_prompt: str, max_tokens: int = 4000, temperature: float 
         print(f"[AI tutor stream Gemini] {type(e).__name__}: {e}")
 
 
-def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "") -> str | None:
+def chat_tutor(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "", learner_context: str = "") -> str | None:
     """AI-tutor: chat-bot kotoryy znayet o tekuschey kolode i mozhet podrobno ob'yasnyat'.
 
     provider: "" (avto: DeepSeek -> Gemini fallback), "deepseek", "gemini" — yavnyy vybor.
     """
-    system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
+    system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang, learner_context)
 
     # DeepSeek only ever runs when it's actually enabled (is_deepseek_available).
     # While it's disabled the whole app is on gemini-3.5-flash, so even an
@@ -1959,12 +1970,12 @@ def chat_tutor(user_message: str, deck_context: str = "", history: list = None, 
     return None
 
 
-def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = ""):
+def chat_tutor_stream(user_message: str, deck_context: str = "", history: list = None, lang: str = "ru", provider: str = "", learner_context: str = ""):
     """Streaming-versiya tutor'a. Yield-it text chunki po mere generatsii.
 
     provider: "" (avto), "deepseek" (tolko DeepSeek), "gemini" (tolko Gemini).
     """
-    system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang)
+    system_prompt, messages = _build_tutor_prompt(user_message, deck_context, history, lang, learner_context)
 
     # DeepSeek only ever runs when it's actually enabled (is_deepseek_available).
     # While it's disabled the whole app is on gemini-3.5-flash, so even an
