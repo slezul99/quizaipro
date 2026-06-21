@@ -51,7 +51,7 @@
         {% endif %}
         <div class="flex flex-wrap gap-3 mt-5 items-center">
           <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">
-            📚 {{ decks|length }} {{ t('test_card_count_word') if decks|length != 1 else t('test_card_count_word') }}
+            📚 {{ decks|length }} {{ npl(decks|length, 'mk_decks') }}
           </span>
           {% if coll.level %}
           <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">
@@ -79,7 +79,7 @@
         <div class="flex items-start justify-between mb-3">
           <div class="text-3xl">{{ d.icon }}</div>
           <div class="flex flex-col items-end gap-1">
-            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
             {% if d.clones_count and d.clones_count > 0 %}
             <span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1">
               📥 {{ d.clones_count }}
@@ -111,7 +111,7 @@
             <a href="/deck/{{ d.id }}/flashcards"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 hover:shadow-md"
               style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
-              🃏 Flashcards
+              🃏 {{ t('mk_flashcards') }}
             </a>
             {% elif _is_mcq %}
             <a href="/deck/{{ d.id }}/test?count=10&shuffle=1"
@@ -123,7 +123,7 @@
             <a href="/deck/{{ d.id }}/flashcards"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 hover:shadow-md"
               style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
-              🃏 Flashcards
+              🃏 {{ t('mk_flashcards') }}
             </a>
             {% endif %}
             {# Clone button — clean icon with proper tooltip #}

@@ -126,8 +126,8 @@
             {% if c.desc %}<p class="text-white/70 text-sm line-clamp-2 mb-3">{{ c.desc }}</p>{% endif %}
             <div class="flex items-center justify-between mt-2">
               <div class="flex gap-2 flex-wrap">
-                <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ t('mk_decks_word') }}</span>
-                {% if c.card_count %}<span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">🃏 {{ c.card_count }} {{ t('mk_cards_word') }}</span>{% endif %}
+                <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ npl(c.deck_count, 'mk_decks') }}</span>
+                {% if c.card_count %}<span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">🃏 {{ c.card_count }} {{ npl(c.card_count, 'mk_questions') }}</span>{% endif %}
               </div>
             </div>
             {% if c.tags %}
@@ -152,7 +152,7 @@
             <a href="/deck/{{ c.first_terms_deck_id }}/flashcards"
               class="flex-1 min-w-0 text-center px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-indigo-700 font-bold text-xs transition-all hover:shadow-lg whitespace-nowrap"
               onclick="event.stopPropagation()">
-              🃏 Flashcards
+              🃏 {{ t('mk_flashcards') }}
             </a>
             {% endif %}
           </div>

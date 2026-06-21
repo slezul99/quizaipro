@@ -53,7 +53,7 @@
           <div class="flex items-start justify-between mb-3">
             <div class="text-3xl">{{ d.icon }}</div>
             <div class="flex flex-col items-end gap-1">
-              <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
               {% if d.clones_count and d.clones_count > 0 %}
               <span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-[11px] font-bold">📥 {{ d.clones_count }}</span>
               {% endif %}
@@ -118,7 +118,7 @@
           {% if c.desc %}<p class="text-white/70 text-sm line-clamp-2 mb-3">{{ c.desc }}</p>{% endif %}
           <div class="flex items-center justify-between">
             <div class="flex gap-2 flex-wrap">
-              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ t('mk_decks_word') }}</span>
+              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ npl(c.deck_count, 'mk_decks') }}</span>
               {% if c.level %}
               <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">
                 {% if c.level == 'beginner' %}🟢{% elif c.level == 'intermediate' %}🟡{% else %}🔴{% endif %} {{ c.level|capitalize }}

@@ -45,7 +45,7 @@
           </div>
           <a href="/deck/{{ d.id }}" class="block flex-1">
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ d.name }}</h3>
-            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ t('test_card_count_word') }}</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
           </a>
           <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
             {% if d.author and d.author != 'quizaipro_system' %}
@@ -97,7 +97,7 @@
           <div class="font-black text-base leading-tight relative z-10 mb-2">{{ s.title }}</div>
           <div class="flex gap-2 relative z-10 flex-wrap justify-center">
             <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-semibold">
-              {{ s.coll_count }} {{ t('mk_decks_word') }}
+              {{ s.coll_count }} {{ npl(s.coll_count, 'mk_decks') }}
             </span>
           </div>
         </a>
@@ -127,7 +127,7 @@
             <h3 class="font-black text-lg leading-tight mb-1">{{ c.title }}</h3>
             {% if c.desc %}<p class="text-white/70 text-sm line-clamp-2 mb-3">{{ c.desc }}</p>{% endif %}
             <div class="flex items-center justify-between">
-              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ t('mk_decks_word') }}</span>
+              <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ npl(c.deck_count, 'mk_decks') }}</span>
               <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold group-hover:bg-white/35 transition-all">→</div>
             </div>
           </div>

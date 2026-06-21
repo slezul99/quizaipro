@@ -419,6 +419,27 @@ def t(key):
     return i18n.get(lang, key)
 
 
+def _plural_form(n, lang):
+    """Pick the plural category for `n`. Russian has three (1 / 2-4 / 5+);
+    en/uz collapse to singular vs plural (Uzbek leaves the noun unchanged, so
+    its 'many' form simply holds the base word)."""
+    n = abs(int(n))
+    if lang == "ru":
+        if n % 10 == 1 and n % 100 != 11:
+            return "one"
+        if 2 <= n % 10 <= 4 and not (12 <= n % 100 <= 14):
+            return "few"
+        return "many"
+    return "one" if n == 1 else "many"
+
+
+def npl(n, key):
+    """Localized count noun: returns the i18n value for `{key}_{one|few|many}`,
+    chosen by the current language's plural rules. e.g. npl(1,'mk_decks') -> 'колода'."""
+    lang = session.get("lang", "ru")
+    return i18n.get(lang, f"{key}_{_plural_form(n, lang)}")
+
+
 @app.context_processor
 def inject_globals():
     user = current_user()
@@ -501,6 +522,7 @@ def inject_globals():
     return {
         "current_user": user,
         "t": t,
+        "npl": npl,
         "lang": session.get("lang", "ru"),
         "all_langs": [("ru", "Русский"), ("en", "English"), ("uz", "Oʻzbek")],
         "has_google": config.has_google(),

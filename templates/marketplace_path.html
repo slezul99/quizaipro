@@ -65,7 +65,7 @@
               {{ step.title or step.coll_title or step.coll_slug }}
             </div>
             {% if step.coll_deck_count %}
-            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📚 {{ step.coll_deck_count }} {{ t('mk_decks_word') }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📚 {{ step.coll_deck_count }} {{ npl(step.coll_deck_count, 'mk_decks') }}</div>
             {% endif %}
           </div>
           <div class="text-slate-400 group-hover:text-indigo-500 transition font-bold">→</div>

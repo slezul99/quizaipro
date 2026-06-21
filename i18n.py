@@ -223,6 +223,13 @@ T = {
         "user_centre": "Учебный центр",
         "delete_deck_q": "Удалить колоду?",
         "test_card_count_word": "вопросов",
+        "mk_decks_one": "колода",
+        "mk_decks_few": "колоды",
+        "mk_decks_many": "колод",
+        "mk_questions_one": "вопрос",
+        "mk_questions_few": "вопроса",
+        "mk_questions_many": "вопросов",
+        "mk_flashcards": "Флешкарты",
         "all_total": "всего",
         # === Landing page ===
         # SEO h1 (skrytyy vizual'no, no chitaetsya Google i screen-readers)
@@ -2043,6 +2050,13 @@ T = {
         "user_centre": "Learning center",
         "delete_deck_q": "Delete deck?",
         "test_card_count_word": "questions",
+        "mk_decks_one": "deck",
+        "mk_decks_few": "decks",
+        "mk_decks_many": "decks",
+        "mk_questions_one": "question",
+        "mk_questions_few": "questions",
+        "mk_questions_many": "questions",
+        "mk_flashcards": "Flashcards",
         "all_total": "total",
         # === Landing page ===
         # SEO h1 (visually hidden, read by Google and screen readers)
@@ -3853,6 +3867,13 @@ T = {
         "user_centre": "Oʻquv markazi",
         "delete_deck_q": "Toʻplam oʻchirilsinmi?",
         "test_card_count_word": "savol",
+        "mk_decks_one": "to'plam",
+        "mk_decks_few": "to'plam",
+        "mk_decks_many": "to'plam",
+        "mk_questions_one": "savol",
+        "mk_questions_few": "savol",
+        "mk_questions_many": "savol",
+        "mk_flashcards": "Fleshkartalar",
         "all_total": "jami",
         # === Landing page ===
         # SEO h1 (vizual yashirin, Google va screen reader uchun)
