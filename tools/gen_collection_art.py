@@ -59,6 +59,22 @@ PROMPTS = {
     "english-toefl": ("A passport, a small airplane model and a torch/statue "
                       "silhouette evoking American English travel, with an exam "
                       "booklet, red and white tones." + _COMMON),
+    # Mathematics subject collections
+    "math-algebra": ("Glossy 3D mathematical symbols — a plus sign, an equals "
+                     "sign and x/y variables — beside a smooth parabola curve "
+                     "graph, algebra theme, purple and violet tones." + _COMMON),
+    "math-geometry": ("Glossy 3D geometric solids — a cube, a cone, a sphere and "
+                      "a pyramid — with a ruler and a protractor, geometry theme, "
+                      "blue tones." + _COMMON),
+    "math-calculus": ("A glossy 3D integral symbol and a smooth curve with the "
+                      "area under it shaded, plus a limit notation, higher "
+                      "mathematics / calculus theme, red and crimson tones." + _COMMON),
+    "math-statistics": ("A 3D bar chart, a pie chart and a bell-curve distribution "
+                        "graph together, statistics and data theme, orange and "
+                        "amber tones." + _COMMON),
+    "math-exam-prep": ("A clipboard with a checklist and green check marks, a "
+                       "pencil and an eraser, math exam preparation theme, warm "
+                       "tones." + _COMMON),
 }
 
 
