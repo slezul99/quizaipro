@@ -410,6 +410,14 @@
   /* Demo card dark */
   html.dark .demo-front { background: rgba(30,41,75,0.9); border-color: rgba(99,102,241,0.3); color: #f1f5f9; }
   html.dark .demo-stat { background: rgba(30,41,75,0.7); border-color: rgba(99,102,241,0.2); }
+  /* The demo panels flip to dark navy in dark mode, but their text uses fixed
+     slate utilities (text-slate-900 headings, slate-600/500 captions) that
+     were near-invisible on the dark panel. Re-map them for readable contrast. */
+  html.dark .demo-stat .text-slate-900 { color: #f1f5f9; }
+  /* !important to beat the page-wide `html.dark .text-slate-500{…!important}`
+     rule, which is too dark to read on the navy demo panel. */
+  html.dark .demo-stat .text-slate-600,
+  html.dark .demo-stat .text-slate-500 { color: #94a3b8 !important; }
   html.dark .demo-q { color: #f1f5f9; }
   /* CTA section dark */
   html.dark .text-2xl.text-gray-600 { color: #94a3b8 !important; }
