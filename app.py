@@ -9647,11 +9647,30 @@ try:
 except Exception as _e:
     print(f"[INIT] Force refresh error: {_e}")
 
+# Mini-topic decks (extra 10-question decks per collection) from
+# minitopics_<subject>.json. Runs BEFORE the i18n auto-apply so the new RU
+# cards get their en/uz filled. Idempotent.
+try:
+    _conn = db.get_conn()
+    _mt = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='minitopics_seed_v1'").fetchone()
+    _conn.close()
+    if not _mt:
+        print("[INIT] Seeding mini-topic decks ...")
+        import seed_minitopics  # noqa: F401  (side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('minitopics_seed_v1')")
+        _conn.commit()
+        _conn.close()
+except Exception as _e:
+    print(f"[INIT] Mini-topics seed error: {_e}")
+
 # Apply AI-generated marketplace card translations (ru/en/uz) once.
 try:
     _conn = db.get_conn()
     _i18n = _conn.execute(
-        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v3'"
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v4'"
     ).fetchone()
     _conn.close()
     if not _i18n:
@@ -9659,7 +9678,7 @@ try:
         import seed_marketplace_i18n_auto  # noqa: F401  (side effect)
         _conn = db.get_conn()
         _conn.execute(
-            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v3')"
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v4')"
         )
         _conn.commit()
         _conn.close()
