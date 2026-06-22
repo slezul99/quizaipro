@@ -79,6 +79,95 @@
       </a>
     </div>
 
+    <!-- ============ ACTIONS BAR (compact, only individuals) ============ -->
+    {% if current_user.role == 'individual' and decks %}
+    <div class="flex gap-2 mb-6 flex-wrap">
+      <button @click="showNew = true" class="btn-premium" data-tour="new-deck-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('new_deck_btn') }}</button>
+      <a href="/import" class="btn-premium-ghost" data-tour="import-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('import_file') }}</a>
+      {% if ai_available %}
+      <a href="/ai" class="btn-premium-ghost" data-tour="ai-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('ai_generation') }}</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ============ DECKS BY CATEGORY (the library — surfaced above metrics) ============ -->
+    {% if by_category %}
+    {% for cat_name, cat_data in by_category.items() %}
+    <div class="mb-10">
+      <h2 class="text-xl md:text-2xl font-bold mb-4 flex items-center gap-3 text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
+        <span class="text-2xl md:text-3xl">{{ cat_data.icon }}</span>
+        {{ cat_name }}
+        <span class="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded-full font-bold">{{ cat_data.decks|length }}</span>
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for d in cat_data.decks %}
+        {% set pct = (d.learned_count / d.card_count * 100) if d.card_count else 0 %}
+        <div class="deck-mini">
+          <div class="flex items-start justify-between mb-2">
+            <div class="text-3xl">{{ d.icon }}</div>
+            {% if current_user.role in ['admin','teacher','individual'] %}
+            <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('{{ t('delete_deck_confirm') }}')">
+              <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 text-base transition" title="{{ t('btn_delete') }}">✕</button>
+            </form>
+            {% endif %}
+          </div>
+          <a href="/deck/{{ d.id }}" class="block">
+            <h3 class="text-base md:text-lg font-bold mb-1 text-slate-900 dark:text-slate-100 leading-tight">{{ d.name }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">{{ d.card_count }} {{ t('test_card_count_word') }} · {{ d.due_count }} {{ t('to_review') }}</p>
+          </a>
+          <div class="mb-3">
+            <div class="flex justify-between mb-1 text-xs text-slate-500 dark:text-slate-400">
+              <span>{{ t('studied') }}</span>
+              <span class="font-bold text-slate-700 dark:text-slate-200">{{ pct|round(0)|int }}%</span>
+            </div>
+            <div class="progress-bar h-1.5"><div style="width: {{ pct }}%"></div></div>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            {# Pokazyvaem knopki na osnove fakticheskogo soderzhimogo:
+               mcq_count > 0  → est' testy → knopka Test
+               terms_count > 0 → est' slovari → knopka Flashcards
+               Esli oba — pokazyvaem oba. #}
+            {% set _mcq = d.mcq_count or 0 %}
+            {% set _terms = d.terms_count or 0 %}
+            {# Fallback na deck_type esli net kart eshchë #}
+            {% if _mcq == 0 and _terms == 0 %}
+              {% set _terms = 1 if (d.deck_type or 'mcq') == 'terms' else 0 %}
+              {% set _mcq = 0 if _terms else 1 %}
+            {% endif %}
+
+            {% if _terms > 0 %}
+            <a href="/deck/{{ d.id }}/flashcards" class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 12px; padding: 7px 10px;">📖 Flashcards</a>
+            {% endif %}
+            {% if _mcq > 0 %}
+            <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
+              class="flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %} rounded-xl text-xs font-bold text-white text-center transition" style="padding: 7px 10px; background: linear-gradient(135deg, #10b981, #059669);">📝 {{ t('btn_test') }}</button>
+            {% endif %}
+            <a href="/deck/{{ d.id }}" class="btn-premium-ghost" style="font-size: 12px; padding: 7px 10px;" title="{{ t('settings_short') }}">⚙</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="text-center py-14 glass-premium">
+      <div class="text-6xl mb-5">📚</div>
+      <h3 class="text-xl md:text-2xl font-bold mb-2">{{ t('create_first_deck') }}</h3>
+      <p class="text-slate-600 dark:text-slate-300 mb-6 max-w-md mx-auto text-sm">{{ t('no_decks_text2') }}</p>
+      {% if current_user.role == 'individual' %}
+      <div class="flex gap-2 justify-center flex-wrap">
+        <button @click="showNew = true" class="btn-premium">{{ t('new_deck_btn') }}</button>
+        <a href="/import" class="btn-premium-ghost">{{ t('import_file') }}</a>
+        {% if ai_available %}
+        <a href="/ai" class="btn-premium-ghost">{{ t('ai_generation') }}</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-500 dark:text-slate-400">{{ t('teacher_no_decks') }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
     <!-- ============ COMPACT STATS ROW ============ -->
     <div class="stats-row mb-6">
       <div class="stat-mini">
@@ -209,95 +298,6 @@
         </div>
       </div>
     </details>
-    {% endif %}
-
-    <!-- ============ ACTIONS BAR (compact, only individuals) ============ -->
-    {% if current_user.role == 'individual' and decks %}
-    <div class="flex gap-2 mb-6 flex-wrap">
-      <button @click="showNew = true" class="btn-premium" data-tour="new-deck-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('new_deck_btn') }}</button>
-      <a href="/import" class="btn-premium-ghost" data-tour="import-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('import_file') }}</a>
-      {% if ai_available %}
-      <a href="/ai" class="btn-premium-ghost" data-tour="ai-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('ai_generation') }}</a>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- ============ DECKS BY CATEGORY (preserved) ============ -->
-    {% if by_category %}
-    {% for cat_name, cat_data in by_category.items() %}
-    <div class="mb-10">
-      <h2 class="text-xl md:text-2xl font-bold mb-4 flex items-center gap-3 text-slate-900 dark:text-slate-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
-        <span class="text-2xl md:text-3xl">{{ cat_data.icon }}</span>
-        {{ cat_name }}
-        <span class="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded-full font-bold">{{ cat_data.decks|length }}</span>
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for d in cat_data.decks %}
-        {% set pct = (d.learned_count / d.card_count * 100) if d.card_count else 0 %}
-        <div class="deck-mini">
-          <div class="flex items-start justify-between mb-2">
-            <div class="text-3xl">{{ d.icon }}</div>
-            {% if current_user.role in ['admin','teacher','individual'] %}
-            <form method="POST" action="/deck/{{ d.id }}/delete" onsubmit="return confirm('{{ t('delete_deck_confirm') }}')">
-              <button class="text-slate-300 dark:text-slate-600 hover:text-red-500 text-base transition" title="{{ t('btn_delete') }}">✕</button>
-            </form>
-            {% endif %}
-          </div>
-          <a href="/deck/{{ d.id }}" class="block">
-            <h3 class="text-base md:text-lg font-bold mb-1 text-slate-900 dark:text-slate-100 leading-tight">{{ d.name }}</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">{{ d.card_count }} {{ t('test_card_count_word') }} · {{ d.due_count }} {{ t('to_review') }}</p>
-          </a>
-          <div class="mb-3">
-            <div class="flex justify-between mb-1 text-xs text-slate-500 dark:text-slate-400">
-              <span>{{ t('studied') }}</span>
-              <span class="font-bold text-slate-700 dark:text-slate-200">{{ pct|round(0)|int }}%</span>
-            </div>
-            <div class="progress-bar h-1.5"><div style="width: {{ pct }}%"></div></div>
-          </div>
-          <div class="flex gap-2 flex-wrap">
-            {# Pokazyvaem knopki na osnove fakticheskogo soderzhimogo:
-               mcq_count > 0  → est' testy → knopka Test
-               terms_count > 0 → est' slovari → knopka Flashcards
-               Esli oba — pokazyvaem oba. #}
-            {% set _mcq = d.mcq_count or 0 %}
-            {% set _terms = d.terms_count or 0 %}
-            {# Fallback na deck_type esli net kart eshchë #}
-            {% if _mcq == 0 and _terms == 0 %}
-              {% set _terms = 1 if (d.deck_type or 'mcq') == 'terms' else 0 %}
-              {% set _mcq = 0 if _terms else 1 %}
-            {% endif %}
-
-            {% if _terms > 0 %}
-            <a href="/deck/{{ d.id }}/flashcards" class="btn-premium flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %}" style="font-size: 12px; padding: 7px 10px;">📖 Flashcards</a>
-            {% endif %}
-            {% if _mcq > 0 %}
-            <button type="button" @click="showTest = { id: {{ d.id }}, name: '{{ d.name|e }}', total: {{ d.card_count }} }"
-              class="flex-1 justify-center {% if d.card_count == 0 %}pointer-events-none opacity-50{% endif %} rounded-xl text-xs font-bold text-white text-center transition" style="padding: 7px 10px; background: linear-gradient(135deg, #10b981, #059669);">📝 {{ t('btn_test') }}</button>
-            {% endif %}
-            <a href="/deck/{{ d.id }}" class="btn-premium-ghost" style="font-size: 12px; padding: 7px 10px;" title="{{ t('settings_short') }}">⚙</a>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endfor %}
-    {% else %}
-    <div class="text-center py-14 glass-premium">
-      <div class="text-6xl mb-5">📚</div>
-      <h3 class="text-xl md:text-2xl font-bold mb-2">{{ t('create_first_deck') }}</h3>
-      <p class="text-slate-600 dark:text-slate-300 mb-6 max-w-md mx-auto text-sm">{{ t('no_decks_text2') }}</p>
-      {% if current_user.role == 'individual' %}
-      <div class="flex gap-2 justify-center flex-wrap">
-        <button @click="showNew = true" class="btn-premium">{{ t('new_deck_btn') }}</button>
-        <a href="/import" class="btn-premium-ghost">{{ t('import_file') }}</a>
-        {% if ai_available %}
-        <a href="/ai" class="btn-premium-ghost">{{ t('ai_generation') }}</a>
-        {% endif %}
-      </div>
-      {% else %}
-      <p class="text-sm text-slate-500 dark:text-slate-400">{{ t('teacher_no_decks') }}</p>
-      {% endif %}
-    </div>
     {% endif %}
   </div>
 
