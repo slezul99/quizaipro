@@ -1,0 +1,12 @@
+{#
+  Tailwind safelist — literal copies of classes that are built dynamically in
+  Jinja (so the content scanner can't see them) and must survive the purge.
+  Currently: live_history_view.html's participant/observer badge (emerald/blue).
+  This file is scanned by the Tailwind build; it is not rendered anywhere.
+#}
+<div class="
+  bg-emerald-100 bg-blue-100
+  text-emerald-700 text-blue-700
+  dark:bg-emerald-900/40 dark:bg-blue-900/40
+  dark:text-emerald-300 dark:text-blue-300
+"></div>

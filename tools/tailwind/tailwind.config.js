@@ -7,24 +7,16 @@ module.exports = {
     "../../templates/**/*.html",
     "../../static/**/*.js",
   ],
-  // Polnyy spektr klassov ispol'zuyetsya v inline x-bind / dynamic strings —
-  // safelist ohranyaet ot ploxhego purge.
-  safelist: [
-    // Color classes which appear via Alpine x-bind / inline style logic
-    { pattern: /^(bg|text|border|from|to|via|ring)-(red|orange|amber|yellow|green|emerald|teal|cyan|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-(50|100|200|300|400|500|600|700|800|900)$/ },
-    // Common dark variants
-    { pattern: /^dark:(bg|text|border)-(slate|gray|indigo|emerald|red|amber)-(100|200|300|400|500|600|700|800|900)$/ },
-    // Width / height percentages (used in progress bars)
-    { pattern: /^w-(1\/2|1\/3|2\/3|1\/4|3\/4|full|screen|0|1|2|4|6|8|10|12|16|20|24|32)$/ },
-    // Animation classes referenced by Alpine
-    "animate-bounce", "animate-pulse", "animate-spin", "animate-ping",
-    // Display classes used dynamically
-    "hidden", "block", "flex", "grid", "inline-block",
-    // Common opacity
-    "opacity-0", "opacity-50", "opacity-100",
-    // Accessibility helpers
-    "sr-only", "not-sr-only",
-  ],
+  // No broad safelist. Audited 2026-06-22: every dynamic class in the templates
+  // (Alpine `:class="cond ? 'bg-red-500 ...' : '...'"`, the test_done.html Jinja
+  // ternary, etc.) is a *contiguous literal string* the content scanner already
+  // extracts from the raw file text. There is zero string concatenation
+  // (`'bg-' + c`) and no JS/Python emitting color classes. The only
+  // scanner-invisible case is the split interpolation in live_history_view.html
+  // (`bg-{{ 'emerald' if .. else 'blue' }}-100`), covered by literal copies in
+  // templates/_tw_safelist.html. This cut the build from ~220 KB to ~79 KB with
+  // no visual regression. To re-add a dynamic class, prefer a literal in
+  // _tw_safelist.html over re-broadening this safelist.
   theme: {
     extend: {
       fontFamily: {
