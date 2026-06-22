@@ -45,9 +45,12 @@ PROMPTS = {
                     "its screen, a blue ceramic coffee mug, a mechanical keyboard, "
                     "floating neon code brackets, deep indigo and purple ambient "
                     "lighting, premium tech aesthetic." + _COMMON),
-    "science": ("A glowing DNA double helix, a laboratory microscope, translucent "
-                "molecules and atoms, on a deep emerald green background, green and "
-                "teal colour grade, clean scientific aesthetic." + _COMMON),
+    "science": ("A detailed laboratory microscope, a glowing blue-green DNA double "
+                "helix, a vibrant colourful 3D atom model with glowing orange and "
+                "blue electrons orbiting, two glass beakers and a conical flask "
+                "filled with colourful glowing liquid (amber and teal), on a bright "
+                "vibrant emerald-green background, luminous energetic premium science "
+                "aesthetic, rich saturated colours." + _COMMON),
     "business": ("A rising 3D bar chart with a golden upward arrow, neat stacks of "
                  "gold coins, a small pie chart, financial growth theme, on a warm "
                  "orange and gold background, premium business aesthetic." + _COMMON),
