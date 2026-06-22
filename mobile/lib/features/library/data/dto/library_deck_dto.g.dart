@@ -10,6 +10,7 @@ LibraryDeckDto _$LibraryDeckDtoFromJson(Map<String, dynamic> json) =>
     LibraryDeckDto(
       id: json['id'] as String,
       title: json['title'] as String,
+      icon: json['icon'] as String? ?? '📚',
       description: json['description'] as String,
       cardCount: (json['card_count'] as num).toInt(),
       dueCount: (json['due_count'] as num).toInt(),
@@ -32,6 +33,7 @@ Map<String, dynamic> _$LibraryDeckDtoToJson(LibraryDeckDto instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
+      'icon': instance.icon,
       'description': instance.description,
       'card_count': instance.cardCount,
       'due_count': instance.dueCount,

@@ -1,15 +1,16 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
 import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
-/// Library deck card — built from scratch to the picked recipe:
-///  • shape/style of a stacked deck (cards peeking out behind it),
-///  • a light, friendly soft-colour palette (white card, pastel accents),
-///  • a progress ring + bar showing how much of the deck is mastered.
+/// Library deck card — illustration-forward grid tile.
+///
+///  • a tinted "artwork" zone filling the top of the card: the deck's emoji
+///    on a soft cover-coloured gradient with a stacked-card motif + glow,
+///  • a small avatar badge (deck initial) and a `…` menu floating over it,
+///  • a footer with the title, card/ due counts and a progress bar that ends
+///    with the mastered percentage.
 class LibraryDeckCard extends StatelessWidget {
   const LibraryDeckCard({
     super.key,
@@ -27,7 +28,7 @@ class LibraryDeckCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final cover = _hexToColor(deck.coverColorHex);
     final initial =
         deck.title.trim().isNotEmpty ? deck.title.trim()[0].toUpperCase() : '?';
@@ -37,78 +38,84 @@ class LibraryDeckCard extends StatelessWidget {
         ? ((deck.cardCount - deck.dueCount).clamp(0, deck.cardCount)) /
             deck.cardCount
         : 0.0;
+    final pct = (mastered * 100).round();
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Stack(
-        children: [
-          // ── Stacked-deck layers peeking out behind the main card ────────
-          Positioned(
-            top: 0,
-            left: 18,
-            right: 6,
-            child: _StackLayer(color: cover.withValues(alpha: 0.22), height: 34),
-          ),
-          Positioned(
-            top: 7,
-            left: 10,
-            right: 6,
-            child: _StackLayer(color: cover.withValues(alpha: 0.40), height: 34),
-          ),
-          // ── Main (light) card ───────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.only(top: 14),
-            child: Container(
-              decoration: BoxDecoration(
-                color: tokens.backgroundSurface,
-                borderRadius: BorderRadius.circular(tokens.radiusLg),
-                border: Border.all(color: cover.withValues(alpha: 0.22)),
-                boxShadow: [
-                  BoxShadow(
-                    color: cover.withValues(alpha: 0.14),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: tokens.backgroundSurface,
+          borderRadius: BorderRadius.circular(tokens.radiusLg),
+          border: Border.all(color: cover.withValues(alpha: 0.12)),
+          boxShadow: [
+            BoxShadow(
+              color: cover.withValues(alpha: 0.16),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(tokens.radiusLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Artwork zone (emoji + decoration + floating controls) ──
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _DeckArtwork(cover: cover, icon: deck.icon),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: _AvatarBadge(
+                        initial: initial,
+                        cover: cover,
+                        surface: tokens.backgroundSurface,
+                      ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      right: 8,
+                      child: Row(
+                        children: [
+                          if (deck.isFavorite)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(Icons.favorite_rounded,
+                                  size: 15, color: tokens.stateError),
+                            ),
+                          GestureDetector(
+                            onTap: onActionsTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              alignment: Alignment.center,
+                              child: Icon(Icons.more_horiz_rounded,
+                                  size: 20, color: tokens.textTertiary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Padding(
-                padding: EdgeInsets.all(tokens.space12),
+              // ── Footer (title, counts, progress + %) ──────────────────
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    tokens.space12, tokens.space10, tokens.space12, tokens.space12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _RingBadge(
-                          progress: mastered,
-                          color: cover,
-                          initial: initial,
-                        ),
-                        const Spacer(),
-                        if (deck.isFavorite)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 2, top: 2),
-                            child: Icon(Icons.favorite_rounded,
-                                size: 15, color: tokens.stateError),
-                          ),
-                        GestureDetector(
-                          onTap: onActionsTap,
-                          behavior: HitTestBehavior.opaque,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 2),
-                            child: Icon(Icons.more_horiz_rounded,
-                                size: 20, color: tokens.textTertiary),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
                     Text(
                       deck.title,
                       style: tt.titleSmall?.copyWith(
                         fontWeight: FontWeight.w800,
-                        height: 1.2,
+                        height: 1.18,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -150,35 +157,50 @@ class LibraryDeckCard extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: tokens.space10),
-                    // Progress bar — how much of the deck is mastered.
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(tokens.radiusFull),
-                      child: Stack(
-                        children: [
-                          Container(height: 5, color: tokens.surfaceSubtle),
-                          FractionallySizedBox(
-                            widthFactor: mastered.clamp(0.04, 1.0),
-                            child: Container(
-                              height: 5,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    cover,
-                                    Color.lerp(cover, Colors.white, 0.30)!,
-                                  ],
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(tokens.radiusFull),
+                            child: Stack(
+                              children: [
+                                Container(
+                                    height: 6, color: tokens.surfaceSubtle),
+                                FractionallySizedBox(
+                                  widthFactor: mastered.clamp(0.03, 1.0),
+                                  child: Container(
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          cover,
+                                          Color.lerp(cover, Colors.white, 0.30)!,
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        SizedBox(width: tokens.space8),
+                        Text(
+                          '$pct%',
+                          style: tt.labelSmall?.copyWith(
+                            color: tokens.textSecondary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -193,105 +215,124 @@ class LibraryDeckCard extends StatelessWidget {
   }
 }
 
-/// One of the offset "cards" peeking out from behind the main deck card.
-class _StackLayer extends StatelessWidget {
-  const _StackLayer({required this.color, required this.height});
+/// The tinted illustration area: the deck emoji on a soft cover-coloured
+/// gradient, with a stacked-card motif and a glow behind the glyph.
+class _DeckArtwork extends StatelessWidget {
+  const _DeckArtwork({required this.cover, required this.icon});
+
+  final Color cover;
+  final String icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            cover.withValues(alpha: 0.16),
+            cover.withValues(alpha: 0.05),
+          ],
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Stacked-card motif behind the emoji.
+          Transform.translate(
+            offset: const Offset(10, 6),
+            child: Transform.rotate(
+              angle: 0.18,
+              child: _MotifCard(color: cover.withValues(alpha: 0.16)),
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(-8, 2),
+            child: Transform.rotate(
+              angle: -0.12,
+              child: _MotifCard(color: cover.withValues(alpha: 0.26)),
+            ),
+          ),
+          // Soft glow.
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: cover.withValues(alpha: 0.35),
+                  blurRadius: 26,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+          ),
+          // Emoji.
+          Text(icon, style: const TextStyle(fontSize: 44, height: 1)),
+        ],
+      ),
+    );
+  }
+}
+
+class _MotifCard extends StatelessWidget {
+  const _MotifCard({required this.color});
 
   final Color color;
-  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height,
+      width: 56,
+      height: 70,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }
 }
 
-/// A soft progress ring with the deck initial on a pastel disc in its centre.
-class _RingBadge extends StatelessWidget {
-  const _RingBadge({
-    required this.progress,
-    required this.color,
+/// Small circular badge with the deck initial, sits over the artwork.
+class _AvatarBadge extends StatelessWidget {
+  const _AvatarBadge({
     required this.initial,
+    required this.cover,
+    required this.surface,
   });
 
-  final double progress;
-  final Color color;
   final String initial;
+  final Color cover;
+  final Color surface;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 44,
-      height: 44,
-      child: CustomPaint(
-        painter: _RingPainter(progress: progress.clamp(0.0, 1.0), color: color),
-        child: Center(
-          child: Container(
-            width: 30,
-            height: 30,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.16),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              initial,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-              ),
-            ),
+    return Container(
+      width: 36,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: surface,
+        shape: BoxShape.circle,
+        border: Border.all(color: cover.withValues(alpha: 0.35), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: cover.withValues(alpha: 0.18),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: cover,
+          fontWeight: FontWeight.w900,
+          fontSize: 15,
         ),
       ),
     );
   }
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter({required this.progress, required this.color});
-
-  final double progress;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = size.width / 2 - 2;
-    final track = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..color = color.withValues(alpha: 0.16);
-    final arc = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..shader = SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: math.pi * 1.5,
-        colors: [color, Color.lerp(color, Colors.white, 0.4)!],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
-
-    canvas.drawCircle(center, radius, track);
-    if (progress > 0) {
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        -math.pi / 2,
-        2 * math.pi * progress,
-        false,
-        arc,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _RingPainter old) =>
-      old.progress != progress || old.color != color;
 }

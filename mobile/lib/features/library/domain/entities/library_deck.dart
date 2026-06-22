@@ -9,6 +9,7 @@ class LibraryDeck with _$LibraryDeck {
   const factory LibraryDeck({
     required String id,
     required String title,
+    @Default('📚') String icon,
     required String description,
     required int cardCount,
     required int dueCount,

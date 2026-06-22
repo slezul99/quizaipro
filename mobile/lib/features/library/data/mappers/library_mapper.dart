@@ -8,6 +8,7 @@ abstract final class LibraryMapper {
   static LibraryDeck deckFromDto(LibraryDeckDto dto) => LibraryDeck(
         id: dto.id,
         title: dto.title,
+        icon: dto.icon,
         description: dto.description,
         cardCount: dto.cardCount,
         dueCount: dto.dueCount,

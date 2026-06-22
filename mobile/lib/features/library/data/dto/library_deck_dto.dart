@@ -7,6 +7,7 @@ class LibraryDeckDto {
   const LibraryDeckDto({
     required this.id,
     required this.title,
+    this.icon = '📚',
     required this.description,
     required this.cardCount,
     required this.dueCount,
@@ -27,6 +28,7 @@ class LibraryDeckDto {
 
   final String id;
   final String title;
+  @JsonKey(defaultValue: '📚') final String icon;
   final String description;
   @JsonKey(name: 'card_count') final int cardCount;
   @JsonKey(name: 'due_count') final int dueCount;

@@ -84,6 +84,7 @@ def _serialize_library_deck(d):
     return {
         "id": str(d["id"]),
         "title": d["name"],
+        "icon": (d.get("icon") or "").strip() or "📚",
         "description": d["description"] or "",
         "card_count": d["card_count"] or 0,
         "due_count": d["due_count"] or 0,

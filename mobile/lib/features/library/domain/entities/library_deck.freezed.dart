@@ -18,6 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$LibraryDeck {
   String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
+  String get icon => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   int get cardCount => throw _privateConstructorUsedError;
   int get dueCount => throw _privateConstructorUsedError;
@@ -51,6 +52,7 @@ abstract class $LibraryDeckCopyWith<$Res> {
   $Res call(
       {String id,
       String title,
+      String icon,
       String description,
       int cardCount,
       int dueCount,
@@ -86,6 +88,7 @@ class _$LibraryDeckCopyWithImpl<$Res, $Val extends LibraryDeck>
   $Res call({
     Object? id = null,
     Object? title = null,
+    Object? icon = null,
     Object? description = null,
     Object? cardCount = null,
     Object? dueCount = null,
@@ -111,6 +114,10 @@ class _$LibraryDeckCopyWithImpl<$Res, $Val extends LibraryDeck>
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      icon: null == icon
+          ? _value.icon
+          : icon // ignore: cast_nullable_to_non_nullable
               as String,
       description: null == description
           ? _value.description
@@ -191,6 +198,7 @@ abstract class _$$LibraryDeckImplCopyWith<$Res>
   $Res call(
       {String id,
       String title,
+      String icon,
       String description,
       int cardCount,
       int dueCount,
@@ -224,6 +232,7 @@ class __$$LibraryDeckImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? title = null,
+    Object? icon = null,
     Object? description = null,
     Object? cardCount = null,
     Object? dueCount = null,
@@ -249,6 +258,10 @@ class __$$LibraryDeckImplCopyWithImpl<$Res>
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      icon: null == icon
+          ? _value.icon
+          : icon // ignore: cast_nullable_to_non_nullable
               as String,
       description: null == description
           ? _value.description
@@ -324,6 +337,7 @@ class _$LibraryDeckImpl implements _LibraryDeck {
   const _$LibraryDeckImpl(
       {required this.id,
       required this.title,
+      this.icon = '📚',
       required this.description,
       required this.cardCount,
       required this.dueCount,
@@ -346,6 +360,9 @@ class _$LibraryDeckImpl implements _LibraryDeck {
   final String id;
   @override
   final String title;
+  @override
+  @JsonKey()
+  final String icon;
   @override
   final String description;
   @override
@@ -387,7 +404,7 @@ class _$LibraryDeckImpl implements _LibraryDeck {
 
   @override
   String toString() {
-    return 'LibraryDeck(id: $id, title: $title, description: $description, cardCount: $cardCount, dueCount: $dueCount, hasTests: $hasTests, hasFlashcards: $hasFlashcards, coverColorHex: $coverColorHex, isPro: $isPro, isPublic: $isPublic, isFavorite: $isFavorite, isArchived: $isArchived, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, difficulty: $difficulty, lastStudiedAt: $lastStudiedAt, subjectName: $subjectName)';
+    return 'LibraryDeck(id: $id, title: $title, icon: $icon, description: $description, cardCount: $cardCount, dueCount: $dueCount, hasTests: $hasTests, hasFlashcards: $hasFlashcards, coverColorHex: $coverColorHex, isPro: $isPro, isPublic: $isPublic, isFavorite: $isFavorite, isArchived: $isArchived, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, difficulty: $difficulty, lastStudiedAt: $lastStudiedAt, subjectName: $subjectName)';
   }
 
   @override
@@ -397,6 +414,7 @@ class _$LibraryDeckImpl implements _LibraryDeck {
             other is _$LibraryDeckImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
+            (identical(other.icon, icon) || other.icon == icon) &&
             (identical(other.description, description) ||
                 other.description == description) &&
             (identical(other.cardCount, cardCount) ||
@@ -430,26 +448,28 @@ class _$LibraryDeckImpl implements _LibraryDeck {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      title,
-      description,
-      cardCount,
-      dueCount,
-      hasTests,
-      hasFlashcards,
-      coverColorHex,
-      isPro,
-      isPublic,
-      isFavorite,
-      isArchived,
-      const DeepCollectionEquality().hash(_tags),
-      createdAt,
-      updatedAt,
-      difficulty,
-      lastStudiedAt,
-      subjectName);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        title,
+        icon,
+        description,
+        cardCount,
+        dueCount,
+        hasTests,
+        hasFlashcards,
+        coverColorHex,
+        isPro,
+        isPublic,
+        isFavorite,
+        isArchived,
+        const DeepCollectionEquality().hash(_tags),
+        createdAt,
+        updatedAt,
+        difficulty,
+        lastStudiedAt,
+        subjectName
+      ]);
 
   /// Create a copy of LibraryDeck
   /// with the given fields replaced by the non-null parameter values.
@@ -464,6 +484,7 @@ abstract class _LibraryDeck implements LibraryDeck {
   const factory _LibraryDeck(
       {required final String id,
       required final String title,
+      final String icon,
       required final String description,
       required final int cardCount,
       required final int dueCount,
@@ -485,6 +506,8 @@ abstract class _LibraryDeck implements LibraryDeck {
   String get id;
   @override
   String get title;
+  @override
+  String get icon;
   @override
   String get description;
   @override
