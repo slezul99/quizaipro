@@ -18,16 +18,18 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import ai_gen  # noqa: E402
 
 LOC = "us-central1"
-MODEL = "imagen-3.0-generate-001"
+MODEL = "imagen-3.0-fast-generate-001"
+ASPECT = "1:1"
+OUT_W = 760
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "static", "subjects")
 os.makedirs(OUT, exist_ok=True)
 
 _COMMON = (" Cinematic 3D illustration, premium quality, highly detailed, soft "
-           "studio lighting, depth of field. The themed objects are weighted to "
-           "the RIGHT half of the frame; the LEFT half is calmer, darker, mostly "
-           "empty negative space (for text overlay). No text, no words, no "
-           "letters, no logos, no watermark.")
+           "studio lighting, depth of field. Square composition: the themed "
+           "objects fill the UPPER two-thirds of the frame; the BOTTOM third is "
+           "calmer and darker, mostly empty (for a text overlay). No text, no "
+           "words, no letters, no logos, no watermark.")
 
 PROMPTS = {
     "english": ("London at dusk under a rich purple and violet twilight sky: Big "
@@ -61,7 +63,7 @@ def generate(prompt):
     url = (f"https://{LOC}-aiplatform.googleapis.com/v1/projects/{proj}"
            f"/locations/{LOC}/publishers/google/models/{MODEL}:predict")
     body = {"instances": [{"prompt": prompt}],
-            "parameters": {"sampleCount": 1, "aspectRatio": "16:9"}}
+            "parameters": {"sampleCount": 1, "aspectRatio": ASPECT}}
     r = requests.post(url, headers={"Authorization": f"Bearer {tok}",
                                     "Content-Type": "application/json"},
                       json=body, timeout=120)
@@ -79,7 +81,7 @@ def main():
             raw = generate(prompt)
             img = Image.open(io.BytesIO(raw)).convert("RGB")
             # downscale to a web-friendly width (cards render ~400px → 2x retina)
-            w = 900
+            w = OUT_W
             h = round(img.height * w / img.width)
             img = img.resize((w, h), Image.LANCZOS)
             path = os.path.join(OUT, f"{slug}.jpg")

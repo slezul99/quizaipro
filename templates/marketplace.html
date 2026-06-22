@@ -63,17 +63,17 @@
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-5">
         {% for s in subjects %}
         <a href="/marketplace/subject/{{ s.slug }}"
-          class="subj3d group relative rounded-3xl p-5 text-white overflow-hidden flex flex-col justify-between min-h-[210px]"
+          class="subj3d group relative rounded-3xl p-5 text-white overflow-hidden flex flex-col justify-between aspect-square"
           style="--gs: {{ s.color }}66; --gsh: {{ s.color }}b3;
                  background: linear-gradient(145deg, {{ s.color }}, {{ s.color2 }});">
           <!-- themed background art -->
           <img src="{{ url_for('static', filename='subjects/' ~ s.slug ~ '.jpg') }}" alt="" loading="lazy"
             class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
-          <!-- legibility overlays: brand tint sweeping from the left + dark foot -->
+          <!-- legibility overlays: brand-tinted foot + darken for text -->
           <div class="absolute inset-0 pointer-events-none"
-            style="background: linear-gradient(108deg, {{ s.color }}f2 0%, {{ s.color }}b0 32%, {{ s.color }}33 58%, transparent 80%);"></div>
+            style="background: linear-gradient(to top, {{ s.color }}f2 0%, {{ s.color }}80 26%, {{ s.color }}1a 48%, transparent 66%);"></div>
           <div class="absolute inset-0 pointer-events-none"
-            style="background: linear-gradient(to top, rgba(0,0,0,.62) 0%, rgba(0,0,0,.12) 42%, transparent 64%);"></div>
+            style="background: linear-gradient(to top, rgba(0,0,0,.50) 0%, rgba(0,0,0,.05) 38%, transparent 58%);"></div>
           <div class="absolute inset-0 rounded-3xl pointer-events-none"
             style="box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);"></div>
 
