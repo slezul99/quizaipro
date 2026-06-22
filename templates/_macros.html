@@ -3,7 +3,10 @@
    {% from '_macros.html' import deck_card, deck_preview_modal with context %} #}
 
 {% macro deck_card(d) %}
-<div class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col h-full">
+{# x-data="{}" gives the preview button an Alpine scope so its
+   @click="$dispatch('preview-deck', …)" actually fires (the modal listens for
+   that event on window). Without a scope Alpine ignores @click silently. #}
+<div x-data="{}" class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col h-full">
   <div class="flex items-start justify-between mb-3">
     <div class="text-3xl">{{ d.icon }}</div>
     <div class="flex flex-col items-end gap-1">
@@ -60,8 +63,8 @@
            const r = await fetch('/marketplace/deck/' + id + '/preview');
            const d = await r.json();
            if (d.ok) { this.total = d.total; this.cards = d.cards; }
-           else { this.err = {{ t('mk_preview_err')|tojson }}; }
-         } catch (e) { this.err = {{ t('mk_preview_err')|tojson }}; }
+           else { this.err = {{ t('mk_preview_err')|tojson|forceescape }}; }
+         } catch (e) { this.err = {{ t('mk_preview_err')|tojson|forceescape }}; }
          this.loading = false;
        }
      }"
