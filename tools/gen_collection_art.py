@@ -75,6 +75,25 @@ PROMPTS = {
     "math-exam-prep": ("A clipboard with a checklist and green check marks, a "
                        "pencil and an eraser, math exam preparation theme, warm "
                        "tones." + _COMMON),
+    # Programming subject collections
+    "programming-python": ("The Python programming language logo — two intertwined "
+                           "blue and yellow snakes — as a glossy 3D emblem, with "
+                           "faint code snippets behind it, green tones." + _COMMON),
+    "programming-javascript": ("The JavaScript logo — a glossy 3D yellow rounded "
+                               "square badge — with floating code brackets, amber "
+                               "and gold tones." + _COMMON),
+    "programming-html-css": ("The HTML5 orange shield emblem next to the CSS3 blue "
+                             "shield emblem, glossy 3D, web-development theme, orange "
+                             "tones." + _COMMON),
+    "programming-sql": ("A stack of glossy 3D database cylinders with a small glowing "
+                        "data tag, database and query theme, cyan and teal "
+                        "tones." + _COMMON),
+    "programming-algorithms": ("A glossy 3D flowchart with diamond decision nodes "
+                               "and a couple of gears, algorithm theme, purple "
+                               "tones." + _COMMON),
+    "programming-data-structures": ("A glossy 3D graph of connected spheres forming "
+                                    "a tree, plus a small linked-list of cubes, data "
+                                    "structures theme, green tones." + _COMMON),
 }
 
 
