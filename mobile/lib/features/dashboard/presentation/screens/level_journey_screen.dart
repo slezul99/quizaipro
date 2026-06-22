@@ -677,36 +677,35 @@ class _TierLadder extends StatelessWidget {
       if (level >= _kTiers[i].minLevel) currentIndex = i;
     }
 
-    return SizedBox(
-      height: 150,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _kTiers.length,
-        separatorBuilder: (_, __) => SizedBox(width: tokens.space12),
-        itemBuilder: (_, i) {
-          final tier = _kTiers[i];
-          final state = i < currentIndex
-              ? _TierState.passed
-              : (i == currentIndex ? _TierState.current : _TierState.locked);
-          return _TierCard(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 3,
+      mainAxisSpacing: tokens.space12,
+      crossAxisSpacing: tokens.space12,
+      childAspectRatio: 0.70,
+      children: [
+        for (var i = 0; i < _kTiers.length; i++)
+          _TierMedallion(
             tokens: tokens,
-            name: _tierName(l, tier.key),
-            fromLabel: l.levelJourneyFromLevel(tier.minLevel),
+            name: _tierName(l, _kTiers[i].key),
+            fromLabel: l.levelJourneyFromLevel(_kTiers[i].minLevel),
             youHereLabel: l.levelJourneyYouAreHere,
-            color: tier.color,
-            icon: tier.icon,
-            state: state,
-          );
-        },
-      ),
+            color: _kTiers[i].color,
+            icon: _kTiers[i].icon,
+            state: i < currentIndex
+                ? _TierState.passed
+                : (i == currentIndex ? _TierState.current : _TierState.locked),
+          ),
+      ],
     );
   }
 }
 
 enum _TierState { passed, current, locked }
 
-class _TierCard extends StatelessWidget {
-  const _TierCard({
+class _TierMedallion extends StatelessWidget {
+  const _TierMedallion({
     required this.tokens,
     required this.name,
     required this.fromLabel,
@@ -731,15 +730,18 @@ class _TierCard extends StatelessWidget {
     final tint = isLocked ? tokens.textTertiary : color;
 
     return Container(
-      width: 118,
-      padding: EdgeInsets.all(tokens.space12),
+      padding: EdgeInsets.symmetric(
+          vertical: tokens.space12, horizontal: tokens.space4),
       decoration: BoxDecoration(
         color: isCurrent ? null : tokens.surfaceCard,
         gradient: isCurrent
             ? LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [color.withOpacity(0.20), color.withOpacity(0.04)],
+                colors: [
+                  color.withValues(alpha: 0.18),
+                  color.withValues(alpha: 0.03),
+                ],
               )
             : null,
         borderRadius: BorderRadius.circular(tokens.radiusM),
@@ -748,58 +750,107 @@ class _TierCard extends StatelessWidget {
           width: isCurrent ? 1.6 : 1,
         ),
         boxShadow: isCurrent
-            ? [BoxShadow(color: color.withOpacity(0.30), blurRadius: 14)]
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.30),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                )
+              ]
             : null,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: tint.withOpacity(isLocked ? 0.10 : 0.16),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isLocked ? Icons.lock_rounded : icon,
-                  color: tint,
-                  size: 22,
-                ),
-              ),
-              if (state == _TierState.passed)
-                Positioned(
-                  right: -2,
-                  bottom: -2,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
+          // ── Medallion ────────────────────────────────────────────────
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                if (!isLocked)
+                  Container(
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
-                      color: tokens.stateSuccess,
                       shape: BoxShape.circle,
-                      border: Border.all(color: tokens.surfaceCard, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color
+                              .withValues(alpha: isCurrent ? 0.50 : 0.28),
+                          blurRadius: isCurrent ? 16 : 10,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.check,
-                        color: Colors.white, size: 10),
+                  ),
+                Container(
+                  width: 50,
+                  height: 50,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isLocked ? tint.withValues(alpha: 0.12) : null,
+                    gradient: isLocked
+                        ? null
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color.lerp(color, Colors.white, 0.30)!,
+                              color,
+                              Color.lerp(color, Colors.black, 0.20)!,
+                            ],
+                          ),
+                    border: Border.all(
+                      color: isLocked
+                          ? tint.withValues(alpha: 0.25)
+                          : Colors.white.withValues(alpha: 0.45),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    isLocked ? Icons.lock_rounded : icon,
+                    color: isLocked ? tint : Colors.white,
+                    size: 24,
                   ),
                 ),
-            ],
+                if (state == _TierState.passed)
+                  Positioned(
+                    right: 1,
+                    bottom: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: tokens.stateSuccess,
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: tokens.surfaceCard, width: 1.5),
+                      ),
+                      child: const Icon(Icons.check,
+                          color: Colors.white, size: 9),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          const Spacer(),
+          SizedBox(height: tokens.space8),
           Text(
             name,
-            style: tokens.titleSmall.copyWith(
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: tokens.labelMedium.copyWith(
               fontWeight: FontWeight.w800,
               color: isLocked ? tokens.textSecondary : tokens.textPrimary,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           if (isCurrent)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
                 color: color,
                 borderRadius: BorderRadius.circular(tokens.radiusFull),
@@ -808,9 +859,9 @@ class _TierCard extends StatelessWidget {
                 youHereLabel,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 9,
+                  fontSize: 8.5,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.4,
                 ),
               ),
             )
