@@ -535,7 +535,7 @@ function deckEditor() {
         <button type="button" @click="showTest = true" class="btn-premium deck-study-action" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px -6px rgba(16,185,129,0.45);" title="{{ t('dk_btn_test_title') }}" data-tour="deck-test-btn">{{ t('dk_btn_test') }}</button>
         {% endif %}
         {% if can_edit %}
-        <button type="button" @click="showLive = true" class="btn-premium deck-study-action" style="background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 8px 20px -6px rgba(236,72,153,0.45);" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
+        <button type="button" @click="showLive = true" class="btn-premium-ghost deck-study-action" title="{{ t('dk_btn_live_title') }}">{{ t('dk_btn_live') }}</button>
         <button @click="addCard()" class="btn-premium-ghost deck-study-action" title="{{ t('dk_btn_addcard_title') }}" data-tour="deck-add-card">{{ t('dk_btn_addcard') }}</button>
         {% endif %}
         {% if can_edit or _mcq > 0 %}
