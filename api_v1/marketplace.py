@@ -136,6 +136,59 @@ def _query_public_decks(conn, where, params, order_by, limit=None):
     return [dict(r) for r in conn.execute(sql, params).fetchall()]
 
 
+@marketplace_bp.route("/collections", methods=["GET"])
+@jwt_auth.jwt_required
+def get_collections():
+    user = g.current_user
+    lang = _resolve_lang(user)
+    page = request.args.get("page", default=1, type=int) or 1
+    page_size = request.args.get("limit", default=20, type=int) or 20
+    page_size = max(1, min(page_size, 100))
+    subject_id = request.args.get("subject_id")
+
+    where = ["c.is_active=1"]
+    params = []
+    if subject_id:
+        where.append("c.subject_id=?")
+        params.append(subject_id)
+
+    conn = db.get_conn()
+    try:
+        rows = conn.execute(f"""
+            SELECT c.*,
+                (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+            FROM collections c
+            WHERE {' AND '.join(where)}
+            ORDER BY c.sort_order ASC, c.id ASC
+        """, params).fetchall()
+    finally:
+        conn.close()
+
+    items_all = []
+    for r in rows:
+        d = dict(r)
+        title = d.get(f"title_{lang}") or d.get("title_en") or d["title_ru"]
+        desc = d.get(f"desc_{lang}") or d.get("desc_en") or d.get("desc_ru") or ""
+        items_all.append({
+            "id": str(d["id"]),
+            "name": title,
+            "description": desc,
+            "cover_url": f"/static/collections/{d['slug']}.jpg" if d['slug'] else None,
+            "cover_color_hex": d["color"] or "#6366f1",
+            "deck_count": d["deck_count"] or 0,
+            "subject_id": str(d["subject_id"]) if d["subject_id"] else None,
+            "curator_name": "QuizAIPro",
+        })
+
+    page_items, page, total_pages, total_count = _paginate(items_all, page, page_size)
+    return jsonify({"data": {
+        "items": page_items,
+        "page": page,
+        "total_pages": total_pages,
+        "total_count": total_count,
+    }})
+
+
 @marketplace_bp.route("/decks", methods=["GET"])
 @jwt_auth.jwt_required
 def get_decks():

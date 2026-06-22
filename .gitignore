@@ -69,3 +69,6 @@ vision_jobs_data/*.json
 tools/tailwind/node_modules/
 node_modules/
 # static/tailwind.css IS committed — Tailwind builds locally, not on Railway
+
+sa_key.json
+gemini_key.txt
