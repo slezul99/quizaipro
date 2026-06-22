@@ -59,6 +59,7 @@
             {% if coll.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}
             {% elif coll.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
             {% elif coll.level == 'advanced' %}🔴 {{ t('lvl_advanced') }}
+            {% elif coll.level == 'mixed' %}🟢🟡🔴 {{ t('lvl_mixed') }}
             {% else %}{{ coll.level }}{% endif %}
           </span>
           {% endif %}

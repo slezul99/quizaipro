@@ -3905,6 +3905,21 @@ def collection_view(slug):
     conn.close()
     coll["title"] = coll.get(f"title_{lang}") or coll["title_ru"]
     coll["desc"] = coll.get(f"desc_{lang}") or coll.get("desc_ru", "")
+    # Header level must reflect the decks it actually holds: levels live as a
+    # Russian suffix in each deck name ("… · базовый/средний/продвинутый").
+    _lvl_suffix = {"базовый": "beginner", "средний": "intermediate",
+                   "продвинутый": "advanced"}
+    _levels = set()
+    for _d in decks:
+        _nm = _d.get("name") or ""
+        if "·" in _nm:
+            _tail = _nm.rsplit("·", 1)[1].strip().lower()
+            if _tail in _lvl_suffix:
+                _levels.add(_lvl_suffix[_tail])
+    if len(_levels) == 1:
+        coll["level"] = next(iter(_levels))
+    elif len(_levels) > 1:
+        coll["level"] = "mixed"
     return render_template("collection.html", coll=coll, decks=decks)
 
 

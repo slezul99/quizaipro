@@ -3,6 +3,14 @@
    {% from '_macros.html' import deck_card, deck_preview_modal with context %} #}
 
 {% macro deck_card(d) %}
+{# Deck names carry the difficulty as a Russian suffix ("… · базовый/средний/
+   продвинутый"). Parse it into a coloured level pill and show a clean name
+   instead of baking the level into the title. #}
+{% set _nm = d.name or '' %}
+{% set _lvl_map = {'базовый':'beginner','средний':'intermediate','продвинутый':'advanced'} %}
+{% set _tail = (_nm.rsplit('·', 1)[1]|trim|lower) if ('·' in _nm) else '' %}
+{% set _dlevel = _lvl_map.get(_tail) %}
+{% set _dname = (_nm.rsplit('·', 1)[0]|trim) if _dlevel else _nm %}
 {# x-data="{}" gives the preview button an Alpine scope so its
    @click="$dispatch('preview-deck', …)" actually fires (the modal listens for
    that event on window). Without a scope Alpine ignores @click silently. #}
@@ -10,6 +18,14 @@
   <div class="flex items-start justify-between mb-3">
     <div class="text-3xl">{{ d.icon }}</div>
     <div class="flex flex-col items-end gap-1">
+      {% if _dlevel %}
+      <span class="px-2 py-0.5 rounded-full text-[11px] font-bold
+        {% if _dlevel == 'beginner' %}bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300
+        {% elif _dlevel == 'intermediate' %}bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300
+        {% else %}bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300{% endif %}">
+        {% if _dlevel == 'beginner' %}🟢{% elif _dlevel == 'intermediate' %}🟡{% else %}🔴{% endif %} {{ t('lvl_' ~ _dlevel) }}
+      </span>
+      {% endif %}
       {% if d.has_mcq %}
       <span class="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 text-[11px] font-bold">📝 {{ t('mk_type_test') }}</span>
       {% elif d.has_terms %}
@@ -26,7 +42,7 @@
   </div>
 
   <a href="/deck/{{ d.id }}" class="block flex-1">
-    <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ d.name }}</h3>
+    <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ _dname }}</h3>
     {% if d.description %}
     <p class="text-xs text-slate-500 dark:text-slate-400 mb-2 line-clamp-2">{{ d.description }}</p>
     {% endif %}
