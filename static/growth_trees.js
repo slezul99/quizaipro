@@ -4,7 +4,11 @@
 (function () {
   "use strict";
 
-  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  // Touch devices (esp. iOS Safari) choke on big canvas shadowBlur, so cap the
+  // resolution and the bloom there — keeps the open-tree animation smooth.
+  var isCoarse = window.matchMedia &&
+    window.matchMedia("(pointer: coarse)").matches;
+  var DPR = Math.min(window.devicePixelRatio || 1, isCoarse ? 1.5 : 2);
   var reduce = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var cards = [];
@@ -59,7 +63,9 @@
     ctx.clearRect(0,0,w,h);
     ctx.save();
     ctx.globalCompositeOperation = "lighter";   // additive bloom
-    ctx.shadowColor = this.glow; ctx.shadowBlur = w * 0.02 * this.scale;
+    ctx.shadowColor = this.glow;
+    // shadowBlur is the dominant cost on mobile GPUs — hard-cap it there.
+    ctx.shadowBlur = Math.min(w * 0.02 * this.scale, isCoarse ? 5 : 16);
 
     if (this.ring) {
       var rr = w*0.4;
@@ -166,8 +172,8 @@
     lb.el.style.setProperty("--lb-glow", card.dataset.glow);
     requestAnimationFrame(function () {
       lb.el.classList.add("show");
-      if (!lb.fx) lb.fx = new TreeFX(lb.canvas, { scale: reduce ? 1 : 2.4 });
-      else { lb.fx.scale = reduce ? 1 : 2.4; lb.fx.resize(); lb.fx.refresh(); }
+      if (!lb.fx) lb.fx = new TreeFX(lb.canvas, { scale: reduce ? 1 : (isCoarse ? 1.7 : 2.4) });
+      else { lb.fx.scale = reduce ? 1 : (isCoarse ? 1.7 : 2.4); lb.fx.resize(); lb.fx.refresh(); }
       lb.open = true;
       var btn = lb.el.querySelector(".gt-lb-close"); if (btn) btn.focus();
     });
