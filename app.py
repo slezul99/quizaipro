@@ -3812,7 +3812,15 @@ def marketplace():
             (SELECT COUNT(*) FROM collections c WHERE c.subject_id=s.id AND c.is_active=1) AS coll_count,
             (SELECT COALESCE(SUM(
                 (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c2.id)
-             ),0) FROM collections c2 WHERE c2.subject_id=s.id AND c2.is_active=1) AS deck_count
+             ),0) FROM collections c2 WHERE c2.subject_id=s.id AND c2.is_active=1) AS deck_count,
+            (SELECT COUNT(*) FROM cards WHERE deck_id IN (
+                SELECT cd.deck_id FROM collection_decks cd
+                JOIN collections c4 ON c4.id=cd.collection_id
+                WHERE c4.subject_id=s.id AND c4.is_active=1)) AS card_count,
+            (SELECT COALESCE(SUM(clones_count),0) FROM decks WHERE id IN (
+                SELECT cd2.deck_id FROM collection_decks cd2
+                JOIN collections c5 ON c5.id=cd2.collection_id
+                WHERE c5.subject_id=s.id AND c5.is_active=1)) AS learners
         FROM mp_subjects s WHERE s.is_active=1
         ORDER BY s.sort_order ASC
     """).fetchall()
