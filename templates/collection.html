@@ -62,11 +62,6 @@
             {% else %}{{ coll.level }}{% endif %}
           </span>
           {% endif %}
-          {% if coll.tags %}
-          {% for tag in coll.tags.split(',') %}
-          <span class="px-3 py-1 rounded-full bg-white/15 text-xs font-medium">{{ tag.strip() }}</span>
-          {% endfor %}
-          {% endif %}
         </div>
       </div>
     </div>

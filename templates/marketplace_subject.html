@@ -130,13 +130,6 @@
                 {% if c.card_count %}<span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">🃏 {{ c.card_count }} {{ npl(c.card_count, 'mk_questions') }}</span>{% endif %}
               </div>
             </div>
-            {% if c.tags %}
-            <div class="flex flex-wrap gap-1 mt-3">
-              {% for tag in c.tags.split(',')[:3] %}
-              <span class="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-medium">{{ tag.strip() }}</span>
-              {% endfor %}
-            </div>
-            {% endif %}
           </a>
           {# Action buttons — Test / Flashcards based on collection content #}
           {% if c.has_mcq or c.has_terms %}
