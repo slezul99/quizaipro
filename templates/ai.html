@@ -188,19 +188,29 @@
       </button>
     </form>
 
-    <div class="mt-6 glass-premium" style="padding: 1.5rem;">
-      <p class="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+    {# Reference info — collapsed by default so the form ends cleanly; the
+       labels/placeholders/demo chips make first use self-explanatory. #}
+    <details id="ai-how-details" class="mt-6 glass-premium" style="padding: 1.25rem 1.5rem;">
+      <summary class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 cursor-pointer select-none">
         <span class="text-xl">💡</span> {{ t('ai_how_h') }}
-      </p>
-      <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+        <span class="ai-how-chev ml-auto" aria-hidden="true">▾</span>
+      </summary>
+      <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-300 mt-3">
         <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ t('ai_how_1') }}</span></li>
         <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ t('ai_how_2') }}</span></li>
         <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ t('ai_how_3') }}</span></li>
         <li class="flex items-start gap-2"><span class="text-amber-500 mt-0.5">★</span><span>{{ t('ai_how_4') }}</span></li>
       </ul>
-    </div>
+    </details>
   </div>
 </div>
+<style>
+  /* Collapsible "how it works" — hide the default marker, animate our chevron. */
+  #ai-how-details > summary { list-style: none; }
+  #ai-how-details > summary::-webkit-details-marker { display: none; }
+  #ai-how-details .ai-how-chev { color: #94a3b8; transition: transform 0.2s ease; }
+  #ai-how-details[open] .ai-how-chev { transform: rotate(180deg); }
+</style>
 <script>
 function submitAiForm() {
   var form = document.getElementById('ai-main-form');
