@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from '_macros.html' import subject_emblem with context %}
 {% block title %}{{ subj.title }} — {{ t('nav_marketplace') }} — QuizAIPro{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
@@ -15,10 +16,18 @@
     <!-- Subject Hero -->
     <div class="rounded-3xl p-8 mb-10 text-white relative overflow-hidden"
       style="background: linear-gradient(135deg, {{ subj.color }}, {{ subj.color2 }});">
-      <div class="absolute inset-0 opacity-10"
-        style="background: radial-gradient(circle at 80% 20%, white, transparent 60%)"></div>
+      <!-- themed art background (same as the subject card) -->
+      <img src="{{ asset('subjects/' ~ subj.slug ~ '.jpg') }}" alt="" loading="lazy"
+        class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+      <div class="absolute inset-0 pointer-events-none"
+        style="background: linear-gradient(100deg, {{ subj.color }}f2 0%, {{ subj.color }}cc 40%, {{ subj.color2 }}66 72%, {{ subj.color2 }}33 100%);"></div>
+      <div class="absolute inset-0 pointer-events-none"
+        style="background: linear-gradient(to top, rgba(0,0,0,.30), transparent 70%);"></div>
       <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
-        <div class="text-7xl">{{ subj.icon }}</div>
+        <div class="w-20 h-20 rounded-3xl flex items-center justify-center flex-shrink-0"
+          style="background: rgba(255,255,255,.22); box-shadow: inset 0 1.5px 1px rgba(255,255,255,.5), 0 8px 18px -6px rgba(0,0,0,.35); backdrop-filter: blur(6px);">
+          <div class="scale-150">{{ subject_emblem(subj.slug, subj.icon) }}</div>
+        </div>
         <div class="flex-1">
           <h1 class="text-3xl md:text-4xl font-black mb-2 leading-tight">{{ subj.title }}</h1>
           {% if subj.desc %}
