@@ -151,7 +151,7 @@
           onclick="window.location.href='/collection/{{ c.slug }}'">
           <!-- full-bleed themed art: the image already is the card background (colour + bright object on the right) -->
           <img src="{{ asset('collections/' ~ c.slug ~ '.jpg') }}" alt="" loading="lazy"
-            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.remove()">
+            class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
           <!-- left darkening for text legibility; fades out so the art stays bright on the right -->
           <div class="absolute inset-0 pointer-events-none"
             style="background: linear-gradient(90deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.34) 30%, rgba(0,0,0,.06) 52%, transparent 66%);"></div>
