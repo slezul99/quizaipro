@@ -9234,7 +9234,7 @@ except Exception as _e:
 try:
     _conn = db.get_conn()
     _hist = _conn.execute(
-        "SELECT 1 FROM app_migrations WHERE key='marketplace_history_seed'"
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_history_seed_v2'"
     ).fetchone()
     _conn.close()
     if not _hist:
@@ -9250,7 +9250,7 @@ try:
             except Exception:
                 pass
         _conn.execute(
-            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_history_seed')"
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_history_seed_v2')"
         )
         _conn.commit()
         _conn.close()
