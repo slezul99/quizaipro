@@ -18,9 +18,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import ai_gen  # noqa: E402
 
 LOC = "us-central1"
-MODEL = "imagen-3.0-fast-generate-001"
+MODEL = "imagen-4.0-generate-001"   # latest / highest quality
 ASPECT = "1:1"
-OUT_W = 760
+OUT_W = 1024
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "static", "subjects")
 os.makedirs(OUT, exist_ok=True)
@@ -57,22 +57,30 @@ PROMPTS = {
 }
 
 
-def generate(prompt):
-    tok = ai_gen._vertex_token()
+def generate(prompt, retries=5):
     proj = ai_gen._vertex_project()
     url = (f"https://{LOC}-aiplatform.googleapis.com/v1/projects/{proj}"
            f"/locations/{LOC}/publishers/google/models/{MODEL}:predict")
     body = {"instances": [{"prompt": prompt}],
             "parameters": {"sampleCount": 1, "aspectRatio": ASPECT}}
-    r = requests.post(url, headers={"Authorization": f"Bearer {tok}",
-                                    "Content-Type": "application/json"},
-                      json=body, timeout=120)
-    if r.status_code != 200:
-        raise RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
-    preds = r.json().get("predictions", [])
-    if not preds or not preds[0].get("bytesBase64Encoded"):
-        raise RuntimeError("no image in response")
-    return base64.b64decode(preds[0]["bytesBase64Encoded"])
+    import time
+    for attempt in range(retries):
+        tok = ai_gen._vertex_token()
+        r = requests.post(url, headers={"Authorization": f"Bearer {tok}",
+                                        "Content-Type": "application/json"},
+                          json=body, timeout=120)
+        if r.status_code == 429:                       # per-minute quota
+            wait = 25 * (attempt + 1)
+            print(f"    quota hit, waiting {wait}s ...")
+            time.sleep(wait)
+            continue
+        if r.status_code != 200:
+            raise RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
+        preds = r.json().get("predictions", [])
+        if not preds or not preds[0].get("bytesBase64Encoded"):
+            raise RuntimeError("no image in response")
+        return base64.b64decode(preds[0]["bytesBase64Encoded"])
+    raise RuntimeError("exhausted retries (quota)")
 
 
 def main():
@@ -85,10 +93,12 @@ def main():
             h = round(img.height * w / img.width)
             img = img.resize((w, h), Image.LANCZOS)
             path = os.path.join(OUT, f"{slug}.jpg")
-            img.save(path, "JPEG", quality=82, optimize=True, progressive=True)
+            img.save(path, "JPEG", quality=87, optimize=True, progressive=True)
             print(f"  {slug}: saved {path} ({os.path.getsize(path)//1024} KB, {w}x{h})")
         except Exception as e:
             print(f"  {slug}: FAILED — {e}")
+        import time
+        time.sleep(8)   # gentle spacing to respect the per-minute quota
 
 
 if __name__ == "__main__":
