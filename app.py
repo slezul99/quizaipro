@@ -9385,6 +9385,51 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace science seed error: {_e}")
 
+# Consolidate the science taxonomy: the first cut shipped two new subjects
+# (exact-sciences / natural-sciences) that duplicated the established
+# "Математика" and "Естественные науки". Fold the genuinely-new topics
+# (География, Анатомия) into the existing science subject and retire the
+# duplicate subjects/collections. Slug-based + idempotent → safe on any DB.
+try:
+    _conn = db.get_conn()
+    _dedup = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='mp_science_dedup_v1'"
+    ).fetchone()
+    if not _dedup:
+        _sci_row = _conn.execute(
+            "SELECT id FROM mp_subjects WHERE slug='science'"
+        ).fetchone()
+        if _sci_row:
+            _sci_id = _sci_row[0]
+            # move the unique new topics under the established science subject
+            _conn.execute(
+                "UPDATE collections SET subject_id=?, subject_slug='science', "
+                "sort_order=5 WHERE slug='geography'", (_sci_id,))
+            _conn.execute(
+                "UPDATE collections SET subject_id=?, subject_slug='science', "
+                "sort_order=6 WHERE slug='anatomy'", (_sci_id,))
+            # hide decks that hang only off the duplicate collections
+            _conn.execute(
+                "UPDATE decks SET is_public=0 WHERE id IN ("
+                "  SELECT cd.deck_id FROM collection_decks cd "
+                "  JOIN collections co ON co.id=cd.collection_id "
+                "  WHERE co.slug IN ('math-basics','algebra','geometry','physics',"
+                "                    'biology','chemistry'))")
+            # retire the duplicate collections + subjects
+            _conn.execute(
+                "UPDATE collections SET is_active=0 WHERE slug IN "
+                "('math-basics','algebra','geometry','physics','biology','chemistry')")
+            _conn.execute(
+                "UPDATE mp_subjects SET is_active=0 WHERE slug IN "
+                "('exact-sciences','natural-sciences')")
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('mp_science_dedup_v1')")
+        _conn.commit()
+        print("[INIT] Science taxonomy consolidated.")
+    _conn.close()
+except Exception as _e:
+    print(f"[INIT] Science dedup error: {_e}")
+
 # Always-on safety: any deck with NULL flags gets recomputed at every startup.
 # Cheap (only NULL decks) and ensures Test/Flashcards buttons are correct.
 try:
