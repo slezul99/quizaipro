@@ -9538,6 +9538,23 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace science seed error: {_e}")
 
+# Mathematics learning path ("Математика с нуля").
+try:
+    _conn = db.get_conn()
+    _mp = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='math_path_seed_v1'").fetchone()
+    _conn.close()
+    if not _mp:
+        print("[INIT] Seeding mathematics learning path ...")
+        import seed_math_path  # noqa: F401  (side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('math_path_seed_v1')")
+        _conn.commit()
+        _conn.close()
+except Exception as _e:
+    print(f"[INIT] Math path seed error: {_e}")
+
 # Consolidate the science taxonomy: the first cut shipped two new subjects
 # (exact-sciences / natural-sciences) that duplicated the established
 # "Математика" and "Естественные науки". Fold the genuinely-new topics
