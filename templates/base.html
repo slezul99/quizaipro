@@ -1567,6 +1567,7 @@
     <a href="/stats" class="mob-link indigo">{{ icon('chart', 19) }} <span>{{ t('nav_stats') }}</span></a>
     <a href="/goals" class="mob-link indigo">{{ icon('target', 19) }} <span>{{ t('nav_goals') }}</span></a>
     <a href="/achievements" class="mob-link indigo">{{ icon('trophy', 19) }} <span>{{ t('nav_achievements') }}</span></a>
+    <a href="/growth" class="mob-link emerald"><span style="font-size:19px;line-height:1;">🌳</span> <span>{{ t('gr_stages_h') }}</span></a>
 
     <div class="text-xs uppercase tracking-wider font-bold text-slate-400 px-3 pt-3 pb-1 border-t border-slate-100 mt-2">{{ t('nav_games') }}</div>
     <a href="/duels" class="mob-link pink">{{ icon('sword', 19) }} <span>{{ t('nav_duels') }}</span></a>
@@ -1604,9 +1605,10 @@
     <a href="/superadmin" class="mob-link indigo">{{ icon('shield', 19) }} <span>Super Admin</span></a>
     {% endif %}
 
-    <div class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 border-t border-slate-100 mt-2">
+    <a href="/growth" class="mob-link emerald flex items-center gap-3 border-t border-slate-100 mt-2 pt-3">
       {{ icon('flame', 16) }} {{ current_user.streak or 0 }} {{ t('g_left_days') }} · {{ icon('star', 16) }} {{ current_user.xp or 0 }} XP
-    </div>
+      <span class="ml-auto text-base">🌳</span>
+    </a>
     <a href="/logout" class="mob-link red">{{ icon('logout', 19) }} <span>{{ t('logout') }}</span></a>
   </div>
   {% endif %}
