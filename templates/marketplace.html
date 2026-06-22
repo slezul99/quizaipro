@@ -67,7 +67,7 @@
           style="--gs: {{ s.color }}66; --gsh: {{ s.color }}b3;
                  background: linear-gradient(145deg, {{ s.color }}, {{ s.color2 }});">
           <!-- themed background art -->
-          <img src="{{ url_for('static', filename='subjects/' ~ s.slug ~ '.jpg') }}" alt="" loading="lazy"
+          <img src="{{ asset('subjects/' ~ s.slug ~ '.jpg') }}" alt="" loading="lazy"
             class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
           <!-- legibility overlays: brand-tinted foot + darken for text -->
           <div class="absolute inset-0 pointer-events-none"

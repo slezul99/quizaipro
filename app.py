@@ -358,6 +358,20 @@ def inject_csrf():
     return {"csrf_token": get_csrf_token}
 
 
+@app.context_processor
+def inject_asset_helper():
+    """`{{ asset('tailwind.css') }}` → static URL with an mtime cache-buster,
+    so a redeployed CSS / image is refetched instead of served stale from the
+    browser/CDN cache."""
+    def asset(filename):
+        try:
+            mt = int(os.path.getmtime(os.path.join(app.static_folder, filename)))
+        except OSError:
+            mt = 0
+        return url_for("static", filename=filename) + f"?v={mt}"
+    return {"asset": asset}
+
+
 # Jinja-fil'tr: UTC datetime/string -> Tashkent (UTC+5)
 @app.template_filter("tashkent")
 def _tashkent_filter(value, fmt: str = "%Y-%m-%d %H:%M"):
