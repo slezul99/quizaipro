@@ -107,14 +107,23 @@
         {% for c in collections %}
         <div class="group relative rounded-3xl p-6 text-white overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
           style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">
-          <div class="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
-            style="background: radial-gradient(circle at 30% 0%, white, transparent 60%)"></div>
-          <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full opacity-10" style="background:white;"></div>
+          <!-- themed art, kept subtle behind a brand-tinted overlay -->
+          <img src="{{ asset('collections/' ~ c.slug ~ '.jpg') }}" alt="" loading="lazy"
+            class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+          <div class="absolute inset-0 pointer-events-none"
+            style="background: linear-gradient(125deg, {{ c.color }}f2 0%, {{ c.color }}cc 44%, {{ c.color2 }}99 100%);"></div>
+          <div class="absolute inset-0 pointer-events-none"
+            style="background: linear-gradient(to top, rgba(0,0,0,.38) 0%, transparent 52%);"></div>
+          <div class="absolute inset-0 rounded-3xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+            style="box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.30);"></div>
+
           <a href="/collection/{{ c.slug }}" class="relative z-10 block flex-1">
             <div class="flex items-start justify-between mb-3">
-              <div class="text-4xl">{{ c.icon }}</div>
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                style="background: rgba(255,255,255,.22); box-shadow: inset 0 1px 1px rgba(255,255,255,.5), 0 4px 10px -4px rgba(0,0,0,.3); backdrop-filter: blur(4px);">{{ c.icon }}</div>
               {% if c.level %}
-              <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-semibold">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold"
+                style="background: rgba(255,255,255,.20); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); backdrop-filter: blur(3px);">
                 {% if c.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}
                 {% elif c.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
                 {% elif c.level == 'advanced' %}🔴 {{ t('lvl_advanced') }}
@@ -122,13 +131,11 @@
               </span>
               {% endif %}
             </div>
-            <h3 class="font-black text-lg leading-tight mb-1">{{ c.title }}</h3>
-            {% if c.desc %}<p class="text-white/70 text-sm line-clamp-2 mb-3">{{ c.desc }}</p>{% endif %}
-            <div class="flex items-center justify-between mt-2">
-              <div class="flex gap-2 flex-wrap">
-                <span class="px-2.5 py-1 rounded-full bg-white/20 text-xs font-bold">📚 {{ c.deck_count }} {{ npl(c.deck_count, 'mk_decks') }}</span>
-                {% if c.card_count %}<span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold">🃏 {{ c.card_count }} {{ npl(c.card_count, 'mk_questions') }}</span>{% endif %}
-              </div>
+            <h3 class="font-black text-lg leading-tight mb-1" style="text-shadow:0 1px 4px rgba(0,0,0,.35);">{{ c.title }}</h3>
+            {% if c.desc %}<p class="text-white/85 text-sm line-clamp-2 mb-3" style="text-shadow:0 1px 3px rgba(0,0,0,.3);">{{ c.desc }}</p>{% endif %}
+            <div class="flex items-center gap-2 flex-wrap mt-2">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold" style="background: rgba(255,255,255,.20); backdrop-filter: blur(3px);">📚 {{ c.deck_count }} {{ npl(c.deck_count, 'mk_decks') }}</span>
+              {% if c.card_count %}<span class="px-2.5 py-1 rounded-full text-xs font-semibold" style="background: rgba(255,255,255,.15); backdrop-filter: blur(3px);">📝 {{ c.card_count }} {{ npl(c.card_count, 'mk_questions') }}</span>{% endif %}
             </div>
           </a>
           {# Action buttons — Test / Flashcards based on collection content #}
