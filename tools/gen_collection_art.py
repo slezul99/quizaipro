@@ -96,6 +96,40 @@ PROMPTS = {
     "programming-data-structures": ("A glossy 3D graph of connected spheres forming "
                                     "a tree, plus a small linked-list of cubes, data "
                                     "structures theme, green tones." + _COMMON),
+    # Natural Sciences subject collections
+    "geography": ("A glossy 3D globe with a compass and a folded map, geography "
+                  "theme, emerald green tones." + _COMMON),
+    "anatomy": ("A glossy 3D anatomical human heart with a small skeleton/bone "
+                "accent, human anatomy theme, teal-green tones." + _COMMON),
+    "science-biology": ("A glowing DNA double helix with a microscope and a green "
+                        "leaf cell, biology theme, green tones." + _COMMON),
+    "science-chemistry": ("Glass beakers and a conical flask with colourful liquid "
+                          "and floating molecules, chemistry theme, teal tones." + _COMMON),
+    "science-physics": ("A glowing 3D atom model with a magnet and a pendulum, "
+                        "physics theme, blue tones." + _COMMON),
+    "science-general": ("A glossy 3D atom, a beaker and a small telescope together, "
+                        "general science theme, green tones." + _COMMON),
+    # Business subject collections
+    "business-marketing": ("A glossy 3D megaphone with a target/bullseye and a "
+                           "rising arrow, marketing theme, amber and orange tones." + _COMMON),
+    "business-finance": ("Stacks of gold coins, a dollar sign and a rising line "
+                         "chart, finance theme, gold and amber tones." + _COMMON),
+    "business-accounting": ("A 3D calculator with a balance scale and a small "
+                            "ledger book, accounting theme, warm orange tones." + _COMMON),
+    "business-entrepreneurship": ("A glowing lightbulb launching like a rocket with "
+                                  "a briefcase, entrepreneurship theme, orange "
+                                  "tones." + _COMMON),
+    # History subject collections
+    "history-ancient": ("Ancient Greek marble columns with an amphora vase and a "
+                        "laurel wreath, ancient world theme, warm gold and sepia "
+                        "tones." + _COMMON),
+    "history-medieval": ("A medieval castle tower with a knight's helmet and a "
+                         "crossed sword and shield, middle ages theme, brown and "
+                         "stone tones." + _COMMON),
+    "history-modern": ("An antique sailing ship with an old world map, a compass "
+                       "and a quill, early-modern era theme, sepia tones." + _COMMON),
+    "history-20th-century": ("A vintage radio, an old globe and a folded newspaper, "
+                             "20th-century theme, warm sepia tones." + _COMMON),
 }
 
 
