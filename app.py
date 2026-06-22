@@ -9395,6 +9395,25 @@ try:
 except Exception as _e:
     print(f"[INIT] Force refresh error: {_e}")
 
+# Apply AI-generated marketplace card translations (ru/en/uz) once.
+try:
+    _conn = db.get_conn()
+    _i18n = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v1'"
+    ).fetchone()
+    _conn.close()
+    if not _i18n:
+        print("[INIT] Applying marketplace card translations ...")
+        import seed_marketplace_i18n_auto  # noqa: F401  (side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v1')"
+        )
+        _conn.commit()
+        _conn.close()
+except Exception as _e:
+    print(f"[INIT] marketplace i18n error: {_e}")
+
 # One-time fix: refresh has_mcq/has_terms for any deck that still has NULL flags.
 # Independent of seed markers — handles the case where seeded decks ran but flags
 # weren't computed in the same boot. Runs ONCE per app_migrations key.
