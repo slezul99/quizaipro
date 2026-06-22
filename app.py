@@ -9363,6 +9363,28 @@ try:
 except Exception as _e:
     print(f"[INIT] Marketplace history translations seed error: {_e}")
 
+# Marketplace science subjects (Точные науки / Естественные науки) with topic
+# collections — runs BEFORE the i18n auto-apply below so the new RU cards exist
+# when translations are filled. Idempotent (get_or_create / INSERT OR IGNORE).
+try:
+    _conn = db.get_conn()
+    _sci = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_science_seed_v1'"
+    ).fetchone()
+    _conn.close()
+    if not _sci:
+        print("[INIT] Seeding marketplace science subjects ...")
+        import seed_marketplace_science  # noqa: F401  (side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_science_seed_v1')"
+        )
+        _conn.commit()
+        _conn.close()
+        print("[INIT] Marketplace science subjects seeded.")
+except Exception as _e:
+    print(f"[INIT] Marketplace science seed error: {_e}")
+
 # Always-on safety: any deck with NULL flags gets recomputed at every startup.
 # Cheap (only NULL decks) and ensures Test/Flashcards buttons are correct.
 try:
@@ -9414,7 +9436,7 @@ except Exception as _e:
 try:
     _conn = db.get_conn()
     _i18n = _conn.execute(
-        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v2'"
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v3'"
     ).fetchone()
     _conn.close()
     if not _i18n:
@@ -9422,7 +9444,7 @@ try:
         import seed_marketplace_i18n_auto  # noqa: F401  (side effect)
         _conn = db.get_conn()
         _conn.execute(
-            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v2')"
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v3')"
         )
         _conn.commit()
         _conn.close()

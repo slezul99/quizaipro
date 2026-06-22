@@ -9722,5 +9722,1348 @@
    "back": "C) Taxminan 3000 yil",
    "note": "A) Taxminan 500 yil\nB) Taxminan 1000 yil\nC) Taxminan 3000 yil\nD) Taxminan 6000 yil"
   }
+ },
+ "Сколько будет 7 × 8?": {
+  "ru": {
+   "front": "Сколько будет 7 × 8?",
+   "back": "B) 56",
+   "note": "A) 54\nB) 56\nC) 48\nD) 64"
+  },
+  "en": {
+   "front": "What is 7 × 8?",
+   "back": "B) 56",
+   "note": "A) 54\nB) 56\nC) 48\nD) 64"
+  },
+  "uz": {
+   "front": "7 × 8 necha bo'ladi?",
+   "back": "B) 56",
+   "note": "A) 54\nB) 56\nC) 48\nD) 64"
+  }
+ },
+ "Чему равен квадратный корень из 144?": {
+  "ru": {
+   "front": "Чему равен квадратный корень из 144?",
+   "back": "C) 12",
+   "note": "A) 14\nB) 11\nC) 12\nD) 13"
+  },
+  "en": {
+   "front": "What is the square root of 144?",
+   "back": "C) 12",
+   "note": "A) 14\nB) 11\nC) 12\nD) 13"
+  },
+  "uz": {
+   "front": "144 ning kvadrat ildizi nechaga teng?",
+   "back": "C) 12",
+   "note": "A) 14\nB) 11\nC) 12\nD) 13"
+  }
+ },
+ "Сколько градусов в прямом угле?": {
+  "ru": {
+   "front": "Сколько градусов в прямом угле?",
+   "back": "B) 90",
+   "note": "A) 45\nB) 90\nC) 180\nD) 360"
+  },
+  "en": {
+   "front": "How many degrees are in a right angle?",
+   "back": "B) 90",
+   "note": "A) 45\nB) 90\nC) 180\nD) 360"
+  },
+  "uz": {
+   "front": "To'g'ri burchakda necha gradus bor?",
+   "back": "B) 90",
+   "note": "A) 45\nB) 90\nC) 180\nD) 360"
+  }
+ },
+ "Какое из чисел является простым?": {
+  "ru": {
+   "front": "Какое из чисел является простым?",
+   "back": "C) 7",
+   "note": "A) 9\nB) 15\nC) 7\nD) 21"
+  },
+  "en": {
+   "front": "Which of the numbers is a prime number?",
+   "back": "C) 7",
+   "note": "A) 9\nB) 15\nC) 7\nD) 21"
+  },
+  "uz": {
+   "front": "Sonlardan qaysi biri tub son hisoblanadi?",
+   "back": "C) 7",
+   "note": "A) 9\nB) 15\nC) 7\nD) 21"
+  }
+ },
+ "Сколько будет 15% от 200?": {
+  "ru": {
+   "front": "Сколько будет 15% от 200?",
+   "back": "B) 30",
+   "note": "A) 20\nB) 30\nC) 15\nD) 45"
+  },
+  "en": {
+   "front": "What is 15% of 200?",
+   "back": "B) 30",
+   "note": "A) 20\nB) 30\nC) 15\nD) 45"
+  },
+  "uz": {
+   "front": "200 ning 15 foizi necha bo'ladi?",
+   "back": "B) 30",
+   "note": "A) 20\nB) 30\nC) 15\nD) 45"
+  }
+ },
+ "Чему равно 2 в степени 5?": {
+  "ru": {
+   "front": "Чему равно 2 в степени 5?",
+   "back": "C) 32",
+   "note": "A) 10\nB) 25\nC) 32\nD) 16"
+  },
+  "en": {
+   "front": "What is 2 to the power of 5?",
+   "back": "C) 32",
+   "note": "A) 10\nB) 25\nC) 32\nD) 16"
+  },
+  "uz": {
+   "front": "2 ning 5-darajasi nechaga teng?",
+   "back": "C) 32",
+   "note": "A) 10\nB) 25\nC) 32\nD) 16"
+  }
+ },
+ "Сколько минут в 3 часах?": {
+  "ru": {
+   "front": "Сколько минут в 3 часах?",
+   "back": "C) 180",
+   "note": "A) 120\nB) 150\nC) 180\nD) 240"
+  },
+  "en": {
+   "front": "How many minutes are in 3 hours?",
+   "back": "C) 180",
+   "note": "A) 120\nB) 150\nC) 180\nD) 240"
+  },
+  "uz": {
+   "front": "3 soatda necha daqiqa bor?",
+   "back": "C) 180",
+   "note": "A) 120\nB) 150\nC) 180\nD) 240"
+  }
+ },
+ "Какая дробь равна 0,5?": {
+  "ru": {
+   "front": "Какая дробь равна 0,5?",
+   "back": "B) 1/2",
+   "note": "A) 1/3\nB) 1/2\nC) 1/4\nD) 2/3"
+  },
+  "en": {
+   "front": "Which fraction is equal to 0.5?",
+   "back": "B) 1/2",
+   "note": "A) 1/3\nB) 1/2\nC) 1/4\nD) 2/3"
+  },
+  "uz": {
+   "front": "Qaysi kasr 0,5 ga teng?",
+   "back": "B) 1/2",
+   "note": "A) 1/3\nB) 1/2\nC) 1/4\nD) 2/3"
+  }
+ },
+ "Чему равна сумма углов треугольника?": {
+  "ru": {
+   "front": "Чему равна сумма углов треугольника?",
+   "back": "B) 180°",
+   "note": "A) 90°\nB) 180°\nC) 360°\nD) 270°"
+  },
+  "en": {
+   "front": "What is the sum of the angles of a triangle?",
+   "back": "B) 180°",
+   "note": "A) 90°\nB) 180°\nC) 360°\nD) 270°"
+  },
+  "uz": {
+   "front": "Uchburchak burchaklarining yig'indisi nimaga teng?",
+   "back": "B) 180°",
+   "note": "A) 90°\nB) 180°\nC) 360°\nD) 270°"
+  }
+ },
+ "Сколько будет 100 ÷ 4?": {
+  "ru": {
+   "front": "Сколько будет 100 ÷ 4?",
+   "back": "B) 25",
+   "note": "A) 20\nB) 25\nC) 40\nD) 50"
+  },
+  "en": {
+   "front": "What is 100 ÷ 4?",
+   "back": "B) 25",
+   "note": "A) 20\nB) 25\nC) 40\nD) 50"
+  },
+  "uz": {
+   "front": "100 ÷ 4 nechaga teng?",
+   "back": "B) 25",
+   "note": "A) 20\nB) 25\nC) 40\nD) 50"
+  }
+ },
+ "Решите уравнение: x + 5 = 12. Чему равен x?": {
+  "ru": {
+   "front": "Решите уравнение: x + 5 = 12. Чему равен x?",
+   "back": "B) 7",
+   "note": "A) 5\nB) 7\nC) 17\nD) 6"
+  },
+  "en": {
+   "front": "Solve the equation: x + 5 = 12. What is x?",
+   "back": "B) 7",
+   "note": "A) 5\nB) 7\nC) 17\nD) 6"
+  },
+  "uz": {
+   "front": "Tenglamani yeching: x + 5 = 12. x nimaga teng?",
+   "back": "B) 7",
+   "note": "A) 5\nB) 7\nC) 17\nD) 6"
+  }
+ },
+ "Чему равно a², если a = 9?": {
+  "ru": {
+   "front": "Чему равно a², если a = 9?",
+   "back": "B) 81",
+   "note": "A) 18\nB) 81\nC) 72\nD) 90"
+  },
+  "en": {
+   "front": "What is a² if a = 9?",
+   "back": "B) 81",
+   "note": "A) 18\nB) 81\nC) 72\nD) 90"
+  },
+  "uz": {
+   "front": "Agar a = 9 bo'lsa, a² nimaga teng?",
+   "back": "B) 81",
+   "note": "A) 18\nB) 81\nC) 72\nD) 90"
+  }
+ },
+ "Упростите выражение: 3x + 2x": {
+  "ru": {
+   "front": "Упростите выражение: 3x + 2x",
+   "back": "A) 5x",
+   "note": "A) 5x\nB) 6x\nC) 5\nD) 6x²"
+  },
+  "en": {
+   "front": "Simplify the expression: 3x + 2x",
+   "back": "A) 5x",
+   "note": "A) 5x\nB) 6x\nC) 5\nD) 6x²"
+  },
+  "uz": {
+   "front": "Ifodani soddalashtiring: 3x + 2x",
+   "back": "A) 5x",
+   "note": "A) 5x\nB) 6x\nC) 5\nD) 6x²"
+  }
+ },
+ "Решите уравнение: 2x = 10. Чему равен x?": {
+  "ru": {
+   "front": "Решите уравнение: 2x = 10. Чему равен x?",
+   "back": "A) 5",
+   "note": "A) 5\nB) 8\nC) 20\nD) 12"
+  },
+  "en": {
+   "front": "Solve the equation: 2x = 10. What is x?",
+   "back": "A) 5",
+   "note": "A) 5\nB) 8\nC) 20\nD) 12"
+  },
+  "uz": {
+   "front": "Tenglamani yeching: 2x = 10. x nimaga teng?",
+   "back": "A) 5",
+   "note": "A) 5\nB) 8\nC) 20\nD) 12"
+  }
+ },
+ "Чему равно (a + b)²?": {
+  "ru": {
+   "front": "Чему равно (a + b)²?",
+   "back": "B) a² + 2ab + b²",
+   "note": "A) a² + b²\nB) a² + 2ab + b²\nC) a² − b²\nD) 2ab"
+  },
+  "en": {
+   "front": "What is (a + b)² equal to?",
+   "back": "B) a² + 2ab + b²",
+   "note": "A) a² + b²\nB) a² + 2ab + b²\nC) a² − b²\nD) 2ab"
+  },
+  "uz": {
+   "front": "(a + b)² nimaga teng?",
+   "back": "B) a² + 2ab + b²",
+   "note": "A) a² + b²\nB) a² + 2ab + b²\nC) a² − b²\nD) 2ab"
+  }
+ },
+ "При каком значении x: x − 3 = 0?": {
+  "ru": {
+   "front": "При каком значении x: x − 3 = 0?",
+   "back": "C) 3",
+   "note": "A) 0\nB) −3\nC) 3\nD) 1"
+  },
+  "en": {
+   "front": "For what value of x is x − 3 = 0?",
+   "back": "C) 3",
+   "note": "A) 0\nB) −3\nC) 3\nD) 1"
+  },
+  "uz": {
+   "front": "x ning qanday qiymatida: x − 3 = 0?",
+   "back": "C) 3",
+   "note": "A) 0\nB) −3\nC) 3\nD) 1"
+  }
+ },
+ "Чему равен факториал 5! ?": {
+  "ru": {
+   "front": "Чему равен факториал 5! ?",
+   "back": "B) 120",
+   "note": "A) 25\nB) 120\nC) 60\nD) 100"
+  },
+  "en": {
+   "front": "What is the factorial of 5! ?",
+   "back": "B) 120",
+   "note": "A) 25\nB) 120\nC) 60\nD) 100"
+  },
+  "uz": {
+   "front": "5! faktoriali nimaga teng?",
+   "back": "B) 120",
+   "note": "A) 25\nB) 120\nC) 60\nD) 100"
+  }
+ },
+ "Чему равен дискриминант квадратного уравнения?": {
+  "ru": {
+   "front": "Чему равен дискриминант квадратного уравнения?",
+   "back": "A) b² − 4ac",
+   "note": "A) b² − 4ac\nB) b² + 4ac\nC) 2a\nD) −b/2a"
+  },
+  "en": {
+   "front": "What is the discriminant of a quadratic equation?",
+   "back": "A) b² − 4ac",
+   "note": "A) b² − 4ac\nB) b² + 4ac\nC) 2a\nD) −b/2a"
+  },
+  "uz": {
+   "front": "Kvadrat tenglamaning diskriminanti nimaga teng?",
+   "back": "A) b² − 4ac",
+   "note": "A) b² − 4ac\nB) b² + 4ac\nC) 2a\nD) −b/2a"
+  }
+ },
+ "Решите уравнение: x / 2 = 6. Чему равен x?": {
+  "ru": {
+   "front": "Решите уравнение: x / 2 = 6. Чему равен x?",
+   "back": "C) 12",
+   "note": "A) 3\nB) 8\nC) 12\nD) 4"
+  },
+  "en": {
+   "front": "Solve the equation: x / 2 = 6. What is x?",
+   "back": "C) 12",
+   "note": "A) 3\nB) 8\nC) 12\nD) 4"
+  },
+  "uz": {
+   "front": "Tenglamani yeching: x / 2 = 6. x nimaga teng?",
+   "back": "C) 12",
+   "note": "A) 3\nB) 8\nC) 12\nD) 4"
+  }
+ },
+ "Чему равен log₁₀(1000)?": {
+  "ru": {
+   "front": "Чему равен log₁₀(1000)?",
+   "back": "B) 3",
+   "note": "A) 2\nB) 3\nC) 10\nD) 100"
+  },
+  "en": {
+   "front": "What is log₁₀(1000) equal to?",
+   "back": "B) 3",
+   "note": "A) 2\nB) 3\nC) 10\nD) 100"
+  },
+  "uz": {
+   "front": "log₁₀(1000) nimaga teng?",
+   "back": "B) 3",
+   "note": "A) 2\nB) 3\nC) 10\nD) 100"
+  }
+ },
+ "Какова формула площади круга?": {
+  "ru": {
+   "front": "Какова формула площади круга?",
+   "back": "B) πr²",
+   "note": "A) 2πr\nB) πr²\nC) πd\nD) r²"
+  },
+  "en": {
+   "front": "What is the formula for the area of a circle?",
+   "back": "B) πr²",
+   "note": "A) 2πr\nB) πr²\nC) πd\nD) r²"
+  },
+  "uz": {
+   "front": "Doira yuzining formulasi qanday?",
+   "back": "B) πr²",
+   "note": "A) 2πr\nB) πr²\nC) πd\nD) r²"
+  }
+ },
+ "Сколько сторон у шестиугольника?": {
+  "ru": {
+   "front": "Сколько сторон у шестиугольника?",
+   "back": "B) 6",
+   "note": "A) 5\nB) 6\nC) 7\nD) 8"
+  },
+  "en": {
+   "front": "How many sides does a hexagon have?",
+   "back": "B) 6",
+   "note": "A) 5\nB) 6\nC) 7\nD) 8"
+  },
+  "uz": {
+   "front": "Oltiburchakning nechta tomoni bor?",
+   "back": "B) 6",
+   "note": "A) 5\nB) 6\nC) 7\nD) 8"
+  }
+ },
+ "Как называется треугольник со всеми равными сторонами?": {
+  "ru": {
+   "front": "Как называется треугольник со всеми равными сторонами?",
+   "back": "C) равносторонний",
+   "note": "A) прямоугольный\nB) равнобедренный\nC) равносторонний\nD) тупоугольный"
+  },
+  "en": {
+   "front": "What is a triangle with all equal sides called?",
+   "back": "C) equilateral",
+   "note": "A) right-angled\nB) isosceles\nC) equilateral\nD) obtuse-angled"
+  },
+  "uz": {
+   "front": "Hamma tomonlari teng bo'lgan uchburchak qanday ataladi?",
+   "back": "C) teng tomonli",
+   "note": "A) to'g'ri burchakli\nB) teng yonli\nC) teng tomonli\nD) o'tmas burchakli"
+  }
+ },
+ "Чему равна площадь прямоугольника?": {
+  "ru": {
+   "front": "Чему равна площадь прямоугольника?",
+   "back": "B) длина × ширина",
+   "note": "A) длина + ширина\nB) длина × ширина\nC) 2(длина + ширина)\nD) сторона²"
+  },
+  "en": {
+   "front": "What is the area of a rectangle?",
+   "back": "B) length × width",
+   "note": "A) length + width\nB) length × width\nC) 2(length + width)\nD) side²"
+  },
+  "uz": {
+   "front": "To'g'ri to'rtburchakning yuzi nimaga teng?",
+   "back": "B) uzunlik × kenglik",
+   "note": "A) uzunlik + kenglik\nB) uzunlik × kenglik\nC) 2(uzunlik + kenglik)\nD) tomon²"
+  }
+ },
+ "Сколько градусов в развёрнутом угле?": {
+  "ru": {
+   "front": "Сколько градусов в развёрнутом угле?",
+   "back": "B) 180°",
+   "note": "A) 90°\nB) 180°\nC) 360°\nD) 45°"
+  },
+  "en": {
+   "front": "How many degrees are in a straight angle?",
+   "back": "B) 180°",
+   "note": "A) 90°\nB) 180°\nC) 360°\nD) 45°"
+  },
+  "uz": {
+   "front": "Yoyiq burchak necha gradusga teng?",
+   "back": "B) 180°",
+   "note": "A) 90°\nB) 180°\nC) 360°\nD) 45°"
+  }
+ },
+ "Теорема Пифагора: a² + b² = ?": {
+  "ru": {
+   "front": "Теорема Пифагора: a² + b² = ?",
+   "back": "C) c²",
+   "note": "A) c\nB) 2c\nC) c²\nD) ab"
+  },
+  "en": {
+   "front": "Pythagorean theorem: a² + b² = ?",
+   "back": "C) c²",
+   "note": "A) c\nB) 2c\nC) c²\nD) ab"
+  },
+  "uz": {
+   "front": "Pifagor teoremasi: a² + b² = ?",
+   "back": "C) c²",
+   "note": "A) c\nB) 2c\nC) c²\nD) ab"
+  }
+ },
+ "Сколько граней у куба?": {
+  "ru": {
+   "front": "Сколько граней у куба?",
+   "back": "B) 6",
+   "note": "A) 4\nB) 6\nC) 8\nD) 12"
+  },
+  "en": {
+   "front": "How many faces does a cube have?",
+   "back": "B) 6",
+   "note": "A) 4\nB) 6\nC) 8\nD) 12"
+  },
+  "uz": {
+   "front": "Kubning nechta yog'i bor?",
+   "back": "B) 6",
+   "note": "A) 4\nB) 6\nC) 8\nD) 12"
+  }
+ },
+ "Какова формула длины окружности?": {
+  "ru": {
+   "front": "Какова формула длины окружности?",
+   "back": "B) 2πr",
+   "note": "A) πr²\nB) 2πr\nC) πr\nD) r²"
+  },
+  "en": {
+   "front": "What is the formula for the circumference of a circle?",
+   "back": "B) 2πr",
+   "note": "A) πr²\nB) 2πr\nC) πr\nD) r²"
+  },
+  "uz": {
+   "front": "Aylana uzunligi formulasi qanday?",
+   "back": "B) 2πr",
+   "note": "A) πr²\nB) 2πr\nC) πr\nD) r²"
+  }
+ },
+ "Как называется отрезок, соединяющий центр и точку окружности?": {
+  "ru": {
+   "front": "Как называется отрезок, соединяющий центр и точку окружности?",
+   "back": "C) радиус",
+   "note": "A) диаметр\nB) хорда\nC) радиус\nD) касательная"
+  },
+  "en": {
+   "front": "What is the line segment connecting the center to a point on the circle called?",
+   "back": "C) radius",
+   "note": "A) diameter\nB) chord\nC) radius\nD) tangent"
+  },
+  "uz": {
+   "front": "Aylana markazi bilan uning biror nuqtasini tutashtiruvchi kesma nima deyiladi?",
+   "back": "C) radius",
+   "note": "A) diametr\nB) vatar\nC) radius\nD) urinma"
+  }
+ },
+ "В каких единицах измеряется сила?": {
+  "ru": {
+   "front": "В каких единицах измеряется сила?",
+   "back": "C) Ньютон",
+   "note": "A) Джоуль\nB) Ватт\nC) Ньютон\nD) Паскаль"
+  },
+  "en": {
+   "front": "In what units is force measured?",
+   "back": "C) Newton",
+   "note": "A) Joule\nB) Watt\nC) Newton\nD) Pascal"
+  },
+  "uz": {
+   "front": "Kuch qaysi birlikda o'lchanadi?",
+   "back": "C) Nyuton",
+   "note": "A) Joul\nB) Vatt\nC) Nyuton\nD) Paskal"
+  }
+ },
+ "Чему примерно равна скорость света в вакууме?": {
+  "ru": {
+   "front": "Чему примерно равна скорость света в вакууме?",
+   "back": "B) 300 000 км/с",
+   "note": "A) 150 000 км/с\nB) 300 000 км/с\nC) 1 000 000 км/с\nD) 30 000 км/с"
+  },
+  "en": {
+   "front": "What is the approximate speed of light in a vacuum?",
+   "back": "B) 300,000 km/s",
+   "note": "A) 150,000 km/s\nB) 300,000 km/s\nC) 1,000,000 km/s\nD) 30,000 km/s"
+  },
+  "uz": {
+   "front": "Vakuumdagi yorug'lik tezligi taxminan qanchaga teng?",
+   "back": "B) 300 000 km/s",
+   "note": "A) 150 000 km/s\nB) 300 000 km/s\nC) 1 000 000 km/s\nD) 30 000 km/s"
+  }
+ },
+ "Что измеряется в Амперах?": {
+  "ru": {
+   "front": "Что измеряется в Амперах?",
+   "back": "C) сила тока",
+   "note": "A) напряжение\nB) сопротивление\nC) сила тока\nD) мощность"
+  },
+  "en": {
+   "front": "What is measured in Amperes?",
+   "back": "C) electric current",
+   "note": "A) voltage\nB) resistance\nC) electric current\nD) power"
+  },
+  "uz": {
+   "front": "Amperda nima o'lchanadi?",
+   "back": "C) tok kuchi",
+   "note": "A) kuchlanish\nB) qarshilik\nC) tok kuchi\nD) quvvat"
+  }
+ },
+ "Какая формула выражает второй закон Ньютона?": {
+  "ru": {
+   "front": "Какая формула выражает второй закон Ньютона?",
+   "back": "A) F = ma",
+   "note": "A) F = ma\nB) E = mc²\nC) v = s/t\nD) P = UI"
+  },
+  "en": {
+   "front": "Which formula expresses Newton's second law?",
+   "back": "A) F = ma",
+   "note": "A) F = ma\nB) E = mc²\nC) v = s/t\nD) P = UI"
+  },
+  "uz": {
+   "front": "Qaysi formula Nyutonning ikkinchi qonunini ifodalaydi?",
+   "back": "A) F = ma",
+   "note": "A) F = ma\nB) E = mc²\nC) v = s/t\nD) P = UI"
+  }
+ },
+ "В каких единицах измеряется энергия?": {
+  "ru": {
+   "front": "В каких единицах измеряется энергия?",
+   "back": "B) Джоуль",
+   "note": "A) Ньютон\nB) Джоуль\nC) Ватт\nD) Вольт"
+  },
+  "en": {
+   "front": "In what units is energy measured?",
+   "back": "B) Joule",
+   "note": "A) Newton\nB) Joule\nC) Watt\nD) Volt"
+  },
+  "uz": {
+   "front": "Energiya qaysi birlikda o'lchanadi?",
+   "back": "B) Joul",
+   "note": "A) Nyuton\nB) Joul\nC) Vatt\nD) Volt"
+  }
+ },
+ "Какая частица имеет отрицательный заряд?": {
+  "ru": {
+   "front": "Какая частица имеет отрицательный заряд?",
+   "back": "C) электрон",
+   "note": "A) протон\nB) нейтрон\nC) электрон\nD) фотон"
+  },
+  "en": {
+   "front": "Which particle has a negative charge?",
+   "back": "C) electron",
+   "note": "A) proton\nB) neutron\nC) electron\nD) photon"
+  },
+  "uz": {
+   "front": "Qaysi zarra manfiy zaryadga ega?",
+   "back": "C) elektron",
+   "note": "A) proton\nB) neytron\nC) elektron\nD) foton"
+  }
+ },
+ "Что измеряет термометр?": {
+  "ru": {
+   "front": "Что измеряет термометр?",
+   "back": "B) температуру",
+   "note": "A) давление\nB) температуру\nC) массу\nD) скорость"
+  },
+  "en": {
+   "front": "What does a thermometer measure?",
+   "back": "B) temperature",
+   "note": "A) pressure\nB) temperature\nC) mass\nD) speed"
+  },
+  "uz": {
+   "front": "Termometr nimani o'lchaydi?",
+   "back": "B) haroratni",
+   "note": "A) bosim\nB) harorat\nC) massa\nD) tezlik"
+  }
+ },
+ "Чему примерно равно ускорение свободного падения на Земле?": {
+  "ru": {
+   "front": "Чему примерно равно ускорение свободного падения на Земле?",
+   "back": "A) 9,8 м/с²",
+   "note": "A) 9,8 м/с²\nB) 3,0 м/с²\nC) 100 м/с²\nD) 1,6 м/с²"
+  },
+  "en": {
+   "front": "What is the approximate acceleration due to gravity on Earth?",
+   "back": "A) 9.8 m/s²",
+   "note": "A) 9.8 m/s²\nB) 3.0 m/s²\nC) 100 m/s²\nD) 1.6 m/s²"
+  },
+  "uz": {
+   "front": "Yerdagi erkin tushish tezlanishi taxminan qanchaga teng?",
+   "back": "A) 9,8 m/s²",
+   "note": "A) 9,8 m/s²\nB) 3,0 m/s²\nC) 100 m/s²\nD) 1,6 m/s²"
+  }
+ },
+ "В каких единицах измеряется электрическое напряжение?": {
+  "ru": {
+   "front": "В каких единицах измеряется электрическое напряжение?",
+   "back": "C) Вольт",
+   "note": "A) Ампер\nB) Ом\nC) Вольт\nD) Ватт"
+  },
+  "en": {
+   "front": "In what units is electrical voltage measured?",
+   "back": "C) Volt",
+   "note": "A) Ampere\nB) Ohm\nC) Volt\nD) Watt"
+  },
+  "uz": {
+   "front": "Elektr kuchlanishi qaysi birlikda o'lchanadi?",
+   "back": "C) Volt",
+   "note": "A) Amper\nB) Om\nC) Volt\nD) Vatt"
+  }
+ },
+ "Как называется превращение жидкости в газ?": {
+  "ru": {
+   "front": "Как называется превращение жидкости в газ?",
+   "back": "B) испарение",
+   "note": "A) конденсация\nB) испарение\nC) плавление\nD) кристаллизация"
+  },
+  "en": {
+   "front": "What is the conversion of liquid into gas called?",
+   "back": "B) evaporation",
+   "note": "A) condensation\nB) evaporation\nC) melting\nD) crystallization"
+  },
+  "uz": {
+   "front": "Suyuqlikning gazga aylanishi nima deyiladi?",
+   "back": "B) bug'lanish",
+   "note": "A) kondensatsiya\nB) bug'lanish\nC) erish\nD) kristallanish"
+  }
+ },
+ "Какой орган качает кровь по телу?": {
+  "ru": {
+   "front": "Какой орган качает кровь по телу?",
+   "back": "C) сердце",
+   "note": "A) лёгкие\nB) печень\nC) сердце\nD) почки"
+  },
+  "en": {
+   "front": "Which organ pumps blood throughout the body?",
+   "back": "C) heart",
+   "note": "A) lungs\nB) liver\nC) heart\nD) kidneys"
+  },
+  "uz": {
+   "front": "Qaysi organ tana bo'ylab qon haydaydi?",
+   "back": "C) yurak",
+   "note": "A) o'pka\nB) jigar\nC) yurak\nD) buyraklar"
+  }
+ },
+ "Какой газ выделяют растения при фотосинтезе?": {
+  "ru": {
+   "front": "Какой газ выделяют растения при фотосинтезе?",
+   "back": "B) кислород",
+   "note": "A) углекислый газ\nB) кислород\nC) азот\nD) водород"
+  },
+  "en": {
+   "front": "Which gas do plants release during photosynthesis?",
+   "back": "B) oxygen",
+   "note": "A) carbon dioxide\nB) oxygen\nC) nitrogen\nD) hydrogen"
+  },
+  "uz": {
+   "front": "O'simliklar fotosintez jarayonida qaysi gazni ajratib chiqaradi?",
+   "back": "B) kislorod",
+   "note": "A) karbonat angidrid\nB) kislorod\nC) azot\nD) vodorod"
+  }
+ },
+ "Какова основная единица строения живого организма?": {
+  "ru": {
+   "front": "Какова основная единица строения живого организма?",
+   "back": "B) клетка",
+   "note": "A) атом\nB) клетка\nC) ткань\nD) орган"
+  },
+  "en": {
+   "front": "What is the basic unit of structure of a living organism?",
+   "back": "B) cell",
+   "note": "A) atom\nB) cell\nC) tissue\nD) organ"
+  },
+  "uz": {
+   "front": "Tirik organizm tuzilishining asosiy birligi nima?",
+   "back": "B) hujayra",
+   "note": "A) atom\nB) hujayra\nC) to'qima\nD) organ"
+  }
+ },
+ "В какой части растения в основном происходит фотосинтез?": {
+  "ru": {
+   "front": "В какой части растения в основном происходит фотосинтез?",
+   "back": "B) в листьях",
+   "note": "A) в корнях\nB) в листьях\nC) в стебле\nD) в цветке"
+  },
+  "en": {
+   "front": "In which part of the plant does photosynthesis mainly take place?",
+   "back": "B) in the leaves",
+   "note": "A) in the roots\nB) in the leaves\nC) in the stem\nD) in the flower"
+  },
+  "uz": {
+   "front": "O'simlikning qaysi qismida asosan fotosintez sodir bo'ladi?",
+   "back": "B) barglarda",
+   "note": "A) ildizlarda\nB) barglarda\nC) poyada\nD) gulda"
+  }
+ },
+ "Сколько хромосом в клетке человека?": {
+  "ru": {
+   "front": "Сколько хромосом в клетке человека?",
+   "back": "B) 46",
+   "note": "A) 23\nB) 46\nC) 48\nD) 44"
+  },
+  "en": {
+   "front": "How many chromosomes are in a human cell?",
+   "back": "B) 46",
+   "note": "A) 23\nB) 46\nC) 48\nD) 44"
+  },
+  "uz": {
+   "front": "Inson hujayrasida nechta xromosoma bor?",
+   "back": "B) 46",
+   "note": "A) 23\nB) 46\nC) 48\nD) 44"
+  }
+ },
+ "Какой витамин вырабатывается в коже под действием солнца?": {
+  "ru": {
+   "front": "Какой витамин вырабатывается в коже под действием солнца?",
+   "back": "C) витамин D",
+   "note": "A) витамин A\nB) витамин C\nC) витамин D\nD) витамин B12"
+  },
+  "en": {
+   "front": "Which vitamin is produced in the skin under the influence of sunlight?",
+   "back": "C) vitamin D",
+   "note": "A) vitamin A\nB) vitamin C\nC) vitamin D\nD) vitamin B12"
+  },
+  "uz": {
+   "front": "Quyosh nuri ta'sirida terida qaysi vitamin ishlab chiqariladi?",
+   "back": "C) D vitamini",
+   "note": "A) A vitamini\nB) C vitamini\nC) D vitamini\nD) B12 vitamini"
+  }
+ },
+ "Какой орган дыхания у рыб?": {
+  "ru": {
+   "front": "Какой орган дыхания у рыб?",
+   "back": "B) жабры",
+   "note": "A) лёгкие\nB) жабры\nC) кожа\nD) трахеи"
+  },
+  "en": {
+   "front": "What is the respiratory organ of fish?",
+   "back": "B) gills",
+   "note": "A) lungs\nB) gills\nC) skin\nD) trachea"
+  },
+  "uz": {
+   "front": "Baliqlarning nafas olish organi nima?",
+   "back": "B) jabralar",
+   "note": "A) o'pka\nB) jabralar\nC) teri\nD) traxeyalar"
+  }
+ },
+ "Какая молекула хранит наследственную информацию?": {
+  "ru": {
+   "front": "Какая молекула хранит наследственную информацию?",
+   "back": "B) ДНК",
+   "note": "A) РНК\nB) ДНК\nC) белок\nD) АТФ"
+  },
+  "en": {
+   "front": "Which molecule stores hereditary information?",
+   "back": "B) DNA",
+   "note": "A) RNA\nB) DNA\nC) protein\nD) ATP"
+  },
+  "uz": {
+   "front": "Qaysi molekula irsiy ma'lumotni saqlaydi?",
+   "back": "B) DNK",
+   "note": "A) RNK\nB) DNK\nC) oqsil\nD) ATF"
+  }
+ },
+ "Какие животные выкармливают детёнышей молоком?": {
+  "ru": {
+   "front": "Какие животные выкармливают детёнышей молоком?",
+   "back": "C) млекопитающие",
+   "note": "A) птицы\nB) рептилии\nC) млекопитающие\nD) рыбы"
+  },
+  "en": {
+   "front": "Which animals feed their young with milk?",
+   "back": "C) mammals",
+   "note": "A) birds\nB) reptiles\nC) mammals\nD) fish"
+  },
+  "uz": {
+   "front": "Qaysi hayvonlar bolalarini sut bilan boqadi?",
+   "back": "C) sutemizuvchilar",
+   "note": "A) qushlar\nB) sudralib yuruvchilar\nC) sutemizuvchilar\nD) baliqlar"
+  }
+ },
+ "Как называется процесс деления клетки?": {
+  "ru": {
+   "front": "Как называется процесс деления клетки?",
+   "back": "A) митоз",
+   "note": "A) митоз\nB) фотосинтез\nC) дыхание\nD) осмос"
+  },
+  "en": {
+   "front": "What is the process of cell division called?",
+   "back": "A) mitosis",
+   "note": "A) mitosis\nB) photosynthesis\nC) respiration\nD) osmosis"
+  },
+  "uz": {
+   "front": "Hujayra bo'linishi jarayoni nima deb ataladi?",
+   "back": "A) mitoz",
+   "note": "A) mitoz\nB) fotosintez\nC) nafas olish\nD) osmos"
+  }
+ },
+ "Какова химическая формула воды?": {
+  "ru": {
+   "front": "Какова химическая формула воды?",
+   "back": "A) H₂O",
+   "note": "A) H₂O\nB) CO₂\nC) O₂\nD) NaCl"
+  },
+  "en": {
+   "front": "What is the chemical formula of water?",
+   "back": "A) H₂O",
+   "note": "A) H₂O\nB) CO₂\nC) O₂\nD) NaCl"
+  },
+  "uz": {
+   "front": "Suvning kimyoviy formulasi qanday?",
+   "back": "A) H₂O",
+   "note": "A) H₂O\nB) CO₂\nC) O₂\nD) NaCl"
+  }
+ },
+ "Какой газ необходим человеку для дыхания?": {
+  "ru": {
+   "front": "Какой газ необходим человеку для дыхания?",
+   "back": "C) кислород",
+   "note": "A) азот\nB) водород\nC) кислород\nD) гелий"
+  },
+  "en": {
+   "front": "Which gas is necessary for human respiration?",
+   "back": "C) oxygen",
+   "note": "A) nitrogen\nB) hydrogen\nC) oxygen\nD) helium"
+  },
+  "uz": {
+   "front": "Inson nafas olishi uchun qaysi gaz zarur?",
+   "back": "C) kislorod",
+   "note": "A) azot\nB) vodorod\nC) kislorod\nD) geliy"
+  }
+ },
+ "Каков химический символ золота?": {
+  "ru": {
+   "front": "Каков химический символ золота?",
+   "back": "C) Au",
+   "note": "A) Ag\nB) Fe\nC) Au\nD) Gd"
+  },
+  "en": {
+   "front": "What is the chemical symbol for gold?",
+   "back": "C) Au",
+   "note": "A) Ag\nB) Fe\nC) Au\nD) Gd"
+  },
+  "uz": {
+   "front": "Oltinning kimyoviy belgisi nima?",
+   "back": "C) Au",
+   "note": "A) Ag\nB) Fe\nC) Au\nD) Gd"
+  }
+ },
+ "Сколько атомов водорода в молекуле воды?": {
+  "ru": {
+   "front": "Сколько атомов водорода в молекуле воды?",
+   "back": "B) 2",
+   "note": "A) 1\nB) 2\nC) 3\nD) 4"
+  },
+  "en": {
+   "front": "How many hydrogen atoms are in a water molecule?",
+   "back": "B) 2",
+   "note": "A) 1\nB) 2\nC) 3\nD) 4"
+  },
+  "uz": {
+   "front": "Suv molekulasida nechta vodorod atomi bor?",
+   "back": "B) 2",
+   "note": "A) 1\nB) 2\nC) 3\nD) 4"
+  }
+ },
+ "Что показывает значение pH меньше 7?": {
+  "ru": {
+   "front": "Что показывает значение pH меньше 7?",
+   "back": "D) кислоту",
+   "note": "A) щёлочь\nB) нейтральную среду\nC) соль\nD) кислоту"
+  },
+  "en": {
+   "front": "What does a pH value of less than 7 indicate?",
+   "back": "D) acid",
+   "note": "A) alkali\nB) neutral environment\nC) salt\nD) acid"
+  },
+  "uz": {
+   "front": "7 dan kichik pH qiymati nimani ko'rsatadi?",
+   "back": "D) kislotani",
+   "note": "A) ishqorni\nB) neytral muhitni\nC) tuzni\nD) kislotani"
+  }
+ },
+ "Какой химический элемент самый лёгкий?": {
+  "ru": {
+   "front": "Какой химический элемент самый лёгкий?",
+   "back": "A) водород",
+   "note": "A) водород\nB) гелий\nC) кислород\nD) литий"
+  },
+  "en": {
+   "front": "Which chemical element is the lightest?",
+   "back": "A) hydrogen",
+   "note": "A) hydrogen\nB) helium\nC) oxygen\nD) lithium"
+  },
+  "uz": {
+   "front": "Eng yengil kimyoviy element qaysi?",
+   "back": "A) vodorod",
+   "note": "A) vodorod\nB) geliy\nC) kislorod\nD) litiy"
+  }
+ },
+ "Каков химический символ натрия?": {
+  "ru": {
+   "front": "Каков химический символ натрия?",
+   "back": "C) Na",
+   "note": "A) N\nB) Ne\nC) Na\nD) Ni"
+  },
+  "en": {
+   "front": "What is the chemical symbol for sodium?",
+   "back": "C) Na",
+   "note": "A) N\nB) Ne\nC) Na\nD) Ni"
+  },
+  "uz": {
+   "front": "Natriyning kimyoviy belgisi nima?",
+   "back": "C) Na",
+   "note": "A) N\nB) Ne\nC) Na\nD) Ni"
+  }
+ },
+ "Как называется таблица химических элементов?": {
+  "ru": {
+   "front": "Как называется таблица химических элементов?",
+   "back": "A) таблица Менделеева",
+   "note": "A) таблица Менделеева\nB) таблица Ньютона\nC) таблица Дарвина\nD) таблица Эйнштейна"
+  },
+  "en": {
+   "front": "What is the table of chemical elements called?",
+   "back": "A) Mendeleev's table",
+   "note": "A) Mendeleev's table\nB) Newton's table\nC) Darwin's table\nD) Einstein's table"
+  },
+  "uz": {
+   "front": "Kimyoviy elementlar jadvali nima deb ataladi?",
+   "back": "A) Mendeleyev jadvali",
+   "note": "A) Mendeleyev jadvali\nB) Nyuton jadvali\nC) Darvin jadvali\nD) Eynshteyn jadvali"
+  }
+ },
+ "Какой газ составляет около 78% атмосферы Земли?": {
+  "ru": {
+   "front": "Какой газ составляет около 78% атмосферы Земли?",
+   "back": "B) азот",
+   "note": "A) кислород\nB) азот\nC) углекислый газ\nD) аргон"
+  },
+  "en": {
+   "front": "Which gas makes up about 78% of Earth's atmosphere?",
+   "back": "B) nitrogen",
+   "note": "A) oxygen\nB) nitrogen\nC) carbon dioxide\nD) argon"
+  },
+  "uz": {
+   "front": "Yer atmosferasining taxminan 78 foizini qaysi gaz tashkil qiladi?",
+   "back": "B) azot",
+   "note": "A) kislorod\nB) azot\nC) karbonat angidrid\nD) argon"
+  }
+ },
+ "Как в быту называют соль NaCl?": {
+  "ru": {
+   "front": "Как в быту называют соль NaCl?",
+   "back": "C) поваренная соль",
+   "note": "A) сода\nB) мел\nC) поваренная соль\nD) известь"
+  },
+  "en": {
+   "front": "What is the common name for NaCl salt?",
+   "back": "C) table salt",
+   "note": "A) baking soda\nB) chalk\nC) table salt\nD) lime"
+  },
+  "uz": {
+   "front": "Kundalik hayotda NaCl tuzi nima deb ataladi?",
+   "back": "C) osh tuzi",
+   "note": "A) soda\nB) bo'r\nC) osh tuzi\nD) ohak"
+  }
+ },
+ "Какой океан самый большой?": {
+  "ru": {
+   "front": "Какой океан самый большой?",
+   "back": "A) Тихий",
+   "note": "A) Тихий\nB) Атлантический\nC) Индийский\nD) Северный Ледовитый"
+  },
+  "en": {
+   "front": "Which ocean is the largest?",
+   "back": "A) Pacific",
+   "note": "A) Pacific\nB) Atlantic\nC) Indian\nD) Arctic"
+  },
+  "uz": {
+   "front": "Eng katta okean qaysi?",
+   "back": "A) Tinch okeani",
+   "note": "A) Tinch okeani\nB) Atlantika okeani\nC) Hind okeani\nD) Shimoliy muz okeani"
+  }
+ },
+ "Какая гора самая высокая в мире?": {
+  "ru": {
+   "front": "Какая гора самая высокая в мире?",
+   "back": "C) Эверест",
+   "note": "A) Эльбрус\nB) Килиманджаро\nC) Эверест\nD) Монблан"
+  },
+  "en": {
+   "front": "Which mountain is the highest in the world?",
+   "back": "C) Everest",
+   "note": "A) Elbrus\nB) Kilimanjaro\nC) Everest\nD) Mont Blanc"
+  },
+  "uz": {
+   "front": "Dunyodagi eng baland tog' qaysi?",
+   "back": "C) Everest",
+   "note": "A) Elbrus\nB) Kilimanjaro\nC) Everest\nD) Monblan"
+  }
+ },
+ "Сколько материков на Земле?": {
+  "ru": {
+   "front": "Сколько материков на Земле?",
+   "back": "B) 6",
+   "note": "A) 5\nB) 6\nC) 7\nD) 4"
+  },
+  "en": {
+   "front": "How many continents are there on Earth?",
+   "back": "B) 6",
+   "note": "A) 5\nB) 6\nC) 7\nD) 4"
+  },
+  "uz": {
+   "front": "Yer yuzida nechta materik bor?",
+   "back": "B) 6",
+   "note": "A) 5\nB) 6\nC) 7\nD) 4"
+  }
+ },
+ "Какой город — столица Франции?": {
+  "ru": {
+   "front": "Какой город — столица Франции?",
+   "back": "D) Париж",
+   "note": "A) Лондон\nB) Берлин\nC) Рим\nD) Париж"
+  },
+  "en": {
+   "front": "Which city is the capital of France?",
+   "back": "D) Paris",
+   "note": "A) London\nB) Berlin\nC) Rome\nD) Paris"
+  },
+  "uz": {
+   "front": "Qaysi shahar Fransiyaning poytaxti?",
+   "back": "D) Parij",
+   "note": "A) London\nB) Berlin\nC) Rim\nD) Parij"
+  }
+ },
+ "Какая жаркая пустыня самая большая?": {
+  "ru": {
+   "front": "Какая жаркая пустыня самая большая?",
+   "back": "B) Сахара",
+   "note": "A) Гоби\nB) Сахара\nC) Калахари\nD) Атакама"
+  },
+  "en": {
+   "front": "Which hot desert is the largest?",
+   "back": "B) Sahara",
+   "note": "A) Gobi\nB) Sahara\nC) Kalahari\nD) Atacama"
+  },
+  "uz": {
+   "front": "Eng katta issiq sahro qaysi?",
+   "back": "B) Sahara",
+   "note": "A) Gobi\nB) Sahara\nC) Kalahari\nD) Atakama"
+  }
+ },
+ "На каком материке расположен Египет?": {
+  "ru": {
+   "front": "На каком материке расположен Египет?",
+   "back": "C) Африка",
+   "note": "A) Азия\nB) Европа\nC) Африка\nD) Австралия"
+  },
+  "en": {
+   "front": "On which continent is Egypt located?",
+   "back": "C) Africa",
+   "note": "A) Asia\nB) Europe\nC) Africa\nD) Australia"
+  },
+  "uz": {
+   "front": "Misr qaysi materikda joylashgan?",
+   "back": "C) Afrika",
+   "note": "A) Osiyo\nB) Yevropa\nC) Afrika\nD) Avstraliya"
+  }
+ },
+ "Какое озеро самое глубокое в мире?": {
+  "ru": {
+   "front": "Какое озеро самое глубокое в мире?",
+   "back": "D) Байкал",
+   "note": "A) Виктория\nB) Каспийское\nC) Танганьика\nD) Байкал"
+  },
+  "en": {
+   "front": "Which lake is the deepest in the world?",
+   "back": "D) Baikal",
+   "note": "A) Victoria\nB) Caspian Sea\nC) Tanganyika\nD) Baikal"
+  },
+  "uz": {
+   "front": "Dunyodagi eng chuqur ko'l qaysi?",
+   "back": "D) Baykal",
+   "note": "A) Viktoriya\nB) Kaspiy\nC) Tanganyika\nD) Baykal"
+  }
+ },
+ "Какой материк самый большой по площади?": {
+  "ru": {
+   "front": "Какой материк самый большой по площади?",
+   "back": "B) Евразия",
+   "note": "A) Африка\nB) Евразия\nC) Северная Америка\nD) Антарктида"
+  },
+  "en": {
+   "front": "Which continent is the largest by area?",
+   "back": "B) Eurasia",
+   "note": "A) Africa\nB) Eurasia\nC) North America\nD) Antarctica"
+  },
+  "uz": {
+   "front": "Maydoni bo'yicha eng katta materik qaysi?",
+   "back": "B) Yevroosiyo",
+   "note": "A) Afrika\nB) Yevroosiyo\nC) Shimoliy Amerika\nD) Antarktida"
+  }
+ },
+ "Какой город — столица Узбекистана?": {
+  "ru": {
+   "front": "Какой город — столица Узбекистана?",
+   "back": "C) Ташкент",
+   "note": "A) Самарканд\nB) Бухара\nC) Ташкент\nD) Алматы"
+  },
+  "en": {
+   "front": "Which city is the capital of Uzbekistan?",
+   "back": "C) Tashkent",
+   "note": "A) Samarkand\nB) Bukhara\nC) Tashkent\nD) Almaty"
+  },
+  "uz": {
+   "front": "Qaysi shahar O'zbekistonning poytaxti?",
+   "back": "C) Toshkent",
+   "note": "A) Samarqand\nB) Buxoro\nC) Toshkent\nD) Almati"
+  }
+ },
+ "Как называется линия нулевой широты?": {
+  "ru": {
+   "front": "Как называется линия нулевой широты?",
+   "back": "B) экватор",
+   "note": "A) меридиан\nB) экватор\nC) тропик\nD) полюс"
+  },
+  "en": {
+   "front": "What is the line of zero latitude called?",
+   "back": "B) equator",
+   "note": "A) meridian\nB) equator\nC) tropic\nD) pole"
+  },
+  "uz": {
+   "front": "Nolinchi kenglik chizig'i nima deb ataladi?",
+   "back": "B) ekvator",
+   "note": "A) meridian\nB) ekvator\nC) tropik\nD) qutb"
+  }
+ },
+ "Сколько камер в сердце человека?": {
+  "ru": {
+   "front": "Сколько камер в сердце человека?",
+   "back": "C) 4",
+   "note": "A) 2\nB) 3\nC) 4\nD) 5"
+  },
+  "en": {
+   "front": "How many chambers are there in the human heart?",
+   "back": "C) 4",
+   "note": "A) 2\nB) 3\nC) 4\nD) 5"
+  },
+  "uz": {
+   "front": "Inson yuragida nechta kamera bor?",
+   "back": "C) 4",
+   "note": "A) 2\nB) 3\nC) 4\nD) 5"
+  }
+ },
+ "Какая кость самая крупная в теле человека?": {
+  "ru": {
+   "front": "Какая кость самая крупная в теле человека?",
+   "back": "A) бедренная",
+   "note": "A) бедренная\nB) плечевая\nC) большеберцовая\nD) лучевая"
+  },
+  "en": {
+   "front": "Which bone is the largest in the human body?",
+   "back": "A) femur",
+   "note": "A) femur\nB) humerus\nC) tibia\nD) radius"
+  },
+  "uz": {
+   "front": "Inson tanasidagi eng katta suyak qaysi?",
+   "back": "A) son suyagi",
+   "note": "A) son suyagi\nB) yelka suyagi\nC) katta boldir suyagi\nD) bilak suyagi"
+  }
+ },
+ "Какой орган отвечает за дыхание?": {
+  "ru": {
+   "front": "Какой орган отвечает за дыхание?",
+   "back": "B) лёгкие",
+   "note": "A) сердце\nB) лёгкие\nC) печень\nD) желудок"
+  },
+  "en": {
+   "front": "Which organ is responsible for breathing?",
+   "back": "B) lungs",
+   "note": "A) heart\nB) lungs\nC) liver\nD) stomach"
+  },
+  "uz": {
+   "front": "Qaysi organ nafas olish uchun javobgar?",
+   "back": "B) o'pka",
+   "note": "A) yurak\nB) o'pka\nC) jigar\nD) oshqozon"
+  }
+ },
+ "Сколько костей у взрослого человека?": {
+  "ru": {
+   "front": "Сколько костей у взрослого человека?",
+   "back": "B) 206",
+   "note": "A) 201\nB) 206\nC) 215\nD) 198"
+  },
+  "en": {
+   "front": "How many bones does an adult human have?",
+   "back": "B) 206",
+   "note": "A) 201\nB) 206\nC) 215\nD) 198"
+  },
+  "uz": {
+   "front": "Katta yoshli odamda nechta suyak bor?",
+   "back": "B) 206",
+   "note": "A) 201\nB) 206\nC) 215\nD) 198"
+  }
+ },
+ "Какой орган вырабатывает желчь?": {
+  "ru": {
+   "front": "Какой орган вырабатывает желчь?",
+   "back": "B) печень",
+   "note": "A) почки\nB) печень\nC) селезёнка\nD) поджелудочная железа"
+  },
+  "en": {
+   "front": "Which organ produces bile?",
+   "back": "B) liver",
+   "note": "A) kidneys\nB) liver\nC) spleen\nD) pancreas"
+  },
+  "uz": {
+   "front": "Qaysi organ safro ishlab chiqaradi?",
+   "back": "B) jigar",
+   "note": "A) buyraklar\nB) jigar\nC) taloq\nD) me'da osti bezi"
+  }
+ },
+ "Какой орган фильтрует кровь и образует мочу?": {
+  "ru": {
+   "front": "Какой орган фильтрует кровь и образует мочу?",
+   "back": "B) почки",
+   "note": "A) печень\nB) почки\nC) лёгкие\nD) сердце"
+  },
+  "en": {
+   "front": "Which organ filters blood and produces urine?",
+   "back": "B) kidneys",
+   "note": "A) liver\nB) kidneys\nC) lungs\nD) heart"
+  },
+  "uz": {
+   "front": "Qaysi organ qonni filtrlaydi va siydik hosil qiladi?",
+   "back": "B) buyraklar",
+   "note": "A) jigar\nB) buyraklar\nC) o'pka\nD) yurak"
+  }
+ },
+ "Сколько отделов в позвоночнике человека?": {
+  "ru": {
+   "front": "Сколько отделов в позвоночнике человека?",
+   "back": "C) 5",
+   "note": "A) 3\nB) 4\nC) 5\nD) 6"
+  },
+  "en": {
+   "front": "How many sections are there in the human spine?",
+   "back": "C) 5",
+   "note": "A) 3\nB) 4\nC) 5\nD) 6"
+  },
+  "uz": {
+   "front": "Odam umurtqa pog'onasida nechta bo'lim bor?",
+   "back": "C) 5",
+   "note": "A) 3\nB) 4\nC) 5\nD) 6"
+  }
+ },
+ "Какой орган является центром нервной системы?": {
+  "ru": {
+   "front": "Какой орган является центром нервной системы?",
+   "back": "B) головной мозг",
+   "note": "A) сердце\nB) головной мозг\nC) печень\nD) лёгкие"
+  },
+  "en": {
+   "front": "Which organ is the center of the nervous system?",
+   "back": "B) brain",
+   "note": "A) heart\nB) brain\nC) liver\nD) lungs"
+  },
+  "uz": {
+   "front": "Qaysi organ asab tizimining markazi hisoblanadi?",
+   "back": "B) miya",
+   "note": "A) yurak\nB) miya\nC) jigar\nD) o'pka"
+  }
+ },
+ "Как называются красные кровяные клетки?": {
+  "ru": {
+   "front": "Как называются красные кровяные клетки?",
+   "back": "B) эритроциты",
+   "note": "A) лейкоциты\nB) эритроциты\nC) тромбоциты\nD) нейроны"
+  },
+  "en": {
+   "front": "What are red blood cells called?",
+   "back": "B) erythrocytes",
+   "note": "A) leukocytes\nB) erythrocytes\nC) platelets\nD) neurons"
+  },
+  "uz": {
+   "front": "Qizil qon hujayralari qanday ataladi?",
+   "back": "B) eritrotsitlar",
+   "note": "A) leykotsitlar\nB) eritrotsitlar\nC) trombotsitlar\nD) neyronlar"
+  }
+ },
+ "В каком органе пища переваривается желудочным соком?": {
+  "ru": {
+   "front": "В каком органе пища переваривается желудочным соком?",
+   "back": "B) желудок",
+   "note": "A) кишечник\nB) желудок\nC) пищевод\nD) печень"
+  },
+  "en": {
+   "front": "In which organ is food digested by gastric juice?",
+   "back": "B) stomach",
+   "note": "A) intestines\nB) stomach\nC) esophagus\nD) liver"
+  },
+  "uz": {
+   "front": "Qaysi organda ovqat me'da shirasi yordamida hazm qilinadi?",
+   "back": "B) oshqozon",
+   "note": "A) ichak\nB) oshqozon\nC) qizilo'ngach\nD) jigar"
+  }
  }
 }
