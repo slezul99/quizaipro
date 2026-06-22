@@ -2583,6 +2583,15 @@ def test_view():
         shuffle_seed=session.get("test_seed", 0) or None
     )
 
+    # If the options are embedded in the question (front), strip them for
+    # display so they don't appear twice (inline text + the option buttons).
+    _front = card_d.get("front") or ""
+    if options and _has_mcq_options(_front):
+        _m = (re.search(r'(?m)^\s*[A-Za-zА-Яа-яЁё]\s*[\)\.\:\-]\s+', _front)
+              or re.search(r'(?:^|\s)[A-Za-zА-Яа-яЁё]\s*[\)\.]\s+', _front))
+        if _m and _m.start() > 0:
+            card_d["front"] = _front[:_m.start()].strip()
+
     return render_template("test.html",
         card=card_d, options=options, correct_letter=correct_letter,
         idx=idx, total=len(queue),
@@ -6514,7 +6523,17 @@ def _parse_card_options(card_dict, shuffle_seed=None):
     """Razbirayem note/back na varianty A/B/C... + nakhodim pravil'nyy.
     Esli shuffle_seed zadan — meshaem varianty i pereprisvayivayem bukvy."""
     options = []
-    src = card_dict.get("note") or card_dict.get("back") or ""
+    # Pick the field that actually holds the A/B/C/D options — decks vary:
+    # note (history seed), front (science/seeded MCQ), or back (legacy). A card
+    # may keep an explanation in `note`, so don't blindly trust note first.
+    src = ""
+    for _f in ("note", "front", "back"):
+        _v = card_dict.get(_f) or ""
+        if _has_mcq_options(_v):
+            src = _v
+            break
+    if not src:
+        src = card_dict.get("note") or card_dict.get("back") or ""
     for line in src.splitlines():
         line = line.strip()
         if not line: continue
