@@ -141,42 +141,76 @@ class _DeckDetailBody extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (deck.isPro)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: tokens.space8,
-                      vertical: tokens.space4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.22),
-                      borderRadius: BorderRadius.circular(tokens.radiusFull),
-                    ),
-                    child: Text(
-                      l.marketplaceProBadge,
-                      style: tt.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Frosted emoji medallion — gives the hero an illustration,
+                    // matching the new library card.
+                    Container(
+                      width: 62,
+                      height: 62,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.20),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Text(
+                        deck.icon,
+                        style: const TextStyle(fontSize: 30, height: 1),
                       ),
                     ),
-                  ),
-                SizedBox(height: tokens.space8),
-                Text(
-                  deck.title,
-                  style: tt.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                    SizedBox(width: tokens.space16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (deck.isPro) ...[
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: tokens.space8,
+                                vertical: tokens.space4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                borderRadius:
+                                    BorderRadius.circular(tokens.radiusFull),
+                              ),
+                              child: Text(
+                                l.marketplaceProBadge,
+                                style: tt.labelSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: tokens.space8),
+                          ],
+                          Text(
+                            deck.title,
+                            style: tt.headlineSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (deck.subjectName != null) ...[
+                            SizedBox(height: tokens.space4),
+                            Text(
+                              deck.subjectName!,
+                              style: tt.bodyMedium?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.85)),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                if (deck.subjectName != null) ...[
-                  SizedBox(height: tokens.space4),
-                  Text(
-                    deck.subjectName!,
-                    style: tt.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.85)),
-                  ),
-                ],
                 SizedBox(height: tokens.space16),
                 Row(
                   children: [
