@@ -82,11 +82,9 @@
     <!-- ============ ACTIONS BAR (compact, only individuals) ============ -->
     {% if current_user.role == 'individual' and decks %}
     <div class="flex gap-2 mb-6 flex-wrap">
+      {# Import / AI gen already live as primary cards above (and AI/Маркет in the
+         mobile bottom bar), so the action bar keeps only the unique create action. #}
       <button @click="showNew = true" class="btn-premium" data-tour="new-deck-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('new_deck_btn') }}</button>
-      <a href="/import" class="btn-premium-ghost" data-tour="import-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('import_file') }}</a>
-      {% if ai_available %}
-      <a href="/ai" class="btn-premium-ghost" data-tour="ai-btn" style="font-size: 13px; padding: 8px 14px;">{{ t('ai_generation') }}</a>
-      {% endif %}
     </div>
     {% endif %}
 

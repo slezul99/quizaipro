@@ -1614,6 +1614,53 @@
   {% endif %}
 </div>
 
+{% if current_user %}
+{# Mobile bottom tab bar — always-visible core navigation so the site is
+   understandable without digging through the hamburger menu. #}
+<nav class="btm-nav" aria-label="{{ t('nav_dashboard') }}">
+  <a href="/dashboard" class="btm-tab {% if request.path == '/dashboard' %}active{% endif %}">
+    {{ icon('home', 22) }}<span>{{ t('nav_dashboard') }}</span>
+  </a>
+  {% if ai_available %}
+  <a href="/ai" class="btm-tab {% if request.path == '/ai' %}active{% endif %}">
+    {{ icon('sparkles', 22) }}<span>AI</span>
+  </a>
+  {% endif %}
+  <a href="/marketplace" class="btm-tab {% if request.path.startswith('/marketplace') %}active{% endif %}">
+    {{ icon('globe', 22) }}<span>{{ t('nav_marketplace') }}</span>
+  </a>
+  <a href="/settings" class="btm-tab {% if request.path == '/settings' %}active{% endif %}">
+    {{ icon('settings', 22) }}<span>{{ t('nav_settings') }}</span>
+  </a>
+</nav>
+<style>
+  .btm-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+    display: flex; align-items: stretch;
+    background: rgba(255,255,255,0.94);
+    -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(99,102,241,0.12);
+    box-shadow: 0 -4px 20px -10px rgba(15,23,42,0.18);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html.dark .btm-nav { background: rgba(15,23,41,0.94); border-top-color: rgba(99,102,241,0.22); }
+  .btm-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 9px 4px 8px; text-decoration: none;
+    color: #94a3b8; transition: color .15s ease;
+  }
+  .btm-tab svg { width: 22px; height: 22px; }
+  .btm-tab span { font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; }
+  .btm-tab.active { color: #6366f1; }
+  html.dark .btm-tab { color: #64748b; }
+  html.dark .btm-tab.active { color: #a5b4fc; }
+  @media (max-width: 767px) {
+    body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+  }
+  @media (min-width: 768px) { .btm-nav { display: none; } }
+</style>
+{% endif %}
+
 <style>
   html.dark #mobile-menu { background: #0f1729 !important; }
   html.dark #mobile-menu .border-slate-100 { border-color: rgba(99,102,241,0.2) !important; }
