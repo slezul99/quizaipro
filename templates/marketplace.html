@@ -94,31 +94,63 @@
               </svg>
             </span>
             {% elif s.slug == 'mathematics' %}
-            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2.5" width="14" height="19" rx="2.5"/>
-              <rect x="8" y="5.5" width="8" height="3" rx="1"/>
-              <path d="M8.5 12h0M12 12h0M15.5 12h0M8.5 15h0M12 15h0M15.5 15h0M8.5 18h0M12 18h0M15.5 18h0"/>
+            {# Colourful calculator badge #}
+            <svg viewBox="0 0 40 40" class="w-9 h-9 drop-shadow">
+              <rect x="8" y="3.5" width="24" height="33" rx="5.5" fill="#ffffff"/>
+              <rect x="11.5" y="7" width="17" height="7.5" rx="2" fill="#0f172a"/>
+              <rect x="13.5" y="9.4" width="9" height="2.7" rx="1.1" fill="#34d399"/>
+              <circle cx="14" cy="20.5" r="2.1" fill="#f59e0b"/>
+              <circle cx="20" cy="20.5" r="2.1" fill="#cbd5e1"/>
+              <circle cx="26" cy="20.5" r="2.1" fill="#cbd5e1"/>
+              <circle cx="14" cy="26.5" r="2.1" fill="#cbd5e1"/>
+              <circle cx="20" cy="26.5" r="2.1" fill="#cbd5e1"/>
+              <circle cx="26" cy="26.5" r="2.1" fill="#3b82f6"/>
+              <circle cx="14" cy="32.5" r="2.1" fill="#cbd5e1"/>
+              <circle cx="20" cy="32.5" r="2.1" fill="#cbd5e1"/>
+              <circle cx="26" cy="32.5" r="2.1" fill="#ef4444"/>
             </svg>
             {% elif s.slug == 'programming' %}
-            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+            {# Code editor window with traffic lights + syntax lines #}
+            <svg viewBox="0 0 40 40" class="w-9 h-9 drop-shadow">
+              <rect x="3" y="6" width="34" height="28" rx="5.5" fill="#0f172a"/>
+              <circle cx="9.5" cy="12" r="1.7" fill="#ef4444"/>
+              <circle cx="15" cy="12" r="1.7" fill="#f59e0b"/>
+              <circle cx="20.5" cy="12" r="1.7" fill="#22c55e"/>
+              <rect x="8" y="18" width="11" height="2.6" rx="1.3" fill="#a78bfa"/>
+              <rect x="21" y="18" width="8" height="2.6" rx="1.3" fill="#38bdf8"/>
+              <rect x="8" y="23" width="6" height="2.6" rx="1.3" fill="#34d399"/>
+              <rect x="16" y="23" width="13" height="2.6" rx="1.3" fill="#475569"/>
+              <rect x="8" y="28" width="9.5" height="2.6" rx="1.3" fill="#f472b6"/>
             </svg>
             {% elif s.slug == 'science' %}
-            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 3h6M10 3v6.5L5.6 16.8A2 2 0 0 0 7.4 20h9.2a2 2 0 0 0 1.8-3.2L14 9.5V3"/>
-              <path d="M7.4 14.5h9.2"/>
+            {# Atom with colourful orbits #}
+            <svg viewBox="0 0 40 40" class="w-9 h-9 drop-shadow">
+              <g fill="none" stroke-width="2.1">
+                <ellipse cx="20" cy="20" rx="16" ry="6.6" stroke="#fde68a"/>
+                <ellipse cx="20" cy="20" rx="16" ry="6.6" stroke="#fca5a5" transform="rotate(60 20 20)"/>
+                <ellipse cx="20" cy="20" rx="16" ry="6.6" stroke="#bae6fd" transform="rotate(120 20 20)"/>
+              </g>
+              <circle cx="20" cy="20" r="3.6" fill="#ffffff"/>
             </svg>
             {% elif s.slug == 'business' %}
-            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="7.5" width="18" height="12.5" rx="2.5"/>
-              <path d="M8 7.5V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.5"/>
-              <path d="M3 12.5h18M11 12.5h2"/>
+            {# Growth chart with up-trend #}
+            <svg viewBox="0 0 40 40" class="w-9 h-9 drop-shadow">
+              <rect x="6" y="23" width="6.5" height="11" rx="1.6" fill="#ffffff" fill-opacity=".82"/>
+              <rect x="16.7" y="17" width="6.5" height="17" rx="1.6" fill="#ffffff" fill-opacity=".9"/>
+              <rect x="27.5" y="11" width="6.5" height="23" rx="1.6" fill="#ffffff"/>
+              <path d="M7 19 18 14 26 17 35 7.5" fill="none" stroke="#065f46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M30.5 7.5H35V12" fill="none" stroke="#065f46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             {% elif s.slug == 'history' %}
-            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3 4 8h16L12 3Z"/>
-              <path d="M5 8v9M9 8v9M15 8v9M19 8v9"/>
-              <path d="M3.5 20.5h17"/>
+            {# Classical marble temple with gold trim #}
+            <svg viewBox="0 0 40 40" class="w-9 h-9 drop-shadow">
+              <path d="M20 5 34 13H6Z" fill="#fff7ed"/>
+              <rect x="6.5" y="13.5" width="27" height="3" rx="1" fill="#fcd34d"/>
+              <rect x="9" y="17.5" width="3.6" height="13" rx="1" fill="#fffbeb"/>
+              <rect x="15.4" y="17.5" width="3.6" height="13" rx="1" fill="#fffbeb"/>
+              <rect x="21.8" y="17.5" width="3.6" height="13" rx="1" fill="#fffbeb"/>
+              <rect x="28.2" y="17.5" width="3.6" height="13" rx="1" fill="#fffbeb"/>
+              <rect x="5.5" y="31" width="29" height="3.6" rx="1.2" fill="#fcd34d"/>
             </svg>
             {% else %}
             <span class="text-4xl">{{ s.icon }}</span>
