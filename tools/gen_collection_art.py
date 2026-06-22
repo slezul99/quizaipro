@@ -22,16 +22,18 @@ import ai_gen  # noqa: E402
 
 LOC = "us-central1"
 MODEL = "imagen-4.0-generate-001"
-ASPECT = "1:1"
-OUT_W = 720
+ASPECT = "4:3"
+OUT_W = 860
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "static", "collections")
 os.makedirs(OUT, exist_ok=True)
 
-_COMMON = (" Clean modern 3D render, premium quality, soft studio lighting, "
-           "centred tidy composition, themed objects on a simple uncluttered "
-           "background, calm and subtle (it will sit behind a coloured overlay). "
-           "No text, no words, no letters, no logos, no watermark.")
+_COMMON = (" Premium glossy 3D render designed as a WIDE card background. The themed "
+           "object is large, bright and crisply lit, placed on the RIGHT side of the "
+           "frame. The LEFT ~40% is a smooth, slightly darker gradient of the SAME "
+           "theme colour with a faint matching pattern, kept clear for text. The whole "
+           "background is the theme colour — vivid, saturated and cohesive, NOT grey, "
+           "NOT a dark studio. No words, no captions, no watermark text.")
 
 PROMPTS = {
     # English subject collections
