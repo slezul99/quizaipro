@@ -9429,6 +9429,31 @@ try:
 except Exception as _e:
     print(f"[INIT] marketplace i18n error: {_e}")
 
+# One-time fix: a history card shipped with the answer letter pointing at the
+# wrong option ("C) Кадеш" while Кадеш is option B). Correct the leading letter
+# in every language variant without touching the (correct) answer text.
+try:
+    _conn = db.get_conn()
+    _afix = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='mp_answer_fix_v1'"
+    ).fetchone()
+    if not _afix:
+        _conn.execute(
+            "UPDATE cards SET "
+            "back = 'B)' || substr(back, 3), "
+            "back_en = CASE WHEN back_en LIKE 'C)%' THEN 'B)' || substr(back_en, 3) ELSE back_en END, "
+            "back_uz = CASE WHEN back_uz LIKE 'C)%' THEN 'B)' || substr(back_uz, 3) ELSE back_uz END "
+            "WHERE front LIKE 'Битва Рамсеса II с хеттами%' AND back LIKE 'C)%'"
+        )
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('mp_answer_fix_v1')"
+        )
+        _conn.commit()
+        print("[INIT] answer-letter fix applied")
+    _conn.close()
+except Exception as _e:
+    print(f"[INIT] answer fix error: {_e}")
+
 # One-time fix: refresh has_mcq/has_terms for any deck that still has NULL flags.
 # Independent of seed markers — handles the case where seeded decks ran but flags
 # weren't computed in the same boot. Runs ONCE per app_migrations key.

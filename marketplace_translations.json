@@ -9539,17 +9539,17 @@
  "Битва Рамсеса II с хеттами (один из первых известных договоров)?": {
   "ru": {
    "front": "Битва Рамсеса II с хеттами (один из первых известных договоров)?",
-   "back": "C) Кадеш",
+   "back": "B) Кадеш",
    "note": "A) Мегиддо\nB) Кадеш\nC) Канны\nD) Иссы"
   },
   "en": {
    "front": "The battle of Ramesses II against the Hittites (one of the first known peace treaties)?",
-   "back": "C) Kadesh",
+   "back": "B) Kadesh",
    "note": "A) Megiddo\nB) Kadesh\nC) Cannae\nD) Issus"
   },
   "uz": {
    "front": "Ramses II ning xetlar bilan jangi (tarixdagi ilk ma'lum tinchlik shartnomalaridan biri)?",
-   "back": "C) Kadesh",
+   "back": "B) Kadesh",
    "note": "A) Megiddo\nB) Kadesh\nC) Kanna\nD) Iss"
   }
  },
