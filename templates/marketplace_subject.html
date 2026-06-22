@@ -90,9 +90,42 @@
     </div>
     {% endif %}
 
+    <!-- Quick Start -->
+    <div class="mb-10">
+      <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+        {{ t('mk_qs_h') }}
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="glass-premium p-5 flex flex-col">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="font-black text-slate-900 dark:text-slate-100 leading-tight">{{ t('mk_qs_level_h') }}</h3>
+            <span class="text-2xl flex-shrink-0">📋</span>
+          </div>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 flex-1">{{ t('mk_qs_level_sub') }}</p>
+          <a href="/marketplace/subject/{{ subj.slug }}/placement" class="btn-premium text-sm" style="justify-content:center;">📝 {{ t('mk_qs_level_btn') }}</a>
+        </div>
+        <div class="glass-premium p-5 flex flex-col">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="font-black text-slate-900 dark:text-slate-100 leading-tight">{{ t('mk_qs_plan_h') }}</h3>
+            <span class="text-2xl flex-shrink-0">📅</span>
+          </div>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 flex-1">{{ t('mk_qs_plan_sub') }}</p>
+          <a href="/marketplace/subject/{{ subj.slug }}/plan" class="btn-premium text-sm" style="justify-content:center;">🗓 {{ t('mk_qs_plan_btn') }}</a>
+        </div>
+        <div class="glass-premium p-5 flex flex-col">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="font-black text-slate-900 dark:text-slate-100 leading-tight">{{ t('mk_qs_start_h') }}</h3>
+            <span class="text-2xl flex-shrink-0">🎓</span>
+          </div>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 flex-1">{{ t('mk_qs_start_sub') }}</p>
+          <a href="#collections" class="btn-premium text-sm" style="justify-content:center;">📚 {{ t('mk_qs_start_btn') }}</a>
+        </div>
+      </div>
+    </div>
+
     <!-- Collections -->
     {% if collections %}
-    <div>
+    <div id="collections" class="scroll-mt-6">
       <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
         {{ t('mk_collections_h') }}
       </h2>

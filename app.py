@@ -2581,8 +2581,27 @@ def test_view():
                     "is_correct": a["is_correct"],
                 })
             conn.close()
+        # Placement test → estimate a level from the score and recommend a
+        # collection to start with.
+        placement = None
+        _pl = session.get("test_placement")
+        if _pl and (session.get("test_scope") or {}).get("type") == "placement":
+            _pct = (stats["correct"] / len(queue) * 100) if queue else 0
+            _lv = "beginner" if _pct < 40 else ("intermediate" if _pct < 75 else "advanced")
+            _rec = _pl.get("rec", {})
+            _target = (_rec.get(_lv) or _rec.get("intermediate")
+                       or _rec.get("beginner") or _rec.get("advanced")
+                       or (next(iter(_rec.values())) if _rec else None))
+            placement = {
+                "level": _lv,
+                "subject_slug": _pl.get("subject_slug"),
+                "subject_title": _pl.get("subject_title"),
+                "collection": _target,
+            }
+            session.pop("test_placement", None)
         return render_template("test_done.html",
-            stats=stats, total=len(queue), deck_id=deck_id, review=review)
+            stats=stats, total=len(queue), deck_id=deck_id, review=review,
+            placement=placement)
     conn = db.get_conn()
     card = conn.execute("SELECT * FROM cards WHERE id=?", (queue[idx],)).fetchone()
     conn.close()
@@ -2925,6 +2944,118 @@ def collection_test_start(slug):
     session["test_started_at"] = datetime.utcnow().isoformat()
     session["test_seed"] = _r.randint(1, 10**9)
     return redirect(url_for("test_view"))
+
+
+@app.route("/marketplace/subject/<slug>/placement")
+@login_required
+def subject_placement_start(slug):
+    """Placement test: a mix of MCQ questions spread across the subject's levels.
+    test_done then estimates a level from the score and recommends a collection."""
+    user = current_user()  # noqa: F841 — login gate
+    conn = db.get_conn()
+    subj = conn.execute(
+        "SELECT * FROM mp_subjects WHERE slug=? AND is_active=1", (slug,)).fetchone()
+    if not subj:
+        conn.close(); abort(404)
+    lang = session.get("lang", "ru")
+
+    def _loc(row, base):
+        k = f"{base}_{lang}"
+        return row[k] if k in row.keys() and row[k] else row[f"{base}_ru"]
+
+    subj_title = _loc(subj, "title")
+    cols = conn.execute("""
+        SELECT id, slug, level, sort_order, title_ru, title_en, title_uz
+        FROM collections WHERE subject_id=? AND is_active=1 ORDER BY sort_order
+    """, (subj["id"],)).fetchall()
+    # first collection per level → recommendation target
+    rec = {}
+    for c in cols:
+        lv = c["level"] or "beginner"
+        if lv not in rec:
+            rec[lv] = {"slug": c["slug"], "title": _loc(c, "title")}
+    # pool MCQ cards, a few from each level so the test spans difficulty
+    import random as _r
+    pool = []
+    for lv in ("beginner", "intermediate", "advanced"):
+        rows = conn.execute("""
+            SELECT cr.id FROM cards cr
+            JOIN collection_decks cd ON cd.deck_id=cr.deck_id
+            JOIN decks d ON d.id=cr.deck_id
+            JOIN collections co ON co.id=cd.collection_id
+            WHERE co.subject_id=? AND co.level=? AND d.is_public=1
+              AND COALESCE(d.has_mcq,0)=1
+        """, (subj["id"], lv)).fetchall()
+        ids = [r["id"] for r in rows]
+        _r.shuffle(ids)
+        pool += ids[:4]
+    if len(pool) < 6:  # levels missing → top up from any MCQ in the subject
+        rows = conn.execute("""
+            SELECT cr.id FROM cards cr
+            JOIN collection_decks cd ON cd.deck_id=cr.deck_id
+            JOIN decks d ON d.id=cr.deck_id
+            JOIN collections co ON co.id=cd.collection_id
+            WHERE co.subject_id=? AND d.is_public=1 AND COALESCE(d.has_mcq,0)=1
+        """, (subj["id"],)).fetchall()
+        extra = [r["id"] for r in rows if r["id"] not in pool]
+        _r.shuffle(extra)
+        pool += extra[:max(0, 12 - len(pool))]
+    conn.close()
+    if len(pool) < 3:
+        flash("Недостаточно вопросов для теста уровня", "error")
+        return redirect(url_for("marketplace_subject", slug=slug))
+    _r.shuffle(pool)
+    session["test_queue"] = pool
+    session["test_idx"] = 0
+    session["test_deck"] = None
+    session["test_stats"] = {"correct": 0, "wrong": 0}
+    session["test_answers"] = []
+    session["test_scope"] = {"type": "placement", "subject_slug": slug, "name": subj_title}
+    session["test_started_at"] = datetime.utcnow().isoformat()
+    session["test_seed"] = _r.randint(1, 10**9)
+    session["test_placement"] = {"subject_slug": slug, "subject_title": subj_title, "rec": rec}
+    return redirect(url_for("test_view"))
+
+
+@app.route("/marketplace/subject/<slug>/plan")
+@login_required
+def subject_plan(slug):
+    """Auto study-roadmap: the subject's collections ordered beginner →
+    intermediate → advanced as a step-by-step plan, with the user's progress."""
+    user = current_user()
+    conn = db.get_conn()
+    subj = conn.execute(
+        "SELECT * FROM mp_subjects WHERE slug=? AND is_active=1", (slug,)).fetchone()
+    if not subj:
+        conn.close(); abort(404)
+    subj = dict(subj)
+    lang = session.get("lang", "ru")
+    subj["title"] = subj.get(f"title_{lang}") or subj["title_ru"]
+    rows = conn.execute("""
+        SELECT co.*,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=co.id) AS deck_count,
+            (SELECT COUNT(*) FROM cards cr JOIN collection_decks cd ON cd.deck_id=cr.deck_id
+             WHERE cd.collection_id=co.id) AS card_count
+        FROM collections co WHERE co.subject_id=? AND co.is_active=1
+    """, (subj["id"],)).fetchall()
+    _order = {"beginner": 0, "intermediate": 1, "advanced": 2}
+    cols = []
+    for r in rows:
+        d = dict(r)
+        d["title"] = d.get(f"title_{lang}") or d["title_ru"]
+        d["desc"] = d.get(f"desc_{lang}") or d.get("desc_ru", "")
+        # learner progress: how many of this collection's cards are reviewed
+        done = conn.execute("""
+            SELECT COUNT(DISTINCT cr.id) FROM cards cr
+            JOIN collection_decks cd ON cd.deck_id=cr.deck_id
+            JOIN user_card_progress p ON p.card_id=cr.id AND p.user_id=?
+            WHERE cd.collection_id=?
+        """, (user["id"], d["id"])).fetchone()[0]
+        d["progress"] = round(done / d["card_count"] * 100) if d.get("card_count") else 0
+        cols.append(d)
+    conn.close()
+    cols.sort(key=lambda c: (_order.get(c.get("level"), 1), c.get("sort_order") or 0))
+    return render_template("subject_plan.html", subj=subj, steps=cols)
 
 
 @app.route("/category/<int:category_id>/match")

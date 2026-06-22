@@ -36,6 +36,32 @@
     </div>
   </div>
 
+  {% if placement %}
+  <!-- Placement recommendation -->
+  <div class="glass-premium mb-10" style="padding: 1.75rem;">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-2xl">🎯</span>
+      <h3 class="font-black text-lg text-slate-900 dark:text-slate-100">{{ t('pl_result_h') }}</h3>
+    </div>
+    <p class="text-slate-600 dark:text-slate-300 mb-5">
+      {{ t('pl_your_level') }}
+      <span class="font-black">
+        {% if placement.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}
+        {% elif placement.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
+        {% else %}🔴 {{ t('lvl_advanced') }}{% endif %}
+      </span>
+    </p>
+    <div class="flex gap-3 flex-wrap">
+      {% if placement.collection %}
+      <a href="/collection/{{ placement.collection.slug }}" class="btn-premium">
+        {{ t('pl_start_with') }} «{{ placement.collection.title }}» →
+      </a>
+      {% endif %}
+      <a href="/marketplace/subject/{{ placement.subject_slug }}" class="btn-premium-ghost">{{ t('pl_back_subject') }}</a>
+    </div>
+  </div>
+  {% endif %}
+
   {% if review %}
   <!-- Review -->
   <div class="glass-premium" style="padding: 2rem;">
