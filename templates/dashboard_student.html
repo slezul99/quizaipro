@@ -7,7 +7,7 @@
     <div class="mb-6 md:mb-8">
       <h1 class="dash-h1">
         {% if current_user.role == 'individual' %}
-          {{ t('hello') }}, <span class="dash-name">{{ current_user.username }}</span>
+          {{ t('hello') }}, <span class="dash-name">{{ current_user.full_name or current_user.username.split('@')[0] }}</span>
         {% else %}
           {{ t('user_centre') }}
         {% endif %}
