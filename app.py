@@ -2857,6 +2857,53 @@ def category_test_start(category_id):
     return redirect(url_for("test_view"))
 
 
+@app.route("/collection/<slug>/test")
+@login_required
+def collection_test_start(slug):
+    """Test po vsej kollektsii — pulim sluchajnye karty so VSEH ee MCQ-kolod
+    (a ne tol'ko pervoj), chtoby kazhdyj zapusk daval raznye voprosy iz puls."""
+    user = current_user()  # noqa: F841 — login gate
+    count = int(request.args.get("count", 10))
+    count = max(3, min(count, 50))
+    conn = db.get_conn()
+    coll = conn.execute(
+        "SELECT * FROM collections WHERE slug=? AND is_active=1", (slug,)
+    ).fetchone()
+    if not coll:
+        conn.close(); abort(404)
+    lang = session.get("lang", "ru")
+    coll_name = (coll[f"title_{lang}"] if f"title_{lang}" in coll.keys()
+                 and coll[f"title_{lang}"] else coll["title_ru"])
+    rows = conn.execute("""
+        SELECT c.id FROM cards c
+        JOIN collection_decks cd ON cd.deck_id = c.deck_id
+        JOIN decks d ON d.id = c.deck_id
+        WHERE cd.collection_id = ? AND d.is_public = 1 AND COALESCE(d.has_mcq, 0) = 1
+    """, (coll["id"],)).fetchall()
+    first_deck = conn.execute("""
+        SELECT d.id FROM decks d JOIN collection_decks cd ON cd.deck_id = d.id
+        WHERE cd.collection_id = ? AND COALESCE(d.has_mcq, 0) = 1
+        ORDER BY cd.sort_order LIMIT 1
+    """, (coll["id"],)).fetchone()
+    conn.close()
+    card_ids = [r["id"] for r in rows]
+    if len(card_ids) < 3:
+        flash("В коллекции меньше 3 вопросов для теста", "error")
+        return redirect(url_for("collection_view", slug=slug))
+    import random as _r
+    _r.shuffle(card_ids)
+    card_ids = card_ids[:count]
+    session["test_queue"] = card_ids
+    session["test_idx"] = 0
+    session["test_deck"] = first_deck["id"] if first_deck else None
+    session["test_stats"] = {"correct": 0, "wrong": 0}
+    session["test_answers"] = []
+    session["test_scope"] = {"type": "collection", "id": coll["id"], "name": coll_name}
+    session["test_started_at"] = datetime.utcnow().isoformat()
+    session["test_seed"] = _r.randint(1, 10**9)
+    return redirect(url_for("test_view"))
+
+
 @app.route("/category/<int:category_id>/match")
 @login_required
 def category_match_game(category_id):

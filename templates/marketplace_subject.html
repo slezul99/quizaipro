@@ -135,7 +135,9 @@
           {% if c.has_mcq or c.has_terms %}
           <div class="relative z-10 flex gap-2 mt-4 flex-wrap">
             {% if c.has_mcq and c.first_mcq_deck_id %}
-            <a href="/deck/{{ c.first_mcq_deck_id }}/test?count=10&shuffle=1"
+            {# Collection test pools random questions from ALL decks in the
+               collection (not just the first), so each run differs. #}
+            <a href="/collection/{{ c.slug }}/test?count=10"
               class="flex-1 min-w-0 text-center px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-emerald-700 font-bold text-xs transition-all hover:shadow-lg whitespace-nowrap"
               onclick="event.stopPropagation()">
               📝 {{ t('btn_test') }}
