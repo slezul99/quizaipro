@@ -33,7 +33,10 @@ _COMMON = (" Premium glossy 3D render designed as a WIDE card background. The th
            "frame. The LEFT ~40% is a smooth, slightly darker gradient of the SAME "
            "theme colour with a faint matching pattern, kept clear for text. The whole "
            "background is the theme colour — vivid, saturated and cohesive, NOT grey, "
-           "NOT a dark studio. No words, no captions, no watermark text.")
+           "NOT a dark studio. The background is a solid theme-coloured gradient that "
+           "FILLS THE ENTIRE FRAME edge to edge — absolutely NO white, NO pale or "
+           "blown-out sky, NO bright empty light areas, NO plain white corners. No "
+           "words, no captions, no watermark text.")
 
 PROMPTS = {
     # English subject collections
