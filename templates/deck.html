@@ -806,7 +806,7 @@ function deckEditor() {
   </div>
 
   <!-- Test settings modal -->
-  <div x-show="showTest" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
+  <div x-show="showTest" x-transition x-effect="if (cards.length) testCount = Math.max(1, Math.min(testCount, cards.length))" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="showTest = false" x-cloak>
     <div class="glass-premium max-w-md w-full scale-in" style="padding: 2rem;">
       <h2 class="section-h" style="font-size: 1.7rem;">{{ t('dk_test_h') }}</h2>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
