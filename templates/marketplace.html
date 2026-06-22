@@ -76,10 +76,53 @@
           <div class="absolute inset-0 rounded-3xl pointer-events-none"
             style="box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 0 0 1px rgba(255,255,255,.10);"></div>
 
-          <!-- glass icon chip (raised 3D) -->
+          <!-- glass icon chip (raised 3D) with a bespoke per-subject emblem -->
           <div class="subj-chip relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center text-4xl mb-5"
             style="background: rgba(255,255,255,.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);">
-            {{ s.icon }}
+            {% if s.slug == 'english' %}
+            {# Union Jack — premium flag badge #}
+            <span class="block w-11 h-7 rounded-md overflow-hidden shadow-md ring-1 ring-white/50">
+              <svg viewBox="0 0 60 40" class="w-full h-full" preserveAspectRatio="none">
+                <defs><clipPath id="ukclip"><rect width="60" height="40"/></clipPath></defs>
+                <g clip-path="url(#ukclip)">
+                  <rect width="60" height="40" fill="#012169"/>
+                  <path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="8"/>
+                  <path d="M0,0 60,40 M60,0 0,40" stroke="#C8102E" stroke-width="3.5"/>
+                  <path d="M30,0 V40 M0,20 H60" stroke="#fff" stroke-width="13"/>
+                  <path d="M30,0 V40 M0,20 H60" stroke="#C8102E" stroke-width="7"/>
+                </g>
+              </svg>
+            </span>
+            {% elif s.slug == 'mathematics' %}
+            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2.5" width="14" height="19" rx="2.5"/>
+              <rect x="8" y="5.5" width="8" height="3" rx="1"/>
+              <path d="M8.5 12h0M12 12h0M15.5 12h0M8.5 15h0M12 15h0M15.5 15h0M8.5 18h0M12 18h0M15.5 18h0"/>
+            </svg>
+            {% elif s.slug == 'programming' %}
+            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+            </svg>
+            {% elif s.slug == 'science' %}
+            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3h6M10 3v6.5L5.6 16.8A2 2 0 0 0 7.4 20h9.2a2 2 0 0 0 1.8-3.2L14 9.5V3"/>
+              <path d="M7.4 14.5h9.2"/>
+            </svg>
+            {% elif s.slug == 'business' %}
+            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="7.5" width="18" height="12.5" rx="2.5"/>
+              <path d="M8 7.5V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.5"/>
+              <path d="M3 12.5h18M11 12.5h2"/>
+            </svg>
+            {% elif s.slug == 'history' %}
+            <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 4 8h16L12 3Z"/>
+              <path d="M5 8v9M9 8v9M15 8v9M19 8v9"/>
+              <path d="M3.5 20.5h17"/>
+            </svg>
+            {% else %}
+            <span class="text-4xl">{{ s.icon }}</span>
+            {% endif %}
           </div>
 
           <!-- title -->
