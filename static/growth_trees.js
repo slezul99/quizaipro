@@ -121,9 +121,9 @@
       '<img class="gt-lb-img" alt="">' +
       '<canvas class="gt-lb-canvas" data-fx="none"></canvas>' +
       '<div class="gt-lb-vig"></div>' +
-      '<button class="gt-lb-close" aria-label="Закрыть">&times;</button>' +
+      '<button class="gt-lb-close" aria-label="' + ((window.GT_I18N && GT_I18N.close) || 'Close') + '">&times;</button>' +
       '<div class="gt-lb-cap"><span class="gt-lb-range"></span>' +
-      '<div class="gt-lb-title"></div><div class="gt-lb-hint">Нажмите, чтобы закрыть</div></div>';
+      '<div class="gt-lb-title"></div><div class="gt-lb-hint">' + ((window.GT_I18N && GT_I18N.tapClose) || 'Tap to close') + '</div></div>';
     document.body.appendChild(o);
     lightbox = {
       el: o, open: false, mx: 0, my: 0, fx: null,

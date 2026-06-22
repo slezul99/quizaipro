@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Стадии роста · {{ t('app_name') }}{% endblock %}
+{% block title %}{{ t('gr_page_title') }} · {{ t('app_name') }}{% endblock %}
 
 {% set current = stages|selectattr('key','equalto',current_key)|first %}
 {% macro wide(img) %}{{ url_for('static', filename='trees/' + img.replace('.webp','_wide.webp')) }}{% endmacro %}
@@ -200,28 +200,28 @@
   <div class="gt-cap">
     <span class="gt-cap-range" style="background:{{ current.accent }};">⚡ {{ current.range }}</span>
     <h1>{{ current.title }}</h1>
-    <div class="gt-cap-rank" style="color:{{ current.accent }};">🏅 Титул: {{ current.rank }}</div>
-    <div class="sub">Активная серия: <b>{{ streak }}</b> дн.</div>
+    <div class="gt-cap-rank" style="color:{{ current.accent }};">🏅 {{ t('gr_rank_label') }}: {{ current.rank }}</div>
+    <div class="sub">{{ t('gr_streak_label') }}: <b>{{ streak }}</b> {{ t('gr_days_short') }}</div>
     {% if next_title %}
     <div class="gt-progress">
       <div class="gt-progress-top">
-        <span>До «{{ next_title }}»</span>
-        <span>ещё {{ days_to_next }} дн.</span>
+        <span>{{ t('gr_next_goal') }}: {{ next_title }}</span>
+        <span>+{{ days_to_next }} {{ t('gr_days_short') }}</span>
       </div>
       <div class="gt-progress-bar">
         <div class="gt-progress-fill" style="width: {{ (stage_progress * 100)|round(0,'floor') }}%; color: {{ current.accent }}; background: {{ current.accent }};"></div>
       </div>
     </div>
     {% else %}
-    <div class="gt-progress"><div class="gt-progress-top"><span>🏆 Максимальная стадия достигнута!</span></div></div>
+    <div class="gt-progress"><div class="gt-progress-top"><span>{{ t('gr_max_reached') }}</span></div></div>
     {% endif %}
-    <button class="gt-share-btn" onclick="gtShare()">📤 Поделиться деревом</button>
-    <div class="tap">Нажмите на любую стадию ниже, чтобы открыть её во весь экран</div>
+    <button class="gt-share-btn" onclick="gtShare()">{{ t('gr_share') }}</button>
+    <div class="tap">{{ t('gr_tap_hint') }}</div>
   </div>
 
   <div class="gt-panel">
-    <div class="gt-sec"><span style="font-size:22px;">🏅</span><h2>Титулы</h2></div>
-    <div class="gt-sec-desc">Открывай новые титулы, продлевая серию</div>
+    <div class="gt-sec"><span style="font-size:22px;">🏅</span><h2>{{ t('gr_titles_h') }}</h2></div>
+    <div class="gt-sec-desc">{{ t('gr_titles_desc') }}</div>
     <div class="gt-titles">
       {% for s in stages %}
       <span class="gt-title-chip {{ 'earned' if streak >= s.start }} {{ 'cur' if s.key == current_key }}"
@@ -231,8 +231,8 @@
       {% endfor %}
     </div>
 
-    <div class="gt-sec"><span style="font-size:22px;">🌱</span><h2>Стадии роста</h2></div>
-    <div class="gt-sec-desc">Чем дольше серия — тем величественнее дерево</div>
+    <div class="gt-sec"><span style="font-size:22px;">🌱</span><h2>{{ t('gr_stages_h') }}</h2></div>
+    <div class="gt-sec-desc">{{ t('gr_stages_desc') }}</div>
 
     <div class="gt-grid">
       {% for s in stages %}
@@ -255,8 +255,8 @@
           <span class="gt-card-range"><span class="gt-dot"></span>{{ s.range }}</span>
           <div class="gt-card-title">{{ s.title }}</div>
         </div>
-        {% if s.key == current_key %}<span class="gt-badge-now">Сейчас</span>
-        {% elif s.key == next_key %}<span class="gt-badge-goal">🎯 Цель · {{ days_to_next }} дн.</span>
+        {% if s.key == current_key %}<span class="gt-badge-now">{{ t('gr_now') }}</span>
+        {% elif s.key == next_key %}<span class="gt-badge-goal">🎯 {{ t('gr_goal') }} · {{ days_to_next }} {{ t('gr_days_short') }}</span>
         {% elif not unlocked %}<span class="gt-badge-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>{% endif %}
       </div>
       {% endfor %}
@@ -269,10 +269,10 @@
   <canvas class="gt-confetti" id="gt-confetti"></canvas>
   <div class="gt-cel-card">
     <img src="{{ wide(current.img) }}" alt="{{ current.title }}">
-    <div class="gt-cel-grew">🎉 Дерево выросло!</div>
+    <div class="gt-cel-grew">{{ t('gr_grew') }}</div>
     <div class="gt-cel-name">{{ current.title }}</div>
-    <div class="gt-cel-rank" style="color:{{ current.accent }};">🏅 Новый титул: {{ current.rank }}</div>
-    <div class="gt-cel-hint">Нажмите, чтобы продолжить</div>
+    <div class="gt-cel-rank" style="color:{{ current.accent }};">🏅 {{ t('gr_new_rank') }}: {{ current.rank }}</div>
+    <div class="gt-cel-hint">{{ t('gr_tap_continue') }}</div>
   </div>
 </div>
 
@@ -323,16 +323,16 @@
 <!-- Share card -->
 <div class="gt-share" id="gt-share">
   <div class="gt-share-box" onclick="event.stopPropagation();">
-    <h3>Поделиться деревом 🌳</h3>
-    <img id="gt-share-preview" class="gt-share-preview" alt="Моё дерево QuizAIPro">
+    <h3>{{ t('gr_share_h') }}</h3>
+    <img id="gt-share-preview" class="gt-share-preview" alt="{{ t('gr_share_my_tree') }} QuizAIPro">
     <div class="gt-share-actions">
-      <button class="primary" id="gt-share-native">📤 Поделиться</button>
-      <button id="gt-share-download">⬇️ Скачать</button>
-      <button id="gt-share-copy">🔗 Скопировать ссылку</button>
+      <button class="primary" id="gt-share-native">{{ t('gr_share_native') }}</button>
+      <button id="gt-share-download">{{ t('gr_share_download') }}</button>
+      <button id="gt-share-copy">{{ t('gr_share_copy') }}</button>
       <a class="tg" id="gt-share-tg" target="_blank" rel="noopener">✈️ Telegram</a>
       <a class="wa" id="gt-share-wa" target="_blank" rel="noopener">🟢 WhatsApp</a>
     </div>
-    <button class="gt-share-close" onclick="document.getElementById('gt-share').classList.remove('show')">Закрыть</button>
+    <button class="gt-share-close" onclick="document.getElementById('gt-share').classList.remove('show')">{{ t('gr_close') }}</button>
   </div>
 </div>
 <img id="gt-share-src" src="{{ url_for('static', filename='trees/' + current.img) }}" style="display:none" alt="">
@@ -344,13 +344,15 @@
     title: {{ current.title|tojson }},
     accent: {{ current.accent|tojson }},
     user: {{ (current_user.username or '')|tojson }},
-    url: "https://quizaipro.com/growth"
+    url: "https://quizaipro.com/growth",
+    text: {{ (t('gr_share_my_tree') ~ ' — «' ~ current.title ~ '»! ' ~ t('gr_share_streak') ~ ' ' ~ streak ~ ' ' ~ t('gr_days_short') ~ ' 🔥 ' ~ t('gr_rank_label') ~ ': ' ~ current.rank ~ '. ' ~ t('gr_share_learning'))|tojson }},
+    daysStreak: {{ t('gr_share_days_streak')|tojson }},
+    copied: {{ t('gr_copied')|tojson }}
   };
   (function () {
     var S = window.GT_SHARE, blob = null;
     function shareText() {
-      return "Моё дерево знаний — «" + S.title + "»! Серия " + S.streak +
-        " дней 🔥 Титул: " + S.rank + ". Учусь на QuizAIPro 🌳";
+      return S.text;
     }
     function buildCard(cb) {
       var W = 1080, H = 1350, cv = document.createElement('canvas');
@@ -368,7 +370,7 @@
         x.fillStyle = '#fff'; x.font = '800 42px Arial'; x.fillText('🌳 QuizAIPro', 54, 88);
         x.fillStyle = S.accent; x.font = '800 36px Arial'; x.fillText(S.title.toUpperCase(), 56, H - 300);
         x.fillStyle = '#fff'; x.font = '900 132px Arial'; x.fillText('🔥 ' + S.streak, 50, H - 168);
-        x.fillStyle = 'rgba(255,255,255,.85)'; x.font = '700 42px Arial'; x.fillText('дней серии', 58, H - 116);
+        x.fillStyle = 'rgba(255,255,255,.85)'; x.font = '700 42px Arial'; x.fillText(S.daysStreak, 58, H - 116);
         x.fillStyle = '#fff'; x.font = '800 40px Arial'; x.fillText('🏅 ' + S.rank, 56, H - 60);
         if (S.user) { x.textAlign = 'right'; x.fillStyle = 'rgba(255,255,255,.6)';
           x.font = '600 32px Arial'; x.fillText('@' + S.user, W - 56, H - 60); }
@@ -411,7 +413,7 @@
       document.getElementById('gt-share-download').onclick = downloadCard;
       document.getElementById('gt-share-copy').onclick = function () {
         navigator.clipboard && navigator.clipboard.writeText(S.url);
-        this.textContent = '✓ Скопировано';
+        this.textContent = S.copied;
       };
       document.getElementById('gt-share-native').onclick = function () {
         if (blob && navigator.canShare) {
@@ -426,5 +428,6 @@
     });
   })();
 </script>
-<script src="{{ url_for('static', filename='growth_trees.js') }}?v=7" defer></script>
+<script>window.GT_I18N = { close: {{ t('gr_close')|tojson }}, tapClose: {{ t('gr_tap_close')|tojson }} };</script>
+<script src="{{ url_for('static', filename='growth_trees.js') }}?v=8" defer></script>
 {% endblock %}

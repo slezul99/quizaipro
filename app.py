@@ -3395,7 +3395,7 @@ def inject_tree_status():
             return {}
         st = growth_stage_for(u["streak"] if "streak" in u.keys() else 0)
         return {"tree_status": {
-            "key": st["key"], "rank": st["rank"], "title": st["title"],
+            "key": st["key"], "rank": t(f"gr_r_{st['key']}"), "title": t(f"gr_t_{st['key']}"),
             "accent": st["accent"], "glow": st["glow"],
         }}
     except Exception:
@@ -3425,13 +3425,20 @@ def growth_page():
         stage_progress = 1.0
         days_to_next = 0
 
+    # Localise the stage labels (title/rank/range) for the current language so
+    # they translate everywhere the template uses them (display, alt, aria,
+    # data-* attributes read by the tree JS).
+    def _loc(s):
+        return {**s, "title": t(f"gr_t_{s['key']}"), "rank": t(f"gr_r_{s['key']}"), "range": t(f"gr_g_{s['key']}")}
+    loc_stages = [_loc(s) for s in GROWTH_STAGES]
+
     return render_template(
         "growth_stages.html",
-        stages=GROWTH_STAGES,
+        stages=loc_stages,
         streak=streak,
         current_key=current["key"],
         next_key=(nxt["key"] if nxt else None),
-        next_title=(nxt["title"] if nxt else None),
+        next_title=(t(f"gr_t_{nxt['key']}") if nxt else None),
         days_to_next=days_to_next,
         stage_progress=stage_progress,
     )
