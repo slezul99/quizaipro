@@ -27,6 +27,7 @@ class LibrarySortSheet extends StatelessWidget {
   }) =>
       showModalBottomSheet<LibrarySortBy>(
         context: context,
+    useRootNavigator: true,
         builder: (_) => LibrarySortSheet(
           selected: selected,
           tokens: tokens,

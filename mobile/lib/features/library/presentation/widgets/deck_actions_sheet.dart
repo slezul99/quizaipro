@@ -42,6 +42,7 @@ class DeckActionsSheet extends StatelessWidget {
   }) =>
       showModalBottomSheet<DeckAction>(
         context: context,
+    useRootNavigator: true,
         builder: (_) => DeckActionsSheet(
           deck: deck,
           tokens: tokens,

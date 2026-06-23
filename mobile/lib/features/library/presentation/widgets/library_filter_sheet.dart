@@ -38,6 +38,7 @@ class LibraryFilterSheet extends StatefulWidget {
   }) =>
       showModalBottomSheet<LibraryFilter>(
         context: context,
+    useRootNavigator: true,
         isScrollControlled: true,
         builder: (_) => LibraryFilterSheet(
           initialFilter: initialFilter,

@@ -977,6 +977,7 @@ void _showNoContentSheet(
   final accent = isTest ? tokens.stateInfo : tokens.brandGradientStart;
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     backgroundColor: tokens.backgroundSurface,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(tokens.radiusLg)),

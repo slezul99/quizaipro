@@ -15,6 +15,7 @@ Future<bool?> showDeckEditorSheet(BuildContext context, {LibraryDeck? deck}) {
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true, // render above the shell + centre FAB
     backgroundColor: Colors.transparent,
     builder: (_) => _DeckEditorSheet(deck: deck),
   );

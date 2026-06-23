@@ -32,6 +32,7 @@ Future<bool?> showCardEditorSheet(
 }) {
   return showModalBottomSheet<bool>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => _CardEditorSheet(deckId: deckId, card: card),
