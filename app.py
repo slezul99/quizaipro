@@ -9681,6 +9681,23 @@ try:
 except Exception as _e:
     print(f"[INIT] Mini-topics seed error: {_e}")
 
+# Remove the generic auto-generated IELTS/TOEFL mini-topic decks (kept the
+# original curated decks). Runs after the mini-topics seed.
+try:
+    _conn = db.get_conn()
+    _rm = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='remove_exam_minitopics_v1'").fetchone()
+    _conn.close()
+    if not _rm:
+        import seed_remove_exam_minitopics  # noqa: F401  (side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('remove_exam_minitopics_v1')")
+        _conn.commit()
+        _conn.close()
+except Exception as _e:
+    print(f"[INIT] Remove exam mini-topics error: {_e}")
+
 # Localize marketplace deck/topic NAMES (name_en/name_uz) from
 # deck_name_translations.json, so en/uz users don't see Russian titles.
 try:
