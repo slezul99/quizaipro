@@ -8381,7 +8381,9 @@ def ai_page():
         cats = conn.execute("SELECT * FROM categories WHERE owner_id=?", (user["id"],)).fetchall()
     conn.close()
     ok, used, limit = billing.check_ai_limit(user)
-    return render_template("ai.html", decks=decks, categories=cats, used=used, limit=limit)
+    photo_premium = billing.get_active_plan(user) != "free" or is_super_admin(user)
+    return render_template("ai.html", decks=decks, categories=cats, used=used,
+                           limit=limit, photo_premium=photo_premium)
 
 
 @app.route("/ai/progress/<job_id>")
@@ -8418,9 +8420,12 @@ def ai_gen_status_api(job_id):
 @app.route("/ai/photo", methods=["POST"])
 @login_required
 def ai_photo_page():
-    """AI generatsiya kart s fotografiyami."""
+    """AI generatsiya kart s fotografiyami. Premium-only feature."""
     user = current_user()
     if not can_manage_content(user): abort(403)
+    if billing.get_active_plan(user) == "free" and not is_super_admin(user):
+        flash("Генерация карточек с фото доступна в плане Pro.", "error")
+        return redirect(url_for("ai_page"))
     if not ai_gen.is_available():
         flash("AI не настроен", "error")
         return redirect(url_for("ai_page"))
