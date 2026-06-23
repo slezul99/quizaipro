@@ -28,15 +28,15 @@ OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "static", "collections")
 os.makedirs(OUT, exist_ok=True)
 
-_COMMON = (" Premium glossy 3D render designed as a WIDE card background. The themed "
-           "object is large, bright and crisply lit, placed on the RIGHT side of the "
-           "frame. The LEFT ~40% is a smooth, slightly darker gradient of the SAME "
-           "theme colour with a faint matching pattern, kept clear for text. The whole "
-           "background is the theme colour — vivid, saturated and cohesive, NOT grey, "
-           "NOT a dark studio. The background is a solid theme-coloured gradient that "
-           "FILLS THE ENTIRE FRAME edge to edge — absolutely NO white, NO pale or "
-           "blown-out sky, NO bright empty light areas, NO plain white corners. No "
-           "words, no captions, no watermark text.")
+_COMMON = (" Premium glossy 3D render, wide horizontal composition. The themed object "
+           "is large, bright and crisply lit on the RIGHT side. The LEFT ~40% is a "
+           "smooth, slightly darker area of the SAME theme colour with a faint matching "
+           "pattern, kept clean and simple. Fill the ENTIRE frame edge to edge with the "
+           "rich saturated theme colour — NO white, NO pale or blown-out areas, NO grey "
+           "studio, NO plain white corners. VERY IMPORTANT: absolutely NO text, NO "
+           "letters, NO words, NO labels, NO captions, NO numbers, NO writing of any "
+           "kind, NO logos other than the described object, NO watermark, NO floating "
+           "card or banner shape — anywhere in the image.")
 
 PROMPTS = {
     # English subject collections
