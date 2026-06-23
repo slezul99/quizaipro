@@ -77,63 +77,74 @@
 {# x-data="{}" gives the preview button an Alpine scope so its
    @click="$dispatch('preview-deck', …)" actually fires (the modal listens for
    that event on window). Without a scope Alpine ignores @click silently. #}
-<div x-data="{}" class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col h-full">
-  <div class="flex items-start justify-between mb-3">
-    {% if d.cover_slug %}
-    <div class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm relative" style="background: linear-gradient(135deg, {{ d.cover_color or '#6366f1' }}, {{ d.cover_color2 or '#4f46e5' }});">
-      <img src="{{ asset('collections/' ~ d.cover_slug ~ '.jpg') }}" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
-      <span class="absolute bottom-0.5 right-1 text-base drop-shadow">{{ d.icon }}</span>
-    </div>
-    {% else %}
-    <div class="text-3xl">{{ d.icon }}</div>
-    {% endif %}
-    <div class="flex flex-col items-end gap-1">
-      {% if _dlevel %}
-      <span class="px-2 py-0.5 rounded-full text-[11px] font-bold
-        {% if _dlevel == 'beginner' %}bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300
-        {% elif _dlevel == 'intermediate' %}bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300
-        {% else %}bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300{% endif %}">
-        {% if _dlevel == 'beginner' %}🟢{% elif _dlevel == 'intermediate' %}🟡{% else %}🔴{% endif %} {{ t('lvl_' ~ _dlevel) }}
-      </span>
-      {% endif %}
-      {% if d.has_mcq %}
-      <span class="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 text-[11px] font-bold">📝 {{ t('mk_type_test') }}</span>
-      {% elif d.has_terms %}
-      <span class="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[11px] font-bold">🃏 {{ t('mk_type_cards') }}</span>
-      {% endif %}
-      {% if d.rating_count and d.rating_count > 0 %}
-      <span class="text-xs font-bold text-amber-500 flex items-center gap-0.5">★ {{ d.rating }} <span class="text-slate-400 dark:text-slate-500 font-normal">({{ d.rating_count }})</span></span>
-      {% endif %}
-      <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
-      {% if d.clones_count and d.clones_count > 0 %}
-      <span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1">📥 {{ d.clones_count }}</span>
-      {% endif %}
-    </div>
+<div x-data="{}" class="group relative rounded-2xl overflow-hidden flex flex-col h-full text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+  style="background: linear-gradient(145deg, {{ d.cover_color or '#6366f1' }}, {{ d.cover_color2 or '#4f46e5' }}); min-height: 300px;">
+  {# full-bleed cover art (collections/<slug>.jpg) — falls back to the gradient #}
+  {% if d.cover_slug %}
+  <img src="{{ asset('collections/' ~ d.cover_slug ~ '.jpg') }}" alt="" loading="lazy"
+    class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+  {% else %}
+  <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <span style="font-size:5rem; opacity:.22;">{{ d.icon }}</span>
   </div>
+  {% endif %}
+  {# legibility scrim: darken the lower half so white text/buttons stay readable #}
+  <div class="absolute inset-0 pointer-events-none"
+    style="background: linear-gradient(to top, rgba(15,23,42,.95) 0%, rgba(15,23,42,.82) 28%, rgba(15,23,42,.35) 54%, rgba(15,23,42,.05) 74%, transparent 100%);"></div>
 
-  <a href="/deck/{{ d.id }}" class="block flex-1">
-    <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1 leading-tight line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition">{{ _dname }}</h3>
-    {% if d.description %}
-    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2 line-clamp-2">{{ d.description }}</p>
-    {% endif %}
-  </a>
+  <div class="relative z-10 flex flex-col h-full p-4">
+    {# top: glass icon chip + type / level badges #}
+    <div class="flex items-start justify-between gap-2">
+      <div class="flex items-center justify-center rounded-xl flex-shrink-0"
+        style="width:44px; height:44px; font-size:22px; background:rgba(255,255,255,.20); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:inset 0 1px 0 rgba(255,255,255,.30);">{{ d.icon }}</div>
+      <div class="flex flex-col items-end gap-1">
+        {% if d.has_mcq %}
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap" style="background:rgba(16,185,129,.9); box-shadow:inset 0 1px 0 rgba(255,255,255,.25);">📝 {{ t('mk_type_test') }}</span>
+        {% elif d.has_terms %}
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap" style="background:rgba(99,102,241,.9); box-shadow:inset 0 1px 0 rgba(255,255,255,.25);">🃏 {{ t('mk_type_cards') }}</span>
+        {% endif %}
+        {% if _dlevel %}
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap" style="background:rgba(255,255,255,.20); backdrop-filter:blur(3px);">
+          {% if _dlevel == 'beginner' %}🟢{% elif _dlevel == 'intermediate' %}🟡{% else %}🔴{% endif %} {{ t('lvl_' ~ _dlevel) }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
 
-  <div class="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
-    <div class="text-[11px] text-slate-400 dark:text-slate-500 mb-2 flex items-center gap-1 truncate">
+    {# spacer keeps the title pinned to the bottom over the artwork #}
+    <div class="flex-1"></div>
+
+    {# title + meta pills #}
+    <a href="/deck/{{ d.id }}" class="block">
+      <h3 class="font-black text-lg leading-tight mb-2 line-clamp-2" style="text-shadow:0 2px 10px rgba(0,0,0,.7);">{{ _dname }}</h3>
+      <div class="flex items-center gap-1.5 flex-wrap mb-3">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap" style="background:rgba(255,255,255,.18); box-shadow:inset 0 1px 0 rgba(255,255,255,.25); backdrop-filter:blur(3px);">📝 {{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
+        {% if d.rating_count and d.rating_count > 0 %}
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap" style="background:rgba(255,255,255,.12); backdrop-filter:blur(3px); color:#fcd34d;">★ {{ d.rating }}</span>
+        {% endif %}
+        {% if d.clones_count and d.clones_count > 0 %}
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap" style="background:rgba(255,255,255,.12); backdrop-filter:blur(3px);">📥 {{ d.clones_count }}</span>
+        {% endif %}
+      </div>
+    </a>
+
+    {# author #}
+    <div class="text-[11px] mb-2 flex items-center gap-1 truncate" style="color:rgba(255,255,255,.72);">
       {% if d.author and d.author != 'quizaipro_system' %}{{ d.author }}{% else %}<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-9h2v4h-2V7zm0 6h2v2h-2v-2z"/></svg> QuizAIPro{% endif %}
     </div>
-    <div class="flex flex-col gap-2">
-      <form method="POST" action="/marketplace/clone/{{ d.id }}" class="w-full">
+
+    {# actions: wide Add-to-library + compact preview icon #}
+    <div class="flex gap-2">
+      <form method="POST" action="/marketplace/clone/{{ d.id }}" class="flex-1">
         <button type="submit"
           class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white whitespace-nowrap transition-all hover:scale-[1.02] hover:shadow-md"
           style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
           📥 {{ t('mk_add_lib') }}
         </button>
       </form>
-      <button type="button" @click="$dispatch('preview-deck', {{ d.id }})"
-        class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 whitespace-nowrap hover:border-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-300 transition">
-        👁 {{ t('mk_preview_btn') }}
-      </button>
+      <button type="button" @click="$dispatch('preview-deck', {{ d.id }})" title="{{ t('mk_preview_btn') }}"
+        class="flex-shrink-0 inline-flex items-center justify-center rounded-xl text-sm transition hover:scale-105"
+        style="width:42px; background:rgba(255,255,255,.16); backdrop-filter:blur(4px); box-shadow:inset 0 1px 0 rgba(255,255,255,.2);">👁</button>
     </div>
   </div>
 </div>
