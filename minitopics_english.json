@@ -1,0 +1,4772 @@
+{
+ "english-a1": {
+  "title": "A1 Beginner",
+  "topics": [
+   {
+    "topic": "Личные местоимения и глагол to be",
+    "cards": [
+     {
+      "q": "Какая форма глагола to be пропущена в предложении: I ___ a doctor?",
+      "opts": [
+       "is",
+       "are",
+       "am",
+       "be"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильный перевод предложения: Они из Лондона.",
+      "opts": [
+       "They is from London.",
+       "They are from London.",
+       "He is from London.",
+       "They am from London."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое местоимение заменяет словосочетание my sister and I (моя сестра и я)?",
+      "opts": [
+       "They",
+       "We",
+       "She",
+       "You"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком предложении допущена грамматическая ошибка?",
+      "opts": [
+       "She is a teacher.",
+       "It are a big dog.",
+       "We are happy.",
+       "You are late."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как правильно задать вопрос Ты голоден?",
+      "opts": [
+       "You are hungry?",
+       "Is you hungry?",
+       "Are you hungry?",
+       "Do you hungry?"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите краткий отрицательный ответ на вопрос: Is he your friend?",
+      "opts": [
+       "No, he is.",
+       "No, he not.",
+       "No, he isn't.",
+       "No, he doesn't."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое местоимение переводится как оно (для неодушевленных предметов и животных)?",
+      "opts": [
+       "He",
+       "She",
+       "It",
+       "They"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Заполните пропуск: Where ___ you from?",
+      "opts": [
+       "am",
+       "is",
+       "are",
+       "be"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое предложение переводится как Это не моя книга?",
+      "opts": [
+       "This is not my book.",
+       "This not is my book.",
+       "This is no my book.",
+       "This am not my book."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая форма глагола to be используется с местоимениями he, she, it?",
+      "opts": [
+       "am",
+       "are",
+       "be",
+       "is"
+      ],
+      "correct": 3
+     }
+    ]
+   },
+   {
+    "topic": "Семья и описание внешности",
+    "cards": [
+     {
+      "q": "Как переводится слово nephew?",
+      "opts": [
+       "племянник",
+       "племянница",
+       "внук",
+       "дядя"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильный перевод фразы у нее голубые глаза:",
+      "opts": [
+       "She has blue eyes.",
+       "She is blue eyes.",
+       "She have blue eyes.",
+       "She got blue eyes."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Кто такой husband?",
+      "opts": [
+       "брат",
+       "сын",
+       "муж",
+       "отец"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как сказать по-английски высокий мужчина?",
+      "opts": [
+       "high man",
+       "tall man",
+       "long man",
+       "short man"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово является противоположным по значению к слову young (молодой)?",
+      "opts": [
+       "old",
+       "new",
+       "beautiful",
+       "strong"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как переводится словосочетание dark hair?",
+      "opts": [
+       "светлые волосы",
+       "темные волосы",
+       "короткие волосы",
+       "кудрявые волосы"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите слово, обозначающее родители:",
+      "opts": [
+       "relatives",
+       "parents",
+       "partners",
+       "children"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится предложение He is short?",
+      "opts": [
+       "Он высокий",
+       "Он худой",
+       "Он низкого роста",
+       "Он молодой"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое слово пропущено: My mother's sister is my ___?",
+      "opts": [
+       "uncle",
+       "aunt",
+       "cousin",
+       "grandmother"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как правильно сказать мои старшие братья?",
+      "opts": [
+       "my old brothers",
+       "my elder brothers",
+       "my big brothers",
+       "my age brothers"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Множественное число существительных",
+    "cards": [
+     {
+      "q": "Какое окончание обычно добавляется к существительным для образования множественного числа?",
+      "opts": [
+       "-ing",
+       "-ed",
+       "-s",
+       "-es"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как правильно написать во множественном числе слово box (коробка)?",
+      "opts": [
+       "boxs",
+       "boxes",
+       "boxies",
+       "boxen"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму множественного числа для слова child (ребенок):",
+      "opts": [
+       "childs",
+       "childrens",
+       "children",
+       "childes"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое из этих слов является исключением и меняет гласную во множественном числе?",
+      "opts": [
+       "cat",
+       "dog",
+       "man",
+       "house"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как правильно пишется слово baby во множественном числе?",
+      "opts": [
+       "babys",
+       "babyes",
+       "babies",
+       "babi"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильную форму множественного числа для слова knife (нож):",
+      "opts": [
+       "knifes",
+       "knives",
+       "knifees",
+       "knifs"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово во множественном числе пишется как mice?",
+      "opts": [
+       "рот (mouth)",
+       "мышь (mouse)",
+       "мужчина (man)",
+       "зуб (tooth)"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из следующих слов имеет одинаковую форму в единственном и множественном числе?",
+      "opts": [
+       "person",
+       "sheep",
+       "goose",
+       "ox"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как правильно сказать три помидора?",
+      "opts": [
+       "three tomatos",
+       "three tomatoes",
+       "three tomato",
+       "three tomato's"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение грамматически верно?",
+      "opts": [
+       "These books is interesting.",
+       "This books are interesting.",
+       "These books are interesting.",
+       "Those book is interesting."
+      ],
+      "correct": 2
+     }
+    ]
+   },
+   {
+    "topic": "Настоящее простое время (Present Simple)",
+    "cards": [
+     {
+      "q": "В каком случае к глаголу в Present Simple добавляется окончание -s/-es?",
+      "opts": [
+       "Когда подлежащее — I, we, you, they",
+       "Когда подлежащее — he, she, it",
+       "Во всех утвердительных предложениях",
+       "Только в вопросительных предложениях"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вспомогательный глагол для отрицания с местоимением I:",
+      "opts": [
+       "doesn't",
+       "don't",
+       "not",
+       "am not"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как правильно перевести: Он живет в Париже?",
+      "opts": [
+       "He live in Paris.",
+       "He lives in Paris.",
+       "He is live in Paris.",
+       "He living in Paris."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое вспомогательное слово используется для построения вопроса в Present Simple с местоимением she?",
+      "opts": [
+       "Do",
+       "Does",
+       "Is",
+       "Has"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически верный вопрос:",
+      "opts": [
+       "Where do you work?",
+       "Where you work?",
+       "Where does you work?",
+       "Where do you works?"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое слово-маркер указывает на Present Simple?",
+      "opts": [
+       "now",
+       "yesterday",
+       "usually",
+       "tomorrow"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как правильно сказать Я не люблю молоко?",
+      "opts": [
+       "I am not like milk.",
+       "I not like milk.",
+       "I don't like milk.",
+       "I doesn't like milk."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "В каком предложении глагол написан правильно?",
+      "opts": [
+       "She study English.",
+       "She studies English.",
+       "She studyes English.",
+       "She is study English."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение переводится как Они играют в теннис по субботам?",
+      "opts": [
+       "They play tennis on Saturdays.",
+       "They plays tennis on Saturdays.",
+       "They are play tennis on Saturdays.",
+       "They play tennis at Saturdays."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильный краткий ответ на вопрос: Does he speak English?",
+      "opts": [
+       "Yes, he speak.",
+       "Yes, he does.",
+       "Yes, he is.",
+       "Yes, he speaks."
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Предлоги места и времени",
+    "cards": [
+     {
+      "q": "Какой предлог времени используется с днями недели (например, в понедельник)?",
+      "opts": [
+       "in",
+       "at",
+       "on",
+       "to"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как правильно сказать в 5 часов вечера?",
+      "opts": [
+       "on 5 o'clock",
+       "in 5 o'clock",
+       "at 5 o'clock",
+       "for 5 o'clock"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какой предлог места используется, когда предмет находится внутри чего-то (например, в коробке)?",
+      "opts": [
+       "on",
+       "under",
+       "in",
+       "at"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильный предлог: My birthday is ___ October.",
+      "opts": [
+       "on",
+       "at",
+       "in",
+       "by"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как переводится фраза under the table?",
+      "opts": [
+       "на столе",
+       "под столом",
+       "около стола",
+       "над столом"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой предлог пропущен в предложении: The picture is ___ the wall?",
+      "opts": [
+       "in",
+       "on",
+       "at",
+       "above"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как правильно сказать ночью по-английски?",
+      "opts": [
+       "in the night",
+       "at night",
+       "on night",
+       "for night"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой предлог используется с годами (например, в 2023 году)?",
+      "opts": [
+       "on",
+       "at",
+       "in",
+       "during"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как переводится предлог between?",
+      "opts": [
+       "рядом",
+       "между",
+       "напротив",
+       "позади"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный предлог для фразы в выходные (британский вариант):",
+      "opts": [
+       "at the weekend",
+       "on the weekend",
+       "in the weekend",
+       "for the weekend"
+      ],
+      "correct": 0
+     }
+    ]
+   }
+  ]
+ },
+ "english-a2": {
+  "title": "A2 Elementary",
+  "topics": [
+   {
+    "topic": "Прошедшее простое время (Past Simple)",
+    "cards": [
+     {
+      "q": "Выберите правильную форму глагола \"go\" в Past Simple.",
+      "opts": [
+       "goed",
+       "went",
+       "gone",
+       "goes"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение построено грамматически правильно?",
+      "opts": [
+       "She didn't liked the movie.",
+       "She didn't like the movie.",
+       "She don't liked the movie.",
+       "She not liked the movie."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вопрос в Past Simple: \"Где ты жил в прошлом году?\"",
+      "opts": [
+       "Where did you live last year?",
+       "Where you lived last year?",
+       "Where do you lived last year?",
+       "Where did you lived last year?"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое из этих слов-маркеров НЕ относится к Past Simple?",
+      "opts": [
+       "yesterday",
+       "last week",
+       "two days ago",
+       "already"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Как правильно пишется глагол \"study\" в форме прошедшего времени?",
+      "opts": [
+       "studyed",
+       "studied",
+       "studyed",
+       "studid"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите на английский: \"Мы были в кино вчера.\"",
+      "opts": [
+       "We was at the cinema yesterday.",
+       "We were at the cinema yesterday.",
+       "We did be at the cinema yesterday.",
+       "We been at the cinema yesterday."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму глагола: \"They ______ (buy) a new car last month.\"",
+      "opts": [
+       "bought",
+       "buyed",
+       "boughten",
+       "buys"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Каков правильный краткий ответ на вопрос: \"Did you see Tom yesterday?\"",
+      "opts": [
+       "Yes, I saw.",
+       "Yes, I did.",
+       "Yes, I do.",
+       "Yes, I didn't."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое прошедшее время у неправильного глагола \"write\"?",
+      "opts": [
+       "writed",
+       "wrote",
+       "written",
+       "wrot"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите предложение с правильным порядком слов.",
+      "opts": [
+       "When did you arrive?",
+       "When you did arrive?",
+       "Did when you arrive?",
+       "Arrive when did you?"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Степени сравнения прилагательных",
+    "cards": [
+     {
+      "q": "Какая сравнительная степень у прилагательного \"big\"?",
+      "opts": [
+       "biger",
+       "bigger",
+       "more big",
+       "biggest"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму превосходной степени для \"good\".",
+      "opts": [
+       "the goodest",
+       "the best",
+       "the better",
+       "best"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово пропущено: \"My brother is taller ______ me.\"",
+      "opts": [
+       "then",
+       "than",
+       "that",
+       "as"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая сравнительная степень у прилагательного \"expensive\"?",
+      "opts": [
+       "expensiver",
+       "more expensive",
+       "most expensive",
+       "the more expensive"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически правильное предложение.",
+      "opts": [
+       "This is the most interesting book I've ever read.",
+       "This is the interestings book I've ever read.",
+       "This is more interesting book I've ever read.",
+       "This is the most interest book I've ever read."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая сравнительная степень у прилагательного \"bad\"?",
+      "opts": [
+       "badder",
+       "worse",
+       "worst",
+       "more bad"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово пропущено: \"This test is not as difficult ______ the last one.\"",
+      "opts": [
+       "than",
+       "like",
+       "as",
+       "so"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильную форму: \"She is the ______ (happy) girl in the world.\"",
+      "opts": [
+       "happiest",
+       "happyest",
+       "most happy",
+       "happier"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая сравнительная степень у прилагательного \"busy\"?",
+      "opts": [
+       "busier",
+       "more busy",
+       "busyier",
+       "the busiest"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Переведите предложение: \"Этот фильм скучнее, чем тот.\"",
+      "opts": [
+       "This movie is boringer than that one.",
+       "This movie is more boring than that one.",
+       "This movie is the most boring than that one.",
+       "This movie is as boring as that one."
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Еда и покупки (Food and Shopping)",
+    "cards": [
+     {
+      "q": "Какое из этих слов является неисчисляемым существительным?",
+      "opts": [
+       "apple",
+       "milk",
+       "banana",
+       "egg"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильное слово: \"Would you like ______ coffee?\"",
+      "opts": [
+       "any",
+       "some",
+       "many",
+       "a"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как вежливо попросить счет в ресторане?",
+      "opts": [
+       "Give me the money.",
+       "Can I have the bill, please?",
+       "How much for food?",
+       "I want to pay now."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово пропущено: \"How ______ apples do we need?\"",
+      "opts": [
+       "much",
+       "many",
+       "any",
+       "some"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фраза \"How much is it?\"",
+      "opts": [
+       "Сколько это весит?",
+       "Сколько это стоит?",
+       "Сколько их здесь?",
+       "Как долго это длится?"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный ответ на вопрос: \"Can I help you?\" в магазине.",
+      "opts": [
+       "No, I don't.",
+       "Yes, please. I'm looking for a T-shirt.",
+       "Yes, you can help.",
+       "No, you can't."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово пропущено: \"There isn't ______ cheese in the fridge.\"",
+      "opts": [
+       "some",
+       "any",
+       "no",
+       "many"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что из этого НЕ является овощем (vegetable)?",
+      "opts": [
+       "potato",
+       "onion",
+       "chicken",
+       "carrot"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как переводится слово \"receipt\"?",
+      "opts": [
+       "рецепт блюда",
+       "чек (кассовый)",
+       "сдача",
+       "скидка"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильное слово: \"I'd like a ______ of chocolate, please.\"",
+      "opts": [
+       "packet",
+       "bar",
+       "bottle",
+       "loaf"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Настоящее длительное против Настоящего простого",
+    "cards": [
+     {
+      "q": "Какое предложение описывает действие, происходящее прямо сейчас?",
+      "opts": [
+       "I play tennis on Saturdays.",
+       "I am playing tennis now.",
+       "I played tennis yesterday.",
+       "I will play tennis tomorrow."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму: \"She ______ (work) as a doctor.\" (постоянная работа)",
+      "opts": [
+       "is working",
+       "works",
+       "work",
+       "working"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово-маркер обычно используется с Present Continuous?",
+      "opts": [
+       "usually",
+       "at the moment",
+       "every day",
+       "sometimes"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически правильный вопрос.",
+      "opts": [
+       "What are you doing?",
+       "What you are doing?",
+       "What do you doing?",
+       "What are you do?"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильную форму: \"Listen! The baby ______ (cry).\"",
+      "opts": [
+       "cries",
+       "is crying",
+       "cry",
+       "crying"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой глагол обычно НЕ употребляется в Present Continuous (глагол состояния)?",
+      "opts": [
+       "run",
+       "love",
+       "watch",
+       "make"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму: \"They ______ (not watch) TV very often.\"",
+      "opts": [
+       "aren't watching",
+       "don't watch",
+       "doesn't watch",
+       "not watch"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение грамматически верно?",
+      "opts": [
+       "He is wanting a cup of tea.",
+       "He wants a cup of tea.",
+       "He want a cup of tea.",
+       "He is wants a cup of tea."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"Where ______ your parents live?\"",
+      "opts": [
+       "do",
+       "are",
+       "does",
+       "is"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильную форму: \"We ______ (have) dinner at a restaurant tonight.\" (запланированное действие)",
+      "opts": [
+       "are having",
+       "have",
+       "has",
+       "having"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Путешествия и транспорт (Travel and Transport)",
+    "cards": [
+     {
+      "q": "Как правильно сказать \"ехать на автобусе\"?",
+      "opts": [
+       "go on bus",
+       "take a bus",
+       "drive a bus",
+       "ride a bus"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фраза \"boarding pass\"?",
+      "opts": [
+       "паспорт",
+       "посадочный талон",
+       "водительские права",
+       "билет на поезд"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово пропущено: \"Excuse me, how do I ______ to the train station?\"",
+      "opts": [
+       "go",
+       "get",
+       "reach",
+       "arrive"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится слово \"luggage\"?",
+      "opts": [
+       "пассажир",
+       "багаж",
+       "билет",
+       "путешествие"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный предлог: \"We went to London ______ plane.\"",
+      "opts": [
+       "on",
+       "by",
+       "with",
+       "in"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает объявление \"Gate closed\"?",
+      "opts": [
+       "Выход закрыт",
+       "Рейс задерживается",
+       "Регистрация началась",
+       "Багаж утерян"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое слово означает \"поездка туда и обратно\"?",
+      "opts": [
+       "one-way ticket",
+       "single ticket",
+       "return ticket",
+       "travel card"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как сказать \"зарегистрироваться на рейс\"?",
+      "opts": [
+       "check out",
+       "check in",
+       "sign in",
+       "log in"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово пропущено: \"The train ______ from platform 4.\"",
+      "opts": [
+       "leaves",
+       "goes away",
+       "flies",
+       "arrives to"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как переводится вопрос \"Is this seat free?\"",
+      "opts": [
+       "Этот билет бесплатный?",
+       "Это место свободно?",
+       "Где мой стул?",
+       "Вы свободны?"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ },
+ "english-grammar": {
+  "title": "Грамматика английского",
+  "topics": [
+   {
+    "topic": "Времена группы Present",
+    "cards": [
+     {
+      "q": "Какое время используется для выражения регулярных действий или постоянных состояний?",
+      "opts": [
+       "Present Simple",
+       "Present Continuous",
+       "Present Perfect",
+       "Present Perfect Continuous"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите предложение в Present Continuous, выражающее запланированное действие в будущем.",
+      "opts": [
+       "I am flying to Paris tomorrow.",
+       "I fly to Paris tomorrow.",
+       "I will fly to Paris tomorrow.",
+       "I have flown to Paris."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое вспомогательное слово указывает на Present Perfect?",
+      "opts": [
+       "yesterday",
+       "already",
+       "tomorrow",
+       "now"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком предложении верно использован глагол состояния (stative verb) в Present Simple?",
+      "opts": [
+       "I am knowing the answer.",
+       "I know the answer.",
+       "I have been knowing the answer.",
+       "I am knowing of the answer."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму глагола: \"She ___ (study) English since 2018.\"",
+      "opts": [
+       "studies",
+       "is studying",
+       "has been studying",
+       "has studied"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое предложение грамматически корректно для выражения действия, происходящего прямо сейчас?",
+      "opts": [
+       "Listen! The phone rings.",
+       "Listen! The phone is ringing.",
+       "Listen! The phone has rung.",
+       "Listen! The phone ringed."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком случае Present Simple используется для выражения будущего времени?",
+      "opts": [
+       "В расписаниях транспорта и мероприятий",
+       "В личных планах на вечер",
+       "В прогнозах погоды",
+       "В спонтанных решениях"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите верный вспомогательный глагол для вопроса: \"___ your brother play football?\"",
+      "opts": [
+       "Do",
+       "Does",
+       "Is",
+       "Has"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из предложений стоит в Present Perfect?",
+      "opts": [
+       "I lived in London for five years.",
+       "I am living in London now.",
+       "I have lived in London since childhood.",
+       "I will live in London."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое наречие частотности обычно ставится перед смысловым глаголом, но после глагола to be?",
+      "opts": [
+       "always",
+       "yesterday",
+       "now",
+       "at the moment"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Модальные глаголы",
+    "cards": [
+     {
+      "q": "Какой модальный глагол выражает строгий запрет?",
+      "opts": [
+       "mustn't",
+       "don't have to",
+       "shouldn't",
+       "might not"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите эквивалент глагола must для выражения обязанности в прошедшем времени.",
+      "opts": [
+       "had to",
+       "musted",
+       "should",
+       "could"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какой глагол выражает физическую или умственную способность совершить действие в настоящем?",
+      "opts": [
+       "may",
+       "can",
+       "must",
+       "should"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что выражает конструкция \"should have + V3\" (например, \"You should have called me\")?",
+      "opts": [
+       "Обязанность сделать что-то в будущем",
+       "Сожаление о невыполненном действии в прошлом",
+       "Разрешение сделать что-то в прошлом",
+       "Вежливую просьбу"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой глагол лучше всего подходит для вежливой просьбы о разрешении в официальной обстановке?",
+      "opts": [
+       "can",
+       "may",
+       "must",
+       "should"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое значение имеет глагол needn't?",
+      "opts": [
+       "Категорический запрет",
+       "Отсутствие необходимости",
+       "Физическая невозможность",
+       "Моральный долг"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"You ___ touch that wire. It's extremely dangerous.\"",
+      "opts": [
+       "don't have to",
+       "mustn't",
+       "needn't",
+       "should"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой модальный глагол используется для выражения высокой степени уверенности (логического вывода) в настоящем времени?",
+      "opts": [
+       "must",
+       "can",
+       "should",
+       "might"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое предложение выражает совет или рекомендацию?",
+      "opts": [
+       "You must stop here.",
+       "You should eat more vegetables.",
+       "You can play the piano.",
+       "You may leave the room."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму: \"I ___ speak French when I was a child, but now I've forgotten it.\"",
+      "opts": [
+       "can",
+       "could",
+       "might",
+       "was able to"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Условные предложения",
+    "cards": [
+     {
+      "q": "Какой тип условных предложений используется для выражения общеизвестных истин и законов природы?",
+      "opts": [
+       "Zero Conditional",
+       "First Conditional",
+       "Second Conditional",
+       "Third Conditional"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильную структуру для First Conditional (реальное условие в будущем).",
+      "opts": [
+       "If + Present Simple, will + verb",
+       "If + Past Simple, would + verb",
+       "If + Present Simple, Present Simple",
+       "If + Past Perfect, would have + V3"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое предложение относится к Second Conditional (нереальное условие в настоящем или будущем)?",
+      "opts": [
+       "If it rains, we will stay at home.",
+       "If I were you, I would buy this car.",
+       "If you heat ice, it melts.",
+       "If I had studied harder, I would have passed the exam."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком времени стоит глагол в придаточном предложении (после if) в Third Conditional?",
+      "opts": [
+       "Past Simple",
+       "Past Perfect",
+       "Present Perfect",
+       "Would have + V3"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"If I ___ more time, I would travel more.\"",
+      "opts": [
+       "have",
+       "had",
+       "will have",
+       "had had"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово может заменить \"if... not\" в условных предложениях?",
+      "opts": [
+       "unless",
+       "provided",
+       "as long as",
+       "supposing"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Переведите смысл предложения: \"If she had arrived on time, she wouldn't have missed the train.\"",
+      "opts": [
+       "Она приехала вовремя и успела на поезд.",
+       "Она не приехала вовремя и опоздала на поезд.",
+       "Если она приедет вовремя, она не опоздает.",
+       "Ей нужно приехать вовремя, чтобы успеть."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая форма глагола to be традиционно используется для всех лиц в придаточном предложении Second Conditional?",
+      "opts": [
+       "was",
+       "were",
+       "been",
+       "is"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"If you ___ water to 100 degrees, it boils.\"",
+      "opts": [
+       "heat",
+       "will heat",
+       "heated",
+       "would heat"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "К какому типу относится предложение: \"If I had won the lottery, I would buy a house now\"?",
+      "opts": [
+       "Mixed Conditional",
+       "Second Conditional",
+       "Third Conditional",
+       "First Conditional"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Артикли",
+    "cards": [
+     {
+      "q": "Перед какими существительными обычно используется неопределенный артикль a/an?",
+      "opts": [
+       "Исчисляемые в единственном числе",
+       "Исчисляемые во множественном числе",
+       "Неисчисляемые",
+       "Собственные имена"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильный артикль: \"She is ___ university student.\"",
+      "opts": [
+       "a",
+       "an",
+       "the",
+       "артикль не нужен"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "В каком случае используется определенный артикль the?",
+      "opts": [
+       "Когда предмет упоминается впервые",
+       "Перед уникальными объектами (the Sun, the Moon)",
+       "Перед именами людей",
+       "Перед неисчисляемыми понятиями в общем смысле"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"I bought ___ book yesterday. ___ book is very interesting.\"",
+      "opts": [
+       "a / a",
+       "the / a",
+       "a / the",
+       "the / the"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Нужен ли артикль перед названиями стран во множественном числе или содержащих слова Republic, Kingdom, States?",
+      "opts": [
+       "Всегда используется the",
+       "Всегда используется a",
+       "Артикль никогда не используется",
+       "Используется an"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите предложение с правильным употреблением артикля с географическим названием.",
+      "opts": [
+       "The Mount Everest is the highest peak.",
+       "I have never been to the France.",
+       "The Volga is the longest river in Europe.",
+       "The Lake Baikal is very deep."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какой артикль используется перед названиями музыкальных инструментов с глаголом play (например, play ___ piano)?",
+      "opts": [
+       "a",
+       "an",
+       "the",
+       "артикль не нужен"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите верный вариант: \"___ water is essential for life.\"",
+      "opts": [
+       "A",
+       "An",
+       "The",
+       "Артикль не нужен"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Перед какими из этих слов используется артикль an?",
+      "opts": [
+       "hour",
+       "house",
+       "history",
+       "helicopter"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "В каком устойчивом выражении артикль отсутствует?",
+      "opts": [
+       "go to the bed",
+       "go to bed",
+       "go to a bed",
+       "go to some bed"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Герундий и инфинитив",
+    "cards": [
+     {
+      "q": "Какой глагол требует после себя обязательного употребления герундия (V-ing)?",
+      "opts": [
+       "decide",
+       "avoid",
+       "hope",
+       "agree"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"I want ___ to the cinema tonight.\"",
+      "opts": [
+       "going",
+       "to go",
+       "go",
+       "to going"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "После каких предлогов употребляется герундий?",
+      "opts": [
+       "После любых предлогов",
+       "Только после to",
+       "Только после of и about",
+       "После предлогов герундий не употребляется"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как меняется смысл глагола stop в зависимости от формы: \"stop smoking\" и \"stop to smoke\"?",
+      "opts": [
+       "Разницы в значении нет",
+       "stop smoking — бросить привычку, stop to smoke — остановиться, чтобы закурить",
+       "stop smoking — остановиться, чтобы закурить, stop to smoke — бросить привычку",
+       "Обе формы грамматически неверны"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"She is good at ___ languages.\"",
+      "opts": [
+       "learn",
+       "learning",
+       "to learn",
+       "to learning"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая конструкция используется после глагола let (в значении позволять)?",
+      "opts": [
+       "Инфинитив с частицей to",
+       "Герундий",
+       "Инфинитив без частицы to (bare infinitive)",
+       "Причастие прошедшего времени"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильную форму: \"I look forward to ___ you soon.\"",
+      "opts": [
+       "see",
+       "seeing",
+       "to see",
+       "saw"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой из этих глаголов может употребляться и с герундием, и с инфинитивом без существенного изменения значения?",
+      "opts": [
+       "enjoy",
+       "start",
+       "decide",
+       "avoid"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"It's no use ___ about it.\"",
+      "opts": [
+       "to worry",
+       "worrying",
+       "worry",
+       "to worrying"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая форма используется после выражений would like, would love, would prefer?",
+      "opts": [
+       "Герундий",
+       "Инфинитив с частицей to",
+       "Инфинитив без частицы to",
+       "Глагол в прошедшем времени"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ },
+ "english-vocabulary": {
+  "title": "Словарный запас",
+  "topics": [
+   {
+    "topic": "Синонимы и антонимы",
+    "cards": [
+     {
+      "q": "Выберите синоним к слову \"huge\".",
+      "opts": [
+       "tiny",
+       "enormous",
+       "heavy",
+       "narrow"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово является антонимом к \"generous\"?",
+      "opts": [
+       "kind",
+       "greedy",
+       "brave",
+       "honest"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Найдите синоним к глаголу \"to abandon\".",
+      "opts": [
+       "to support",
+       "to desert",
+       "to search",
+       "to adapt"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите антоним к прилагательному \"compulsory\".",
+      "opts": [
+       "mandatory",
+       "optional",
+       "essential",
+       "difficult"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что из этого является синонимом слова \"accurate\"?",
+      "opts": [
+       "precise",
+       "vague",
+       "rapid",
+       "careless"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое слово противоположно по смыслу \"frequent\"?",
+      "opts": [
+       "often",
+       "rare",
+       "common",
+       "constant"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите синоним к слову \"stubborn\".",
+      "opts": [
+       "flexible",
+       "obstinate",
+       "polite",
+       "timid"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово является антонимом к \"praise\"?",
+      "opts": [
+       "compliment",
+       "criticize",
+       "admire",
+       "ignore"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Найдите синоним к слову \"scared\".",
+      "opts": [
+       "terrified",
+       "brave",
+       "excited",
+       "angry"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите антоним к слову \"artificial\".",
+      "opts": [
+       "synthetic",
+       "natural",
+       "fake",
+       "modern"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Фразовые глаголы",
+    "cards": [
+     {
+      "q": "Что означает фразовый глагол \"give up\"?",
+      "opts": [
+       "продолжать",
+       "сдаться или прекратить",
+       "поднять",
+       "вернуть"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите на английский \"отменять встречу или мероприятие\" с помощью фразового глагола.",
+      "opts": [
+       "call off",
+       "call on",
+       "put off",
+       "carry on"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое значение имеет фразовый глагол \"look forward to\"?",
+      "opts": [
+       "искать информацию",
+       "заботиться о ком-то",
+       "ожидать с нетерпением",
+       "оглядываться назад"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильный глагол для предложения: \"I need to ___ out the truth.\"",
+      "opts": [
+       "find",
+       "look",
+       "take",
+       "get"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает фразовый глагол \"run out of\" (например, \"run out of milk\")?",
+      "opts": [
+       "выбежать из дома",
+       "закончиться (о запасах)",
+       "купить в спешке",
+       "пролить"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое выражение означает \"откладывать на потом\"?",
+      "opts": [
+       "put off",
+       "put on",
+       "put out",
+       "put up"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как переводится \"break down\" применительно к машине или механизму?",
+      "opts": [
+       "разогнаться",
+       "сломаться",
+       "врезаться",
+       "остановиться на заправку"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"make up\" в контексте истории или оправдания?",
+      "opts": [
+       "забыть",
+       "повторить",
+       "выдумать",
+       "записать"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите верный предлог: \"She takes ___ her mother; they look so similar!\"",
+      "opts": [
+       "after",
+       "for",
+       "to",
+       "on"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает фразовый глагол \"bring up\" в значении воспитания детей?",
+      "opts": [
+       "рожать",
+       "наказывать",
+       "растить или воспитывать",
+       "кормить"
+      ],
+      "correct": 2
+     }
+    ]
+   },
+   {
+    "topic": "Ложные друзья переводчика",
+    "cards": [
+     {
+      "q": "Как правильно переводится английское слово \"actual\"?",
+      "opts": [
+       "актуальный",
+       "фактический или реальный",
+       "активный",
+       "деятельный"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что на самом деле означает слово \"sympathy\"?",
+      "opts": [
+       "симпатия (взаимный интерес)",
+       "сочувствие или сострадание",
+       "красота",
+       "согласие"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится слово \"cabinet\" в контексте мебели?",
+      "opts": [
+       "кабинет (комната)",
+       "шкафчик или сервант",
+       "письменный стол",
+       "кресло"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает английское слово \"fabric\"?",
+      "opts": [
+       "фабрика",
+       "ткань или материал",
+       "кирпич",
+       "производство"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится слово \"decade\"?",
+      "opts": [
+       "декада (10 дней)",
+       "десятилетие",
+       "век",
+       "две недели"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Каково значение слова \"receipt\"?",
+      "opts": [
+       "рецепт (кулинарный)",
+       "рецепт (медицинский)",
+       "чек или квитанция",
+       "счет в банке"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Слово \"accurate\" переводится как...",
+      "opts": [
+       "аккуратный (чистый)",
+       "точный",
+       "вежливый",
+       "бережливый"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает слово \"conductor\" в музыкальном контексте?",
+      "opts": [
+       "кондуктор",
+       "дирижер",
+       "композитор",
+       "слушатель"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится английское слово \"novel\"?",
+      "opts": [
+       "новелла (короткий рассказ)",
+       "роман (литературный жанр)",
+       "новость",
+       "стихотворение"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает слово \"clay\"?",
+      "opts": [
+       "клей",
+       "глина",
+       "грязь",
+       "пластилин"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Идиомы и устойчивые выражения",
+    "cards": [
+     {
+      "q": "Что означает идиома \"once in a blue moon\"?",
+      "opts": [
+       "очень часто",
+       "крайне редко",
+       "никогда",
+       "в ночное время"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится выражение \"piece of cake\"?",
+      "opts": [
+       "кусок пирога",
+       "очень легкое дело",
+       "сладкая жизнь",
+       "сложная задача"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает идиома \"break a leg\"?",
+      "opts": [
+       "сломать ногу",
+       "пожелание удачи",
+       "потерпеть неудачу",
+       "сильно устать"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое значение имеет выражение \"under the weather\"?",
+      "opts": [
+       "плохо себя чувствовать",
+       "быть на улице в дождь",
+       "радоваться жизни",
+       "одеться не по погоде"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает идиома \"cost an arm and a leg\"?",
+      "opts": [
+       "быть очень дешевым",
+       "стоить очень дорого",
+       "требовать физических усилий",
+       "быть опасным"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как перевести выражение \"bite the bullet\"?",
+      "opts": [
+       "стиснуть зубы или решиться на неприятное",
+       "проявить агрессию",
+       "сделать глупость",
+       "потерпеть поражение"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает идиома \"let the cat out of the bag\"?",
+      "opts": [
+       "выпустить кошку погулять",
+       "проболтаться или выдать секрет",
+       "навести порядок",
+       "сильно испугаться"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите значение выражения \"burn the midnight oil\":",
+      "opts": [
+       "экономить электричество",
+       "работать или учиться допоздна",
+       "устроить пожар",
+       "тратить время впустую"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает \"cry over spilled milk\"?",
+      "opts": [
+       "сожалеть о непоправимом",
+       "быть очень бережливым",
+       "жаловаться на голод",
+       "убирать за собой"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как переводится идиома \"hit the nail on the head\"?",
+      "opts": [
+       "пораниться во время работы",
+       "попасть прямо в точку или угадать",
+       "ошибиться",
+       "принять жесткое решение"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Бизнес и работа",
+    "cards": [
+     {
+      "q": "Как переводится термин \"layoff\"?",
+      "opts": [
+       "прием на работу",
+       "сокращение штата или увольнение",
+       "повышение в должности",
+       "отпуск по болезни"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает слово \"fringe benefits\"?",
+      "opts": [
+       "налоги на прибыль",
+       "дополнительные льготы или соцпакет",
+       "штрафные санкции",
+       "расходы на рекламу"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите слово \"colleague\":",
+      "opts": [
+       "клиент",
+       "коллега",
+       "начальник",
+       "конкурент"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что такое \"deadline\"?",
+      "opts": [
+       "линия старта",
+       "крайний срок сдачи работы",
+       "время обеденного перерыва",
+       "список задач"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится глагол \"to resign\"?",
+      "opts": [
+       "подписать контракт",
+       "уйти в отставку или уволиться по собственному желанию",
+       "нанять нового сотрудника",
+       "перенести встречу"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает термин \"headquarters\"?",
+      "opts": [
+       "отдел кадров",
+       "штаб-квартира или головной офис",
+       "совет директоров",
+       "филиал компании"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите выражение \"maternity leave\":",
+      "opts": [
+       "ежегодный оплачиваемый отпуск",
+       "декретный отпуск",
+       "отпуск за свой счет",
+       "больничный лист"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что такое \"annual report\"?",
+      "opts": [
+       "ежемесячный отчет",
+       "годовой отчет",
+       "бизнес-план",
+       "налоговая декларация"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится слово \"vacancy\"?",
+      "opts": [
+       "отпуск",
+       "вакансия или свободная должность",
+       "командировка",
+       "собеседование"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает глагол \"to negotiate\"?",
+      "opts": [
+       "контролировать",
+       "вести переговоры или договариваться",
+       "увольнять",
+       "инвестировать"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ },
+ "english-b1": {
+  "title": "B1 Intermediate",
+  "topics": [
+   {
+    "topic": "Present Perfect против Past Simple",
+    "cards": [
+     {
+      "q": "Выберите правильную форму глагола: \"I ______ to London twice this year.\"",
+      "opts": [
+       "went",
+       "have been",
+       "had gone",
+       "was going"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение грамматически верно для описания действия, завершившегося в указанное время в прошлом?",
+      "opts": [
+       "I have seen him yesterday.",
+       "I saw him yesterday.",
+       "I had seen him yesterday.",
+       "I see him yesterday."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите маркер времени, который обычно используется с Present Perfect:",
+      "opts": [
+       "ago",
+       "last week",
+       "already",
+       "in 2010"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Заполните пропуск: \"She ______ here since 2015.\"",
+      "opts": [
+       "worked",
+       "works",
+       "has worked",
+       "is working"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какая разница между \"has gone to Paris\" и \"has been to Paris\"?",
+      "opts": [
+       "Нет никакой разницы",
+       "has gone означает, что человек уехал и еще не вернулся; has been — съездил и вернулся",
+       "has been означает, что человек сейчас там; has gone — съездил и вернулся",
+       "has gone используется только в прошедшем времени"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вариант: \"My brother ______ his keys. He can't find them.\"",
+      "opts": [
+       "lost",
+       "has lost",
+       "was losing",
+       "had lost"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"We ______ a great movie last night.\"",
+      "opts": [
+       "have watched",
+       "watched",
+       "were watching",
+       "had watched"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из предложений выражает жизненный опыт (life experience) без указания конкретного времени?",
+      "opts": [
+       "I have never eaten sushi.",
+       "I didn't eat sushi yesterday.",
+       "I am not eating sushi now.",
+       "I will never eat sushi."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"How long ______ each other?\"",
+      "opts": [
+       "do you know",
+       "have you known",
+       "did you know",
+       "are you knowing"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вариант: \"I ______ my homework yet.\"",
+      "opts": [
+       "didn't finish",
+       "haven't finished",
+       "don't finish",
+       "hadn't finished"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Условные предложения (1 и 2 типы)",
+    "cards": [
+     {
+      "q": "Выберите верное продолжение: \"If it rains tomorrow, we ______ the picnic.\"",
+      "opts": [
+       "will cancel",
+       "would cancel",
+       "cancel",
+       "cancelled"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое предложение относится ко 2-му типу условных предложений (нереальное настоящее/будущее)?",
+      "opts": [
+       "If I have time, I will call you.",
+       "If I had more money, I would buy a car.",
+       "If I had known, I would have helped.",
+       "If you heat ice, it melts."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"If I ______ you, I would study harder.\"",
+      "opts": [
+       "am",
+       "was",
+       "were",
+       "would be"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите правильный вариант: \"What ______ if you won the lottery?\"",
+      "opts": [
+       "will you do",
+       "would you do",
+       "do you do",
+       "did you do"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое словосочетание может заменить \"if... not\" в условных предложениях?",
+      "opts": [
+       "unless",
+       "provided",
+       "as long as",
+       "supposing"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"We will go to the beach unless it ______.\"",
+      "opts": [
+       "will rain",
+       "rains",
+       "would rain",
+       "rained"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вариант: \"If she ______ more free time, she would take up painting.\"",
+      "opts": [
+       "has",
+       "had",
+       "will have",
+       "would have"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое значение выражает First Conditional?",
+      "opts": [
+       "Реальное или очень вероятное условие в будущем",
+       "Нереальное или маловероятное условие в настоящем/будущем",
+       "Нереальное условие в прошлом",
+       "Общие истины и законы природы"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"If they ______ enough money, they will buy a house next year.\"",
+      "opts": [
+       "save",
+       "will save",
+       "saved",
+       "would save"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите грамматически правильное предложение:",
+      "opts": [
+       "If I would be rich, I would travel.",
+       "If I were rich, I would travel.",
+       "If I am rich, I would travel.",
+       "If I were rich, I will travel."
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Модальные глаголы",
+    "cards": [
+     {
+      "q": "Какой модальный глагол лучше всего подходит для выражения строгого запрета?",
+      "opts": [
+       "mustn't",
+       "don't have to",
+       "shouldn't",
+       "couldn't"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильный вариант для выражения отсутствия необходимости: \"You ______ wash the dishes. I'll do it later.\"",
+      "opts": [
+       "mustn't",
+       "don't have to",
+       "shouldn't",
+       "can't"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой глагол используется для выражения вежливого совета или рекомендации?",
+      "opts": [
+       "must",
+       "should",
+       "have to",
+       "might"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"When I was young, I ______ swim very well.\"",
+      "opts": [
+       "can",
+       "could",
+       "was able",
+       "might"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вариант для выражения внешней обязанности (правила, законы): \"In the UK, you ______ drive on the left.\"",
+      "opts": [
+       "must",
+       "have to",
+       "should",
+       "ought to"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой модальный глагол выражает высокую степень уверенности в настоящем (должно быть, так и есть)?",
+      "opts": [
+       "must",
+       "can",
+       "should",
+       "might"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"You ______ eat so much fast food. It's bad for your health.\"",
+      "opts": [
+       "mustn't",
+       "don't have to",
+       "shouldn't",
+       "needn't"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Выберите эквивалент модального глагола \"must\" для прошедшего времени:",
+      "opts": [
+       "musted",
+       "had to",
+       "should have",
+       "could"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"I ______ go to the bank yesterday to pay the bills.\"",
+      "opts": [
+       "must",
+       "had to",
+       "should",
+       "ought to"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой глагол выражает разрешение (permission) в более формальном стиле?",
+      "opts": [
+       "can",
+       "may",
+       "must",
+       "should"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Пассивный залог",
+    "cards": [
+     {
+      "q": "Как образуется Passive Voice в английском языке?",
+      "opts": [
+       "to be + Past Participle (V3)",
+       "to have + Past Participle (V3)",
+       "to be + Gerund (V-ing)",
+       "do/does + infinitive"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Переведите в пассивный залог: \"They build houses.\"",
+      "opts": [
+       "Houses are built.",
+       "Houses were built.",
+       "Houses are building.",
+       "Houses have been built."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"This book ______ in 1997.\"",
+      "opts": [
+       "is written",
+       "was written",
+       "wrote",
+       "has been written"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой предлог используется для указания действующего лица (кем совершено действие) в пассивном залоге?",
+      "opts": [
+       "with",
+       "by",
+       "from",
+       "of"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой предлог используется для указания инструмента или материала, которым совершено действие?",
+      "opts": [
+       "by",
+       "with",
+       "through",
+       "about"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск в Present Continuous Passive: \"The car ______ at the moment.\"",
+      "opts": [
+       "is repaired",
+       "is being repaired",
+       "was repaired",
+       "is repairing"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически правильное предложение в Past Continuous Passive:",
+      "opts": [
+       "The dinner was being cooked when I arrived.",
+       "The dinner was cooked when I arrived.",
+       "The dinner is being cooked when I arrived.",
+       "The dinner had been cooked when I arrived."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"English ______ all over the world.\"",
+      "opts": [
+       "is spoken",
+       "speaks",
+       "is speaking",
+       "was spoken"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Переведите в пассивный залог: \"Shakespeare wrote 'Hamlet'.\"",
+      "opts": [
+       "'Hamlet' is written by Shakespeare.",
+       "'Hamlet' was written by Shakespeare.",
+       "'Hamlet' wrote Shakespeare.",
+       "'Hamlet' has been written by Shakespeare."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"Many trees ______ down by the storm last night.\"",
+      "opts": [
+       "were blown",
+       "are blown",
+       "was blown",
+       "blew"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Фразовые глаголы и устойчивые выражения",
+    "cards": [
+     {
+      "q": "Что означает фразовый глагол \"give up\"?",
+      "opts": [
+       "отдавать",
+       "сдаваться, бросать привычку",
+       "подниматься",
+       "продолжать"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный предлог: \"I look forward ______ meeting you.\"",
+      "opts": [
+       "to",
+       "for",
+       "at",
+       "on"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какой фразовый глагол означает \"отменять\" (например, встречу)?",
+      "opts": [
+       "call off",
+       "put off",
+       "take off",
+       "go off"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"Can you ______ the music? It's too loud.\"",
+      "opts": [
+       "turn up",
+       "turn down",
+       "turn on",
+       "turn off"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое устойчивое выражение означает \"принимать решение\"?",
+      "opts": [
+       "do a decision",
+       "make a decision",
+       "take a decision",
+       "give a decision"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"run out of\" в предложении \"We ran out of milk\"?",
+      "opts": [
+       "убежать из-за молока",
+       "закончиться (о запасах)",
+       "купить молоко",
+       "пролить молоко"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный глагол для словосочетания со спортом: \"I want to ______ yoga.\"",
+      "opts": [
+       "do",
+       "make",
+       "play",
+       "go"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает фразовый глагол \"take off\"?",
+      "opts": [
+       "взлетать (о самолете) / снимать (одежду)",
+       "приземляться / надевать",
+       "выходить / выключать",
+       "начинать / продолжать"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"She always ______ excuses for being late.\"",
+      "opts": [
+       "does",
+       "makes",
+       "says",
+       "tells"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой предлог пропущен в выражении \"to be interested ______ art\"?",
+      "opts": [
+       "on",
+       "at",
+       "in",
+       "about"
+      ],
+      "correct": 2
+     }
+    ]
+   }
+  ]
+ },
+ "english-b2": {
+  "title": "B2 Upper Intermediate",
+  "topics": [
+   {
+    "topic": "Смешанные условные предложения",
+    "cards": [
+     {
+      "q": "Какой тип смешанного условного предложения (Mixed Conditional) используется, если условие относится к прошлому, а следствие — к настоящему?",
+      "opts": [
+       "Past condition / Present result (Type 3 + Type 2)",
+       "Present condition / Past result (Type 2 + Type 3)",
+       "Future condition / Past result",
+       "Past condition / Future result"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите грамматически верное предложение: \"Если бы я выиграл в лотерею вчера, я был бы богат сейчас\".",
+      "opts": [
+       "If I won the lottery yesterday, I would be rich now.",
+       "If I had won the lottery yesterday, I would be rich now.",
+       "If I had won the lottery yesterday, I would have been rich now.",
+       "If I won the lottery yesterday, I would have been rich now."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите на английский: \"Если бы он не был таким ленивым, он бы получил ту работу на прошлой неделе\".",
+      "opts": [
+       "If he weren't so lazy, he would have got that job last week.",
+       "If he hadn't been so lazy, he would get that job last week.",
+       "If he weren't so lazy, he would get that job last week.",
+       "If he hadn't been so lazy, he would have got that job last week."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая конструкция выражает нереальное условие в настоящем, повлиявшее на действие в прошлом?",
+      "opts": [
+       "If + Past Simple, ... would have + V3",
+       "If + Past Perfect, ... would + V1",
+       "If + Past Simple, ... would + V1",
+       "If + Past Perfect, ... would have + V3"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Вставьте пропущенные глаголы: \"If I ___ (know) French, I ___ (translate) that letter for you yesterday.\"",
+      "opts": [
+       "knew / would have translated",
+       "had known / would translate",
+       "knew / would translate",
+       "had known / would have translated"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое предложение иллюстрирует структуру \"Past action with a present result\"?",
+      "opts": [
+       "If you had helped me, I wouldn't be in trouble now.",
+       "If I were you, I would have gone there.",
+       "If she loved him, she would marry him.",
+       "If they had trained harder, they would have won."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает предложение: \"If I hadn't missed the bus, I would be at work now\"?",
+      "opts": [
+       "Я опоздал на автобус и сейчас я не на работе.",
+       "Я не опоздал на автобус, но я не на работе.",
+       "Я опоздал на автобус и в прошлом не попал на работу.",
+       "Я не опоздал на автобус и сейчас я на работе."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильную форму глагола: \"If she ___ so smart, she wouldn't have made that mistake.\"",
+      "opts": [
+       "isn't",
+       "weren't",
+       "hadn't been",
+       "wouldn't be"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из предложений НЕ является смешанным условным (Mixed Conditional)?",
+      "opts": [
+       "If I had studied harder, I would have passed the exam.",
+       "If I were faster, I would have won the race yesterday.",
+       "If they had invited me, I would be there now.",
+       "If she spoke Spanish, she would have translated the text."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как перевести \"Если бы ты послушал меня тогда, у тебя не было бы проблем сейчас\"?",
+      "opts": [
+       "If you listened to me then, you wouldn't have problems now.",
+       "If you had listened to me then, you wouldn't have problems now.",
+       "If you had listened to me then, you wouldn't have had problems now.",
+       "If you listened to me then, you wouldn't have had problems now."
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Инверсия в английском языке",
+    "cards": [
+     {
+      "q": "Каков правильный порядок слов после отрицательного наречия \"Seldom\" в начале предложения?",
+      "opts": [
+       "Seldom I have seen such a beautiful sunset.",
+       "Seldom have I seen such a beautiful sunset.",
+       "Seldom I saw such a beautiful sunset.",
+       "Seldom did I saw such a beautiful sunset."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически верный вариант с союзом \"No sooner ... than\":",
+      "opts": [
+       "No sooner had we arrived than it started to rain.",
+       "No sooner we had arrived than it started to rain.",
+       "No sooner did we arrived than it started to rain.",
+       "No sooner had we arrived when it started to rain."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое вспомогательное слово пропущено в предложении: \"Hardly ___ the show started when the lights went out\"?",
+      "opts": [
+       "did",
+       "had",
+       "was",
+       "has"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение содержит ошибку в использовании инверсии?",
+      "opts": [
+       "Under no circumstances should you open this door.",
+       "Not only she was tired, but she was also hungry.",
+       "Little did they know about the upcoming danger.",
+       "Only after the meeting did I realize my mistake."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как правильно перевести: \"Только когда я вернулся домой, я понял, что потерял ключи\"?",
+      "opts": [
+       "Only when I got home did I realize I had lost my keys.",
+       "Only when did I get home I realized I had lost my keys.",
+       "Only when I got home I realized did I lose my keys.",
+       "Only when did I get home did I realize I lost my keys."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая конструкция используется с \"Not until\"?",
+      "opts": [
+       "Not until + придаточное предложение + обратный порядок слов в главном",
+       "Not until + обратный порядок слов + главное предложение",
+       "Not until + придаточное предложение + прямой порядок слов в главном",
+       "Not until + прямой порядок слов + прямой порядок слов"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильное продолжение: \"Never before ___ such a masterpiece.\"",
+      "opts": [
+       "I had seen",
+       "have I seen",
+       "did I saw",
+       "I saw"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком из вариантов инверсия используется после предложного оборота направления или места?",
+      "opts": [
+       "On the hill stood a medieval castle.",
+       "On the hill did stand a medieval castle.",
+       "On the hill a medieval castle stood.",
+       "On the hill was standing a medieval castle."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое значение придает инверсия предложению в английском языке?",
+      "opts": [
+       "Делает речь более разговорной и неформальной",
+       "Придает высказыванию эмоциональность, эмфазу и книжный тон",
+       "Упрощает грамматическую структуру для понимания",
+       "Используется исключительно в вопросительных предложениях"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"Rarely ___ such a mistake.\"",
+      "opts": [
+       "does he make",
+       "he makes",
+       "he does make",
+       "did he made"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Способы выражения будущего времени",
+    "cards": [
+     {
+      "q": "Какое время используется для выражения действия, которое завершится к определенному моменту в будущем?",
+      "opts": [
+       "Future Continuous",
+       "Future Perfect",
+       "Future Simple",
+       "Future Perfect Continuous"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильный вариант: \"By this time tomorrow, we ___ to London.\"",
+      "opts": [
+       "will fly",
+       "will be flying",
+       "will have flown",
+       "are flying"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое значение имеет конструкция \"to be about to\"?",
+      "opts": [
+       "Действие, которое произойдет в далеком будущем",
+       "Действие, которое вот-вот совершится в самом ближайшем будущем",
+       "Запланированное официальное мероприятие",
+       "Действие, которое повторяется регулярно"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически верное предложение для выражения официального расписания или договоренности:",
+      "opts": [
+       "The Prime Minister is to visit France next week.",
+       "The Prime Minister will be to visit France next week.",
+       "The Prime Minister visits France next week.",
+       "The Prime Minister is visiting France next week."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Вставьте подходящую форму: \"By next month, she ___ here for five years.\"",
+      "opts": [
+       "will work",
+       "will have been working",
+       "will be working",
+       "is going to work"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что выражает предложение \"I'll be seeing John tomorrow anyway, so I can give him the message\"?",
+      "opts": [
+       "Твердое намерение сделать что-то назло",
+       "Действие, которое произойдет в ходе обычного течения событий",
+       "Официальное распоряжение руководства",
+       "Спонтанное решение, принятое в момент речи"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант: \"The train ___ at 9 PM tonight, so don't be late.\"",
+      "opts": [
+       "leaves",
+       "will leave",
+       "is leaving",
+       "will be leaving"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая конструкция используется для выражения неизбежного будущего на основе внешних признаков в настоящем?",
+      "opts": [
+       "will + verb",
+       "to be going to + verb",
+       "Present Continuous",
+       "Future Continuous"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"I can't meet you at 5. I ___ my dentist.\"",
+      "opts": [
+       "will see",
+       "am seeing",
+       "will have seen",
+       "see"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое предложение выражает действие, которое \"должно было случиться, но не случилось\" в прошлом?",
+      "opts": [
+       "I was going to call you, but I forgot.",
+       "I would call you, but I forgot.",
+       "I will have called you, but I forgot.",
+       "I was about to call you, so I did."
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "Герундий и инфинитив: тонкости употребления",
+    "cards": [
+     {
+      "q": "В чем разница между \"stop to smoke\" и \"stop smoking\"?",
+      "opts": [
+       "'stop to smoke' — остановиться, чтобы покурить; 'stop smoking' — бросить курить",
+       "'stop to smoke' — бросить курить; 'stop smoking' — остановиться, чтобы покурить",
+       "Разницы в значении нет, обе формы взаимозаменяемы",
+       "Первое грамматически неверно, второе верно"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильную форму после глагола \"regret\", если речь идет о сообщении плохих новостей: \"We regret ___ you that your application was rejected.\"",
+      "opts": [
+       "to inform",
+       "informing",
+       "inform",
+       "having informed"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая форма глагола требуется после выражения \"look forward to\"?",
+      "opts": [
+       "Infinitive with 'to' (to do)",
+       "Gerund (doing)",
+       "Bare Infinitive (do)",
+       "Past Participle (done)"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Заполните пропуск: \"I clearly remember ___ the door. I can't understand how it is open now.\"",
+      "opts": [
+       "locking",
+       "to lock",
+       "lock",
+       "to have locked"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая форма используется после глагола \"mean\" в значении \"влечь за собой, означать\"?",
+      "opts": [
+       "Gerund (-ing)",
+       "Infinitive with 'to'",
+       "Bare Infinitive",
+       "That-clause only"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите верный вариант: \"It's no use ___ about it. Nothing will change.\"",
+      "opts": [
+       "to worry",
+       "worrying",
+       "worry",
+       "to have worried"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая конструкция верна после глагола \"try\", если цель — провести эксперимент, попробовать новый метод?",
+      "opts": [
+       "try doing",
+       "try to do",
+       "try do",
+       "try to doing"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск: \"She avoided ___ my questions.\"",
+      "opts": [
+       "answering",
+       "to answer",
+       "answer",
+       "to have answered"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое предложение содержит грамматическую ошибку?",
+      "opts": [
+       "I can't help laughing when I see him.",
+       "He managed passing the exam despite the difficulty.",
+       "They denied stealing the money.",
+       "We agreed to meet at 6 PM."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая форма глагола используется после \"would prefer\" в отличие от простого \"prefer\"?",
+      "opts": [
+       "Герундий (-ing)",
+       "Инфинитив с частицей 'to'",
+       "Голый инфинитив (без 'to')",
+       "Причастие прошедшего времени"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Фразовые глаголы и идиомы уровня B2",
+    "cards": [
+     {
+      "q": "Что означает фразовый глагол \"put up with\"?",
+      "opts": [
+       "Терпеть, мириться с чем-то",
+       "Откладывать на потом",
+       "Организовывать встречу",
+       "Отказываться от предложения"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите правильный фразовый глагол для значения \"отменять мероприятие\":",
+      "opts": [
+       "call off",
+       "put off",
+       "take off",
+       "give up"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает идиома \"burn the midnight oil\"?",
+      "opts": [
+       "Тратить слишком много денег",
+       "Работать или учиться поздно ночью",
+       "Устраивать пожар по неосторожности",
+       "Быстро злиться"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое значение имеет фразовый глагол \"look up to someone\"?",
+      "opts": [
+       "Искать кого-то в толпе",
+       "Уважать, восхищаться кем-то",
+       "Смотреть на кого-то свысока",
+       "Заботиться о ком-то"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите подходящее слово: \"I need to ___ up on my Spanish before going to Madrid.\"",
+      "opts": [
+       "brush",
+       "clean",
+       "wash",
+       "sweep"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает выражение \"take something for granted\"?",
+      "opts": [
+       "Принимать что-то как должное",
+       "Отказываться от подарка",
+       "Просить о помощи",
+       "Сомневаться в правдивости"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Заполните пропуск во фразовом глаголе со значением \"случайно встретить\": \"I ran ___ an old friend at the supermarket yesterday.\"",
+      "opts": [
+       "into",
+       "over",
+       "after",
+       "out"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает идиома \"hit the nail on the head\"?",
+      "opts": [
+       "Попасть пальцем в небо",
+       "Сделать глупую ошибку",
+       "Попасть в самую точку, сказать совершенно верно",
+       "Нанести физическую травму"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какой фразовый глагол означает \"компенсировать, наверстать упущенное\"?",
+      "opts": [
+       "make up for",
+       "keep up with",
+       "look forward to",
+       "get along with"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает идиома \"once in a blue moon\"?",
+      "opts": [
+       "Очень редко, почти никогда",
+       "Каждое полнолуние",
+       "В моменты грусти",
+       "Регулярно по расписанию"
+      ],
+      "correct": 0
+     }
+    ]
+   }
+  ]
+ },
+ "english-phrasal-verbs": {
+  "title": "Фразовые глаголы",
+  "topics": [
+   {
+    "topic": "Фразовые глаголы движения",
+    "cards": [
+     {
+      "q": "Что означает фразовый глагол \"run away\"?",
+      "opts": [
+       "убегать",
+       "догонять",
+       "сталкиваться",
+       "медленно идти"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Переведите предложение: \"The plane took off on time.\"",
+      "opts": [
+       "Самолет приземлился вовремя.",
+       "Самолет взлетел вовремя.",
+       "Самолет задержали.",
+       "Самолет повернул назад вовремя."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой глагол означает \"входить в автобус, поезд или самолет\"?",
+      "opts": [
+       "get in",
+       "get on",
+       "get into",
+       "get through"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный перевод для фразы \"get out of the car\":",
+      "opts": [
+       "сесть в машину",
+       "обойти машину",
+       "выйти из машины",
+       "завести машину"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Что означает глагол \"go back\"?",
+      "opts": [
+       "продолжать движение",
+       "возвращаться",
+       "уходить навсегда",
+       "отставать от группы"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится фразовый глагол \"come across\"?",
+      "opts": [
+       "переходить дорогу",
+       "случайно встретить или натолкнуться",
+       "приходить в гости без предупреждения",
+       "избегать встречи"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Вставьте пропущенный предлог: \"He got ___ the bicycle and rode away.\"",
+      "opts": [
+       "on",
+       "into",
+       "at",
+       "to"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое значение имеет глагол \"pull over\" для водителя транспортного средства?",
+      "opts": [
+       "резко разогнаться",
+       "съехать на обочину и остановиться",
+       "повернуть в обратную сторону",
+       "обогнать впереди идущую машину"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите предложение: \"She turned back because she forgot her keys.\"",
+      "opts": [
+       "Она расплакалась, потому что забыла ключи.",
+       "Она повернула назад, потому что забыла ключи.",
+       "Она открыла дверь, потому что забыла ключи.",
+       "Она разозлилась, потому что забыла ключи."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"move in\"?",
+      "opts": [
+       "выезжать из квартиры",
+       "двигаться дальше по улице",
+       "въезжать и поселяться в новое жилье",
+       "делать зарядку по утрам"
+      ],
+      "correct": 2
+     }
+    ]
+   },
+   {
+    "topic": "Отношения и общение",
+    "cards": [
+     {
+      "q": "Какой фразовый глагол означает \"ладить с кем-то, иметь хорошие отношения\"?",
+      "opts": [
+       "get along with",
+       "get over",
+       "get by",
+       "get away with"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает \"break up\" в контексте личных отношений?",
+      "opts": [
+       "пожениться",
+       "помириться после ссоры",
+       "расстаться или прекратить отношения",
+       "познакомиться с родителями"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Переведите предложение: \"They made up after a big argument.\"",
+      "opts": [
+       "Они расстались после большой ссоры.",
+       "Они помирились после большой ссоры.",
+       "Они уехали в другой город после большой ссоры.",
+       "Они подрались после большой ссоры."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что значит фразовый глагол \"bring up a child\"?",
+      "opts": [
+       "баловать ребенка",
+       "воспитывать ребенка",
+       "наказывать ребенка за проступок",
+       "родить ребенка"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится фразовый глагол \"count on someone\"?",
+      "opts": [
+       "рассчитывать на кого-то",
+       "считать кого-то своим врагом",
+       "постоянно перебивать кого-то",
+       "обманывать близкого человека"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает выражение \"let someone down\"?",
+      "opts": [
+       "поддержать кого-то в трудную минуту",
+       "подвести или разочаровать кого-то",
+       "отпустить кого-то домой",
+       "рассмешить загрустившего друга"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный перевод: \"We had to call off the meeting.\"",
+      "opts": [
+       "Нам пришлось перенести встречу на завтра.",
+       "Нам пришлось отменить встречу.",
+       "Нам пришлось начать встречу раньше.",
+       "Нам пришлось продлить встречу на час."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"look up to someone\"?",
+      "opts": [
+       "искать кого-то в толпе людей",
+       "смотреть на кого-то свысока",
+       "уважать кого-то и брать с него пример",
+       "заботиться о больном родственнике"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Переведите глагол \"fall out (with someone)\":",
+      "opts": [
+       "влюбиться в кого-то с первого взгляда",
+       "поссориться с кем-то",
+       "случайно встретить старого знакомого",
+       "потерять связь из-за переезда"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает выражение \"ask someone out\"?",
+      "opts": [
+       "спросить у кого-то дорогу на улице",
+       "пригласить кого-то на свидание",
+       "выгнать кого-то из помещения",
+       "отказаться от чужого предложения"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Работа и учеба",
+    "cards": [
+     {
+      "q": "Какой фразовый глагол означает \"откладывать дела на потом\"?",
+      "opts": [
+       "put off",
+       "put on",
+       "put out",
+       "put up"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает \"hand in\" в контексте учебного процесса?",
+      "opts": [
+       "списать работу у одноклассника",
+       "сдать или вручить выполненную работу",
+       "потерять тетрадь с заданием",
+       "забыть сделать домашнюю работу"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится фразовый глагол \"figure out\"?",
+      "opts": [
+       "нарисовать геометрическую фигуру",
+       "понять, разобраться или вычислить решение",
+       "исключить ненужный пункт из списка",
+       "сдаться под давлением трудностей"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает словосочетание \"carry out an experiment\"?",
+      "opts": [
+       "проводить или выполнять эксперимент",
+       "отменять запланированный эксперимент",
+       "выносить оборудование для эксперимента",
+       "провалить научный эксперимент"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите верный перевод фразы: \"catch up with the class\"",
+      "opts": [
+       "прогуливать уроки вместе с классом",
+       "догнать класс по успеваемости",
+       "подружиться со всеми в классе",
+       "уйти из класса посреди урока"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"fall behind\" в учебе или работе?",
+      "opts": [
+       "упасть со стула во время урока",
+       "отставать от графика или программы",
+       "быстро продвигаться по службе",
+       "сдавать экзамены на отлично"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите предложение: \"I need to look over these documents.\"",
+      "opts": [
+       "Мне нужно переписать эти документы заново.",
+       "Мне нужно быстро просмотреть и изучить эти документы.",
+       "Мне нужно надежно спрятать эти документы.",
+       "Мне нужно подписать эти важные документы."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"fill out a form\"?",
+      "opts": [
+       "выбросить испорченный бланк",
+       "распечатать электронную форму",
+       "заполнить анкету или бланк",
+       "составить новую форму отчета"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как переводится выражение \"drop out of university\"?",
+      "opts": [
+       "поступить в престижный университет",
+       "бросить учебу в университете",
+       "окончить университет с красным дипломом",
+       "перевестись в другой университет"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фраза \"go over the rules\"?",
+      "opts": [
+       "нарушать установленные правила",
+       "повторить или пройтись по правилам",
+       "придумывать новые правила игры",
+       "игнорировать замечания и правила"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Фразовые глаголы с послелогом UP",
+    "cards": [
+     {
+      "q": "Что означает популярный глагол \"give up\"?",
+      "opts": [
+       "отдавать долги",
+       "сдаваться или прекращать попытки",
+       "подниматься на вершину",
+       "делиться секретами"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится фразовый глагол \"look up a word\"?",
+      "opts": [
+       "написать новое слово на доске",
+       "посмотреть значение слова в словаре",
+       "забыть перевод знакомого слова",
+       "произнести слово по буквам"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает выражение \"make up a story\"?",
+      "opts": [
+       "прочитать интересную историю",
+       "выдумать или сочинить историю",
+       "записать услышанную историю",
+       "поверить в вымышленную историю"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите предложение: \"He ended up in London.\"",
+      "opts": [
+       "Он закончил свои дела в Лондоне.",
+       "В итоге он оказался в Лондоне.",
+       "Он навсегда уехал из Лондона.",
+       "Он всю жизнь мечтал жить в Лондоне."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"show up\"?",
+      "opts": [
+       "показывать дорогу гостям",
+       "появляться или приходить куда-то",
+       "хвастаться своими достижениями",
+       "внезапно исчезать из виду"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится глагол \"bring up\" в контексте беседы?",
+      "opts": [
+       "замять неприятную тему",
+       "поднять или упомянуть тему в разговоре",
+       "забыть важную тему обсуждения",
+       "резко сменить тему разговора"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"grow up\"?",
+      "opts": [
+       "выращивать комнатные цветы",
+       "взрослеть или расти",
+       "увеличиваться в объеме",
+       "быстро стареть"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный перевод для глагола \"cheer up\":",
+      "opts": [
+       "взбодриться, повеселеть или поднять настроение",
+       "расстроиться из-за плохих новостей",
+       "громко кричать от испуга",
+       "аплодировать артистам на сцене"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что значит выражение \"set up a business\"?",
+      "opts": [
+       "закрыть убыточный бизнес",
+       "основать или наладить бизнес",
+       "купить готовый бизнес",
+       "продать долю в бизнесе"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите глагол \"use up\":",
+      "opts": [
+       "использовать вещь повторно",
+       "израсходовать полностью без остатка",
+       "начать использовать новый прибор",
+       "полезно применять на практике"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Фразовые глаголы с послелогом OUT",
+    "cards": [
+     {
+      "q": "Что означает глагол \"find out\"?",
+      "opts": [
+       "искать потерянную вещь на улице",
+       "выяснить, разузнать или обнаружить",
+       "потерять кого-то из виду",
+       "придумать оправдание"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как переводится фразовый глагол \"work out\" в контексте спорта?",
+      "opts": [
+       "работать сверхурочно",
+       "тренироваться или делать физические упражнения",
+       "искать новую работу",
+       "прогуливать тренировки"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фраза \"run out of milk\"?",
+      "opts": [
+       "пролить молоко на пол",
+       "обнаружить, что молоко закончилось",
+       "пойти в магазин за молоком",
+       "купить слишком много молока"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите предложение: \"The firemen put out the fire.\"",
+      "opts": [
+       "Пожарные случайно разожгли огонь.",
+       "Пожарные потушили огонь.",
+       "Пожарные обнаружили источник огня.",
+       "Пожарные спасались от огня."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"turn out to be\"?",
+      "opts": [
+       "оказаться кем-то или каким-то в итоге",
+       "выключить электрический прибор",
+       "повернуться спиной к собеседнику",
+       "отказаться от участия в проекте"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как переводится глагол \"point out\"?",
+      "opts": [
+       "стереть указатель на карте",
+       "указать на что-то или обратить внимание",
+       "спрятать важную вещь",
+       "нарисовать жирную точку"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает фразовый глагол \"wear out\"?",
+      "opts": [
+       "надеть одежду наизнанку",
+       "изнашиваться или сильно утомлять",
+       "выбросить старую одежду",
+       "купить новую модную вещь"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный перевод для глагола \"pass out\":",
+      "opts": [
+       "пройти мимо здания",
+       "потерять сознание или упасть в обморок",
+       "успешно сдать сложный экзамен",
+       "раздать рекламные листовки"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что значит предупреждение \"watch out!\"?",
+      "opts": [
+       "посмотри на часы!",
+       "осторожно! / берегись!",
+       "наблюдай за звездами!",
+       "ты опаздываешь!"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Переведите глагол \"blow out\" в контексте праздника:",
+      "opts": [
+       "надувать воздушный шар",
+       "задуть свечи на торте",
+       "взорвать праздничную хлопушку",
+       "сильно дуть на горячий чай"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ },
+ "english-ielts": {
+  "title": "IELTS Preparation",
+  "topics": [
+   {
+    "topic": "Аудирование: стратегии и типы заданий",
+    "cards": [
+     {
+      "q": "Сколько разделов (sections/parts) содержит тест IELTS Listening и сколько всего вопросов?",
+      "opts": [
+       "3 раздела, 30 вопросов",
+       "4 раздела, 40 вопросов",
+       "4 раздела, 50 вопросов",
+       "3 раздела, 40 вопросов"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько раз проигрывается аудиозапись в секции Listening во время реального экзамена?",
+      "opts": [
+       "Один раз",
+       "Два раза",
+       "Три раза",
+       "Зависит от сложности секции"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что происходит, если в задании \"Write NO MORE THAN TWO WORDS\" вы запишете три слова?",
+      "opts": [
+       "Ответ будет засчитан как частично правильный",
+       "Ответ будет аннулирован (0 баллов за вопрос)",
+       "Балл снизится только при наличии грамматической ошибки",
+       "Компьютер автоматически сократит ответ"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое время дается в бумажной версии IELTS Listening для переноса ответов в бланк (Answer Sheet) в конце теста?",
+      "opts": [
+       "2 минуты",
+       "5 минут",
+       "10 минут",
+       "Время на перенос не предоставляется"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какая стратегия является наиболее эффективной во время паузы перед началом прослушивания аудиозаписи?",
+      "opts": [
+       "Отдых и расслабление",
+       "Чтение вопросов и подчеркивание ключевых слов (keywords)",
+       "Перевод всех незнакомых слов в вопросах",
+       "Запись шаблонов ответов"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком формате обычно представлены аудиозаписи в Part 1 секции Listening?",
+      "opts": [
+       "Монолог на академическую тему",
+       "Диалог в повседневном контексте (например, бронирование отеля)",
+       "Групповое обсуждение учебного проекта",
+       "Лекция профессора в университете"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как оценивается орфография (spelling) в ответах секции Listening?",
+      "opts": [
+       "Ошибки допускаются, если слово понятно по контексту",
+       "Ошибки допускаются только в именах собственных",
+       "Любая орфографическая ошибка делает ответ неверным",
+       "Ошибки снижают балл только в академическом модуле"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Что означает тип задания \"Labeling a map/plan\" в Listening?",
+      "opts": [
+       "Написание эссе по карте",
+       "Соотнесение названий объектов с их обозначениями на схеме/карте",
+       "Рисование карты по описанию",
+       "Поиск грамматических ошибок в названиях улиц"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая особенность произношения наиболее характерна для IELTS Listening?",
+      "opts": [
+       "Используется только стандартный американский акцент",
+       "Используется исключительно британский акцент (RP)",
+       "Используются различные акценты (британский, австралийский, американский, канадский)",
+       "Акценты не имеют значения, все записи озвучены роботом"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Если вы не расслышали ответ на один из вопросов, что лучше всего сделать?",
+      "opts": [
+       "Остановиться и долго думать над пропущенным вопросом",
+       "Продолжить слушать дальше, сделав предположение (guess) в конце",
+       "Попросить экзаменатора перемотать запись назад",
+       "Оставить поле пустым, так как за неверный ответ штрафуют"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Чтение: академические тексты и поиск информации",
+    "cards": [
+     {
+      "q": "Сколько текстов и сколько времени дается на их прочтение в модуле Academic Reading?",
+      "opts": [
+       "3 текста, 60 минут",
+       "4 текста, 60 минут",
+       "3 текста, 40 минут",
+       "5 текстов, 90 минут"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "В чем разница между ответами \"FALSE\" и \"NOT GIVEN\" в заданиях True/False/Not Given?",
+      "opts": [
+       "Разницы нет, это синонимы",
+       "FALSE — информация в тексте прямо противоположна утверждению; NOT GIVEN — информации в тексте нет",
+       "FALSE — информации нет; NOT GIVEN — информация противоречит тексту",
+       "FALSE используется для фактов, а NOT GIVEN — для мнений автора"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Дается ли дополнительное время на перенос ответов в бланк (Answer Sheet) в секции Reading?",
+      "opts": [
+       "Да, 10 минут",
+       "Да, 5 минут",
+       "Нет, ответы нужно переносить сразу в течение 60 минут",
+       "Да, но только в компьютерной версии теста"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Что такое стратегия чтения \"Skimming\"?",
+      "opts": [
+       "Детальное чтение каждого слова для полного понимания",
+       "Быстрое ознакомительное чтение для понимания общей темы и структуры текста",
+       "Поиск конкретных ключевых слов, дат или имен",
+       "Чтение только первого и последнего абзацев текста"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что такое стратегия чтения \"Scanning\"?",
+      "opts": [
+       "Поиск конкретной информации (цифр, имен, терминов) без чтения всего текста",
+       "Чтение текста задом наперед для проверки орфографии",
+       "Анализ скрытого смысла и подтекста автора",
+       "Перевод текста на родной язык в уме"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Как расположены ответы на вопросы в большинстве типов заданий (например, Multiple Choice, Gap Fill) в IELTS Reading?",
+      "opts": [
+       "В случайном порядке",
+       "В обратном хронологическом порядке",
+       "В основном в хронологическом порядке (по ходу текста)",
+       "Все ответы находятся в первом абзаце"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Что требуется сделать в задании типа \"Matching Headings\"?",
+      "opts": [
+       "Сопоставить авторов с их цитатами",
+       "Подобрать подходящий заголовок к каждому абзацу текста",
+       "Соединить начало и конец предложений",
+       "Найти синонимы к выделенным словам"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Если в задании \"Sentence Completion\" пропущено слово, в какой форме его нужно выписать из текста?",
+      "opts": [
+       "В любой грамматической форме, подходящей по смыслу",
+       "Точно в такой же форме, в какой оно употребляется в тексте",
+       "В начальной форме (инфинитив или именительный падеж)",
+       "Заменив его на синоним"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое утверждение о сложности трех текстов в Academic Reading является верным?",
+      "opts": [
+       "Все три текста абсолютно одинаковы по сложности",
+       "Первый текст всегда самый сложный",
+       "Тексты обычно усложняются от первого к третьему",
+       "Сложность распределяется случайным образом"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Как оцениваются орфографические ошибки при переносе слов из текста в бланк ответов Reading?",
+      "opts": [
+       "Они не учитываются, если слово узнаваемо",
+       "Снижается только половина балла",
+       "Ответ считается неверным, даже если слово скопировано с ошибкой",
+       "Ошибки допускаются только в американском правописании"
+      ],
+      "correct": 2
+     }
+    ]
+   },
+   {
+    "topic": "Письменная часть: структура и критерии",
+    "cards": [
+     {
+      "q": "Сколько времени рекомендуется отводить на Task 1 и Task 2 в секции Writing?",
+      "opts": [
+       "30 минут на Task 1, 30 минут на Task 2",
+       "20 минут на Task 1, 40 минут на Task 2",
+       "15 минут на Task 1, 45 минут на Task 2",
+       "10 минут на Task 1, 50 минут на Task 2"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Каков минимальный объем слов для Task 1 и Task 2 в IELTS Academic Writing?",
+      "opts": [
+       "100 слов для Task 1, 200 слов для Task 2",
+       "150 слов для Task 1, 250 слов для Task 2",
+       "120 слов для Task 1, 180 слов для Task 2",
+       "200 слов для Task 1, 300 слов для Task 2"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что из перечисленного НЕ входит в четыре официальных критерия оценивания IELTS Writing?",
+      "opts": [
+       "Task Achievement / Task Response",
+       "Coherence and Cohesion",
+       "Lexical Resource & Grammatical Range and Accuracy",
+       "Pronunciation and Fluency"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Что обязательно должно присутствовать в описании графика (Writing Task 1 Academic)?",
+      "opts": [
+       "Личное мнение автора о причинах изменений",
+       "Общий обзор основных тенденций (Overview)",
+       "Детальное описание каждой отдельной точки на графике",
+       "Рекомендации по улучшению ситуации"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой стиль письма является обязательным для IELTS Academic Writing Task 2?",
+      "opts": [
+       "Разговорный с использованием сленга",
+       "Формальный / академический",
+       "Художественный с метафорами",
+       "Публицистический с восклицательными знаками"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что произойдет, если объем вашего эссе в Task 2 составит 220 слов вместо требуемых 250?",
+      "opts": [
+       "Ничего, если эссе написано качественно",
+       "Балл будет снижен по критерию Task Response за недостаточный объем",
+       "Эссе не будет проверяться вообще",
+       "Вам автоматически поставят балл 5.0"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что оценивает критерий \"Coherence and Cohesion\"?",
+      "opts": [
+       "Разнообразие используемой лексики",
+       "Логику построения текста, деление на абзацы и использование связующих слов",
+       "Точность грамматических конструкций",
+       "Соответствие теме задания"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая структура абзаца является классической для основной части (Body Paragraph) в Writing Task 2?",
+      "opts": [
+       "Topic sentence -> Explanation -> Example",
+       "Example -> Topic sentence -> Conclusion",
+       "Introduction -> Thesis statement -> Summary",
+       "Случайный набор предложений без структуры"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Разрешено ли использовать сокращения (например, don't, can't) в Academic Writing Task 2?",
+      "opts": [
+       "Да, это приветствуется для экономии времени",
+       "Нет, в академическом стиле следует писать полные формы (do not, cannot)",
+       "Да, но только во введении",
+       "Разрешено только в компьютерной версии"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что рекомендуется сделать в заключении (Conclusion) эссе Task 2?",
+      "opts": [
+       "Привести новые аргументы и примеры",
+       "Перефразировать свой тезис и кратко обобщить основные мысли",
+       "Задать риторический вопрос читателю",
+       "Скопировать введение слово в слово"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Устная часть: формат и беглость речи",
+    "cards": [
+     {
+      "q": "Из скольких частей состоит тест IELTS Speaking и какова его общая продолжительность?",
+      "opts": [
+       "2 части, 5-8 минут",
+       "3 части, 11-14 минут",
+       "4 части, 20 минут",
+       "3 части, 30 минут"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "О чем обычно спрашивают кандидата в Part 1 секции Speaking?",
+      "opts": [
+       "О глобальных проблемах экологии",
+       "О простых, знакомых темах (дом, работа, учеба, хобби)",
+       "Просят сравнить экономику двух стран",
+       "Требуют составить план научной презентации"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько времени дается на подготовку и сколько на само выступление в Part 2 (Cue Card)?",
+      "opts": [
+       "30 секунд на подготовку, 3 минуты на выступление",
+       "1 минута на подготовку, 1-2 минуты на выступление",
+       "2 минуты на подготовку, 1 минута на выступление",
+       "Без подготовки, сразу говорить 3 минуты"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая главная особенность вопросов в Part 3 секции Speaking?",
+      "opts": [
+       "Они точно такие же, как в Part 1",
+       "Они носят более абстрактный, дискуссионный и аналитический характер",
+       "Они требуют только ответов 'да' или 'нет'",
+       "Они проверяют знание дат исторических событий"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что оценивает критерий \"Fluency and Coherence\" в Speaking?",
+      "opts": [
+       "Правильность произношения звуков",
+       "Беглость речи, способность говорить без долгих пауз и логично связывать мысли",
+       "Богатство словарного запаса",
+       "Использование сложных грамматических времен"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что делать, если вы не поняли вопрос экзаменатора во время Speaking?",
+      "opts": [
+       "Молчать и ждать следующего вопроса",
+       "Вежливо попросить повторить или перефразировать вопрос",
+       "Придумать ответ на другую тему",
+       "Сказать 'I don't know' и закончить тест"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как влияет наличие легкого акцента на оценку по критерию \"Pronunciation\"?",
+      "opts": [
+       "Акцент автоматически снижает балл до 5.0",
+       "Легкий акцент допустим, если он не мешает пониманию речи",
+       "Нужно говорить только с идеальным британским акцентом",
+       "Оценка снижается, если акцент не американский"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая стратегия является наилучшей, если вы допустили грамматическую ошибку во время ответа?",
+      "opts": [
+       "Запаниковать и замолчать",
+       "Спокойно и быстро исправить себя (self-correction) и продолжить говорить",
+       "Начать говорить на другом языке",
+       "Спорить с экзаменатором, доказывая свою правоту"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Можно ли использовать идиомы и неформальные выражения в IELTS Speaking?",
+      "opts": [
+       "Категорически запрещено, стиль должен быть строго академическим",
+       "Да, уместное использование идиом и разговорных фраз повышает балл за лексику",
+       "Можно использовать только американский сленг",
+       "Идиомы разрешены только в Part 3"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Записывается ли устная часть IELTS Speaking на диктофон?",
+      "opts": [
+       "Нет, никогда",
+       "Да, всегда, для контроля качества и возможности апелляции",
+       "Только если кандидат не согласен с оценкой",
+       "Только в компьютерной версии теста"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "Лексика и грамматика для высокого балла",
+    "cards": [
+     {
+      "q": "Что означает требование \"Grammatical Range\" в критериях оценивания?",
+      "opts": [
+       "Использование только простых времен (Present Simple)",
+       "Разнообразие используемых грамматических структур (сложные предложения, пассивный залог, conditionals)",
+       "Отсутствие любых орфографических ошибок",
+       "Умение быстро писать от руки"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из следующих слов-связок (linkers) лучше всего использовать для выражения контраста в Writing Task 2?",
+      "opts": [
+       "Furthermore",
+       "Consequently",
+       "On the other hand",
+       "In addition"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое слово является академическим синонимом для глагола \"to change\" при описании графиков?",
+      "opts": [
+       "to fluctuate",
+       "to look",
+       "to happen",
+       "to go"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое грамматическое явление наиболее уместно использовать для описания нереальных или гипотетических ситуаций в Speaking Part 3?",
+      "opts": [
+       "Past Simple",
+       "Conditionals (Conditional sentences)",
+       "Present Continuous",
+       "Imperative mood"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что такое \"Collocations\" и почему они важны для IELTS?",
+      "opts": [
+       "Правила расстановки запятых",
+       "Устойчивые словосочетания, естественные для носителей языка",
+       "Слова, которые пишутся одинаково, но звучат по-разному",
+       "Аббревиатуры в академических текстах"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое выражение выражает наивысшую степень уверенности при описании тенденций (hedging/speculating)?",
+      "opts": [
+       "It is highly likely that...",
+       "It might be that...",
+       "It is possible that...",
+       "Perhaps..."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Выберите академическое слово, заменяющее разговорное \"bad\" в эссе.",
+      "opts": [
+       "detrimental",
+       "sad",
+       "not good",
+       "terrible"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая грамматическая структура используется в предложении: \"If governments had acted sooner, the crisis could have been avoided\"?",
+      "opts": [
+       "First Conditional",
+       "Second Conditional",
+       "Third Conditional",
+       "Zero Conditional"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Какое вводное слово используется для подведения итога или вывода?",
+      "opts": [
+       "To sum up",
+       "Initially",
+       "For instance",
+       "Moreover"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает \"Lexical Resource\" в критериях оценки IELTS?",
+      "opts": [
+       "Скорость чтения текстов",
+       "Широта словарного запаса, точность словоупотребления и использование синонимов",
+       "Умение правильно произносить звуки",
+       "Количество написанных слов в минуту"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ },
+ "english-toefl": {
+  "title": "TOEFL Preparation",
+  "topics": [
+   {
+    "topic": "TOEFL Reading: Стратегии и типы вопросов",
+    "cards": [
+     {
+      "q": "Какой тип вопроса в секции Reading требует определить значение слова на основе контекста?",
+      "opts": [
+       "Vocabulary question",
+       "Inference question",
+       "Factual Information question",
+       "Reference question"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что означает требование вопроса \"According to the passage...\" в секции Reading?",
+      "opts": [
+       "Нужно сделать логический вывод, не упомянутый напрямую",
+       "Ответ должен быть прямо указан в тексте",
+       "Нужно выразить свое личное мнение",
+       "Нужно найти синоним к ключевому слову"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая стратегия наиболее эффективна для вопроса \"Insert a Sentence\" (вставка предложения)?",
+      "opts": [
+       "Вставлять предложение наугад",
+       "Обращать внимание на переходные слова и местоимения (this, these, however)",
+       "Игнорировать контекст предыдущего абзаца",
+       "Выбирать самое длинное место в тексте"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько времени обычно отводится на чтение одного академического текста и ответы на вопросы к нему в секции Reading?",
+      "opts": [
+       "10 минут",
+       "35 минут",
+       "около 18 минут",
+       "30 минут"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "В чем особенность вопроса \"Prose Summary\" (краткое содержание)?",
+      "opts": [
+       "Нужно выбрать три главных утверждения текста из шести предложенных",
+       "Нужно исправить грамматические ошибки в кратком изложении",
+       "Нужно написать краткое содержание своими словами",
+       "Нужно выбрать один правильный вариант из четырех"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что проверяет вопрос типа \"Inference Question\"?",
+      "opts": [
+       "Умение находить точные даты в тексте",
+       "Умение делать логические выводы, которые не сформулированы прямо, но следуют из текста",
+       "Знание орфографии сложных слов",
+       "Умение перефразировать последнее предложение абзаца"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из следующих слов-связок указывает на противопоставление (contrast) в тексте TOEFL Reading?",
+      "opts": [
+       "Furthermore",
+       "Consequently",
+       "On the other hand",
+       "In addition"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "При ответе на вопрос \"Rhetorical Purpose\" (риторическая цель) вы должны определить...",
+      "opts": [
+       "Почему автор упомянул конкретную деталь или пример",
+       "Главную тему всего текста",
+       "Значение сложного термина",
+       "Количество абзацев в тексте"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что из перечисленного НЕ рекомендуется делать при первом знакомстве с текстом в секции Reading?",
+      "opts": [
+       "Быстро просмотреть текст для понимания структуры",
+       "Вчитываться в каждое незнакомое слово и пытаться его перевести",
+       "Обращать внимание на первые предложения абзацев",
+       "Выделять ключевые академические термины"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В вопросах типа \"Negative Fact\" (отрицание факта) часто используются слова...",
+      "opts": [
+       "ALWAYS или NEVER",
+       "EXCEPT или NOT",
+       "ONLY или ALL",
+       "FIRST или LAST"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Listening: Понимание на слух и конспектирование",
+    "cards": [
+     {
+      "q": "Какие два основных типа аудиозаписей представлены в секции Listening?",
+      "opts": [
+       "Новости и художественные рассказы",
+       "Лекции и академические разговоры",
+       "Интервью при приеме на работу и дебаты",
+       "Телефонные звонки и подкасты"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что такое \"Gist-Content\" вопрос в секции Listening?",
+      "opts": [
+       "Вопрос о конкретной дате, упомянутой в лекции",
+       "Вопрос об основной теме разговора или лекции",
+       "Вопрос о значении редкого термина",
+       "Вопрос о дальнейших действиях студентов"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая техника ведения заметок (note-taking) наиболее эффективна при прослушивании лекций TOEFL?",
+      "opts": [
+       "Запись каждого слова лектора дословно",
+       "Фиксация только ключевых слов, структуры лекции и связей между идеями",
+       "Запись только числительных и дат",
+       "Рисование портрета спикера"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Если профессор в лекции использует фразу \"What I mean is...\", на что это указывает?",
+      "opts": [
+       "Он собирается закончить лекцию",
+       "Он собирается перефразировать или пояснить сложную мысль",
+       "Он задает вопрос аудитории",
+       "Он выражает несогласие с учебником"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В вопросах типа \"Detail Question\" в секции Listening правильный ответ обычно...",
+      "opts": [
+       "Является дословной цитатой из аудиозаписи",
+       "Перефразирует информацию, озвученную в записи",
+       "Содержит информацию, которой вообще не было в аудио",
+       "Является самым длинным вариантом ответа"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает вопрос \"What is the speaker's attitude?\" (отношение спикера)?",
+      "opts": [
+       "Какова тема следующей лекции",
+       "Каковы эмоции, мнение или степень уверенности говорящего",
+       "Где происходит действие разговора",
+       "Какова академическая степень говорящего"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Как обозначаются вопросы, в которых проигрывается короткий фрагмент аудиозаписи повторно?",
+      "opts": [
+       "Replay questions",
+       "Double questions",
+       "Inference questions",
+       "Categorization questions"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какую роль играют маркеры перехода, такие как \"On the other hand\" или \"However\", в академической лекции?",
+      "opts": [
+       "Они указывают на завершение лекции",
+       "Они сигнализируют о сравнении или противопоставлении идей",
+       "Они служат для выражения согласия с аудиторией",
+       "Они не несут смысловой нагрузки"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько раз проигрывается каждая аудиозапись в секции Listening?",
+      "opts": [
+       "Только один раз",
+       "Два раза",
+       "Три раза",
+       "Количество прослушиваний выбирает сам студент"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Что рекомендуется делать, если вы пропустили важную деталь во время прослушивания?",
+      "opts": [
+       "Прекратить слушать и попытаться вспомнить упущенное",
+       "Продолжать слушать и конспектировать, не теряя нить повествования",
+       "Попросить организаторов перезапустить аудио",
+       "Сразу выбрать случайный ответ на экране"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Speaking: Структура устных ответов",
+    "cards": [
+     {
+      "q": "Сколько заданий (tasks) входит в современную секцию Speaking теста TOEFL iBT?",
+      "opts": [
+       "6 заданий",
+       "4 задания",
+       "2 задания",
+       "8 заданий"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В чем суть задания 1 (Independent Speaking Task)?",
+      "opts": [
+       "Пересказать академическую лекцию",
+       "Выразить и обосновать свое мнение по личной или общественной теме",
+       "Прочитать текст и прослушать диалог, затем обобщить их",
+       "Описать график или таблицу"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько времени дается на подготовку (preparation time) в Independent Speaking Task?",
+      "opts": [
+       "15 секунд",
+       "30 секунд",
+       "45 секунд",
+       "60 секунд"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какова стандартная длительность устного ответа (response time) для большинства интегрированных заданий (Integrated Tasks)?",
+      "opts": [
+       "30 секунд",
+       "45 секунд",
+       "60 секунд",
+       "90 секунд"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Что оценивается по критерию \"Delivery\" в секции Speaking?",
+      "opts": [
+       "Количество использованных сложных идиом",
+       "Беглость речи, четкость произношения, интонация и темп",
+       "Точность грамматических конструкций",
+       "Объем написанных заметок на черновике"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В интегрированных заданиях Speaking (например, Task 2 или 3) крайне важно...",
+      "opts": [
+       "Высказать свое личное мнение по обсуждаемой проблеме",
+       "Связать информацию из текста для чтения с информацией из аудиозаписи",
+       "Придумать свои собственные аргументы",
+       "Использовать как можно больше сленга"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая стратегия помогает уложиться в лимит времени при ответе на Speaking?",
+      "opts": [
+       "Говорить максимально быстро, не делая пауз",
+       "Использовать структуру: введение, 1-2 аргумента с примерами, заключение",
+       "Использовать только простые предложения из трех слов",
+       "Замолчать сразу после 30 секунд ответа"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какая грамматическая ошибка в секции Speaking считается серьезной и снижает балл за \"Language Use\"?",
+      "opts": [
+       "Использование британского произношения вместо американского",
+       "Систематические ошибки в согласовании подлежащего и сказуемого",
+       "Использование сокращений (don't, can't)",
+       "Небольшая пауза для подбора нужного слова"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что из перечисленного НЕ входит в критерии оценки Speaking согласно рубрикам ETS?",
+      "opts": [
+       "Delivery (подача речи)",
+       "Language Use (использование языка)",
+       "Topic Development (раскрытие темы)",
+       "Handwriting (почерк и оформление)"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "В Task 4 (Listening to a Lecture) вам необходимо...",
+      "opts": [
+       "Прочитать статью и поспорить с ней",
+       "Обобщить лекцию профессора, объяснив основные понятия и примеры",
+       "Разыграть диалог с воображаемым собеседником",
+       "Выразить согласие или несогласие с темой лекции"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Writing: Интегрированное и академическое эссе",
+    "cards": [
+     {
+      "q": "Из каких двух заданий состоит современная секция Writing в TOEFL iBT?",
+      "opts": [
+       "Integrated Writing и Writing for an Academic Discussion",
+       "Independent Writing и Creative Writing",
+       "Integrated Writing и Independent Writing",
+       "Academic Essay и Business Letter"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какое соотношение точек зрения обычно представлено в Integrated Writing Task?",
+      "opts": [
+       "Лектор соглашается со всеми пунктами статьи для чтения",
+       "Лектор опровергает или ставит под сомнение аргументы статьи для чтения",
+       "Лектор и статья обсуждают совершенно разные, не связанные темы",
+       "Лектор просто зачитывает статью вслух"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько времени отводится на написание Integrated Writing Task?",
+      "opts": [
+       "10 минут",
+       "20 минут",
+       "30 минут",
+       "40 минут"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какой рекомендуемый объем (word count) для Integrated Writing Task?",
+      "opts": [
+       "50-100 слов",
+       "150-225 слов",
+       "300-400 слов",
+       "Более 500 слов"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В задании \"Writing for an Academic Discussion\" вам нужно...",
+      "opts": [
+       "Написать эссе на свободную тему объемом 500 слов",
+       "Выразить свое мнение в онлайн-дискуссии, отреагировав на вопрос профессора и посты студентов",
+       "Пересказать содержание академического учебника",
+       "Написать официальное письмо декану университета"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Сколько времени дается на выполнение задания \"Writing for an Academic Discussion\"?",
+      "opts": [
+       "10 минут",
+       "20 минут",
+       "30 минут",
+       "5 минут"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Какая стратегия является ошибочной при написании Integrated Writing?",
+      "opts": [
+       "Использование шаблонов и вводных слов для сравнения",
+       "Копирование целых предложений из текста для чтения без изменения структуры",
+       "Фокусирование в основном на аргументах из аудиолекции",
+       "Структурирование эссе по абзацам (по одному на каждый контраргумент)"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что оценивается в критерии \"Language Use\" в секции Writing?",
+      "opts": [
+       "Разнообразие грамматических структур и точность академической лексики",
+       "Количество знаков препинания в каждом предложении",
+       "Скорость набора текста на клавиатуре",
+       "Использование только простых временных форм (Present Simple)"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Нужно ли высказывать свое личное мнение в Integrated Writing Task?",
+      "opts": [
+       "Да, это обязательное требование задания",
+       "Нет, нужно объективно сопоставить информацию из чтения и аудирования",
+       "Да, но только в заключительном абзаце",
+       "Да, если вы не согласны с лектором"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое минимальное количество слов рекомендуется написать в \"Writing for an Academic Discussion\"?",
+      "opts": [
+       "Не менее 50 слов",
+       "Не менее 100 слов",
+       "Не менее 250 слов",
+       "Не менее 400 слов"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Grammar & Vocabulary: Академическая лексика и грамматика",
+    "cards": [
+     {
+      "q": "Какое из следующих слов является синонимом академического глагола \"advocate\"?",
+      "opts": [
+       "Oppose",
+       "Support",
+       "Ignore",
+       "Postpone"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите грамматически правильное предложение с использованием инверсии, характерной для TOEFL:",
+      "opts": [
+       "Seldom we have witnessed such rapid climate changes.",
+       "Seldom have we witnessed such rapid climate changes.",
+       "Seldom we witnessed have such rapid climate changes.",
+       "We have witnessed seldom such rapid climate changes."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово лучше всего подходит для выражения причинно-следственной связи в академическом эссе?",
+      "opts": [
+       "Besides",
+       "Consequently",
+       "Nonetheless",
+       "Similarly"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает академическое слово \"ubiquitous\"?",
+      "opts": [
+       "Редкий, уникальный",
+       "Встречающийся повсеместно, вездесущий",
+       "Опасный, вредоносный",
+       "Устаревший, древний"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите правильную форму глагола: \"The professor recommended that every student _______ the assignment by Friday.\"",
+      "opts": [
+       "submits",
+       "submit",
+       "submitted",
+       "will submit"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое из этих слов означает \"опровергать\" (например, теорию или аргумент)?",
+      "opts": [
+       "Corroborate",
+       "Refute",
+       "Validate",
+       "Elaborate"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "В каком предложении правильно использован союз \"despite\"?",
+      "opts": [
+       "Despite it was raining, they went on a field trip.",
+       "Despite the rain, they went on a field trip.",
+       "Despite of the rain, they went on a field trip.",
+       "Despite they had no money, they traveled."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Какое слово является антонимом к слову \"abundant\" (изобильный)?",
+      "opts": [
+       "Plentiful",
+       "Scarce",
+       "Ample",
+       "Generous"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Выберите верный вариант для завершения предложения: \"Not only _______ crucial for photosynthesis, but it also supports life on Earth.\"",
+      "opts": [
+       "sunlight is",
+       "is sunlight",
+       "sunlight being",
+       "does sunlight"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Что означает глагол \"to yield\" в академическом контексте (например, \"The experiment yielded interesting results\")?",
+      "opts": [
+       "Предотвращать, мешать",
+       "Приносить, давать (результат, урожай)",
+       "Игнорировать, упускать",
+       "Объяснять, комментировать"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -45,7 +45,8 @@
       <div class="absolute inset-0 opacity-10"
         style="background: radial-gradient(circle at 80% 20%, white, transparent 60%)"></div>
       <div class="relative z-10">
-        <div class="text-6xl mb-4">{{ coll.icon }}</div>
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
+          style="background: rgba(255,255,255,.20); box-shadow: inset 0 1.5px 1px rgba(255,255,255,.5), 0 6px 16px -6px rgba(0,0,0,.35); backdrop-filter: blur(6px);">{{ coll.icon }}</div>
         <h1 class="text-3xl md:text-4xl font-black mb-3 leading-tight">{{ coll.title }}</h1>
         {% if coll.desc %}
         <p class="text-white/80 text-lg max-w-2xl leading-relaxed">{{ coll.desc }}</p>
@@ -67,11 +68,37 @@
       </div>
     </div>
 
-    <!-- Decks grid -->
+    <!-- Decks grid (mini-topics) -->
     {% if decks %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {% for d in decks %}
-      {{ deck_card(d) }}
+      <div x-data="{}" class="group relative rounded-3xl overflow-hidden flex flex-col min-h-[210px] p-5 text-white shadow-lg border border-white/10 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
+        style="background: linear-gradient(135deg, {{ coll.color }}, {{ coll.color2 }});">
+        <!-- the collection's themed art (cohesive across its mini-topics) -->
+        <img src="{{ asset('collections/' ~ coll.slug ~ '.jpg') }}" alt="" loading="lazy"
+          class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+        <div class="absolute inset-0 pointer-events-none"
+          style="background: linear-gradient(90deg, rgba(0,0,0,.60) 0%, rgba(0,0,0,.34) 32%, rgba(0,0,0,.05) 56%, transparent 70%);"></div>
+        <div class="absolute inset-0 pointer-events-none"
+          style="background: linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 42%);"></div>
+
+        <a href="/deck/{{ d.id }}" class="relative z-10 block flex-1">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0 mb-3"
+            style="background: rgba(255,255,255,.20); box-shadow: inset 0 1px 1px rgba(255,255,255,.45), 0 4px 10px -4px rgba(0,0,0,.4); backdrop-filter: blur(5px);">{{ d.icon or coll.icon }}</div>
+          <h3 class="font-black text-lg leading-tight mb-2 max-w-[64%]" style="text-shadow:0 2px 6px rgba(0,0,0,.6);">{{ d.name }}</h3>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+            style="background: rgba(255,255,255,.18); backdrop-filter: blur(6px);">📝 {{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
+        </a>
+
+        <div class="relative z-10 flex gap-2 mt-3">
+          <a href="/deck/{{ d.id }}/test" onclick="event.stopPropagation()"
+            class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
+            style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">📝 {{ t('btn_test') }}</a>
+          <button type="button" @click="$dispatch('preview-deck', {{ d.id }})"
+            class="px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
+            style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">👁</button>
+        </div>
+      </div>
       {% endfor %}
     </div>
     {{ deck_preview_modal() }}
