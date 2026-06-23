@@ -89,13 +89,23 @@
             style="background: rgba(255,255,255,.20); box-shadow: inset 0 1px 1px rgba(255,255,255,.45), 0 4px 10px -4px rgba(0,0,0,.4); backdrop-filter: blur(5px);">{{ d.icon or coll.icon }}</div>
           <h3 class="font-black text-lg leading-tight mb-2 max-w-[64%]" style="text-shadow:0 2px 6px rgba(0,0,0,.6);">{{ d.name }}</h3>
           <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-            style="background: rgba(255,255,255,.18); backdrop-filter: blur(6px);">📝 {{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}</span>
+            style="background: rgba(255,255,255,.18); backdrop-filter: blur(6px);">{% if d.has_mcq %}📝 {{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}{% else %}🃏 {{ d.card_count }} {{ npl(d.card_count, 'mk_cards') }}{% endif %}</span>
         </a>
 
         <div class="relative z-10 flex gap-2 mt-3">
+          {% if d.has_mcq %}
           <a href="/deck/{{ d.id }}/test" onclick="event.stopPropagation()"
             class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
             style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">📝 {{ t('btn_test') }}</a>
+          {% elif d.has_terms %}
+          <a href="/deck/{{ d.id }}/flashcards" onclick="event.stopPropagation()"
+            class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
+            style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">🃏 {{ t('mk_flashcards') }}</a>
+          {% else %}
+          <a href="/deck/{{ d.id }}" onclick="event.stopPropagation()"
+            class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
+            style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">📚 {{ t('mk_qs_start_btn') }}</a>
+          {% endif %}
           <button type="button" @click="$dispatch('preview-deck', {{ d.id }})"
             class="px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
             style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">👁</button>
