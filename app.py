@@ -3996,17 +3996,27 @@ def marketplace():
         featured.append(d)
 
     # Trending decks — most-cloned public decks (social proof + discovery)
+    # Trending = most-cloned MARKETPLACE decks only (those inside an active
+    # collection), with the parent collection's art/colour for the card cover.
     trending_raw = conn.execute("""
         SELECT d.*,
             (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
             CASE WHEN d.org_id IS NOT NULL
                  THEN (SELECT name FROM organizations WHERE id=d.org_id)
                  ELSE (SELECT username FROM users WHERE id=d.owner_id)
-            END AS author
+            END AS author,
+            (SELECT co.slug FROM collection_decks cd JOIN collections co ON co.id=cd.collection_id
+             WHERE cd.deck_id=d.id AND co.is_active=1 ORDER BY cd.collection_id LIMIT 1) AS cover_slug,
+            (SELECT co.color FROM collection_decks cd JOIN collections co ON co.id=cd.collection_id
+             WHERE cd.deck_id=d.id AND co.is_active=1 ORDER BY cd.collection_id LIMIT 1) AS cover_color,
+            (SELECT co.color2 FROM collection_decks cd JOIN collections co ON co.id=cd.collection_id
+             WHERE cd.deck_id=d.id AND co.is_active=1 ORDER BY cd.collection_id LIMIT 1) AS cover_color2
         FROM decks d
-        WHERE d.is_public=1 AND d.clones_count > 0
-        ORDER BY d.clones_count DESC, d.id DESC
-        LIMIT 10
+        WHERE d.is_public=1
+          AND EXISTS (SELECT 1 FROM collection_decks cd JOIN collections co ON co.id=cd.collection_id
+                      WHERE cd.deck_id=d.id AND co.is_active=1)
+        ORDER BY d.clones_count DESC, (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) DESC, d.id DESC
+        LIMIT 12
     """).fetchall()
     trending = _attach_ratings(conn, [_localize_deck_fields(dict(d), lang) for d in trending_raw])
 

@@ -79,7 +79,14 @@
    that event on window). Without a scope Alpine ignores @click silently. #}
 <div x-data="{}" class="glass-premium hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col h-full">
   <div class="flex items-start justify-between mb-3">
+    {% if d.cover_slug %}
+    <div class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm relative" style="background: linear-gradient(135deg, {{ d.cover_color or '#6366f1' }}, {{ d.cover_color2 or '#4f46e5' }});">
+      <img src="{{ asset('collections/' ~ d.cover_slug ~ '.jpg') }}" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+      <span class="absolute bottom-0.5 right-1 text-base drop-shadow">{{ d.icon }}</span>
+    </div>
+    {% else %}
     <div class="text-3xl">{{ d.icon }}</div>
+    {% endif %}
     <div class="flex flex-col items-end gap-1">
       {% if _dlevel %}
       <span class="px-2 py-0.5 rounded-full text-[11px] font-bold
