@@ -117,10 +117,21 @@ _MCQ_LETTER_PREFIX_RE = re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]")
 _MCQ_NEW_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
 
+def _normalize_card_newlines(text):
+    """Convert literal backslash-n escapes (from double-escaped JSON exports,
+    e.g. ``"A) x\\nB) y"``) back into real newlines so option parsing — which
+    splits on real newlines — works. Idempotent on already-clean text."""
+    if not text or "\\" not in text:
+        return text
+    return (text.replace("\\r\\n", "\n")
+                .replace("\\n", "\n")
+                .replace("\\r", "\n"))
+
+
 def _extract_options(src):
     """Pull lettered option lines ("A) ...", "B) ...") out of a text block."""
     options = []
-    for line in (src or "").splitlines():
+    for line in _normalize_card_newlines(src or "").splitlines():
         line = line.strip()
         if not line:
             continue
@@ -138,7 +149,7 @@ def _mcq_stem(front):
     question stem, since the options are rendered as tappable buttons.
     """
     kept = [
-        line for line in (front or "").splitlines()
+        line for line in _normalize_card_newlines(front or "").splitlines()
         if not _MCQ_LETTER_PREFIX_RE.match(line.strip())
     ]
     stem = "\n".join(kept).strip()
@@ -166,7 +177,8 @@ def _parse_mcq_options(card_dict, shuffle_seed=None):
     )
 
     correct_letter = None
-    back_first = (card_dict.get("back") or "").strip().split("\n")[0]
+    back_first = _normalize_card_newlines(
+        (card_dict.get("back") or "")).strip().split("\n")[0]
     m_corr = _MCQ_LETTER_PREFIX_RE.match(back_first)
     if m_corr:
         correct_letter = m_corr.group(1).upper()

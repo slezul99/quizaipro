@@ -648,12 +648,26 @@ def can_view_deck(user, deck):
 _MCQ_OPTION_RE = re.compile(r"^\s*([A-Da-dА-Гa-г1-4])\s*[\)\.\:\-]\s*\S", re.MULTILINE)
 
 
+def _normalize_card_newlines(text):
+    """Some seeded/imported cards store option separators as the literal two
+    characters backslash-n (e.g. ``"A) x\\nB) y"``) instead of a real newline —
+    this happens when a JSON export double-escapes the newline. Option parsing
+    splits on real newlines, so convert those literal escapes back. Idempotent:
+    text that already uses real newlines is returned unchanged."""
+    if not text or "\\" not in text:
+        return text
+    return (text.replace("\\r\\n", "\n")
+                .replace("\\n", "\n")
+                .replace("\\r", "\n"))
+
+
 def _has_mcq_options(text: str) -> bool:
     """Return True if note/back text looks like multiple-choice options.
     Detects A) B) C) D), 1) 2) 3) 4), А) Б) В) Г) etc.
     Need at least 2 different option letters/numbers."""
     if not text:
         return False
+    text = _normalize_card_newlines(text)
     matches = _MCQ_OPTION_RE.findall(text)
     if len(matches) < 2:
         return False
@@ -6712,6 +6726,7 @@ def _parse_card_options(card_dict, shuffle_seed=None):
             break
     if not src:
         src = card_dict.get("note") or card_dict.get("back") or ""
+    src = _normalize_card_newlines(src)
     for line in src.splitlines():
         line = line.strip()
         if not line: continue
@@ -6719,7 +6734,8 @@ def _parse_card_options(card_dict, shuffle_seed=None):
         if m:
             options.append({"letter": m.group(1).upper(), "text": m.group(2).strip()})
     correct_letter = None
-    back_first = (card_dict.get("back") or "").strip().split("\n")[0]
+    back_first = _normalize_card_newlines(
+        (card_dict.get("back") or "")).strip().split("\n")[0]
     m_corr = re.match(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]", back_first)
     if m_corr:
         correct_letter = m_corr.group(1).upper()
@@ -9747,6 +9763,52 @@ try:
         _conn.close()
 except Exception as _e:
     print(f"[INIT] marketplace i18n error: {_e}")
+
+# One-time fix: some marketplace cards were seeded with the literal two
+# characters backslash-n as the option separator (a double-escaped JSON
+# export, e.g. note = "A) x\\nB) y") instead of a real newline. Option parsing
+# splits on real newlines, so every A/B/C/D choice collapsed into a single
+# option. Convert the literal escapes back to real newlines across all text +
+# i18n columns. Idempotent (only rows that still contain a literal "\n"), and
+# the option parsers were also hardened to tolerate this going forward.
+try:
+    _conn = db.get_conn()
+    _nl = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='cards_literal_newline_fix_v1'"
+    ).fetchone()
+    if not _nl:
+        _cols = [r[1] for r in _conn.execute("PRAGMA table_info(cards)").fetchall()]
+        _targets = [c for c in (
+            "front", "back", "note",
+            "front_en", "back_en", "note_en",
+            "front_uz", "back_uz", "note_uz",
+        ) if c in _cols]
+
+        # Only convert a literal "\n" that directly precedes an option letter
+        # ("\nB) …"), so the option separators are split back apart WITHOUT
+        # touching a literal "\n" that is genuine card content (e.g. a card
+        # teaching what "\n" means in Python — there the "\n" isn't followed by
+        # an "X)" option marker).
+        def _norm_sql(col):
+            expr = col
+            for _L in "ABCDEFGH":
+                expr = (f"REPLACE({expr}, char(92)||'n'||'{_L})', "
+                        f"char(10)||'{_L})')")
+            return expr
+
+        if _targets:
+            _set = ", ".join(f"{c}={_norm_sql(c)}" for c in _targets)
+            _where = " OR ".join(
+                f"instr(COALESCE({c},''), char(92)||'n')>0" for c in _targets)
+            _cur = _conn.execute(f"UPDATE cards SET {_set} WHERE {_where}")
+            print(f"[INIT] literal-newline fix: normalized {_cur.rowcount} cards")
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) "
+            "VALUES ('cards_literal_newline_fix_v1')")
+        _conn.commit()
+    _conn.close()
+except Exception as _e:
+    print(f"[INIT] literal-newline fix error: {_e}")
 
 # One-time fix: a history card shipped with the answer letter pointing at the
 # wrong option ("C) Кадеш" while Кадеш is option B). Correct the leading letter

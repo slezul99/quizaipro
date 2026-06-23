@@ -36060,136 +36060,136 @@
   "ru": {
    "front": "Какой ученый создал хромосомную теорию наследственности?",
    "back": "A) Томас Морган",
-   "note": "A) Томас Морган\\nB) Николай Вавилов\\nC) Гуго де Фриз\\nD) Иван Павлов"
+   "note": "A) Томас Морган\nB) Николай Вавилов\nC) Гуго де Фриз\nD) Иван Павлов"
   },
   "en": {
    "front": "Which scientist created the chromosomal theory of inheritance?",
    "back": "A) Thomas Morgan",
-   "note": "A) Thomas Morgan\\nB) Nikolai Vavilov\\nC) Hugo de Vries\\nD) Ivan Pavlov"
+   "note": "A) Thomas Morgan\nB) Nikolai Vavilov\nC) Hugo de Vries\nD) Ivan Pavlov"
   },
   "uz": {
    "front": "Qaysi olim irsiyatning xromosoma nazariyasini yaratgan?",
    "back": "A) Tomas Morgan",
-   "note": "A) Tomas Morgan\\nB) Nikolay Vavilov\\nC) Hugo de Friz\\nD) Ivan Pavlov"
+   "note": "A) Tomas Morgan\nB) Nikolay Vavilov\nC) Hugo de Friz\nD) Ivan Pavlov"
   }
  },
  "Сколько пар хромосом содержится в соматической клетке здорового человека?": {
   "ru": {
    "front": "Сколько пар хромосом содержится в соматической клетке здорового человека?",
    "back": "B) 23 пары",
-   "note": "A) 46 пар\\nB) 23 пары\\nC) 44 пары\\nD) 22 пары"
+   "note": "A) 46 пар\nB) 23 пары\nC) 44 пары\nD) 22 пары"
   },
   "en": {
    "front": "How many pairs of chromosomes are contained in a somatic cell of a healthy human?",
    "back": "B) 23 pairs",
-   "note": "A) 46 pairs\\nB) 23 pairs\\nC) 44 pairs\\nD) 22 pairs"
+   "note": "A) 46 pairs\nB) 23 pairs\nC) 44 pairs\nD) 22 pairs"
   },
   "uz": {
    "front": "Sog'lom insonning somatik hujayrasida necha juft xromosoma bo'ladi?",
    "back": "B) 23 juft",
-   "note": "A) 46 juft\\nB) 23 juft\\nC) 44 juft\\nD) 22 juft"
+   "note": "A) 46 juft\nB) 23 juft\nC) 44 juft\nD) 22 juft"
   }
  },
  "Какая группа крови является универсальным донором в системе AB0?": {
   "ru": {
    "front": "Какая группа крови является универсальным донором в системе AB0?",
    "back": "A) Первая (0)",
-   "note": "A) Первая (0)\\nB) Вторая (A)\\nC) Третья (B)\\nD) Четвертая (AB)"
+   "note": "A) Первая (0)\nB) Вторая (A)\nC) Третья (B)\nD) Четвертая (AB)"
   },
   "en": {
    "front": "Which blood type is the universal donor in the AB0 system?",
    "back": "A) Type O (I)",
-   "note": "A) Type O (I)\\nB) Type A (II)\\nC) Type B (III)\\nD) Type AB (IV)"
+   "note": "A) Type O (I)\nB) Type A (II)\nC) Type B (III)\nD) Type AB (IV)"
   },
   "uz": {
    "front": "AB0 tizimida qaysi qon guruhi universal donor hisoblanadi?",
    "back": "A) Birinchi (0)",
-   "note": "A) Birinchi (0)\\nB) Ikkinchi (A)\\nC) Uchinchi (B)\\nD) To'rtinchi (AB)"
+   "note": "A) Birinchi (0)\nB) Ikkinchi (A)\nC) Uchinchi (B)\nD) To'rtinchi (AB)"
   }
  },
  "Как называется скрещивание особи с неизвестным генотипом с рецессивной гомозиготой?": {
   "ru": {
    "front": "Как называется скрещивание особи с неизвестным генотипом с рецессивной гомозиготой?",
    "back": "A) Анализирующее",
-   "note": "A) Анализирующее\\nB) Возвратное\\nC) Дигибридное\\nD) Моногибридное"
+   "note": "A) Анализирующее\nB) Возвратное\nC) Дигибридное\nD) Моногибридное"
   },
   "en": {
    "front": "What is the cross between an individual of unknown genotype and a homozygous recessive individual called?",
    "back": "A) Testcross",
-   "note": "A) Testcross\\nB) Backcross\\nC) Dihybrid cross\\nD) Monohybrid cross"
+   "note": "A) Testcross\nB) Backcross\nC) Dihybrid cross\nD) Monohybrid cross"
   },
   "uz": {
    "front": "Genotipi noma'lum bo'lgan individni retsessiv gomozigota bilan chatishtirish qanday nomlanadi?",
    "back": "A) Tahliliy chatishtirish",
-   "note": "A) Tahliliy chatishtirish\\nB) Qaytar chatishtirish\\nC) Digibrid chatishtirish\\nD) Monogibrid chatishtirish"
+   "note": "A) Tahliliy chatishtirish\nB) Qaytar chatishtirish\nC) Digibrid chatishtirish\nD) Monogibrid chatishtirish"
   }
  },
  "Какой орган растения отвечает за поглощение воды и минеральных веществ из почвы?": {
   "ru": {
    "front": "Какой орган растения отвечает за поглощение воды и минеральных веществ из почвы?",
    "back": "C) Корень",
-   "note": "A) Стебель\\nB) Лист\\nC) Корень\\nD) Цветок"
+   "note": "A) Стебель\nB) Лист\nC) Корень\nD) Цветок"
   },
   "en": {
    "front": "Which plant organ is responsible for absorbing water and minerals from the soil?",
    "back": "C) Root",
-   "note": "A) Stem\\nB) Leaf\\nC) Root\\nD) Flower"
+   "note": "A) Stem\nB) Leaf\nC) Root\nD) Flower"
   },
   "uz": {
    "front": "O'simlikning qaysi organi tuproqdan suv va mineral moddalarni shimib olishga javobgar?",
    "back": "C) Ildiz",
-   "note": "A) Poyasi\\nB) Bargi\\nC) Ildizi\\nD) Guli"
+   "note": "A) Poyasi\nB) Bargi\nC) Ildizi\nD) Guli"
   }
  },
  "Как называется ткань растений, по которой вода и минеральные вещества поднимаются от корней к листьям?": {
   "ru": {
    "front": "Как называется ткань растений, по которой вода и минеральные вещества поднимаются от корней к листьям?",
    "back": "B) Ксилема",
-   "note": "A) Флоэма\\nB) Ксилема\\nC) Колленхима\\nD) Паренхима"
+   "note": "A) Флоэма\nB) Ксилема\nC) Колленхима\nD) Паренхима"
   },
   "en": {
    "front": "What is the plant tissue called through which water and minerals move upward from the roots to the leaves?",
    "back": "B) Xylem",
-   "note": "A) Phloem\\nB) Xylem\\nC) Collenchyma\\nD) Parenchyma"
+   "note": "A) Phloem\nB) Xylem\nC) Collenchyma\nD) Parenchyma"
   },
   "uz": {
    "front": "Suv va mineral moddalar ildizdan barglarga qarab ko'tariladigan o'simlik to'qimasi qanday nomlanadi?",
    "back": "B) Ksiloma",
-   "note": "A) Floema\\nB) Ksiloma\\nC) Kollenxima\\nD) Parenxima"
+   "note": "A) Floema\nB) Ksiloma\nC) Kollenxima\nD) Parenxima"
   }
  },
  "Какая группа растений впервые в эволюции обзавелась семенами, но не имеет цветков?": {
   "ru": {
    "front": "Какая группа растений впервые в эволюции обзавелась семенами, но не имеет цветков?",
    "back": "B) Голосеменные",
-   "note": "A) Папоротники\\nB) Голосеменные\\nC) Покрытосеменные\\nD) Мхи"
+   "note": "A) Папоротники\nB) Голосеменные\nC) Покрытосеменные\nD) Мхи"
   },
   "en": {
    "front": "Which group of plants was the first in evolution to develop seeds but does not have flowers?",
    "back": "B) Gymnosperms",
-   "note": "A) Ferns\\nB) Gymnosperms\\nC) Angiosperms\\nD) Mosses"
+   "note": "A) Ferns\nB) Gymnosperms\nC) Angiosperms\nD) Mosses"
   },
   "uz": {
    "front": "Evolyutsiyada birinchi bo'lib urug' hosil qilgan, ammo guli bo'lmagan o'simliklar guruhi qaysi?",
    "back": "B) Ochiq urug'lilar",
-   "note": "A) Qirqquloqlar\\nB) Ochiq urug'lilar\\nC) Yopiq urug'lilar\\nD) Yo'sinlar"
+   "note": "A) Qirqquloqlar\nB) Ochiq urug'lilar\nC) Yopiq urug'lilar\nD) Yo'sinlar"
   }
  },
  "Какое видоизменение подземного побега характерно для картофеля?": {
   "ru": {
    "front": "Какое видоизменение подземного побега характерно для картофеля?",
    "back": "B) Клубень",
-   "note": "A) Луковица\\nB) Клубень\\nC) Корневище\\nD) Корнеплод"
+   "note": "A) Луковица\nB) Клубень\nC) Корневище\nD) Корнеплод"
   },
   "en": {
    "front": "Which modification of the underground shoot is characteristic of potatoes?",
    "back": "B) Tuber",
-   "note": "A) Bulb\\nB) Tuber\\nC) Rhizome\\nD) Root vegetable"
+   "note": "A) Bulb\nB) Tuber\nC) Rhizome\nD) Root vegetable"
   },
   "uz": {
    "front": "Kartoshka uchun yer osti novdasining qaysi shakli o'zgargan turi xos?",
    "back": "B) Tugunak",
-   "note": "A) Piyozbosh\\nB) Tugunak\\nC) Ildizpoya\\nD) Ildizmeva"
+   "note": "A) Piyozbosh\nB) Tugunak\nC) Ildizpoya\nD) Ildizmeva"
   }
  },
  "Какую функцию выполняют устьица на листьях растений?": {
