@@ -1,0 +1,637 @@
+{
+ "english-ielts": {
+  "title": "IELTS Preparation",
+  "topics": [
+   {
+    "topic": "IELTS Reading Comprehension",
+    "cards": [
+     {
+      "q": "While early agricultural practices in the Fertile Crescent are often characterized as a sudden revolution, recent archaeological evidence suggests a much more gradual transition. For centuries, semi-nomadic groups combined the foraging of wild grains with tentative cultivation, long before fully sedentary farming communities became the norm. This indicates that the shift to agriculture was an evolutionary process rather than an abrupt societal shift. Which of the following best expresses the main idea of the passage?",
+      "opts": [
+       "The transition to agriculture in the Fertile Crescent was a slow, evolutionary process rather than a sudden change.",
+       "Early agricultural societies were entirely nomadic and resisted sedentary farming for centuries.",
+       "Archaeological evidence has disproven the theory that the Fertile Crescent was the cradle of agriculture.",
+       "Foraging wild grains was quickly abandoned once tentative cultivation techniques were developed."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "In the marine ecosystems of the sub-Antarctic, giant kelp forests play a pivotal role by buffering coastlines from wave action and providing critical habitats for diverse marine fauna. However, rising sea temperatures driven by climate change are threatening these kelp populations, as they thrive only within a narrow, cool thermal range. If these temperatures continue to climb, the collapse of these underwater forests could trigger a cascading ecological crisis. What can be inferred from the passage about giant kelp?",
+      "opts": [
+       "They are highly sensitive to temperature fluctuations outside their optimal range.",
+       "They are capable of adapting quickly to warmer waters.",
+       "They are the primary food source for all marine fauna in the sub-Antarctic.",
+       "They prevent climate change by cooling the surrounding ocean temperatures."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Cognitive psychologists have long debated the extent to which language shapes human perception, a concept known as linguistic relativity. Recent experiments demonstrating that speakers of languages with distinct color terms categorize shades differently lend support to this hypothesis. Nonetheless, critics argue that these differences are superficial and do not reflect fundamental variations in sensory processing. According to the passage, what is the view of the critics regarding linguistic relativity?",
+      "opts": [
+       "It is supported by definitive proof of fundamental sensory differences.",
+       "The observed linguistic differences do not represent deep changes in how we perceive the world.",
+       "It is a concept that has been widely accepted without any scientific opposition.",
+       "It is only relevant to the study of color perception in non-human subjects."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The phenomenon of urban heat islands (UHIs) is primarily attributed to the abundance of heat-absorbing surfaces, such as asphalt and concrete, coupled with a lack of vegetation in metropolitan areas. During the day, these materials absorb solar radiation, which is then re-radiated at night, preventing cities from cooling down. Implementing green roofs and urban forestry has been proposed as an effective mitigation strategy to lower ambient temperatures. Which of the following is cited as a primary cause of urban heat islands?",
+      "opts": [
+       "The excessive use of air conditioning systems in metropolitan high-rises.",
+       "The nocturnal release of solar energy absorbed by city infrastructure during the day.",
+       "The lack of wind circulation caused by the dense arrangement of skyscrapers.",
+       "The natural geological characteristics of regions where major cities are built."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Historically, historians viewed the fall of the Western Roman Empire as a sudden catastrophe brought about by external barbarian invasions. Modern scholarship, however, emphasizes internal economic decay, political instability, and a gradual integration of Germanic tribes into the Roman military as more critical factors. This shift in perspective portrays the end of the empire as a complex transformation rather than a singular event. How does modern scholarship's view of the fall of Rome differ from the historical view?",
+      "opts": [
+       "It attributes the fall entirely to external invasions rather than internal decay.",
+       "It argues that the empire did not actually fall but relocated to the East.",
+       "It views the collapse as a gradual, multi-faceted process of transformation.",
+       "It minimizes the role played by the Roman military and economic factors."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Deep-sea hydrothermal vents support unique ecosystems that thrive in the complete absence of sunlight. Instead of photosynthesis, the primary producers in these environments rely on chemosynthesis, utilizing chemical energy from hydrogen sulfide emitted by the vents to synthesize organic matter. This discovery revolutionized biology by proving that complex life can exist independently of solar energy. What is the significance of the ecosystems found near hydrothermal vents?",
+      "opts": [
+       "They demonstrate that life can flourish without relying on sunlight for energy.",
+       "They provide evidence that photosynthesis can occur in deep-sea environments.",
+       "They show that hydrogen sulfide is toxic to all forms of marine life.",
+       "They prove that organic matter can only be synthesized through solar radiation."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The adoption of the printing press in 15th-century Europe did not immediately lead to widespread literacy, as books remained relatively expensive and schools were scarce. Instead, its initial impact was the standardization of regional languages and the rapid dissemination of scientific and religious texts among the educated elite. Over time, however, the increased availability of printed materials laid the groundwork for broader educational reforms. According to the passage, what was an immediate effect of the introduction of the printing press?",
+      "opts": [
+       "A dramatic and sudden increase in literacy rates among the general public.",
+       "The establishment of free public schools throughout Europe.",
+       "The standardization of regional languages and spread of texts among the elite.",
+       "A significant reduction in the cost of producing hand-copied manuscripts."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "In economics, the concept of 'opportunity cost' refers to the potential benefits an individual, investor, or business misses out on when choosing one alternative over another. Because every decision involves a trade-off, understanding opportunity costs allows decision-makers to allocate scarce resources more efficiently. It is not merely a financial measure, but also encompasses lost time, convenience, and other non-monetary utility. Which of the following best describes 'opportunity cost' as explained in the passage?",
+      "opts": [
+       "The total monetary expense incurred when starting a new business venture.",
+       "The value of the next best alternative that is sacrificed when a choice is made.",
+       "The financial loss resulting from poor investment decisions.",
+       "The cost of resources that are abundant and easily accessible."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The behavior of social insects, such as ants and bees, is coordinated through a decentralized system known as self-organization. Individual insects respond to local environmental cues and chemical signals, such as pheromones, without any central authority directing their actions. This collective intelligence allows the colony to solve complex problems, such as foraging and nest building, with remarkable efficiency. Based on the passage, how do social insect colonies coordinate their activities?",
+      "opts": [
+       "Through a rigid hierarchy led by a central queen directing individual tasks.",
+       "By relying on individual learning and memory rather than chemical signals.",
+       "Through decentralized responses to local cues and chemical signals.",
+       "By migrating to new environments when local resources are depleted."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The development of biodegradable plastics was hailed as a major breakthrough for environmental conservation, yet their practical efficacy remains controversial. Many of these plastics require specific high-temperature industrial composting facilities to break down, conditions rarely met in natural marine or terrestrial environments. Consequently, without proper waste management infrastructure, they can persist in ecosystems almost as long as conventional plastics. Why is the environmental benefit of biodegradable plastics currently questioned?",
+      "opts": [
+       "They release more toxic chemicals during decomposition than traditional plastics.",
+       "They require specific industrial conditions to decompose that are not found in nature.",
+       "They are much more expensive to manufacture than standard petroleum-based plastics.",
+       "They degrade too quickly to be useful for packaging consumer goods."
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "IELTS Academic Synonyms",
+    "cards": [
+     {
+      "q": "The researcher's findings were CORROBORATED by several independent studies conducted later that year. The word CORROBORATED is closest in meaning to:",
+      "opts": [
+       "disproved",
+       "verified",
+       "undermined",
+       "publicized"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The government decided to implement a more STRINGENT policy regarding carbon emissions. The word STRINGENT is closest in meaning to:",
+      "opts": [
+       "flexible",
+       "lenient",
+       "rigorous",
+       "ineffective"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The sudden influx of capital had a TRANSIENT effect on the local economy, which soon returned to its previous state. The word TRANSIENT is closest in meaning to:",
+      "opts": [
+       "permanent",
+       "beneficial",
+       "temporary",
+       "harmful"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "To understand the phenomenon, scientists must first DELINEATE the boundaries of the affected ecosystem. The word DELINEATE is closest in meaning to:",
+      "opts": [
+       "define",
+       "obscure",
+       "broaden",
+       "evaluate"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The author's argument was highly persuasive, despite some INHERENT flaws in the data collection process. The word INHERENT is closest in meaning to:",
+      "opts": [
+       "extrinsic",
+       "intrinsic",
+       "accidental",
+       "minor"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The new software is designed to FACILITATE communication between different departments. The word FACILITATE is closest in meaning to:",
+      "opts": [
+       "hinder",
+       "complicate",
+       "ease",
+       "monitor"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The committee decided to DEFER the decision until more comprehensive data became available. The word DEFER is closest in meaning to:",
+      "opts": [
+       "postpone",
+       "accelerate",
+       "reject",
+       "announce"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The rapid DEPLETION of natural resources remains a critical concern for environmentalists worldwide. The word DEPLETION is closest in meaning to:",
+      "opts": [
+       "accumulation",
+       "reduction",
+       "preservation",
+       "discovery"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "His UBIQUITOUS presence in the media made him one of the most recognizable figures of the decade. The word UBIQUITOUS is closest in meaning to:",
+      "opts": [
+       "scarce",
+       "widespread",
+       "temporary",
+       "controversial"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The findings of the study are highly TENTATIVE and require further validation through larger trials. The word TENTATIVE is closest in meaning to:",
+      "opts": [
+       "conclusive",
+       "provisional",
+       "reliable",
+       "insignificant"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "IELTS Collocations",
+    "cards": [
+     {
+      "q": "The researchers decided to ________ a pilot study to test the feasibility of their methodology before launching the full-scale project.",
+      "opts": [
+       "make",
+       "conduct",
+       "lead",
+       "construct"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Recent archaeological discoveries have ________ new light on the social structures of ancient Mesoamerican civilizations.",
+      "opts": [
+       "dropped",
+       "passed",
+       "shed",
+       "poured"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The rapid depletion of natural resources ________ a grave threat to the economic stability of developing nations.",
+      "opts": [
+       "poses",
+       "exerts",
+       "demands",
+       "stretches"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Before drawing any definitive ________, the committee must analyze the statistical variance in the final quarterly report.",
+      "opts": [
+       "assumptions",
+       "resolutions",
+       "decisions",
+       "conclusions"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "The new environmental policy has ________ a fierce debate among local business owners and conservationists.",
+      "opts": [
+       "risen",
+       "sparked",
+       "conducted",
+       "gained"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "There is ________ evidence to suggest that regular physical exercise can mitigate the cognitive decline associated with aging.",
+      "opts": [
+       "heavy",
+       "forceful",
+       "compelling",
+       "stringent"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The author's argument is ________ on the assumption that global markets will remain stable over the next decade.",
+      "opts": [
+       "predicated",
+       "established",
+       "anchored",
+       "sustained"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "To achieve optimal results, educators must ________ the needs of diverse learners in the classroom.",
+      "opts": [
+       "answer",
+       "cope",
+       "interact",
+       "address"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "The findings of the study ________ doubt on the long-held belief that high taxation discourages foreign investment.",
+      "opts": [
+       "shed",
+       "cast",
+       "gave",
+       "placed"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The government has failed to ________ any meaningful contribution to the international climate fund.",
+      "opts": [
+       "do",
+       "present",
+       "make",
+       "commit"
+      ],
+      "correct": 2
+     }
+    ]
+   },
+   {
+    "topic": "IELTS Paraphrasing",
+    "cards": [
+     {
+      "q": "Which option best paraphrases the following sentence? 'Despite the initial skepticism surrounding the efficacy of the new vaccine, subsequent clinical trials demonstrated a remarkable reduction in transmission rates.'",
+      "opts": [
+       "While there was early doubt regarding the vaccine's effectiveness, later clinical studies proved it was highly successful in lowering transmission.",
+       "Because of the early doubts about the vaccine's effectiveness, later clinical trials had to be modified to show a reduction in transmission rates.",
+       "Initial skepticism about the vaccine's efficacy was confirmed when subsequent clinical trials showed no significant change in transmission rates.",
+       "The remarkable reduction in transmission rates during early trials quickly dispelled any skepticism regarding the vaccine's long-term efficacy."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'The rapid expansion of urban areas often comes at the expense of local biodiversity, as natural habitats are fragmented to make way for infrastructure.'",
+      "opts": [
+       "Urban growth is necessary for infrastructure development, which in turn helps protect local biodiversity from habitat fragmentation.",
+       "As cities grow quickly, local wildlife variety is frequently compromised because natural environments are broken up for construction projects.",
+       "Fragmenting natural habitats is the most effective way to balance rapid urban expansion with the preservation of local biodiversity.",
+       "The loss of local biodiversity is what drives the rapid expansion of urban infrastructure and habitat fragmentation."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'While some economists argue that austerity measures stimulate long-term growth, others contend that they stifle economic recovery by reducing consumer spending.'",
+      "opts": [
+       "Economists agree that reducing consumer spending through austerity measures is the most effective way to stimulate long-term growth.",
+       "Austerity measures are widely known to stifle economic recovery, despite some economists claiming they increase consumer spending.",
+       "Opinions are divided among economists, with some believing austerity promotes future growth and others arguing it hinders recovery by lowering consumer demand.",
+       "Long-term economic growth can only be achieved if consumer spending is reduced through strict austerity measures."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'The implementation of stricter environmental regulations has compelled manufacturing firms to adopt cleaner technologies, albeit at a higher operational cost.'",
+      "opts": [
+       "Tougher environmental laws have forced manufacturers to use more eco-friendly technologies, though this has increased their running expenses.",
+       "Manufacturing companies have willingly invested in cleaner technologies to avoid the high operational costs of stricter environmental regulations.",
+       "Although cleaner technologies are cheaper to operate, manufacturing firms resist adopting them due to strict environmental regulations.",
+       "Stricter environmental regulations were introduced because manufacturing firms refused to adopt cleaner technologies despite low operational costs."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'Contrary to popular belief, cognitive decline is not an inevitable consequence of aging, as mental stimulation and physical exercise can mitigate its onset.'",
+      "opts": [
+       "It is widely believed that mental stimulation and physical exercise are the primary causes of cognitive decline as people age.",
+       "Since cognitive decline is an unavoidable part of getting older, mental and physical activities can only do so much to delay it.",
+       "Popular belief suggests that cognitive decline can be easily cured through a combination of regular exercise and mental tasks.",
+       "Although many people think otherwise, mental and physical activity can help delay or prevent the deterioration of cognitive functions associated with growing older."
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'The proliferation of digital communication tools has revolutionized the modern workplace, yet it has also blurred the boundaries between professional and personal life.'",
+      "opts": [
+       "The modern workplace has been transformed by digital tools, which have successfully separated professional duties from personal life.",
+       "While the widespread adoption of digital communication has transformed how we work, it has also made it harder to distinguish between work and private life.",
+       "Because employees cannot separate their professional and personal lives, companies have been forced to introduce digital communication tools.",
+       "Digital communication tools have failed to revolutionize the workplace because they interfere too much with employees' personal lives."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'Scholars assert that the decline of the ancient civilization was precipitated by prolonged droughts rather than internal political conflict.'",
+      "opts": [
+       "Researchers believe that the fall of the ancient society was triggered by extended periods of dry weather instead of domestic political struggles.",
+       "Internal political conflicts are thought by scholars to have caused the severe droughts that eventually destroyed the ancient civilization.",
+       "Although prolonged droughts occurred, scholars argue that internal political conflict was the primary reason the ancient civilization declined.",
+       "The ancient civilization managed to survive prolonged droughts, only to collapse later due to intense internal political conflicts."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'The success of the conservation program is contingent upon the active participation of local communities, who stand to benefit most from the ecotourism revenue.'",
+      "opts": [
+       "Local communities will only participate in the conservation program if they are guaranteed to receive all the revenue from ecotourism.",
+       "Ecotourism revenue has increased because local communities actively participated in a highly successful conservation program.",
+       "The conservation program will only succeed if local people participate, and they are the ones who will gain the most financially from ecotourism.",
+       "Although local communities benefit from ecotourism, their participation is not necessary for the conservation program to succeed."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'Despite the high initial capital investment required, solar energy systems offer substantial long-term savings on utility bills.'",
+      "opts": [
+       "Solar energy systems are too expensive to install, meaning that any long-term savings on utility bills are negligible.",
+       "Even though installing solar energy systems demands a significant upfront cost, they provide considerable reductions in energy expenses over time.",
+       "High utility bills are the main reason why homeowners are forced to make a large initial investment in solar energy systems.",
+       "Because solar energy systems offer immediate savings on utility bills, the high initial capital investment is quickly recovered."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Which option best paraphrases the following sentence? 'The author argues that the rise of social media has fostered a culture of superficial connection, undermining the depth of traditional interpersonal relationships.'",
+      "opts": [
+       "According to the author, traditional relationships have become deeper and more meaningful as a direct result of social media usage.",
+       "The author believes that superficial social media connections are necessary to maintain the depth of traditional interpersonal relationships.",
+       "The rise of social media has been hindered by traditional interpersonal relationships, which favor deep rather than superficial connections.",
+       "The author contends that social media encourages shallow interactions, which weakens the quality and depth of face-to-face relationships."
+      ],
+      "correct": 3
+     }
+    ]
+   },
+   {
+    "topic": "IELTS Grammar for High Bands",
+    "cards": [
+     {
+      "q": "Only after the data had been thoroughly analyzed ________ to publish the preliminary findings.",
+      "opts": [
+       "the research team decided",
+       "did the research team decide",
+       "has the research team decided",
+       "should the research team decide"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The government policy aims to prevent public funds from ________ on projects with low social utility.",
+      "opts": [
+       "wasting",
+       "having wasted",
+       "be wasted",
+       "being wasted"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "The primary school implemented a new curriculum, the main objective of ________ was to foster critical thinking from an early age.",
+      "opts": [
+       "which",
+       "that",
+       "whom",
+       "what"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "________ the local council allocated more funding to public transport last year, traffic congestion in the city center would not be as severe today.",
+      "opts": [
+       "If",
+       "Should",
+       "Had",
+       "Were"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "In academic writing, ________ introduction of new technology often accelerates ________ economic growth of developing nations.",
+      "opts": [
+       "an / a",
+       "the / the",
+       "the / Ø",
+       "an / the"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "By the end of the next decade, it is estimated that renewable energy sources ________ to over 50% of the global power grid.",
+      "opts": [
+       "will have been integrated",
+       "will be integrating",
+       "have been integrated",
+       "would have integrated"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Seldom ________ such a rapid shift in consumer behavior as during the recent digital revolution.",
+      "opts": [
+       "economists have witnessed",
+       "witnessed economists",
+       "have economists witnessed",
+       "do economists witnessed"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The university surveyed over a thousand graduates, many of ________ had secured employment within three months of graduation.",
+      "opts": [
+       "who",
+       "whom",
+       "whose",
+       "them"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "________ the timely intervention of the central bank, the country's financial sector would have faced a complete collapse.",
+      "opts": [
+       "Were it not for",
+       "If it was not",
+       "But because of",
+       "Had it not been for"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "The newly discovered manuscript is believed ________ by a disciple of Socrates in the fourth century BCE.",
+      "opts": [
+       "to be written",
+       "to have been written",
+       "having been written",
+       "to write"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "IELTS Word Formation",
+    "cards": [
+     {
+      "q": "Base word: ANALYZE. The researcher's ________ approach to the data helped uncover several previously unnoticed trends.",
+      "opts": [
+       "analytically",
+       "analysis",
+       "analytical",
+       "analyzable"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Base word: VARY. There is significant ________ in the results depending on the temperature at which the experiment is conducted.",
+      "opts": [
+       "variable",
+       "variability",
+       "various",
+       "variably"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Base word: SIGNIFY. The introduction of the new policy has ________ altered the economic landscape of the region.",
+      "opts": [
+       "significantly",
+       "significance",
+       "significant",
+       "signifying"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Base word: COMPLY. The factory was shut down due to its persistent non-________ with environmental regulations.",
+      "opts": [
+       "compliant",
+       "complied",
+       "compliance",
+       "compliantly"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Base word: DIVERSE. The university aims to ________ its curriculum by incorporating more global history courses.",
+      "opts": [
+       "diversification",
+       "diversify",
+       "diverse",
+       "diversified"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Base word: PREDICT. The chaotic nature of weather systems makes long-term forecasting highly ________.",
+      "opts": [
+       "unpredictable",
+       "unpredictably",
+       "unpredictability",
+       "predictive"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Base word: CONCLUDE. The study was deemed ________ because the sample size was too small to yield definitive results.",
+      "opts": [
+       "conclusion",
+       "conclusively",
+       "concluding",
+       "inconclusive"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Base word: DOMINANT. The tech giant continues to assert its ________ in the global smartphone market.",
+      "opts": [
+       "dominate",
+       "dominance",
+       "dominantly",
+       "dominated"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Base word: INNOVATE. To remain competitive, modern businesses must foster an environment that encourages ________ thinking.",
+      "opts": [
+       "innovative",
+       "innovation",
+       "innovatively",
+       "innovator"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Base word: RELY. The historical data was deemed of questionable ________ due to gaps in the recording process.",
+      "opts": [
+       "reliance",
+       "reliably",
+       "reliable",
+       "reliability"
+      ],
+      "correct": 3
+     }
+    ]
+   }
+  ]
+ }
+}
