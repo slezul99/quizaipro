@@ -840,6 +840,15 @@ class AppLocalizationsUz extends AppLocalizations {
   String get deckEditorColorLabel => 'To\'plam rangi';
 
   @override
+  String get deckEditorCoverLabel => 'To\'plam muqovasi';
+
+  @override
+  String get deckEditorCoverNone => 'Muqovasiz';
+
+  @override
+  String get deckEditorCoverGallery => 'Galereyadan';
+
+  @override
   String get deckEditorNameHint => 'Masalan: O\'zbekiston tarixi';
 
   @override

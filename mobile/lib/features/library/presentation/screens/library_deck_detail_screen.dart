@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizaipro_mobile/core/router/app_routes.dart';
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
 import 'package:quizaipro_mobile/core/utils/mcq_text.dart';
+import 'package:quizaipro_mobile/core/widgets/deck_cover.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/algorithms/retention_calculator.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/flashcard.dart';
 import 'package:quizaipro_mobile/features/flashcards/domain/entities/study_mode.dart';
@@ -111,6 +112,7 @@ class _DeckDetailBody extends ConsumerWidget {
     final tt = Theme.of(context).textTheme;
     final cardsAsync = ref.watch(deckCardsProvider(deck.id));
     final coverColor = _hexToColor(deck.coverColorHex);
+    final coverImg = deckCoverImage(deck.coverUrl);
 
     return CustomScrollView(
       slivers: [
@@ -124,11 +126,27 @@ class _DeckDetailBody extends ConsumerWidget {
             ),
             padding: EdgeInsets.all(tokens.space20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [coverColor, Color.lerp(coverColor, Colors.black, 0.30)!],
-              ),
+              color: coverColor,
+              gradient: coverImg == null
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        coverColor,
+                        Color.lerp(coverColor, Colors.black, 0.30)!
+                      ],
+                    )
+                  : null,
+              image: coverImg != null
+                  ? DecorationImage(
+                      image: coverImg,
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withValues(alpha: 0.40),
+                        BlendMode.darken,
+                      ),
+                    )
+                  : null,
               borderRadius: BorderRadius.circular(tokens.radiusLg),
               boxShadow: [
                 BoxShadow(

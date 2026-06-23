@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
+import 'package:quizaipro_mobile/core/widgets/deck_cover.dart';
 import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
 import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
@@ -66,7 +67,10 @@ class LibraryDeckCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    _DeckArtwork(cover: cover, icon: deck.icon),
+                    if (hasDeckCover(deck.coverUrl))
+                      DeckCoverBackground(cover: deck.coverUrl, color: cover)
+                    else
+                      _DeckArtwork(cover: cover, icon: deck.icon),
                     Positioned(
                       top: 10,
                       left: 10,

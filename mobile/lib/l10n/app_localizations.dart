@@ -1624,6 +1624,24 @@ abstract class AppLocalizations {
   /// **'Deck color'**
   String get deckEditorColorLabel;
 
+  /// No description provided for @deckEditorCoverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deck cover'**
+  String get deckEditorCoverLabel;
+
+  /// No description provided for @deckEditorCoverNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No cover'**
+  String get deckEditorCoverNone;
+
+  /// No description provided for @deckEditorCoverGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'From gallery'**
+  String get deckEditorCoverGallery;
+
   /// Deck name field hint
   ///
   /// In en, this message translates to:

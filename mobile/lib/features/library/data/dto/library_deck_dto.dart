@@ -14,6 +14,7 @@ class LibraryDeckDto {
     this.hasTests = false,
     this.hasFlashcards = false,
     required this.coverColorHex,
+    this.coverUrl,
     required this.isPro,
     required this.isPublic,
     required this.isFavorite,
@@ -35,6 +36,7 @@ class LibraryDeckDto {
   @JsonKey(name: 'has_tests', defaultValue: false) final bool hasTests;
   @JsonKey(name: 'has_flashcards', defaultValue: false) final bool hasFlashcards;
   @JsonKey(name: 'cover_color_hex') final String coverColorHex;
+  @JsonKey(name: 'cover_url') final String? coverUrl;
   @JsonKey(name: 'is_pro') final bool isPro;
   @JsonKey(name: 'is_public') final bool isPublic;
   @JsonKey(name: 'is_favorite') final bool isFavorite;

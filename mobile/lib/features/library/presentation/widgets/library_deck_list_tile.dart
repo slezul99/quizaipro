@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:quizaipro_mobile/core/theme/aurora_tokens.dart';
+import 'package:quizaipro_mobile/core/widgets/deck_cover.dart';
 import 'package:quizaipro_mobile/features/library/domain/entities/library_deck.dart';
 import 'package:quizaipro_mobile/l10n/app_localizations.dart';
 
@@ -47,32 +48,43 @@ class LibraryDeckListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Emblem with deck initial
-            Container(
-              width: 48,
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [coverColor, Color.lerp(coverColor, Colors.black, 0.22)!],
-                ),
-                borderRadius: BorderRadius.circular(tokens.radiusMd),
-              ),
-              child: deck.isArchived
-                  ? Icon(
-                      Icons.archive_outlined,
-                      color: Colors.white.withValues(alpha: 0.85),
-                      size: 20,
-                    )
-                  : Text(
-                      initial,
-                      style: tt.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
+            // Emblem: the cover image when set, else a gradient + deck initial.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(tokens.radiusMd),
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: hasDeckCover(deck.coverUrl)
+                    ? DeckCoverBackground(
+                        cover: deck.coverUrl, color: coverColor, scrim: false)
+                    : DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              coverColor,
+                              Color.lerp(coverColor, Colors.black, 0.22)!
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: deck.isArchived
+                              ? Icon(
+                                  Icons.archive_outlined,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  size: 20,
+                                )
+                              : Text(
+                                  initial,
+                                  style: tt.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                        ),
                       ),
-                    ),
+              ),
             ),
             SizedBox(width: tokens.space12),
             // Title & stats

@@ -25,6 +25,7 @@ mixin _$LibraryDeck {
   bool get hasTests => throw _privateConstructorUsedError;
   bool get hasFlashcards => throw _privateConstructorUsedError;
   String get coverColorHex => throw _privateConstructorUsedError;
+  String? get coverUrl => throw _privateConstructorUsedError;
   bool get isPro => throw _privateConstructorUsedError;
   bool get isPublic => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
@@ -59,6 +60,7 @@ abstract class $LibraryDeckCopyWith<$Res> {
       bool hasTests,
       bool hasFlashcards,
       String coverColorHex,
+      String? coverUrl,
       bool isPro,
       bool isPublic,
       bool isFavorite,
@@ -95,6 +97,7 @@ class _$LibraryDeckCopyWithImpl<$Res, $Val extends LibraryDeck>
     Object? hasTests = null,
     Object? hasFlashcards = null,
     Object? coverColorHex = null,
+    Object? coverUrl = freezed,
     Object? isPro = null,
     Object? isPublic = null,
     Object? isFavorite = null,
@@ -143,6 +146,10 @@ class _$LibraryDeckCopyWithImpl<$Res, $Val extends LibraryDeck>
           ? _value.coverColorHex
           : coverColorHex // ignore: cast_nullable_to_non_nullable
               as String,
+      coverUrl: freezed == coverUrl
+          ? _value.coverUrl
+          : coverUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
       isPro: null == isPro
           ? _value.isPro
           : isPro // ignore: cast_nullable_to_non_nullable
@@ -205,6 +212,7 @@ abstract class _$$LibraryDeckImplCopyWith<$Res>
       bool hasTests,
       bool hasFlashcards,
       String coverColorHex,
+      String? coverUrl,
       bool isPro,
       bool isPublic,
       bool isFavorite,
@@ -239,6 +247,7 @@ class __$$LibraryDeckImplCopyWithImpl<$Res>
     Object? hasTests = null,
     Object? hasFlashcards = null,
     Object? coverColorHex = null,
+    Object? coverUrl = freezed,
     Object? isPro = null,
     Object? isPublic = null,
     Object? isFavorite = null,
@@ -287,6 +296,10 @@ class __$$LibraryDeckImplCopyWithImpl<$Res>
           ? _value.coverColorHex
           : coverColorHex // ignore: cast_nullable_to_non_nullable
               as String,
+      coverUrl: freezed == coverUrl
+          ? _value.coverUrl
+          : coverUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
       isPro: null == isPro
           ? _value.isPro
           : isPro // ignore: cast_nullable_to_non_nullable
@@ -344,6 +357,7 @@ class _$LibraryDeckImpl implements _LibraryDeck {
       required this.hasTests,
       required this.hasFlashcards,
       required this.coverColorHex,
+      this.coverUrl,
       required this.isPro,
       required this.isPublic,
       required this.isFavorite,
@@ -376,6 +390,8 @@ class _$LibraryDeckImpl implements _LibraryDeck {
   @override
   final String coverColorHex;
   @override
+  final String? coverUrl;
+  @override
   final bool isPro;
   @override
   final bool isPublic;
@@ -404,7 +420,7 @@ class _$LibraryDeckImpl implements _LibraryDeck {
 
   @override
   String toString() {
-    return 'LibraryDeck(id: $id, title: $title, icon: $icon, description: $description, cardCount: $cardCount, dueCount: $dueCount, hasTests: $hasTests, hasFlashcards: $hasFlashcards, coverColorHex: $coverColorHex, isPro: $isPro, isPublic: $isPublic, isFavorite: $isFavorite, isArchived: $isArchived, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, difficulty: $difficulty, lastStudiedAt: $lastStudiedAt, subjectName: $subjectName)';
+    return 'LibraryDeck(id: $id, title: $title, icon: $icon, description: $description, cardCount: $cardCount, dueCount: $dueCount, hasTests: $hasTests, hasFlashcards: $hasFlashcards, coverColorHex: $coverColorHex, coverUrl: $coverUrl, isPro: $isPro, isPublic: $isPublic, isFavorite: $isFavorite, isArchived: $isArchived, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, difficulty: $difficulty, lastStudiedAt: $lastStudiedAt, subjectName: $subjectName)';
   }
 
   @override
@@ -427,6 +443,8 @@ class _$LibraryDeckImpl implements _LibraryDeck {
                 other.hasFlashcards == hasFlashcards) &&
             (identical(other.coverColorHex, coverColorHex) ||
                 other.coverColorHex == coverColorHex) &&
+            (identical(other.coverUrl, coverUrl) ||
+                other.coverUrl == coverUrl) &&
             (identical(other.isPro, isPro) || other.isPro == isPro) &&
             (identical(other.isPublic, isPublic) ||
                 other.isPublic == isPublic) &&
@@ -459,6 +477,7 @@ class _$LibraryDeckImpl implements _LibraryDeck {
         hasTests,
         hasFlashcards,
         coverColorHex,
+        coverUrl,
         isPro,
         isPublic,
         isFavorite,
@@ -491,6 +510,7 @@ abstract class _LibraryDeck implements LibraryDeck {
       required final bool hasTests,
       required final bool hasFlashcards,
       required final String coverColorHex,
+      final String? coverUrl,
       required final bool isPro,
       required final bool isPublic,
       required final bool isFavorite,
@@ -520,6 +540,8 @@ abstract class _LibraryDeck implements LibraryDeck {
   bool get hasFlashcards;
   @override
   String get coverColorHex;
+  @override
+  String? get coverUrl;
   @override
   bool get isPro;
   @override

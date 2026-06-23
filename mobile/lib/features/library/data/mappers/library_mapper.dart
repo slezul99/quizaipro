@@ -15,6 +15,7 @@ abstract final class LibraryMapper {
         hasTests: dto.hasTests,
         hasFlashcards: dto.hasFlashcards,
         coverColorHex: dto.coverColorHex,
+        coverUrl: dto.coverUrl,
         isPro: dto.isPro,
         isPublic: dto.isPublic,
         isFavorite: dto.isFavorite,

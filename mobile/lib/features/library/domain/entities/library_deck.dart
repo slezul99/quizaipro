@@ -16,6 +16,7 @@ class LibraryDeck with _$LibraryDeck {
     required bool hasTests,
     required bool hasFlashcards,
     required String coverColorHex,
+    String? coverUrl,
     required bool isPro,
     required bool isPublic,
     required bool isFavorite,

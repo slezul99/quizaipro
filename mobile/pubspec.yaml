@@ -63,6 +63,9 @@ dependencies:
   package_info_plus: ^9.0.0
   intl: ^0.20.0
 
+  # Pick a custom deck cover from the device gallery
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -81,6 +84,7 @@ flutter:
   assets:
     - assets/images/
     - assets/trees/
+    - assets/covers/
 
 flutter_launcher_icons:
   android: true
