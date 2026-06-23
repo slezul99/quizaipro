@@ -1,0 +1,694 @@
+{
+ "Личные местоимения и глагол to be": {
+  "en": "Personal Pronouns and the Verb 'to be'",
+  "uz": "Kishilik olmoshlari va 'to be' fe'li"
+ },
+ "Семья и описание внешности": {
+  "en": "Family and Appearance",
+  "uz": "Oila va tashqi ko'rinish tavsifi"
+ },
+ "Множественное число существительных": {
+  "en": "Plural Nouns",
+  "uz": "Otlar ko'pligi"
+ },
+ "Настоящее простое время (Present Simple)": {
+  "en": "Present Simple",
+  "uz": "Present Simple"
+ },
+ "Предлоги места и времени": {
+  "en": "Prepositions of Place and Time",
+  "uz": "O'rin va vaqt predloglari"
+ },
+ "Прошедшее простое время (Past Simple)": {
+  "en": "Past Simple",
+  "uz": "Past Simple"
+ },
+ "Степени сравнения прилагательных": {
+  "en": "Comparison of Adjectives",
+  "uz": "Sifat darajalari"
+ },
+ "Еда и покупки (Food and Shopping)": {
+  "en": "Food and Shopping",
+  "uz": "Oziq-ovqat va xaridlar (Food and Shopping)"
+ },
+ "Настоящее длительное против Настоящего простого": {
+  "en": "Present Continuous vs Present Simple",
+  "uz": "Present Continuous vs Present Simple"
+ },
+ "Путешествия и транспорт (Travel and Transport)": {
+  "en": "Travel and Transport",
+  "uz": "Sayohat va transport (Travel and Transport)"
+ },
+ "Времена группы Present": {
+  "en": "Present Tenses",
+  "uz": "Present zamonlari"
+ },
+ "Модальные глаголы": {
+  "en": "Modal Verbs",
+  "uz": "Modal fe'llar"
+ },
+ "Условные предложения": {
+  "en": "If clauses",
+  "uz": "If clauses"
+ },
+ "Артикли": {
+  "en": "Articles",
+  "uz": "Artikllar"
+ },
+ "Герундий и инфинитив": {
+  "en": "Gerund and Infinitive",
+  "uz": "Gerundiy va infinitiv"
+ },
+ "Синонимы и антонимы": {
+  "en": "Synonyms and Antonyms",
+  "uz": "Sinonimlar va antonimlar"
+ },
+ "Фразовые глаголы": {
+  "en": "Phrasal Verbs",
+  "uz": "Frazali fe'llar"
+ },
+ "Ложные друзья переводчика": {
+  "en": "False Friends",
+  "uz": "Tarjimonning soxta do'stlari"
+ },
+ "Идиомы и устойчивые выражения": {
+  "en": "Idioms and Collocations",
+  "uz": "Idiomalar va turg'un birikmalar"
+ },
+ "Бизнес и работа": {
+  "en": "Business and Work",
+  "uz": "Biznes va ish"
+ },
+ "Линейные уравнения и системы": {
+  "en": "Linear Equations and Systems",
+  "uz": "Chiziqli tenglamalar va sistemalar"
+ },
+ "Квадратные уравнения и теорема Виета": {
+  "en": "Quadratic Equations and Vieta's Theorem",
+  "uz": "Kvadrat tenglamalar va Viyet teoremasi"
+ },
+ "Свойства степеней и арифметический корень": {
+  "en": "Properties of Powers and Arithmetic Roots",
+  "uz": "Daraja xossalari va arifmetik ildiz"
+ },
+ "Числовые последовательности и прогрессии": {
+  "en": "Numerical Sequences and Progressions",
+  "uz": "Sonli ketma-ketliklar va progressiyalar"
+ },
+ "Функции и их графики": {
+  "en": "Functions and Their Graphs",
+  "uz": "Funksiyalar va ularning grafiklari"
+ },
+ "Основы планиметрии: углы и прямые": {
+  "en": "Basics of Planimetry: Angles and Lines",
+  "uz": "Planimetriya asoslari: burchaklar va to'g'ri chiziqlar"
+ },
+ "Треугольники и их свойства": {
+  "en": "Triangles and Their Properties",
+  "uz": "Uchburchaklar va ularning xossalari"
+ },
+ "Четырехугольники и многоугольники": {
+  "en": "Quadrilaterals and Polygons",
+  "uz": "To'rtburchaklar va ko'pburchaklar"
+ },
+ "Окружность и круг": {
+  "en": "Circles and Discs",
+  "uz": "Aylana va doira"
+ },
+ "Начала стереометрии": {
+  "en": "Introduction to Solid Geometry",
+  "uz": "Stereometriya asoslari"
+ },
+ "Основы синтаксиса и типы данных": {
+  "en": "Syntax Basics and Data Types",
+  "uz": "Sintaksis asoslari va ma'lumotlar turlari"
+ },
+ "Управляющие конструкции и циклы": {
+  "en": "Control Structures and Loops",
+  "uz": "Boshqaruv tuzilmalari va sikllar"
+ },
+ "Функции и области видимости": {
+  "en": "Functions and Scope",
+  "uz": "Funksiyalar va ko'rinish sohasi"
+ },
+ "Работа со списками и словарями": {
+  "en": "Working with Lists and Dictionaries",
+  "uz": "Ro'yxat va lug'atlar bilan ishlash"
+ },
+ "Работа с файлами и исключения": {
+  "en": "Working with Files and Exceptions",
+  "uz": "Fayllar va istisnolar bilan ishlash"
+ },
+ "Функции и замыкания": {
+  "en": "Functions and Closures",
+  "uz": "Funksiyalar va closurelar"
+ },
+ "Объекты и прототипы": {
+  "en": "Objects and Prototypes",
+  "uz": "Obyektlar va prototiplar"
+ },
+ "Асинхронный JavaScript": {
+  "en": "Asynchronous JavaScript",
+  "uz": "Asinxron JavaScript"
+ },
+ "Работа с DOM и событиями": {
+  "en": "Working with DOM and Events",
+  "uz": "DOM va hodisalar bilan ishlash"
+ },
+ "Цитология: строение и функции клетки": {
+  "en": "Cytology: Cell Structure and Function",
+  "uz": "Sitologiya: hujayra tuzilishi va funksiyalari"
+ },
+ "Генетика и наследственность": {
+  "en": "Genetics and Heredity",
+  "uz": "Genetika va irsiyat"
+ },
+ "Ботаника: царство Растения": {
+  "en": "Botany: The Plant Kingdom",
+  "uz": "Botanika: O'simliklar dunyosi"
+ },
+ "Анатомия и физиология человека": {
+  "en": "Human Anatomy and Physiology",
+  "uz": "Odam anatomiyasi va fiziologiyasi"
+ },
+ "Экология и эволюционное учение": {
+  "en": "Ecology and Evolutionary Theory",
+  "uz": "Ekologiya va evolyutsion ta'limot"
+ },
+ "Основы маркетинга и комплекс 4P": {
+  "en": "Marketing Basics and the 4Ps",
+  "uz": "Marketing asoslari va 4P kompleksi"
+ },
+ "Исследование рынка и целевая аудитория": {
+  "en": "Market Research and Target Audience",
+  "uz": "Bozor tadqiqoti va maqsadli auditoriya"
+ },
+ "Брендинг и позиционирование": {
+  "en": "Branding and Positioning",
+  "uz": "Brending va pozitsiyalash"
+ },
+ "Цифровой маркетинг и лидогенерация": {
+  "en": "Digital Marketing and Lead Generation",
+  "uz": "Raqamli marketing va lid-generatsiya"
+ },
+ "Маркетинговые метрики и аналитика": {
+  "en": "Marketing Metrics and Analytics",
+  "uz": "Marketing metrikalari va analitika"
+ },
+ "Present Perfect против Past Simple": {
+  "en": "Present Perfect vs Past Simple",
+  "uz": "Present Perfect vs Past Simple"
+ },
+ "Условные предложения (1 и 2 типы)": {
+  "en": "Conditional Sentences (Types 1 and 2)",
+  "uz": "Shart gaplar (1 va 2-turlar)"
+ },
+ "Пассивный залог": {
+  "en": "Passive Voice",
+  "uz": "Majhul nisbat"
+ },
+ "Фразовые глаголы и устойчивые выражения": {
+  "en": "Phrasal Verbs and Collocations",
+  "uz": "Iborali fe'llar va turg'un birikmalar"
+ },
+ "Смешанные условные предложения": {
+  "en": "Mixed Conditionals",
+  "uz": "Aralash shart gaplar"
+ },
+ "Инверсия в английском языке": {
+  "en": "Inversion in English",
+  "uz": "Ingliz tilida inversiya"
+ },
+ "Способы выражения будущего времени": {
+  "en": "Ways of Expressing Future Time",
+  "uz": "Kelasi zamonni ifodalash usullari"
+ },
+ "Герундий и инфинитив: тонкости употребления": {
+  "en": "Gerund and Infinitive: Nuances of Usage",
+  "uz": "Gerundiy va infinitiv: qo'llanish nozikliklari"
+ },
+ "Фразовые глаголы и идиомы уровня B2": {
+  "en": "B2 Phrasal Verbs and Idioms",
+  "uz": "B2 darajasidagi iborali fe'llar va idiomalar"
+ },
+ "Фразовые глаголы движения": {
+  "en": "Phrasal Verbs of Movement",
+  "uz": "Harakatni ifodalovchi iborali fe'llar"
+ },
+ "Отношения и общение": {
+  "en": "Relationships and Communication",
+  "uz": "Munosabatlar va muloqot"
+ },
+ "Работа и учеба": {
+  "en": "Work and Study",
+  "uz": "Ish va o'qish"
+ },
+ "Фразовые глаголы с послелогом UP": {
+  "en": "Phrasal Verbs with UP",
+  "uz": "UP bilan keladigan iborali fe'llar"
+ },
+ "Фразовые глаголы с послелогом OUT": {
+  "en": "Phrasal Verbs with OUT",
+  "uz": "OUT bilan keladigan iborali fe'llar"
+ },
+ "Аудирование: стратегии и типы заданий": {
+  "en": "Listening: Strategies and Task Types",
+  "uz": "Tinglab tushunish: strategiyalar va topshiriq turlari"
+ },
+ "Чтение: академические тексты и поиск информации": {
+  "en": "Reading: Academic Texts and Information Search",
+  "uz": "O'qish: akademik matnlar va ma'lumot qidirish"
+ },
+ "Письменная часть: структура и критерии": {
+  "en": "Writing Section: Structure and Criteria",
+  "uz": "Yozma qism: tuzilishi va mezonlari"
+ },
+ "Устная часть: формат и беглость речи": {
+  "en": "Speaking Section: Format and Fluency",
+  "uz": "Og'zaki qism: formati va nutq ravonligi"
+ },
+ "Лексика и грамматика для высокого балла": {
+  "en": "Vocabulary and Grammar for a High Score",
+  "uz": "Yuqori ball uchun leksika va grammatika"
+ },
+ "TOEFL Reading: Стратегии и типы вопросов": {
+  "en": "TOEFL Reading: Strategies and Question Types",
+  "uz": "TOEFL Reading: strategiyalar va savol turlari"
+ },
+ "TOEFL Listening: Понимание на слух и конспектирование": {
+  "en": "TOEFL Listening: Listening Comprehension and Note-taking",
+  "uz": "TOEFL Listening: tinglab tushunish va qaydlar qilish"
+ },
+ "TOEFL Speaking: Структура устных ответов": {
+  "en": "TOEFL Speaking: Structure of Spoken Responses",
+  "uz": "TOEFL Speaking: og'zaki javoblar tuzilishi"
+ },
+ "TOEFL Writing: Интегрированное и академическое эссе": {
+  "en": "TOEFL Writing: Integrated and Academic Essays",
+  "uz": "TOEFL Writing: integratsiyalashgan va akademik insholar"
+ },
+ "TOEFL Grammar & Vocabulary: Академическая лексика и грамматика": {
+  "en": "TOEFL Grammar & Vocabulary: Academic Vocabulary and Grammar",
+  "uz": "TOEFL Grammar & Vocabulary: akademik leksika va grammatika"
+ },
+ "Предел последовательности и функции": {
+  "en": "Limit of a Sequence and a Function",
+  "uz": "Ketma-ketlik va funksiya limiti"
+ },
+ "Производная и дифференциал": {
+  "en": "Derivative and Differential",
+  "uz": "Hosila va differensial"
+ },
+ "Исследование функций и экстремумы": {
+  "en": "Function Analysis and Extrema",
+  "uz": "Funksiyalarni tekshirish va ekstremumlar"
+ },
+ "Интегральное исчисление": {
+  "en": "Integral Calculus",
+  "uz": "Integral hisob"
+ },
+ "Числовые и степенные ряды": {
+  "en": "Number and Power Series",
+  "uz": "Sonli va darajali qatorlar"
+ },
+ "Средние величины": {
+  "en": "Averages",
+  "uz": "O'rtacha qiymatlar"
+ },
+ "Показатели рассеивания": {
+  "en": "Measures of Dispersion",
+  "uz": "Tarqoqlik ko'rsatkichlari"
+ },
+ "Представление данных": {
+  "en": "Data Representation",
+  "uz": "Ma'lumotlarni taqdim etish"
+ },
+ "Сбор данных и выборка": {
+  "en": "Data Collection and Sampling",
+  "uz": "Ma'lumotlarni yig'ish va tanlanma"
+ },
+ "Элементы комбинаторики и вероятности в статистике": {
+  "en": "Combinatorics and Probability in Statistics",
+  "uz": "Statistikada kombinatorika va ehtimollik elementlari"
+ },
+ "Алгебраические выражения и уравнения": {
+  "en": "Algebraic Expressions and Equations",
+  "uz": "Algebraik ifodalar va tenglamalar"
+ },
+ "Геометрия на плоскости (Планиметрия)": {
+  "en": "Plane Geometry (Planimetry)",
+  "uz": "Tekislikdagi geometriya (Planimetriya)"
+ },
+ "Тригонометрия и её свойства": {
+  "en": "Trigonometry and Its Properties",
+  "uz": "Trigonometriya va uning xossalari"
+ },
+ "Начала математического анализа": {
+  "en": "Introduction to Calculus",
+  "uz": "Matematik analiz asoslari"
+ },
+ "Теория вероятностей и статистика": {
+  "en": "Probability Theory and Statistics",
+  "uz": "Ehtimollar nazariyasi va statistika"
+ },
+ "Основы HTML-разметки и структура документа": {
+  "en": "HTML Basics and Document Structure",
+  "uz": "HTML belgilash asoslari va hujjat tuzilishi"
+ },
+ "Селекторы CSS и каскадность": {
+  "en": "CSS Selectors and Cascading",
+  "uz": "CSS selektorlari va kaskadlilik"
+ },
+ "Блочная модель CSS и позиционирование": {
+  "en": "CSS Box Model and Positioning",
+  "uz": "CSS blok modeli va joylashtirish"
+ },
+ "Современная верстка: Flexbox и Grid": {
+  "en": "Modern Layout: Flexbox and Grid",
+  "uz": "Zamonaviy maket yaratish: Flexbox va Grid"
+ },
+ "Формы, мультимедиа и адаптивность": {
+  "en": "Forms, Multimedia, and Responsiveness",
+  "uz": "Formalar, multimedia va moslashuvchanlik"
+ },
+ "Основы реляционных БД и язык DDL": {
+  "en": "Relational Database Basics and DDL",
+  "uz": "Relyatsion ma'lumotlar bazasi asoslari va DDL tili"
+ },
+ "Выборка данных с помощью оператора SELECT": {
+  "en": "Data Selection Using SELECT",
+  "uz": "SELECT operatori yordamida ma'lumotlarni tanlash"
+ },
+ "Агрегатные функции и группировка данных": {
+  "en": "Aggregate Functions and Data Grouping",
+  "uz": "Agregat funksiyalar va ma'lumotlarni guruhlash"
+ },
+ "Объединение таблиц (JOIN)": {
+  "en": "Joining Tables (JOIN)",
+  "uz": "Jadvallarni birlashtirish (JOIN)"
+ },
+ "Индексы, транзакции и целостность данных": {
+  "en": "Indexes, Transactions, and Data Integrity",
+  "uz": "Indekslar, tranzaksiyalar va ma'lumotlar yaxlitligi"
+ },
+ "Введение в алгоритмы и сложность": {
+  "en": "Introduction to Algorithms and Complexity",
+  "uz": "Algoritmlar va murakkablikka kirish"
+ },
+ "Алгоритмы сортировки": {
+  "en": "Sorting Algorithms",
+  "uz": "Saralash algoritmlari"
+ },
+ "Алгоритмы поиска": {
+  "en": "Search Algorithms",
+  "uz": "Qidiruv algoritmlari"
+ },
+ "Базовые структуры данных": {
+  "en": "Basic Data Structures",
+  "uz": "Asosiy ma'lumotlar tuzilmalari"
+ },
+ "Рекурсия и динамическое программирование": {
+  "en": "Recursion and Dynamic Programming",
+  "uz": "Rekursiya va dinamik dasturlash"
+ },
+ "Линейные структуры данных": {
+  "en": "Linear Data Structures",
+  "uz": "Chiziqli ma'lumotlar tuzilmalari"
+ },
+ "Деревья и иерархические структуры": {
+  "en": "Trees and Hierarchical Structures",
+  "uz": "Daraxtlar va ierarxik tuzilmalar"
+ },
+ "Хеш-таблицы": {
+  "en": "Hash Tables",
+  "uz": "Xesh-jadvallar"
+ },
+ "Графы": {
+  "en": "Graphs",
+  "uz": "Graflar"
+ },
+ "Сложность операций в структурах данных": {
+  "en": "Complexity of Operations in Data Structures",
+  "uz": "Ma'lumotlar tuzilmalarida operatsiyalar murakkabligi"
+ },
+ "Строение атома и Периодический закон": {
+  "en": "Atomic Structure and Periodic Law",
+  "uz": "Atom tuzilishi va davriy qonun"
+ },
+ "Химическая связь и строение вещества": {
+  "en": "Chemical Bonding and Structure of Matter",
+  "uz": "Kimyoviy bog'lanish va modda tuzilishi"
+ },
+ "Классы неорганических соединений": {
+  "en": "Classes of Inorganic Compounds",
+  "uz": "Noorganik birikmalar sinflari"
+ },
+ "Скорость химических реакций и равновесие": {
+  "en": "Chemical Reaction Rates and Equilibrium",
+  "uz": "Kimyoviy reaksiyalar tezligi va muvozanat"
+ },
+ "Органическая химия: основы": {
+  "en": "Organic Chemistry: Basics",
+  "uz": "Organik kimyo: asoslar"
+ },
+ "Кинематика и динамика": {
+  "en": "Kinematics and Dynamics",
+  "uz": "Kinematika va dinamika"
+ },
+ "Термодинамика и молекулярная физика": {
+  "en": "Thermodynamics and Molecular Physics",
+  "uz": "Termodinamika va molekulyar fizika"
+ },
+ "Электричество и магнетизм": {
+  "en": "Electricity and Magnetism",
+  "uz": "Elektr va magnetizm"
+ },
+ "Оптика и световые явления": {
+  "en": "Optics and Light Phenomena",
+  "uz": "Optika va yorug'lik hodisalari"
+ },
+ "Атомная и ядерная физика": {
+  "en": "Atomic and Nuclear Physics",
+  "uz": "Atom va yadro fizikasi"
+ },
+ "Научный метод и структура познания": {
+  "en": "Scientific Method and Structure of Knowledge",
+  "uz": "Ilmiy metod va bilish tuzilishi"
+ },
+ "Вещество, смеси и физико-химические явления": {
+  "en": "Matter, Mixtures, and Physico-Chemical Phenomena",
+  "uz": "Modda, aralashmalar va fizik-kimyoviy hodisalar"
+ },
+ "Энергия, ее виды и законы сохранения": {
+  "en": "Energy, Its Types and Conservation Laws",
+  "uz": "Energiya, uning turlari va saqlanish qonunlari"
+ },
+ "Земля во Вселенной и космические масштабы": {
+  "en": "Earth in the Universe and Cosmic Scales",
+  "uz": "Yer Koinotda va kosmik miqyoslar"
+ },
+ "Основы экологии и биосферы": {
+  "en": "Basics of Ecology and Biosphere",
+  "uz": "Ekologiya va biosfera asoslari"
+ },
+ "Основы финансового учета": {
+  "en": "Basics of Financial Accounting",
+  "uz": "Moliyaviy hisob asoslari"
+ },
+ "Источники финансирования бизнеса": {
+  "en": "Sources of Business Financing",
+  "uz": "Biznesni moliyalashtirish manbalari"
+ },
+ "Финансовый анализ и коэффициенты": {
+  "en": "Financial Analysis and Ratios",
+  "uz": "Moliyaviy tahlil va koeffitsiyentlar"
+ },
+ "Управление оборотным капиталом": {
+  "en": "Working Capital Management",
+  "uz": "Aylanma kapitalni boshqarish"
+ },
+ "Инвестиционная оценка проектов": {
+  "en": "Project Investment Appraisal",
+  "uz": "Loyihalarni investitsion baholash"
+ },
+ "Основы бухгалтерского учета и двойная запись": {
+  "en": "Basics of Accounting and Double-Entry",
+  "uz": "Buxgalteriya hisobi asoslari va ikkiyoqlama yozuv"
+ },
+ "Бухгалтерский баланс и финансовая отчетность": {
+  "en": "Balance Sheet and Financial Statements",
+  "uz": "Buxgalteriya balansi va moliyaviy hisobot"
+ },
+ "Учет активов и обязательств": {
+  "en": "Accounting for Assets and Liabilities",
+  "uz": "Aktivlar va majburiyatlar hisobi"
+ },
+ "Анализ финансовых результатов и отчет о прибылях и убытках": {
+  "en": "Financial Performance Analysis and Income Statement",
+  "uz": "Moliyaviy natijalar tahlili va foyda va zararlar to'g'risidagi hisobot"
+ },
+ "Налоговый учет и аудит": {
+  "en": "Tax Accounting and Audit",
+  "uz": "Soliq hisobi va audit"
+ },
+ "Основы предпринимательства и поиск бизнес-идей": {
+  "en": "Entrepreneurship Basics and Finding Business Ideas",
+  "uz": "Tadbirkorlik asoslari va biznes g'oyalarni izlash"
+ },
+ "Бизнес-планирование и моделирование (Canvas)": {
+  "en": "Business Planning and Modeling (Canvas)",
+  "uz": "Biznesni rejalashtirish va modellashtirish (Canvas)"
+ },
+ "Источники финансирования и привлечение инвестиций": {
+  "en": "Sources of Financing and Attracting Investment",
+  "uz": "Moliyalashtirish manbalari va investitsiyalarni jalb qilish"
+ },
+ "Маркетинг, анализ рынка и целевая аудитория": {
+  "en": "Marketing, Market Analysis, and Target Audience",
+  "uz": "Marketing, bozor tahlili va maqsadli auditoriya"
+ },
+ "Юридические аспекты и регистрация бизнеса": {
+  "en": "Legal Aspects and Business Registration",
+  "uz": "Huquqiy jihatlar va biznesni ro'yxatdan o'tkazish"
+ },
+ "Древний Египет · базовый": {
+  "en": "Ancient Egypt · Basic",
+  "uz": "Qadimgi Misr · boshlang'ich"
+ },
+ "Древняя Греция · базовый": {
+  "en": "Ancient Greece · Basic",
+  "uz": "Qadimgi Yunoniston · boshlang'ich"
+ },
+ "Древний Рим · базовый": {
+  "en": "Ancient Rome · Basic",
+  "uz": "Qadimgi Rim · boshlang'ich"
+ },
+ "Месопотамия и Шумер · средний": {
+  "en": "Mesopotamia and Sumer · Intermediate",
+  "uz": "Mesopotamiya va Shumer · o'rta"
+ },
+ "Боги и мифы древности · средний": {
+  "en": "Ancient Gods and Myths · Intermediate",
+  "uz": "Qadimgi xudolar va miflar · o'rta"
+ },
+ "Великие битвы древности · средний": {
+  "en": "Great Battles of Antiquity · Intermediate",
+  "uz": "Qadimgi dunyoning buyuk janglari · o'rta"
+ },
+ "Философия и наука античности · продвинутый": {
+  "en": "Philosophy and Science of Antiquity · Advanced",
+  "uz": "Antik davr falsafasi va ilmi · yuqori"
+ },
+ "Древний Египет · продвинутый": {
+  "en": "Ancient Egypt · Advanced",
+  "uz": "Qadimgi Misr · yuqori"
+ },
+ "Хронология древнего мира · продвинутый": {
+  "en": "Chronology of the Ancient World · Advanced",
+  "uz": "Qadimgi dunyo xronologiyasi · yuqori"
+ },
+ "Древний Египет": {
+  "en": "Ancient Egypt",
+  "uz": "Qadimgi Misr"
+ },
+ "Древняя Месопотамия": {
+  "en": "Ancient Mesopotamia",
+  "uz": "Qadimgi Mesopotamiya"
+ },
+ "Древняя Греция": {
+  "en": "Ancient Greece",
+  "uz": "Qadimgi Yunoniston"
+ },
+ "Древний Рим": {
+  "en": "Ancient Rome",
+  "uz": "Qadimgi Rim"
+ },
+ "Великое переселение народов и гибель Римской империи": {
+  "en": "The Great Migration Period and the Fall of the Roman Empire",
+  "uz": "Xalqlarning buyuk ko'chishi va Rim imperiyasining qulashi"
+ },
+ "Феодальный строй и сословия средневекового общества": {
+  "en": "Feudalism and Estates of Medieval Society",
+  "uz": "Feodal tuzum va o'rta asrlar jamiyati tabaqalari"
+ },
+ "Крестовые походы": {
+  "en": "The Crusades",
+  "uz": "Salb yurishlari"
+ },
+ "Культура, наука и образование в Средние века": {
+  "en": "Culture, Science, and Education in the Middle Ages",
+  "uz": "O'rta asrlarda madaniyat, ilm-fan va ta'lim"
+ },
+ "Великие географические открытия": {
+  "en": "Great Geographical Discoveries",
+  "uz": "Buyuk geografik kashfiyotlar"
+ },
+ "Реформация и Контрреформация": {
+  "en": "Reformation and Counter-Reformation",
+  "uz": "Reformatsiya va Kontrreformatsiya"
+ },
+ "Эпоха Просвещения": {
+  "en": "The Age of Enlightenment",
+  "uz": "Ma'rifatparvarlik davri"
+ },
+ "Промышленный переворот": {
+  "en": "The Industrial Revolution",
+  "uz": "Sanoat inqilobi"
+ },
+ "Первая мировая война: причины и ход событий": {
+  "en": "World War I: Causes and Course of Events",
+  "uz": "Birinchi jahon urushi: sabablari va voqealar rivoji"
+ },
+ "Версальско-Вашингтонская система и межвоенный период": {
+  "en": "Versailles-Washington System and the Interwar Period",
+  "uz": "Versal-Vashington tizimi va urushlararo davr"
+ },
+ "Вторая мировая война: ключевые битвы и фронты": {
+  "en": "World War II: Key Battles and Fronts",
+  "uz": "Ikkinchi jahon urushi: asosiy janglar va frontlar"
+ },
+ "Дипломатия и итоги Второй мировой войны": {
+  "en": "Diplomacy and Outcomes of World War II",
+  "uz": "Ikkinchi jahon urushining diplomatiyasi va yakunlari"
+ },
+ "Литосфера и рельеф Земли": {
+  "en": "Lithosphere and Earth's Relief",
+  "uz": "Litosfera va Yer relyefi"
+ },
+ "Атмосфера и климат": {
+  "en": "Atmosphere and Climate",
+  "uz": "Atmosfera va iqlim"
+ },
+ "Гидросфера — водная оболочка": {
+  "en": "Hydrosphere: The Water Shell",
+  "uz": "Gidrosfera — suv qobig'i"
+ },
+ "Биосфера и географическая зональность": {
+  "en": "Biosphere and Geographical Zonation",
+  "uz": "Biosfera va geografik zonallik"
+ },
+ "Политическая и экономическая карта мира": {
+  "en": "Political and Economic Map of the World",
+  "uz": "Dunyoning siyosiy va iqtisodiy xaritasi"
+ },
+ "Опорно-двигательная система": {
+  "en": "Musculoskeletal System",
+  "uz": "Tayanch-harakat tizimi"
+ },
+ "Кровеносная и лимфатическая системы": {
+  "en": "Circulatory and Lymphatic Systems",
+  "uz": "Qon aylanish va limfa tizimlari"
+ },
+ "Нервная система и органы чувств": {
+  "en": "Nervous System and Sensory Organs",
+  "uz": "Asab tizimi va sezgi organlari"
+ },
+ "Пищеварительная и выделительная системы": {
+  "en": "Digestive and Excretory Systems",
+  "uz": "Ovqat hazm qilish va ayirish tizimlari"
+ },
+ "Дыхательная и эндокринная системы": {
+  "en": "Respiratory and Endocrine Systems",
+  "uz": "Nafas olish va endokrin tizimlari"
+ }
+}

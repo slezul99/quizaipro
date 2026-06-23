@@ -9681,6 +9681,24 @@ try:
 except Exception as _e:
     print(f"[INIT] Mini-topics seed error: {_e}")
 
+# Localize marketplace deck/topic NAMES (name_en/name_uz) from
+# deck_name_translations.json, so en/uz users don't see Russian titles.
+try:
+    _conn = db.get_conn()
+    _dn = _conn.execute(
+        "SELECT 1 FROM app_migrations WHERE key='deck_name_i18n_v1'").fetchone()
+    _conn.close()
+    if not _dn:
+        print("[INIT] Applying deck-name translations ...")
+        import seed_deck_name_i18n  # noqa: F401  (side effect)
+        _conn = db.get_conn()
+        _conn.execute(
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('deck_name_i18n_v1')")
+        _conn.commit()
+        _conn.close()
+except Exception as _e:
+    print(f"[INIT] Deck-name i18n error: {_e}")
+
 # Apply AI-generated marketplace card translations (ru/en/uz) once.
 try:
     _conn = db.get_conn()
