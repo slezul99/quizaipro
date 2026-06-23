@@ -9668,14 +9668,14 @@ except Exception as _e:
 try:
     _conn = db.get_conn()
     _mt = _conn.execute(
-        "SELECT 1 FROM app_migrations WHERE key='minitopics_seed_v3'").fetchone()
+        "SELECT 1 FROM app_migrations WHERE key='minitopics_seed_v4'").fetchone()
     _conn.close()
     if not _mt:
         print("[INIT] Seeding mini-topic decks ...")
         import seed_minitopics  # noqa: F401  (side effect)
         _conn = db.get_conn()
         _conn.execute(
-            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('minitopics_seed_v3')")
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('minitopics_seed_v4')")
         _conn.commit()
         _conn.close()
 except Exception as _e:

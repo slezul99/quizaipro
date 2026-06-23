@@ -1,0 +1,637 @@
+{
+ "english-toefl": {
+  "title": "TOEFL Preparation",
+  "topics": [
+   {
+    "topic": "TOEFL Reading Comprehension",
+    "cards": [
+     {
+      "q": "While early conservation efforts focused primarily on protecting charismatic megafauna like pandas and tigers, modern ecological science emphasizes the preservation of entire ecosystems. This shift recognizes that keystone species, which may include inconspicuous insects or fungi, play a disproportionate role in maintaining habitat stability. Consequently, saving a single high-profile species is often ineffective if the complex web of interactions supporting it is allowed to collapse. What can be inferred from the passage about inconspicuous insects and fungi?",
+      "opts": [
+       "They are currently the primary focus of all global conservation funding.",
+       "They can be more critical to ecosystem survival than some larger, more famous animals.",
+       "They are easier to protect than charismatic megafauna due to their small size.",
+       "They have only recently evolved to occupy keystone roles in modern ecosystems."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The transition from foraging to agriculture during the Neolithic Revolution was not a sudden event, but rather a gradual process spanning millennia. Archaeological evidence suggests that early societies often practiced a hybrid economy, cultivating wild grains while continuing to rely heavily on hunting and gathering. This slow transition allowed populations to buffer themselves against the high failure rates of early experimental crops. According to the passage, why did early societies maintain a hybrid economy during the transition to agriculture?",
+      "opts": [
+       "To ensure a reliable food supply in case their initial farming attempts failed.",
+       "To prevent the rapid depletion of soil nutrients caused by continuous cultivation.",
+       "Because they lacked the tools necessary to clear large areas of land for farming.",
+       "Because hunting and gathering was considered a more prestigious activity than farming."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Neuroplasticity, the brain's ability to reorganize itself by forming new neural connections throughout life, challenges the traditional view that the adult brain is a static organ. Research indicates that cognitive stimulation, physical exercise, and even mindfulness practices can induce structural changes in the cerebral cortex. This adaptability suggests that rehabilitation after brain injury is far more achievable than previously assumed. Which of the following best expresses the main idea of the passage?",
+      "opts": [
+       "Mindfulness practices are now preferred over medical interventions for treating brain injuries.",
+       "Physical exercise is the most effective method for reversing brain damage in older adults.",
+       "The adult brain remains adaptable and capable of structural change, offering hope for injury recovery.",
+       "Traditional neuroscience was correct in assuming that the brain's structure is fixed after childhood."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "To determine the composition of distant exoplanets, astronomers rely on transmission spectroscopy, which analyzes starlight filtering through a planet's atmosphere during a transit. By identifying which wavelengths of light are absorbed by the atmospheric gases, scientists can detect elements like water vapor, methane, and carbon dioxide. This technique has revolutionized our search for biosignatures, providing crucial clues about the habitability of worlds light-years away. What is the author's primary purpose in the passage?",
+      "opts": [
+       "To compare the effectiveness of transmission spectroscopy with other astronomical tools.",
+       "To argue that water vapor is the most important indicator of life on other planets.",
+       "To describe the history of how exoplanets were first discovered by astronomers.",
+       "To explain how a specific scientific method helps identify the atmospheric components of distant planets."
+      ],
+      "correct": 3
+     },
+     {
+      "q": "The 'resource curse' refers to the paradox where countries with an abundance of natural resources, such as fossil fuels or minerals, tend to experience less economic growth and worse development outcomes than countries with fewer natural resources. This phenomenon often occurs because massive resource revenues can lead to currency inflation, making other domestic sectors like manufacturing uncompetitive. Furthermore, governments relying on resource wealth frequently neglect to develop robust tax systems or invest in public education. What can be inferred from the passage about countries that lack abundant natural resources?",
+      "opts": [
+       "They focus almost exclusively on manufacturing rather than service industries.",
+       "They may be more motivated to develop alternative economic sectors and public institutions.",
+       "They are guaranteed to achieve higher economic growth than resource-rich nations.",
+       "They rarely experience currency inflation or economic downturns."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Deep-sea hydrothermal vents support unique ecosystems that thrive in complete darkness under extreme pressure. Instead of relying on sunlight for energy through photosynthesis, the primary producers in these environments are chemotrophic bacteria that oxidize toxic hydrogen sulfide escaping from the Earth's crust. These bacteria form the base of a food web that sustains complex organisms like giant tube worms and specialized crabs. According to the passage, how do primary producers in hydrothermal vent ecosystems generate energy?",
+      "opts": [
+       "By chemically processing hydrogen sulfide instead of utilizing sunlight.",
+       "By absorbing nutrients directly from the tissues of giant tube worms.",
+       "By utilizing weak light emitted from volcanic activity on the ocean floor.",
+       "By converting carbon dioxide into oxygen through a modified form of photosynthesis."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The Sapir-Whorf hypothesis proposes that the structure of a language influences its speakers' worldview and cognitive processes. While extreme linguistic determinism—the idea that language entirely restricts what we can think—has been largely discredited, a weaker version of the hypothesis remains highly influential. Modern cognitive research suggests that linguistic categories can indeed direct attention to certain aspects of experience, subtly shaping memory and perception. Which statement best summarizes the passage's discussion of the Sapir-Whorf hypothesis?",
+      "opts": [
+       "The hypothesis has been completely disproven by modern cognitive scientists and linguists.",
+       "Language is the sole factor determining how humans perceive physical reality and store memories.",
+       "Although its extreme version is rejected, a milder form of the hypothesis is supported by modern research.",
+       "Anthropologists have recently revived the extreme version of the hypothesis to explain cultural differences."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The transition from Romanticism to Realism in nineteenth-century European literature reflected a growing disillusionment with idealized depictions of nature and human emotion. Writers like Gustave Flaubert and George Eliot turned their focus to the mundane, often harsh realities of daily life, particularly among the middle and lower classes. This shift was closely tied to the rapid urbanization and industrialization of the era, which forced artists to confront social inequalities that could no longer be ignored. What does the passage suggest about Romantic literature?",
+      "opts": [
+       "It was primarily concerned with the struggles of the urban working class.",
+       "It tended to portray life and nature in a highly idealized, rather than realistic, manner.",
+       "It emerged as a direct response to the negative effects of the Industrial Revolution.",
+       "It avoided emotional themes in favor of objective, scientific descriptions."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Graphene, a single layer of carbon atoms arranged in a two-dimensional honeycomb lattice, possesses extraordinary mechanical, electrical, and thermal properties. Despite being incredibly thin and lightweight, it is estimated to be over a hundred times stronger than structural steel of the same thickness. Its high electrical conductivity makes it a promising candidate for next-generation semiconductors, flexible electronics, and advanced energy storage devices. According to the passage, what makes graphene highly suitable for use in next-generation semiconductors?",
+      "opts": [
+       "Its unique three-dimensional crystalline structure.",
+       "Its capacity to insulate electronic components from heat.",
+       "Its extreme physical strength compared to steel.",
+       "Its superior ability to conduct electricity."
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Urban heat islands (UHIs) occur when metropolitan areas experience significantly warmer temperatures than their rural surroundings, primarily due to the abundance of heat-absorbing concrete and asphalt. To mitigate this effect, municipal planners are increasingly mandating 'green roofs'—vegetated roof covers that cool buildings through evapotranspiration. By implementing these green spaces, cities can reduce energy consumption for air conditioning while simultaneously managing stormwater runoff. What is the primary purpose of the passage?",
+      "opts": [
+       "To describe a problem affecting cities and explain a strategy used to address it.",
+       "To argue that rural areas are superior to urban environments for human health.",
+       "To analyze the economic costs of installing green roofs on older buildings.",
+       "To explain how concrete and asphalt are manufactured to absorb heat."
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Vocabulary in Context",
+    "cards": [
+     {
+      "q": "The rapid expansion of cities often places an ACUTE strain on local water resources, leading to severe shortages during dry seasons. The word ACUTE is closest in meaning to:",
+      "opts": [
+       "sudden",
+       "severe",
+       "temporary",
+       "unexpected"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Researchers have found that the new policy had a NEGLIGIBLE impact on overall carbon emissions, contrary to initial projections. The word NEGLIGIBLE is closest in meaning to:",
+      "opts": [
+       "insignificant",
+       "negative",
+       "unpredictable",
+       "beneficial"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "To substantiate their claims, the archaeologists had to ACCUMULATE a vast amount of physical evidence from various excavation sites. The word ACCUMULATE is closest in meaning to:",
+      "opts": [
+       "analyze",
+       "display",
+       "gather",
+       "protect"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The transition from traditional manufacturing to automated systems was SPURRED by the sudden rise in global labor costs. The word SPURRED is closest in meaning to:",
+      "opts": [
+       "delayed",
+       "encouraged",
+       "accompanied",
+       "threatened"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The indigenous tribes possessed an INTIMATE knowledge of the local rainforest, understanding the medicinal properties of hundreds of plant species. The word INTIMATE is closest in meaning to:",
+      "opts": [
+       "detailed",
+       "secretive",
+       "friendly",
+       "ancient"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The harsh climate of the polar regions presents ADVERSE conditions for most plant species, limiting biodiversity. The word ADVERSE is closest in meaning to:",
+      "opts": [
+       "unpredictable",
+       "unfavorable",
+       "diverse",
+       "extreme"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The government decided to IMPLEMENT new regulations to curb the disposal of industrial waste into the river. The word IMPLEMENT is closest in meaning to:",
+      "opts": [
+       "carry out",
+       "evaluate",
+       "publicize",
+       "postpone"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The theory of continental drift was initially met with skepticism, but subsequent geological discoveries provided CORROBORATING evidence that supported it. The word CORROBORATING is closest in meaning to:",
+      "opts": [
+       "conflicting",
+       "supporting",
+       "preliminary",
+       "unexpected"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The sudden drop in temperature triggered a PRECIPITOUS decline in the insect population, disrupting the local food chain. The word PRECIPITOUS is closest in meaning to:",
+      "opts": [
+       "gradual",
+       "dangerous",
+       "sharp",
+       "temporary"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "The author's argument is highly COGENT, drawing on a wide range of empirical data and logical deductions to persuade the reader. The word COGENT is closest in meaning to:",
+      "opts": [
+       "convincing",
+       "controversial",
+       "complicated",
+       "original"
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Listening Comprehension",
+    "cards": [
+     {
+      "q": "Transcript: \"While many associate the collapse of the local cod fishery solely with overfishing, recent climate data suggests a secondary, equally critical factor. Rising sea temperatures in the North Atlantic severely disrupted the plankton blooms that the cod larvae depend on for survival.\"\n\nWhat is the speaker's main point regarding the decline of the cod fishery?",
+      "opts": [
+       "It was caused by a combination of human activity and environmental shifts.",
+       "Overfishing was a far more devastating factor than climate change.",
+       "Cod larvae successfully adapted to rising sea temperatures.",
+       "Plankton blooms were unaffected by the temperature changes."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"I know you're keen on taking the Advanced Organic Chemistry seminar, but honestly, without having completed the prerequisite lab module, you'll find yourself struggling with the practical assessments. I'd strongly urge you to defer it until next semester when you've got that under your belt.\"\n\nWhy does the advisor recommend that the student postpone the chemistry seminar?",
+      "opts": [
+       "The student lacks the necessary practical preparation for the course.",
+       "The seminar is currently full and cannot accept more students.",
+       "The course content is too theoretical for the student's current level.",
+       "The lab module is only offered during the following semester."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"The discovery of purple dye residues in the ancient harbor ruins was initially seen as proof of a thriving local textile industry. However, subsequent analysis of the shipping logs suggests this port was merely a transit hub, importing raw materials from Phoenicia to be redistributed further inland.\"\n\nWhat did the subsequent analysis of the shipping logs reveal?",
+      "opts": [
+       "The port served as a distribution point rather than a manufacturing center.",
+       "Phoenician merchants had established a permanent textile factory at the harbor.",
+       "The local population did not actually use the purple dye.",
+       "The harbor ruins were much older than archaeologists originally estimated."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"I've searched the database three times, and the journal article you recommended isn't showing up as available. The system says 'on hold for digitization,' but I really need to cite it for my draft due tomorrow morning.\"\n\nWhat is the student's immediate problem?",
+      "opts": [
+       "They cannot access a source required for an imminent deadline.",
+       "They do not know how to use the library's online database.",
+       "The journal article they found contains incorrect citation information.",
+       "They need to digitize a physical document by tomorrow morning."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"We often assume that choice overload leads to decision paralysis, which is true to an extent. However, what's more insidious is the post-decision regret; when presented with dozens of options, consumers are far more likely to second-guess their final choice, even if it was objectively optimal.\"\n\nAccording to the speaker, what is a particularly negative consequence of having too many choices?",
+      "opts": [
+       "Consumers feel dissatisfied with their decisions even when they make a good choice.",
+       "People completely avoid making decisions when faced with multiple options.",
+       "The quality of the choices made by consumers significantly deteriorates.",
+       "Businesses lose money because consumers refuse to buy any products."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"Look, I understand that the noise from the renovation next door is disruptive, but the university housing policy is quite strict about mid-term room transfers. Unless there's a documented medical condition affected by the dust or noise, we simply can't authorize a move right now.\"\n\nUnder what condition would the housing officer allow the student to change rooms?",
+      "opts": [
+       "If the student provides medical evidence of a health issue caused by the work.",
+       "If the renovation work continues past the scheduled completion date.",
+       "If the student agrees to pay a penalty fee for a mid-term transfer.",
+       "If another student agrees to swap rooms with them."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"The Brutalist movement of the mid-20th century was initially celebrated for its raw, democratic honesty, exposing the structural concrete rather than hiding it behind decorative facades. Over time, however, the public came to associate these monolithic structures with institutional coldness and urban decay.\"\n\nHow did public perception of Brutalist architecture change over time?",
+      "opts": [
+       "It shifted from being viewed as honest and democratic to being seen as cold and depressing.",
+       "It went from being criticized for its decorative facades to being praised for its simplicity.",
+       "It was initially rejected by urban planners but later embraced by the general public.",
+       "It became associated with wealth and luxury rather than public utility."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"Your resume is highly detailed, which is great, but recruiters in the tech sector typically spend less than ten seconds on an initial scan. You need to move your technical proficiencies and project links to the very top, rather than burying them under your academic coursework.\"\n\nWhat advice does the advisor give the student regarding their resume?",
+      "opts": [
+       "Reorganize the layout to highlight key technical skills immediately.",
+       "Remove the section detailing their academic coursework entirely.",
+       "Condense the resume so that it fits onto a single page.",
+       "Focus more on soft skills rather than technical proficiencies."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"Detecting exoplanets by observing the 'wobble' of their host stars—known as the radial velocity method—is highly effective for finding massive planets close to their stars. However, this bias means we are currently underrepresenting smaller, Earth-sized planets that orbit at much greater distances.\"\n\nWhat is a limitation of the radial velocity method mentioned by the speaker?",
+      "opts": [
+       "It is disproportionately better at finding large, close-orbiting planets.",
+       "It cannot be used to detect planets that orbit massive stars.",
+       "It relies on visual data that is easily distorted by cosmic dust.",
+       "It fails to measure the distance between a planet and its host star."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Transcript: \"I'm afraid the system won't let me process your graduation application because you're short of one humanities elective. Even though your independent study project was in the history department, it was coded as a research seminar, not a general elective.\"\n\nWhy is the student's graduation application being held up?",
+      "opts": [
+       "A course they took was categorized in a way that did not meet a specific requirement.",
+       "They failed to submit their independent study project on history in time.",
+       "The registrar's office made an error when entering their grades into the system.",
+       "They have not completed enough research seminars to qualify for graduation."
+      ],
+      "correct": 0
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Sentence Simplification",
+    "cards": [
+     {
+      "q": "Original Sentence: Although the direct impact of deforestation on local biodiversity is well-documented, its broader contribution to global climate feedback loops remains a subject of intense debate among climatologists, who argue over the precise feedback mechanisms involved.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "While the local biodiversity loss caused by deforestation is clear, scientists still disagree on the exact ways it influences global climate feedback systems.",
+       "Climatologists agree that deforestation affects global climate feedback loops, but they debate its impact on local biodiversity.",
+       "Deforestation's contribution to global climate feedback loops is more important than its well-documented effects on local biodiversity.",
+       "Because climatologists debate the feedback mechanisms of deforestation, its direct impact on local biodiversity remains undocumented."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Original Sentence: While some economists argue that universal basic income (UBI) would inevitably trigger runaway inflation by drastically increasing consumer demand, others contend that it would actually stimulate local economies by empowering low-income households to invest in education and small businesses.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Universal basic income will cause runaway inflation unless low-income households invest their money in education and small businesses.",
+       "Opinions are divided on UBI, with some economists fearing it will cause inflation through high demand, and others believing it will boost local economies by enabling low-income investment.",
+       "Most economists agree that UBI stimulates local economies, but they warn that low-income households must avoid spending that triggers runaway inflation.",
+       "Although UBI empowers low-income households to invest, it ultimately fails to stimulate local economies because of the inevitable rise in consumer demand."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Original Sentence: The transition from hunter-gatherer societies to agrarian communities, far from being a sudden revolution, was a protracted process spanning millennia, during which populations gradually adapted to cultivation while continuing to rely on wild resources.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Hunter-gatherers suddenly revolutionized their societies by abandoning wild resources in favor of agricultural cultivation over several millennia.",
+       "Agrarian communities developed rapidly because populations preferred cultivation over their traditional reliance on wild resources.",
+       "The shift to agriculture was a slow, thousands-of-years-long transition where people slowly adopted farming while still utilizing wild food sources.",
+       "Although populations relied on wild resources for millennia, they eventually underwent a sudden revolution to establish agrarian communities."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Original Sentence: Despite the widespread assumption that digital reading platforms compromise deep comprehension, recent cognitive studies suggest that the medium itself is less critical than the reader's active engagement strategies and prior familiarity with the text's subject matter.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Contrary to popular belief, a reader's active engagement and background knowledge are more important for deep comprehension than whether they read digitally or on paper.",
+       "Cognitive studies prove that digital reading platforms inevitably compromise deep comprehension unless readers have prior familiarity with the topic.",
+       "Deep comprehension is difficult to achieve on digital platforms because readers rarely employ active engagement strategies or have prior knowledge.",
+       "Although digital platforms are critical for comprehension, readers must still develop active engagement strategies to overcome their lack of familiarity with the text."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Original Sentence: In order to mitigate the urban heat island effect, municipal planners are increasingly incorporating green roofs and permeable pavements into city designs, though the high initial installation costs often deter cash-strapped local governments.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Because green roofs and permeable pavements are too expensive, municipal planners have stopped trying to mitigate the urban heat island effect.",
+       "Cash-strapped governments are forced to install cheap green roofs and permeable pavements to combat the rising urban heat island effect.",
+       "City planners are trying to reduce urban heat by using green roofs and permeable pavements, but the expensive setup costs can prevent poorer municipalities from adopting them.",
+       "Although green roofs and permeable pavements are cost-effective in the long run, municipal planners rarely include them in modern city designs."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Original Sentence: The discovery of hydrothermal vents in the deep ocean challenged the long-held biological dogma that all primary ecosystems ultimately depend on solar energy, revealing instead a thriving community sustained entirely by chemosynthesis.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Hydrothermal vents proved that deep-ocean ecosystems depend on solar energy to support communities that practice chemosynthesis.",
+       "Deep-sea hydrothermal vents showed that ecosystems can thrive without solar energy, disproving the belief that all life relies on the sun by demonstrating chemosynthesis-based life.",
+       "Scientists discovered that solar energy is actually produced by chemosynthesis within deep-ocean hydrothermal vent communities.",
+       "Although most primary ecosystems rely on solar energy, hydrothermal vents are the only communities that do not require chemosynthesis to survive."
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Original Sentence: While the introduction of non-native species can occasionally enrich local ecosystems by filling vacant ecological niches, more frequently it leads to the competitive exclusion of indigenous flora and fauna, resulting in a net loss of biodiversity.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Non-native species always cause a net loss of biodiversity because they cannot find vacant ecological niches in local ecosystems.",
+       "Indigenous flora and fauna usually exclude non-native species from vacant ecological niches, which helps enrich local ecosystems.",
+       "Although non-native species sometimes benefit ecosystems by filling empty niches, they usually reduce biodiversity by outcompeting native plants and animals.",
+       "Enriching local ecosystems with non-native species is the most effective way to prevent the competitive exclusion of indigenous flora and fauna."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Original Sentence: The rapid rise of remote work has not only transformed corporate culture but has also reshaped urban demographics, as employees migrate away from expensive metropolitan centers to suburban or rural areas where the cost of living is significantly lower.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Remote work has altered corporate culture and shifted populations, as workers move from costly cities to more affordable suburban and rural regions.",
+       "Because corporate culture has transformed, employees are forced to migrate to expensive metropolitan centers despite the high cost of living.",
+       "The high cost of living in suburban and rural areas has forced remote workers to return to metropolitan centers, altering urban demographics.",
+       "Urban demographics have remained stable despite the rise of remote work, because corporate cultures discourage employees from leaving metropolitan centers."
+      ],
+      "correct": 0
+     },
+     {
+      "q": "Original Sentence: Just as the invention of the printing press democratized literacy in early modern Europe, the proliferation of open-access academic journals has the potential to revolutionize global research by dismantling traditional financial barriers to scientific knowledge.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "The printing press was invented to dismantle financial barriers in early modern Europe, much like open-access journals do for global research today.",
+       "Open-access academic journals have democratized literacy, making them more revolutionary than the early modern printing press.",
+       "Similar to how the printing press made literacy widely accessible, open-access journals could transform research worldwide by removing the cost of accessing scientific knowledge.",
+       "Although open-access journals have financial barriers, they still have the potential to democratize literacy in the same way the printing press did."
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Original Sentence: Although cognitive decline is often viewed as an unavoidable consequence of aging, longitudinal studies indicate that regular engagement in intellectually stimulating activities can build cognitive reserve, thereby delaying the onset of dementia symptoms.\n\nWhich of the sentences below best expresses the essential information in the original sentence? Incorrect choices change the meaning in important ways or leave out essential information.",
+      "opts": [
+       "Cognitive decline is unavoidable as we age, but longitudinal studies show that dementia symptoms can be cured through intellectual activities.",
+       "Intellectual activities can prevent aging altogether, which explains why cognitive reserve prevents the onset of dementia.",
+       "Because dementia symptoms are delayed by cognitive reserve, elderly individuals no longer need to engage in intellectually stimulating activities.",
+       "Despite the common belief that mental decline is inevitable with age, research shows that keeping the mind active can build a reserve that postpones dementia symptoms."
+      ],
+      "correct": 3
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Grammar & Structure",
+    "cards": [
+     {
+      "q": "The increase in the number of international students, along with rising tuition fees and living costs, _______ a significant challenge for university administrations.",
+      "opts": [
+       "presents",
+       "present",
+       "are presenting",
+       "have presented"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "To conduct a successful academic study, researchers must define their variables clearly, select an appropriate methodology, and _______.",
+      "opts": [
+       "the data must be analyzed objectively",
+       "analyze the collected data objectively",
+       "analyzing the collected data objectively",
+       "objective data analysis should be conducted"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "Not only _______ the local ecosystem, but it also threatened the livelihoods of the indigenous population.",
+      "opts": [
+       "the chemical spill damaged",
+       "did the chemical spill damage",
+       "has damaged the chemical spill",
+       "the chemical spill did damage"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The laboratory technicians conducted several experiments, the results of _______ were published in a prestigious scientific journal.",
+      "opts": [
+       "that",
+       "whom",
+       "which",
+       "what"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "It is essential that the government _______ immediate measures to curb carbon emissions before the damage becomes irreversible.",
+      "opts": [
+       "implements",
+       "will implement",
+       "implement",
+       "implementing"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "_______ by the sudden shift in market trends, the company decided to postpone the launch of its new product line.",
+      "opts": [
+       "Catching off guard",
+       "To catch off guard",
+       "Had been caught off guard",
+       "Having been caught off guard"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "Had the researchers known about the contamination in the water samples earlier, they _______ the entire experiment.",
+      "opts": [
+       "would have redesigned",
+       "would redesign",
+       "will have redesigned",
+       "had redesigned"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The committee has not yet decided _______ the proposed budget for the upcoming fiscal year.",
+      "opts": [
+       "whether should they approve",
+       "whether they should approve",
+       "should they approve",
+       "that they approve or not"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The country has made rapid economic progress; _______, its environmental degradation has reached alarming levels.",
+      "opts": [
+       "consequently",
+       "furthermore",
+       "nevertheless",
+       "whereas"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Approximately two-thirds of the research funding _______ allocated to the development of renewable energy technologies.",
+      "opts": [
+       "have been",
+       "has been",
+       "are",
+       "were"
+      ],
+      "correct": 1
+     }
+    ]
+   },
+   {
+    "topic": "TOEFL Academic Vocabulary",
+    "cards": [
+     {
+      "q": "The researchers had to _______ the data from several independent studies to form a comprehensive conclusion.",
+      "opts": [
+       "contradict",
+       "synthesize",
+       "fluctuate",
+       "deviate"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The government decided to implement a policy that would _______ the transition to renewable energy sources by offering tax incentives.",
+      "opts": [
+       "constrain",
+       "jeopardize",
+       "facilitate",
+       "abandon"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Without any _______ evidence to support the hypothesis, the scientific community remained highly skeptical of the new theory.",
+      "opts": [
+       "empirical",
+       "arbitrary",
+       "ambiguous",
+       "hypothetical"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The results of the study were _______ with previous findings, reinforcing the validity of the original theory.",
+      "opts": [
+       "incompatible",
+       "discrepant",
+       "redundant",
+       "consistent"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "The committee's decision to reject the proposal was based on _______ criteria rather than objective, standardized evaluations.",
+      "opts": [
+       "arbitrary",
+       "empirical",
+       "rational",
+       "systematic"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The success of the project is _______ upon securing additional funding from external investors.",
+      "opts": [
+       "inherent",
+       "contingent",
+       "compatible",
+       "subsequent"
+      ],
+      "correct": 1
+     },
+     {
+      "q": "The author's argument was highly _______, with each point logically leading to the next, making it easy for the reader to follow.",
+      "opts": [
+       "ambiguous",
+       "contradictory",
+       "coherent",
+       "arbitrary"
+      ],
+      "correct": 2
+     },
+     {
+      "q": "Many educators _______ the integration of technology in primary school classrooms, arguing it enhances interactive learning.",
+      "opts": [
+       "advocate",
+       "deprecate",
+       "constrain",
+       "contradict"
+      ],
+      "correct": 0
+     },
+     {
+      "q": "The data collected from the survey seems to _______ the researcher's initial hypothesis, forcing them to revise their assumptions.",
+      "opts": [
+       "corroborate",
+       "validate",
+       "advocate",
+       "contradict"
+      ],
+      "correct": 3
+     },
+     {
+      "q": "There is a significant _______ between the official statistics and the actual number of cases reported by independent clinics.",
+      "opts": [
+       "analogy",
+       "discrepancy",
+       "conformity",
+       "integration"
+      ],
+      "correct": 1
+     }
+    ]
+   }
+  ]
+ }
+}
