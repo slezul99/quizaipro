@@ -185,14 +185,15 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
         ),
         padding: EdgeInsets.fromLTRB(
             t.space20, t.space12, t.space20, t.space24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
                 decoration: BoxDecoration(
                   color: t.surfaceSubtle,
                   borderRadius: BorderRadius.circular(2),
@@ -377,6 +378,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );
