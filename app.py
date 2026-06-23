@@ -9653,14 +9653,14 @@ except Exception as _e:
 try:
     _conn = db.get_conn()
     _mt = _conn.execute(
-        "SELECT 1 FROM app_migrations WHERE key='minitopics_seed_v1'").fetchone()
+        "SELECT 1 FROM app_migrations WHERE key='minitopics_seed_v2'").fetchone()
     _conn.close()
     if not _mt:
         print("[INIT] Seeding mini-topic decks ...")
         import seed_minitopics  # noqa: F401  (side effect)
         _conn = db.get_conn()
         _conn.execute(
-            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('minitopics_seed_v1')")
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('minitopics_seed_v2')")
         _conn.commit()
         _conn.close()
 except Exception as _e:
@@ -9670,7 +9670,7 @@ except Exception as _e:
 try:
     _conn = db.get_conn()
     _i18n = _conn.execute(
-        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v4'"
+        "SELECT 1 FROM app_migrations WHERE key='marketplace_i18n_auto_v5'"
     ).fetchone()
     _conn.close()
     if not _i18n:
@@ -9678,7 +9678,7 @@ try:
         import seed_marketplace_i18n_auto  # noqa: F401  (side effect)
         _conn = db.get_conn()
         _conn.execute(
-            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v4')"
+            "INSERT OR IGNORE INTO app_migrations (key) VALUES ('marketplace_i18n_auto_v5')"
         )
         _conn.commit()
         _conn.close()
