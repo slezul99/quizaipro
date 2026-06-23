@@ -786,6 +786,7 @@
   "deckEditorErrorName": "Enter a deck name",
   "@deckEditorErrorName": { "description": "Validation: empty deck name" },
   "deckEditorNameLabel": "Name",
+  "deckEditorColorLabel": "Deck color",
   "@deckEditorNameLabel": { "description": "Deck name field label" },
   "deckEditorNameHint": "e.g. History of Uzbekistan",
   "@deckEditorNameHint": { "description": "Deck name field hint" },

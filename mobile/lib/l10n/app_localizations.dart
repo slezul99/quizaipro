@@ -1618,6 +1618,12 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get deckEditorNameLabel;
 
+  /// No description provided for @deckEditorColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deck color'**
+  String get deckEditorColorLabel;
+
   /// Deck name field hint
   ///
   /// In en, this message translates to:

@@ -30,12 +30,16 @@ abstract interface class LibraryRemoteDataSource {
   Future<LibraryDeckDto> createDeck({
     required String title,
     required String description,
+    String? color,
+    String? cover,
   });
 
   Future<LibraryDeckDto> updateDeck({
     required String deckId,
     required String title,
     required String description,
+    String? color,
+    String? cover,
   });
 
   Future<void> deleteDeck(String deckId);
@@ -128,10 +132,17 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
   Future<LibraryDeckDto> createDeck({
     required String title,
     required String description,
+    String? color,
+    String? cover,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/library/decks',
-      data: {'title': title, 'description': description},
+      data: {
+        'title': title,
+        'description': description,
+        if (color != null) 'color': color,
+        if (cover != null) 'cover': cover,
+      },
     );
     return LibraryDeckDto.fromJson(response.data!['data'] as Map<String, dynamic>);
   }
@@ -141,10 +152,17 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
     required String deckId,
     required String title,
     required String description,
+    String? color,
+    String? cover,
   }) async {
     final response = await _dio.put<Map<String, dynamic>>(
       '/library/decks/$deckId',
-      data: {'title': title, 'description': description},
+      data: {
+        'title': title,
+        'description': description,
+        if (color != null) 'color': color,
+        if (cover != null) 'cover': cover,
+      },
     );
     return LibraryDeckDto.fromJson(response.data!['data'] as Map<String, dynamic>);
   }

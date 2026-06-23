@@ -30,12 +30,16 @@ abstract interface class LibraryRepository {
   Future<Either<Failure, LibraryDeck>> createDeck({
     required String title,
     required String description,
+    String? color,
+    String? cover,
   });
 
   Future<Either<Failure, LibraryDeck>> updateDeck({
     required String deckId,
     required String title,
     required String description,
+    String? color,
+    String? cover,
   });
 
   Future<Either<Failure, Unit>> deleteDeck(String deckId);

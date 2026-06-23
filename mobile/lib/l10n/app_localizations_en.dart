@@ -834,6 +834,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deckEditorNameLabel => 'Name';
 
   @override
+  String get deckEditorColorLabel => 'Deck color';
+
+  @override
   String get deckEditorNameHint => 'e.g. History of Uzbekistan';
 
   @override

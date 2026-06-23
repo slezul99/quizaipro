@@ -19,6 +19,7 @@ Field-mapping notes (Phase 2 — pragmatic choices, no schema changes):
     (see dashboard `by_category`). `description` has no backing column (→ "").
 """
 import math
+import re
 from datetime import datetime
 
 from flask import Blueprint, g, jsonify, request
@@ -35,6 +36,27 @@ _COLOR_PALETTE = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b",
 
 def _palette_color(seed_id):
     return _COLOR_PALETTE[(seed_id or 0) % len(_COLOR_PALETTE)]
+
+
+_HEX_RE = re.compile(r"^#?[0-9a-fA-F]{6}$")
+
+
+def _clean_color(v):
+    """A user-chosen deck colour: a #RRGGBB hex, else None (→ derived palette)."""
+    if not isinstance(v, str):
+        return None
+    v = v.strip()
+    if not v:
+        return None
+    return ("#" + v.lstrip("#")).upper() if _HEX_RE.match(v) else None
+
+
+def _clean_cover(v):
+    """A deck cover: a preset id (e.g. 'cover_07') or an image url, else None."""
+    if not isinstance(v, str):
+        return None
+    v = v.strip()
+    return v[:512] if v else None
 
 
 def _paginate(items, page, page_size):
@@ -90,7 +112,8 @@ def _serialize_library_deck(d):
         "due_count": d["due_count"] or 0,
         "has_tests": has_tests,
         "has_flashcards": has_flashcards,
-        "cover_color_hex": d["category_color"] or _palette_color(d["id"]),
+        "cover_color_hex": d.get("color") or d["category_color"] or _palette_color(d["id"]),
+        "cover_url": d.get("cover") or None,
         "is_pro": False,
         "is_public": bool(d["is_public"]),
         "is_favorite": False,
@@ -264,17 +287,19 @@ def create_deck():
         return _err("validation_error", f"title must be at most {_DECK_TITLE_MAX_LEN} characters", 400)
     desc = body.get("description")
     desc = (desc or "").strip()[:_DECK_DESC_MAX_LEN] if isinstance(desc, str) else ""
+    color = _clean_color(body.get("color"))
+    cover = _clean_cover(body.get("cover"))
 
     conn = db.get_conn()
     try:
         if user["org_id"]:
             cur = conn.execute(
-                "INSERT INTO decks (org_id, name, description, icon, created_via) VALUES (?, ?, ?, '📚', 'mobile')",
-                (user["org_id"], title, desc))
+                "INSERT INTO decks (org_id, name, description, icon, color, cover, created_via) VALUES (?, ?, ?, '📚', ?, ?, 'mobile')",
+                (user["org_id"], title, desc, color, cover))
         else:
             cur = conn.execute(
-                "INSERT INTO decks (owner_id, name, description, icon, created_via) VALUES (?, ?, ?, '📚', 'mobile')",
-                (user["id"], title, desc))
+                "INSERT INTO decks (owner_id, name, description, icon, color, cover, created_via) VALUES (?, ?, ?, '📚', ?, ?, 'mobile')",
+                (user["id"], title, desc, color, cover))
         conn.commit()
         data = _fetch_one_serialized(conn, user, cur.lastrowid)
     finally:
@@ -300,6 +325,10 @@ def update_deck(deck_id):
     if "description" in body:
         desc = body.get("description")
         sets["description"] = (desc or "").strip()[:_DECK_DESC_MAX_LEN] if isinstance(desc, str) else ""
+    if "color" in body:
+        sets["color"] = _clean_color(body.get("color"))
+    if "cover" in body:
+        sets["cover"] = _clean_cover(body.get("cover"))
     if not sets:
         return _err("validation_error", "no fields to update", 400)
 

@@ -365,6 +365,7 @@
   "deckEditorTitleNew": "Yangi toplam",
   "deckEditorErrorName": "Toplam nomini kiriting",
   "deckEditorNameLabel": "Nomi",
+  "deckEditorColorLabel": "To'plam rangi",
   "deckEditorNameHint": "Masalan: O'zbekiston tarixi",
   "deckEditorDescLabel": "Tavsif (ixtiyoriy)",
   "deckEditorCreate": "Yaratish",

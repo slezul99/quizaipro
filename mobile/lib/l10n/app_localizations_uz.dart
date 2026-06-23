@@ -837,6 +837,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get deckEditorNameLabel => 'Nomi';
 
   @override
+  String get deckEditorColorLabel => 'To\'plam rangi';
+
+  @override
   String get deckEditorNameHint => 'Masalan: O\'zbekiston tarixi';
 
   @override

@@ -839,6 +839,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get deckEditorNameLabel => 'Название';
 
   @override
+  String get deckEditorColorLabel => 'Цвет колоды';
+
+  @override
   String get deckEditorNameHint => 'Например: История Узбекистана';
 
   @override

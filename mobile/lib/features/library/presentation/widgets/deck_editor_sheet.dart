@@ -37,7 +37,20 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
   bool _saving = false;
   String? _error;
 
+  // Selected deck colour (hex). Null = keep the auto/derived colour.
+  late String? _color = widget.deck?.coverColorHex;
+
+  /// Preset palette the user can pick from.
+  static const List<String> _palette = [
+    '#6366F1', '#8B5CF6', '#EC4899', '#F43F5E', '#EF4444', '#F97316',
+    '#F59E0B', '#EAB308', '#22C55E', '#10B981', '#14B8A6', '#06B6D4',
+    '#0EA5E9', '#3B82F6', '#64748B', '#0F172A',
+  ];
+
   bool get _isEdit => widget.deck != null;
+
+  Color _hex(String h) =>
+      Color(int.parse('FF${h.replaceAll('#', '')}', radix: 16));
 
   @override
   void dispose() {
@@ -60,8 +73,12 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
     final repo = ref.read(libraryRepositoryProvider);
     final result = _isEdit
         ? await repo.updateDeck(
-            deckId: widget.deck!.id, title: title, description: _desc.text.trim())
-        : await repo.createDeck(title: title, description: _desc.text.trim());
+            deckId: widget.deck!.id,
+            title: title,
+            description: _desc.text.trim(),
+            color: _color)
+        : await repo.createDeck(
+            title: title, description: _desc.text.trim(), color: _color);
 
     if (!mounted) return;
     result.fold(
@@ -115,6 +132,7 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
             TextField(
               controller: _title,
               autofocus: !_isEdit,
+              onChanged: (_) => setState(() {}),
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 labelText: l.deckEditorNameLabel,
@@ -137,6 +155,71 @@ class _DeckEditorSheetState extends ConsumerState<_DeckEditorSheet> {
                   borderRadius: BorderRadius.circular(t.radiusMd),
                 ),
               ),
+            ),
+            SizedBox(height: t.space16),
+            // Live preview of the deck cover with the chosen colour.
+            Container(
+              height: 64,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: _color != null
+                      ? [_hex(_color!), _hex(_color!).withValues(alpha: 0.75)]
+                      : [t.brandGradientStart, t.brandGradientEnd],
+                ),
+                borderRadius: BorderRadius.circular(t.radiusMd),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: t.space16),
+              child: Row(
+                children: [
+                  const Text('📚', style: TextStyle(fontSize: 24)),
+                  SizedBox(width: t.space12),
+                  Expanded(
+                    child: Text(
+                      _title.text.trim().isEmpty
+                          ? l.deckEditorNameHint
+                          : _title.text.trim(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: tt.titleMedium?.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: t.space12),
+            Text(l.deckEditorColorLabel,
+                style: tt.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
+            SizedBox(height: t.space8),
+            Wrap(
+              spacing: t.space8,
+              runSpacing: t.space8,
+              children: [
+                for (final hex in _palette)
+                  GestureDetector(
+                    onTap: () => setState(() => _color = hex),
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: _hex(hex),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: (_color?.toUpperCase() == hex)
+                              ? t.textPrimary
+                              : Colors.transparent,
+                          width: 2.5,
+                        ),
+                      ),
+                      child: (_color?.toUpperCase() == hex)
+                          ? const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 18)
+                          : null,
+                    ),
+                  ),
+              ],
             ),
             if (_error != null) ...[
               SizedBox(height: t.space8),

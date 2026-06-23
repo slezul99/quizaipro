@@ -366,6 +366,7 @@
   "deckEditorTitleNew": "Новая колода",
   "deckEditorErrorName": "Введите название колоды",
   "deckEditorNameLabel": "Название",
+  "deckEditorColorLabel": "Цвет колоды",
   "deckEditorNameHint": "Например: История Узбекистана",
   "deckEditorDescLabel": "Описание (необязательно)",
   "deckEditorCreate": "Создать",

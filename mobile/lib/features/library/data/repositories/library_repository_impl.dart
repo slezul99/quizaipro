@@ -169,11 +169,15 @@ class LibraryRepositoryImpl implements LibraryRepository {
   Future<Either<Failure, LibraryDeck>> createDeck({
     required String title,
     required String description,
+    String? color,
+    String? cover,
   }) async {
     try {
       final dto = await remoteDataSource.createDeck(
         title: title,
         description: description,
+        color: color,
+        cover: cover,
       );
       return Right(LibraryMapper.deckFromDto(dto));
     } on DioException catch (e) {
@@ -188,12 +192,16 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required String deckId,
     required String title,
     required String description,
+    String? color,
+    String? cover,
   }) async {
     try {
       final dto = await remoteDataSource.updateDeck(
         deckId: deckId,
         title: title,
         description: description,
+        color: color,
+        cover: cover,
       );
       return Right(LibraryMapper.deckFromDto(dto));
     } on DioException catch (e) {

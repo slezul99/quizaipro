@@ -9716,6 +9716,19 @@ try:
 except Exception as _e:
     print(f"[INIT] Deck-name i18n error: {_e}")
 
+# User-customisable deck appearance: color (hex) + cover (preset id or image
+# url). Columns are nullable; when null the API falls back to the derived
+# palette colour, so this is backward-compatible.
+for _col in ("color", "cover"):
+    try:
+        _conn = db.get_conn()
+        _conn.execute(f"ALTER TABLE decks ADD COLUMN {_col} TEXT")
+        _conn.commit()
+        _conn.close()
+        print(f"[INIT] decks.{_col} column added")
+    except Exception:
+        pass  # already exists
+
 # Apply AI-generated marketplace card translations (ru/en/uz) once.
 try:
     _conn = db.get_conn()
