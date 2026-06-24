@@ -61,6 +61,7 @@ from werkzeug.utils import secure_filename
 import ai_gen
 import billing
 import db
+import fsrs
 
 from . import jwt_auth
 from .auth import rate_limit
@@ -499,3 +500,353 @@ def post_explain():
         return _err("ai_unavailable", "AI не отвечает. Попробуйте позже.", 503)
 
     return jsonify({"data": {"explanation": explanation}})
+
+
+_VALID_CARD_ACTIONS = {"explain", "simplify", "example", "translate", "analogy"}
+
+
+@ai_generation_bp.route("/card-action", methods=["POST"])
+@jwt_auth.jwt_required
+def post_card_action():
+    """One AI tutor action on a single card: explain / simplify / example /
+    translate / analogy. Stateless — reads the card content from the body so it
+    works from any card (study, deck, collection)."""
+    user = g.current_user
+    if not ai_gen.is_available():
+        return _err("ai_unavailable", "AI не настроен", 503)
+
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Invalid JSON body", 400)
+
+    action = (body.get("action") or "").strip().lower()
+    if action not in _VALID_CARD_ACTIONS:
+        return _err("validation_error",
+                    f"action must be one of {sorted(_VALID_CARD_ACTIONS)}", 400)
+
+    question = (body.get("question") or "").strip()
+    answer = (body.get("answer") or "").strip()
+    if not question or not answer:
+        return _err("validation_error", "question and answer are required", 400)
+    if len(question) > _QUESTION_MAX_LEN:
+        return _err("validation_error", f"question must be at most {_QUESTION_MAX_LEN} characters", 400)
+    if len(answer) > _ANSWER_MAX_LEN:
+        return _err("validation_error", f"answer must be at most {_ANSWER_MAX_LEN} characters", 400)
+
+    target_lang = (body.get("target_lang") or "").strip() or None
+
+    if not rate_limit(f"api_ai_card_action:{user['id']}", max_attempts=20, window_seconds=60):
+        return _err("rate_limited", "Слишком много запросов. Подождите немного.", 429)
+
+    lang = _resolve_lang(user)
+    result = ai_gen.card_action(question, answer, action, lang, target_lang)
+    if result is None:
+        return _err("ai_unavailable", "AI не отвечает. Попробуйте позже.", 503)
+
+    return jsonify({"data": {"action": action, "result": result}})
+
+
+# ── Deck Tutor (Phase 2) ─────────────────────────────────────────────────────
+# Deck-level learning guidance grounded in REAL deck content + the learner's own
+# spaced-repetition signal (weak cards / recent failures / FSRS retention).
+# Data sources: cards, user_card_progress (ef/stability/reviews/lapses/last_grade
+# /last_reviewed), reviews (recent failures), fsrs.deck_retention /
+# card_retrievability. AI usage is tracked per-feature via _call_gemini's
+# `label` (ai_metrics: deck_quiz / deck_mini_test / deck_weak_areas / deck_summary).
+
+_DECK_TUTOR_MAX_CARDS = 60
+_DECK_QUIZ_DEFAULT, _DECK_QUIZ_MIN, _DECK_QUIZ_MAX = 5, 3, 15
+_DECK_TEST_DEFAULT, _DECK_TEST_MIN, _DECK_TEST_MAX = 6, 3, 15
+_WEAK_LIMIT = 12
+_FAILURES_LIMIT = 8
+
+
+def _deck_access(conn, user, deck_id):
+    """Returns the deck row if the user may study it (owns it, shares its org, or
+    it's public), else None. Mirrors _build_deck_context's access rule."""
+    deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+    if deck is None:
+        return None
+    if deck["org_id"]:
+        owns = user["org_id"] == deck["org_id"]
+    else:
+        owns = user["id"] == deck["owner_id"]
+    if not owns and not deck["is_public"]:
+        return None
+    return deck
+
+
+def _deck_learner_rows(conn, user_id, deck_id):
+    """Every card in the deck joined with this user's SRS progress (LEFT JOIN —
+    unstudied cards come back with NULL progress)."""
+    rows = conn.execute(
+        """SELECT c.id AS id, c.front AS front, c.back AS back,
+                  p.ef AS ef, p.stability AS stability, p.difficulty AS difficulty,
+                  p.interval_days AS interval_days, p.reviews AS reviews,
+                  p.lapses AS lapses, p.last_grade AS last_grade,
+                  p.last_reviewed AS last_reviewed, p.due_at AS due_at
+           FROM cards c
+           LEFT JOIN user_card_progress p
+                  ON p.card_id = c.id AND p.user_id = ?
+           WHERE c.deck_id = ?
+           ORDER BY c.id""",
+        (user_id, deck_id),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def _deck_recent_failures(conn, user_id, deck_id, limit):
+    rows = conn.execute(
+        """SELECT c.front AS front, r.grade AS grade, r.reviewed_at AS reviewed_at
+           FROM reviews r JOIN cards c ON c.id = r.card_id
+           WHERE r.user_id = ? AND c.deck_id = ? AND r.grade <= 2
+           ORDER BY r.reviewed_at DESC LIMIT ?""",
+        (user_id, deck_id, limit),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def _trunc(s, n):
+    s = (s or "").strip().replace("\n", " ")
+    return s if len(s) <= n else s[:n - 1] + "…"
+
+
+def _format_deck_cards(rows, limit=_DECK_TUTOR_MAX_CARDS):
+    lines = []
+    for r in rows[:limit]:
+        front, back = _trunc(r["front"], 200), _trunc(r["back"], 200)
+        if front and back:
+            lines.append(f"- {front} → {back}")
+    return "\n".join(lines)
+
+
+def _rank_weak_cards(rows, now):
+    """Studied cards the learner struggles with, ranked worst-first by
+    (lapses desc, last_grade asc, retrievability asc)."""
+    weak = []
+    for r in rows:
+        if (r.get("reviews") or 0) <= 0:
+            continue
+        lapses = r.get("lapses") or 0
+        last_grade = r.get("last_grade")
+        try:
+            retr = fsrs.card_retrievability(r, now)
+        except Exception:
+            retr = 1.0
+        is_weak = (lapses > 0
+                   or (last_grade is not None and last_grade <= 2)
+                   or retr < fsrs.TARGET_RETENTION)
+        if not is_weak:
+            continue
+        weak.append({
+            "row": r,
+            "lapses": lapses,
+            "last_grade": last_grade if last_grade is not None else 5,
+            "retr": retr,
+        })
+    weak.sort(key=lambda w: (-w["lapses"], w["last_grade"], w["retr"]))
+    return weak
+
+
+def _format_weak_cards(weak, limit=_WEAK_LIMIT):
+    lines = []
+    for w in weak[:limit]:
+        r = w["row"]
+        front, back = _trunc(r["front"], 160), _trunc(r["back"], 120)
+        bits = []
+        if w["lapses"] > 0:
+            bits.append(f"ошибок: {w['lapses']}")
+        bits.append(f"удержание ~{round(w['retr'] * 100)}%")
+        lines.append(f'- "{front}" → {back} ({", ".join(bits)})')
+    return "\n".join(lines)
+
+
+def _format_failures(failures):
+    return "\n".join(f'- "{_trunc(f["front"], 160)}"' for f in failures)
+
+
+def _retention_summary_text(retention):
+    if not retention or retention.get("now") is None:
+        return ""
+    return (f"средняя вероятность вспомнить сейчас ~{retention['now']}%, "
+            f"через неделю без повторений ~{retention['forecast']}%, "
+            f"угасает {retention['fading']} из {retention['studied']} изученных карточек")
+
+
+def _deck_count(body, default, lo, hi):
+    raw = body.get("count") if isinstance(body, dict) else None
+    try:
+        n = int(raw) if raw is not None else default
+    except (TypeError, ValueError):
+        n = default
+    return max(lo, min(hi, n))
+
+
+def _deck_tutor_guard(user):
+    """Shared availability + rate-limit gate. Returns an error response or None."""
+    if not ai_gen.is_available():
+        return _err("ai_unavailable", "AI не настроен", 503)
+    if not rate_limit(f"api_ai_deck_tutor:{user['id']}", max_attempts=12, window_seconds=60):
+        return _err("rate_limited", "Слишком много запросов. Подождите немного.", 429)
+    return None
+
+
+def _load_deck_rows(user, deck_id):
+    """Returns (rows, failures, error_response). rows/failures are None when an
+    error_response should be returned."""
+    conn = db.get_conn()
+    try:
+        deck = _deck_access(conn, user, deck_id)
+        if deck is None:
+            return None, None, _err("not_found", "Колода не найдена", 404)
+        rows = _deck_learner_rows(conn, user["id"], deck_id)
+        failures = _deck_recent_failures(conn, user["id"], deck_id, _FAILURES_LIMIT)
+    finally:
+        conn.close()
+    if not rows:
+        return None, None, _err("empty_deck", "В колоде нет карточек", 400)
+    return rows, failures, None
+
+
+@ai_generation_bp.route("/deck/<int:deck_id>/quiz", methods=["POST"])
+@jwt_auth.jwt_required
+def post_deck_quiz(deck_id):
+    """Adaptive MCQ quiz over the deck, weighted toward the learner's weak /
+    recently-failed / low-retention cards."""
+    user = g.current_user
+    guard = _deck_tutor_guard(user)
+    if guard is not None:
+        return guard
+    body = request.get_json(silent=True) or {}
+    count = _deck_count(body, _DECK_QUIZ_DEFAULT, _DECK_QUIZ_MIN, _DECK_QUIZ_MAX)
+
+    rows, _failures, err = _load_deck_rows(user, deck_id)
+    if err is not None:
+        return err
+
+    now = datetime.utcnow()
+    weak = _rank_weak_cards(rows, now)
+    result = ai_gen.deck_quiz(
+        _format_deck_cards(rows),
+        _format_weak_cards(weak),
+        count=count,
+        lang=_resolve_lang(user),
+    )
+    if result is None:
+        return _err("ai_unavailable", "AI не отвечает. Попробуйте позже.", 503)
+    return jsonify({"data": {
+        "deck_id": deck_id,
+        "questions": result["questions"],
+        "weak_card_count": len(weak),
+    }})
+
+
+@ai_generation_bp.route("/deck/<int:deck_id>/mini-test", methods=["POST"])
+@jwt_auth.jwt_required
+def post_deck_mini_test(deck_id):
+    """Short balanced assessment (easy/medium/hard MCQ mix) across the deck."""
+    user = g.current_user
+    guard = _deck_tutor_guard(user)
+    if guard is not None:
+        return guard
+    body = request.get_json(silent=True) or {}
+    count = _deck_count(body, _DECK_TEST_DEFAULT, _DECK_TEST_MIN, _DECK_TEST_MAX)
+
+    rows, _failures, err = _load_deck_rows(user, deck_id)
+    if err is not None:
+        return err
+
+    result = ai_gen.deck_mini_test(
+        _format_deck_cards(rows),
+        count=count,
+        lang=_resolve_lang(user),
+    )
+    if result is None:
+        return _err("ai_unavailable", "AI не отвечает. Попробуйте позже.", 503)
+    return jsonify({"data": {
+        "deck_id": deck_id,
+        "questions": result["questions"],
+    }})
+
+
+@ai_generation_bp.route("/deck/<int:deck_id>/weak-areas", methods=["POST"])
+@jwt_auth.jwt_required
+def post_deck_weak_areas(deck_id):
+    """Diagnose weak topics / cards / focus areas from the learner's real review
+    signal. Returns has_data=False when the deck hasn't been studied yet."""
+    user = g.current_user
+    guard = _deck_tutor_guard(user)
+    if guard is not None:
+        return guard
+
+    rows, failures, err = _load_deck_rows(user, deck_id)
+    if err is not None:
+        return err
+
+    now = datetime.utcnow()
+    retention = fsrs.deck_retention(rows, now)
+    weak = _rank_weak_cards(rows, now)
+
+    # No study history → nothing real to analyse.
+    if retention.get("studied", 0) == 0:
+        return jsonify({"data": {
+            "deck_id": deck_id, "has_data": False,
+            "weakest_topics": [], "weakest_cards": [], "focus_areas": [],
+            "summary": "", "retention": retention,
+        }})
+
+    # Studied, but nothing is weak → all strong; skip the AI call.
+    if not weak:
+        return jsonify({"data": {
+            "deck_id": deck_id, "has_data": True,
+            "weakest_topics": [], "weakest_cards": [], "focus_areas": [],
+            "summary": "", "retention": retention,
+        }})
+
+    result = ai_gen.deck_weak_areas(
+        _format_weak_cards(weak),
+        retention_summary=_retention_summary_text(retention),
+        failures_context=_format_failures(failures),
+        lang=_resolve_lang(user),
+    )
+    if result is None:
+        return _err("ai_unavailable", "AI не отвечает. Попробуйте позже.", 503)
+    return jsonify({"data": {
+        "deck_id": deck_id, "has_data": True,
+        "weakest_topics": result["weakest_topics"],
+        "weakest_cards": result["weakest_cards"],
+        "focus_areas": result["focus_areas"],
+        "summary": result["summary"],
+        "retention": retention,
+    }})
+
+
+@ai_generation_bp.route("/deck/<int:deck_id>/summary", methods=["POST"])
+@jwt_auth.jwt_required
+def post_deck_summary(deck_id):
+    """Teacher-style deck summary: key concepts, common mistakes, important
+    facts — grounded in the deck's real cards (+ the learner's weak cards)."""
+    user = g.current_user
+    guard = _deck_tutor_guard(user)
+    if guard is not None:
+        return guard
+
+    rows, _failures, err = _load_deck_rows(user, deck_id)
+    if err is not None:
+        return err
+
+    now = datetime.utcnow()
+    weak = _rank_weak_cards(rows, now)
+    result = ai_gen.deck_summary(
+        _format_deck_cards(rows),
+        _format_weak_cards(weak),
+        lang=_resolve_lang(user),
+    )
+    if result is None:
+        return _err("ai_unavailable", "AI не отвечает. Попробуйте позже.", 503)
+    return jsonify({"data": {
+        "deck_id": deck_id,
+        "key_concepts": result["key_concepts"],
+        "common_mistakes": result["common_mistakes"],
+        "important_facts": result["important_facts"],
+    }})

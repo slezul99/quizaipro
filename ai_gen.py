@@ -1798,6 +1798,370 @@ def explain_question(question: str, answer: str, lang: str = "ru") -> str | None
     return None
 
 
+def _gemini_text(prompt: str, *, max_tokens: int = 2000, temperature: float = 0.4,
+                 label: str = "card_action") -> str | None:
+    """Free-text (non-JSON) Gemini call for tutor card/deck actions. Mirrors the
+    explain_question call path (Vertex first, Developer-key fallback). Returns the
+    model's prose, or None if AI is unavailable / every endpoint failed."""
+    body = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+    }
+    data = json.dumps(body).encode("utf-8")
+    for model, url, headers in _gemini_endpoints():
+        req = urlreq.Request(url, data=data, method="POST", headers=headers)
+        t0 = time.time()
+        try:
+            with urlreq.urlopen(req, timeout=60) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            cand = (payload.get("candidates") or [{}])[0]
+            text = (cand.get("content", {}).get("parts", [{}])[0].get("text") or "").strip()
+            if text:
+                _log_metric(label=label, model=model,
+                            latency_ms=int((time.time() - t0) * 1000), ok=True,
+                            usage=payload.get("usageMetadata") or {},
+                            finish=cand.get("finishReason"))
+                return text
+        except urlerr.HTTPError as e:
+            print(f"[AI {label}] {model} HTTP {e.code} — fallback")
+            continue
+        except Exception as e:
+            print(f"[AI {label}] {model} {type(e).__name__}: {e}")
+            continue
+    return None
+
+
+# Tutor card actions — each turns a single flashcard into a micro-lesson.
+_CARD_ACTION_INSTRUCTIONS = {
+    "explain": "Объясни простыми словами, что это и почему ответ именно такой. Дай контекст и нюансы.",
+    "simplify": "Объясни это МАКСИМАЛЬНО просто, как будто рассказываешь ребёнку 12 лет. Только простые слова, без терминов.",
+    "example": "Приведи 1-2 конкретных, запоминающихся примера из реальной жизни, которые иллюстрируют этот ответ.",
+    "analogy": "Придумай яркую, запоминающуюся аналогию или метафору, которая поможет легко это запомнить.",
+}
+
+
+def card_action(question: str, answer: str, action: str, lang: str = "ru",
+                target_lang: str | None = None) -> str | None:
+    """One AI tutor action on a single card. action ∈ {explain, simplify,
+    example, analogy, translate}. Returns prose (in `lang`, or `target_lang` for
+    translate); None if AI is unavailable or the action is unknown."""
+    if not is_available():
+        return None
+    lang_name = {"ru": "русском", "en": "English", "uz": "узбекском"}.get(lang, "русском")
+
+    clean_answer = (answer or "").strip()
+    first_line = clean_answer.split("\n")[0].strip()
+    m = re.match(r"^([A-Za-zА-Яа-яЁё0-9]+)\s*[\)\.\:\-]\s*(.+)$", first_line)
+    if m:
+        clean_answer = m.group(2).strip()
+
+    if action == "translate":
+        target = (target_lang or "English").strip()
+        prompt = f"""Переведи следующий вопрос и ответ на язык: {target}.
+Сохрани смысл точно. Верни строго в формате:
+Вопрос: <перевод вопроса>
+Ответ: <перевод ответа>
+
+ВОПРОС: {question}
+ОТВЕТ: {clean_answer}"""
+    else:
+        instruction = _CARD_ACTION_INSTRUCTIONS.get(action)
+        if instruction is None:
+            return None
+        prompt = f"""{instruction}
+Пиши на {lang_name} языке. Отвечай 3-5 короткими предложениями. Без вступлений вроде "Конечно!" — сразу к сути.
+
+ВОПРОС: {question}
+ПРАВИЛЬНЫЙ ОТВЕТ: {clean_answer}
+
+Результат:"""
+    return _gemini_text(prompt, max_tokens=2000, temperature=0.5, label=f"card_{action}")
+
+
+# ── Deck Tutor (Phase 2) ─────────────────────────────────────────────────────
+# Deck-level learning guidance, grounded in REAL deck content + the learner's
+# own spaced-repetition signal (weak cards / recent failures / retention). The
+# caller (api_v1) assembles the grounding text from the DB; these functions only
+# shape the prompt and parse structured JSON.
+
+def _deck_lang_name(lang: str) -> str:
+    return {"ru": "русском", "en": "English", "uz": "узбекском"}.get(lang, "русском")
+
+
+def _parse_ai_json(text: str | None):
+    """Parse a Gemini JSON response (object or array). Tolerates ```json fences.
+    Returns the decoded value, or None on failure."""
+    if not text or not text.strip():
+        return None
+    try:
+        return json.loads(text)
+    except Exception:
+        pass
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```[a-zA-Z]*\s*", "", cleaned)
+        cleaned = cleaned.rstrip("`").strip()
+    # Last resort: slice from the first bracket to its matching last bracket.
+    for open_ch, close_ch in (("{", "}"), ("[", "]")):
+        i, j = cleaned.find(open_ch), cleaned.rfind(close_ch)
+        if 0 <= i < j:
+            try:
+                return json.loads(cleaned[i:j + 1])
+            except Exception:
+                continue
+    return None
+
+
+_MCQ_QUESTION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "question": {"type": "string"},
+        "options": {"type": "array", "items": {"type": "string"}},
+        "correct_index": {"type": "integer"},
+        "explanation": {"type": "string"},
+    },
+    "required": ["question", "options", "correct_index"],
+}
+
+
+def _valid_mcq(q) -> bool:
+    if not isinstance(q, dict):
+        return False
+    opts = q.get("options")
+    ci = q.get("correct_index")
+    return (isinstance(q.get("question"), str) and q["question"].strip()
+            and isinstance(opts, list) and len(opts) >= 2
+            and isinstance(ci, int) and 0 <= ci < len(opts))
+
+
+def deck_quiz(deck_context: str, weak_context: str = "", count: int = 5,
+              lang: str = "ru") -> dict | None:
+    """Adaptive multiple-choice quiz from the deck's cards, prioritising the
+    learner's weak / recently-failed / low-retention cards. Returns
+    {"questions": [{question, options, correct_index, explanation, focus}]} or
+    None when AI is unavailable."""
+    if not is_available() or not deck_context.strip():
+        return None
+    lang_name = _deck_lang_name(lang)
+    focus_block = (
+        "\nПРИОРИТЕТ. Студент испытывает трудности с этими карточками — "
+        "составь вопросы В ПЕРВУЮ ОЧЕРЕДЬ по ним:\n" + weak_context + "\n"
+        if weak_context.strip() else ""
+    )
+    prompt = f"""Ты — внимательный репетитор. На основе карточек колоды составь ровно {count} тренировочных вопросов с выбором ответа.
+Правила: ровно 4 варианта на вопрос, один правильный (correct_index — его индекс с 0). Проверяй ПОНИМАНИЕ, а не дословную зубрёжку. Неправильные варианты должны быть правдоподобными. Не повторяй вопросы.
+Для каждого вопроса поле focus: "weak" если он по трудной карточке выше, иначе "general".
+{focus_block}
+КАРТОЧКИ КОЛОДЫ (вопрос → ответ):
+{deck_context}
+
+Пиши на {lang_name} языке. Верни строго JSON."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "questions": {
+                "type": "array",
+                "items": {
+                    **_MCQ_QUESTION_SCHEMA,
+                    "properties": {
+                        **_MCQ_QUESTION_SCHEMA["properties"],
+                        "focus": {"type": "string"},
+                    },
+                },
+            },
+        },
+        "required": ["questions"],
+    }
+    try:
+        text = _call_gemini(prompt, max_tokens=3500, response_schema=schema,
+                            label="deck_quiz")
+    except Exception as e:
+        print(f"[deck_quiz] {type(e).__name__}: {e}")
+        return None
+    data = _parse_ai_json(text)
+    if not isinstance(data, dict):
+        return None
+    questions = [q for q in (data.get("questions") or []) if _valid_mcq(q)]
+    if not questions:
+        return None
+    return {"questions": questions}
+
+
+def deck_mini_test(deck_context: str, count: int = 6, lang: str = "ru") -> dict | None:
+    """Short balanced assessment from the deck's cards — a mix of easy / medium /
+    hard MCQs across the whole deck (not weighted to weak cards). Returns
+    {"questions": [{question, options, correct_index, difficulty, explanation}]}
+    or None."""
+    if not is_available() or not deck_context.strip():
+        return None
+    lang_name = _deck_lang_name(lang)
+    prompt = f"""Ты — преподаватель, составляющий короткую проверочную работу по колоде. Составь ровно {count} вопросов с выбором ответа.
+Сбалансируй сложность: примерно треть лёгких (узнавание факта), треть средних (применение), треть трудных (анализ/связь понятий). Покрой РАЗНЫЕ карточки колоды, а не одну тему.
+Каждый вопрос: ровно 4 варианта, один правильный (correct_index с 0). Поле difficulty ∈ {{"easy","medium","hard"}}. Поле explanation — короткое пояснение правильного ответа.
+
+КАРТОЧКИ КОЛОДЫ (вопрос → ответ):
+{deck_context}
+
+Пиши на {lang_name} языке. Верни строго JSON."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "questions": {
+                "type": "array",
+                "items": {
+                    **_MCQ_QUESTION_SCHEMA,
+                    "properties": {
+                        **_MCQ_QUESTION_SCHEMA["properties"],
+                        "difficulty": {"type": "string"},
+                    },
+                },
+            },
+        },
+        "required": ["questions"],
+    }
+    try:
+        text = _call_gemini(prompt, max_tokens=3500, response_schema=schema,
+                            label="deck_mini_test")
+    except Exception as e:
+        print(f"[deck_mini_test] {type(e).__name__}: {e}")
+        return None
+    data = _parse_ai_json(text)
+    if not isinstance(data, dict):
+        return None
+    questions = []
+    for q in (data.get("questions") or []):
+        if _valid_mcq(q):
+            diff = str(q.get("difficulty") or "medium").lower()
+            q["difficulty"] = diff if diff in ("easy", "medium", "hard") else "medium"
+            questions.append(q)
+    if not questions:
+        return None
+    return {"questions": questions}
+
+
+def deck_weak_areas(weak_context: str, retention_summary: str = "",
+                    failures_context: str = "", lang: str = "ru") -> dict | None:
+    """Diagnose the learner's weak areas for a deck from their real review
+    signal. Returns {"weakest_topics":[{topic,why}], "weakest_cards":[{front,
+    reason}], "focus_areas":[str], "summary":str} or None."""
+    if not is_available() or not weak_context.strip():
+        return None
+    lang_name = _deck_lang_name(lang)
+    retention_block = (f"\nУДЕРЖАНИЕ В ПАМЯТИ: {retention_summary}\n"
+                       if retention_summary.strip() else "")
+    failures_block = (f"\nНЕДАВНИЕ ОШИБКИ (последние неверные ответы):\n{failures_context}\n"
+                      if failures_context.strip() else "")
+    prompt = f"""Ты — репетитор, анализирующий прогресс студента по колоде. Используя реальные данные о его повторениях ниже, определи слабые места.
+Не выдумывай: опирайся ТОЛЬКО на приведённые карточки и статистику.
+
+ТРУДНЫЕ КАРТОЧКИ (с числом ошибок / низкой оценкой):
+{weak_context}
+{retention_block}{failures_block}
+Сгруппируй трудные карточки в 2-4 тематические области (weakest_topics: topic + why). Перечисли 3-6 самых проблемных карточек (weakest_cards: front + краткая reason). Дай 2-4 конкретные рекомендации, на чём сосредоточиться (focus_areas). Добавь короткий ободряющий summary.
+
+Пиши на {lang_name} языке. Верни строго JSON."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "weakest_topics": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "topic": {"type": "string"},
+                        "why": {"type": "string"},
+                    },
+                    "required": ["topic"],
+                },
+            },
+            "weakest_cards": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "front": {"type": "string"},
+                        "reason": {"type": "string"},
+                    },
+                    "required": ["front"],
+                },
+            },
+            "focus_areas": {"type": "array", "items": {"type": "string"}},
+            "summary": {"type": "string"},
+        },
+        "required": ["weakest_topics", "focus_areas"],
+    }
+    try:
+        text = _call_gemini(prompt, max_tokens=2500, response_schema=schema,
+                            label="deck_weak_areas")
+    except Exception as e:
+        print(f"[deck_weak_areas] {type(e).__name__}: {e}")
+        return None
+    data = _parse_ai_json(text)
+    if not isinstance(data, dict):
+        return None
+    return {
+        "weakest_topics": data.get("weakest_topics") or [],
+        "weakest_cards": data.get("weakest_cards") or [],
+        "focus_areas": data.get("focus_areas") or [],
+        "summary": data.get("summary") or "",
+    }
+
+
+def deck_summary(deck_context: str, weak_context: str = "",
+                 lang: str = "ru") -> dict | None:
+    """Teach the deck like a teacher: key concepts, common mistakes, important
+    facts — grounded in the deck's real cards. Returns {"key_concepts":[{title,
+    explanation}], "common_mistakes":[str], "important_facts":[str]} or None."""
+    if not is_available() or not deck_context.strip():
+        return None
+    lang_name = _deck_lang_name(lang)
+    weak_block = (
+        "\nСтудент чаще всего ошибается в этих карточках — учти это в "
+        "common_mistakes:\n" + weak_context + "\n" if weak_context.strip() else ""
+    )
+    prompt = f"""Ты — преподаватель, который объясняет тему колоды студенту перед экзаменом. На основе карточек ниже подготовь учебное резюме.
+key_concepts: 3-6 ключевых понятий (title + понятное explanation в 1-3 предложения, объясняй как учитель, связывай идеи). common_mistakes: 3-5 типичных ошибок/заблуждений по этой теме. important_facts: 3-6 фактов, которые точно нужно запомнить.
+Опирайся ТОЛЬКО на содержание карточек, не добавляй посторонних тем.
+{weak_block}
+КАРТОЧКИ КОЛОДЫ (вопрос → ответ):
+{deck_context}
+
+Пиши на {lang_name} языке. Верни строго JSON."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "key_concepts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "explanation": {"type": "string"},
+                    },
+                    "required": ["title", "explanation"],
+                },
+            },
+            "common_mistakes": {"type": "array", "items": {"type": "string"}},
+            "important_facts": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["key_concepts"],
+    }
+    try:
+        text = _call_gemini(prompt, max_tokens=2500, response_schema=schema,
+                            label="deck_summary")
+    except Exception as e:
+        print(f"[deck_summary] {type(e).__name__}: {e}")
+        return None
+    data = _parse_ai_json(text)
+    if not isinstance(data, dict) or not data.get("key_concepts"):
+        return None
+    return {
+        "key_concepts": data.get("key_concepts") or [],
+        "common_mistakes": data.get("common_mistakes") or [],
+        "important_facts": data.get("important_facts") or [],
+    }
+
+
 def diagnose_mistake(question: str, chosen: str, correct: str, lang: str = "ru") -> dict | None:
     """AI-diagnostika konkretnoy oshibki studenta.
 
