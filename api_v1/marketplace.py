@@ -18,12 +18,14 @@ Field-mapping notes (Phase 2 — pragmatic choices, no schema changes):
     client has no session, unlike the web app's `session["lang"]`).
 """
 import math
+from datetime import datetime
 
 from flask import Blueprint, g, jsonify, request
 
 import db
 
 from . import jwt_auth
+from .study import bump_streak
 
 marketplace_bp = Blueprint("api_v1_marketplace", __name__, url_prefix="/api/v1/marketplace")
 
@@ -326,6 +328,51 @@ def get_deck_cards(deck_id):
         for r in rows
     ]
     return jsonify({"data": cards})
+
+
+@marketplace_bp.route("/decks/<int:deck_id>/trial-study", methods=["POST"])
+@jwt_auth.jwt_required
+def trial_study_complete(deck_id):
+    """Record a marketplace trial-study session so it counts: insert plain
+    ``reviews`` (grade 3) for the studied cards and award XP via the shared
+    ``bump_streak`` bookkeeping. Deliberately does NOT touch ``user_card_progress``
+    (SM-2) — the deck isn't imported. Body: ``{"count": N}``."""
+    body = request.get_json(silent=True) or {}
+    try:
+        count = int(body.get("count") or 0)
+    except (TypeError, ValueError):
+        count = 0
+    count = max(0, min(count, 200))
+    if count == 0:
+        return jsonify({"data": {"xp_gained": 0}})
+
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        deck = conn.execute(
+            "SELECT id FROM decks WHERE id=? AND is_public=1", (deck_id,)
+        ).fetchone()
+        if deck is None:
+            return jsonify({"error": {"code": "not_found",
+                                      "message": "Колода не найдена"}}), 404
+        cards = conn.execute(
+            "SELECT id FROM cards WHERE deck_id=? ORDER BY id LIMIT ?",
+            (deck_id, count),
+        ).fetchall()
+        now = datetime.utcnow().isoformat()
+        for c in cards:
+            conn.execute(
+                "INSERT INTO reviews (user_id, card_id, grade, reviewed_at) "
+                "VALUES (?, ?, 3, ?)",
+                (user["id"], c["id"], now),
+            )
+        xp = len(cards)  # grade 3 → 1 XP each (matches the derived model)
+        if xp > 0:
+            bump_streak(conn, user, xp, now)
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"data": {"xp_gained": xp}})
 
 
 @marketplace_bp.route("/search", methods=["GET"])

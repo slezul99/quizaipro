@@ -508,3 +508,83 @@ def get_activity():
 
     return jsonify({"data": items})
 
+
+@dashboard_bp.route("/analytics", methods=["GET"])
+@jwt_auth.jwt_required
+def get_analytics():
+    """Aggregated learning analytics for the Profile screen — study time,
+    accuracy, a 14-day activity series, top decks, retention, level/streak."""
+    from datetime import timedelta
+    user = g.current_user
+    uid = user["id"]
+    conn = db.get_conn()
+    try:
+        total_reviews = conn.execute(
+            "SELECT COUNT(*) AS c FROM reviews WHERE user_id=?",
+            (uid,)).fetchone()["c"] or 0
+        total_tests = conn.execute(
+            "SELECT COUNT(*) AS c FROM test_attempts WHERE user_id=?",
+            (uid,)).fetchone()["c"] or 0
+        study_secs = conn.execute(
+            "SELECT COALESCE(SUM(duration_seconds),0) AS s FROM study_sessions "
+            "WHERE user_id=?", (uid,)).fetchone()["s"] or 0
+        test_secs = conn.execute(
+            "SELECT COALESCE(SUM(duration_sec),0) AS s FROM test_attempts "
+            "WHERE user_id=?", (uid,)).fetchone()["s"] or 0
+        acc = conn.execute(
+            "SELECT AVG(score_pct) AS a FROM test_attempts WHERE user_id=?",
+            (uid,)).fetchone()["a"]
+        active_days = conn.execute(
+            "SELECT COUNT(DISTINCT DATE(reviewed_at)) AS c FROM reviews "
+            "WHERE user_id=? AND reviewed_at >= DATE('now','-30 day')",
+            (uid,)).fetchone()["c"] or 0
+        day_rows = conn.execute(
+            "SELECT DATE(reviewed_at) AS d, COUNT(*) AS c FROM reviews "
+            "WHERE user_id=? AND reviewed_at >= DATE('now','-13 day') "
+            "GROUP BY DATE(reviewed_at)", (uid,)).fetchall()
+        top = conn.execute(
+            "SELECT d.name AS name, d.icon AS icon, COUNT(*) AS reviews "
+            "FROM reviews r JOIN cards c ON c.id=r.card_id "
+            "JOIN decks d ON d.id=c.deck_id "
+            "WHERE r.user_id=? GROUP BY d.id ORDER BY reviews DESC LIMIT 5",
+            (uid,)).fetchall()
+        ret_rows = conn.execute(
+            "SELECT p.reviews, p.stability, p.last_reviewed, p.interval_days, p.ef "
+            "FROM user_card_progress p "
+            "WHERE p.user_id=? AND p.reviews IS NOT NULL AND p.reviews>0",
+            (uid,)).fetchall()
+    finally:
+        conn.close()
+
+    day_counts = {r["d"]: r["c"] for r in day_rows if r["d"]}
+    today = datetime.utcnow().date()
+    series = []
+    for i in range(13, -1, -1):
+        dd = today - timedelta(days=i)
+        series.append({"date": dd.isoformat(),
+                       "count": day_counts.get(dd.isoformat(), 0)})
+
+    import fsrs
+    retention = fsrs.deck_retention([dict(r) for r in ret_rows])
+    info = ach_mod.calculate_level_info(user["xp"])
+
+    return jsonify({"data": {
+        "total_reviews": total_reviews,
+        "total_tests": total_tests,
+        "total_study_seconds": int(study_secs) + int(test_secs),
+        "avg_accuracy": round(acc) if acc is not None else None,
+        "active_days_30": active_days,
+        "reviews_series": series,
+        "top_decks": [
+            {"name": r["name"], "icon": r["icon"] or "", "reviews": r["reviews"]}
+            for r in top
+        ],
+        "retention": {
+            "now": retention["now"], "forecast": retention["forecast"],
+            "fading": retention["fading"], "studied": retention["studied"],
+        },
+        "level": info["level"],
+        "xp": info["total_xp"],
+        "streak": user["streak"] or 0,
+    }})
+
