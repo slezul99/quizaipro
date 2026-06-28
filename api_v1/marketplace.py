@@ -286,6 +286,48 @@ def get_deck_detail(deck_id):
     return jsonify({"data": data})
 
 
+@marketplace_bp.route("/decks/<int:deck_id>/cards", methods=["GET"])
+@jwt_auth.jwt_required
+def get_deck_cards(deck_id):
+    """Cards of a public deck — powers the in-app preview (first N) and the
+    trial Study/Test sessions launched straight from the marketplace.
+
+    Query params:
+      - ``limit``   (int, default 10, max 500) — how many cards to return.
+      - ``shuffle`` (int 0/1) — randomise the order (used by trial sessions).
+    """
+    limit = request.args.get("limit", default=10, type=int) or 10
+    limit = max(1, min(limit, 500))
+    shuffle = request.args.get("shuffle", default=0, type=int)
+    conn = db.get_conn()
+    try:
+        deck = conn.execute(
+            "SELECT id FROM decks WHERE id=? AND is_public=1", (deck_id,)
+        ).fetchone()
+        if deck is None:
+            return jsonify({"error": {"code": "not_found",
+                                      "message": "Колода не найдена"}}), 404
+        order = "RANDOM()" if shuffle else "id"
+        rows = conn.execute(
+            f"SELECT id, front, back, note FROM cards "
+            f"WHERE deck_id=? ORDER BY {order} LIMIT ?",
+            (deck_id, limit),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    cards = [
+        {
+            "id": str(r["id"]),
+            "front": r["front"] or "",
+            "back": r["back"] or "",
+            "hint": (r["note"] or None),
+        }
+        for r in rows
+    ]
+    return jsonify({"data": cards})
+
+
 @marketplace_bp.route("/search", methods=["GET"])
 @jwt_auth.jwt_required
 def search_decks():
