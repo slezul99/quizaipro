@@ -727,6 +727,16 @@ html.dark .empty-sub { color: #64748b; }
 html:not(.dark) .icon-moon { display: none; }
 html.dark .icon-sun { display: none; }
 html.dark .icon-moon { display: block; }
+.modal-overlay { position:fixed; inset:0; background:rgba(15,23,41,.5); display:none; place-items:center; z-index:300; padding:20px; }
+.modal-overlay.open { display:grid; }
+.modal-box { background:#fff; border-radius:20px; padding:26px; width:min(460px,100%); box-shadow:0 24px 60px -12px rgba(0,0,0,.35); }
+html.dark .modal-box { background:#1a2444; }
+.modal-title { font-family:var(--font-head); font-size:18px; font-weight:800; margin-bottom:18px; color:var(--text); }
+.modal-field { margin-bottom:14px; }
+.modal-field label { display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px; }
+.modal-field input, .modal-field textarea { width:100%; padding:10px 12px; border:1.5px solid rgba(99,102,241,.2); border-radius:11px; font:inherit; color:var(--text); background:transparent; resize:vertical; }
+html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(15,23,41,.5); border-color:rgba(99,102,241,.3); }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -937,13 +947,10 @@ html.dark .icon-moon { display: block; }
       <div class="actions-gap"></div>
 
       <!-- GHOST TINTED: Add card -->
-      <button class="btn-ghost-tinted">
+      <button class="btn-ghost-tinted" onclick="openAddCard()">
         <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         {{ t('v2_add_card') }}
       </button>
-
-      <!-- OVERFLOW: More options -->
-      <button class="btn-overflow" aria-label="More options" title="{{ t('v2_more_options_full') }}">···</button>
     </div>
 
   </div><!-- /header card -->
@@ -1148,6 +1155,29 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+</script>
+<!-- Add-card modal -->
+<div class="modal-overlay" id="addCardModal" onclick="if(event.target===this)closeAddCard()">
+  <div class="modal-box">
+    <div class="modal-title">{{ t('v2_add_card') }}</div>
+    <div class="modal-field"><label>Вопрос</label><input id="ac_front" type="text" autocomplete="off"></div>
+    <div class="modal-field"><label>Ответ</label><textarea id="ac_back" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeAddCard()">Отмена</button>
+      <button class="btn-primary" onclick="saveCard()">Сохранить</button>
+    </div>
+  </div>
+</div>
+<script>
+function openAddCard(){var m=document.getElementById('addCardModal');m.classList.add('open');setTimeout(function(){document.getElementById('ac_front').focus();},50);}
+function closeAddCard(){document.getElementById('addCardModal').classList.remove('open');}
+async function saveCard(){
+  var f=document.getElementById('ac_front').value.trim();
+  var b=document.getElementById('ac_back').value.trim();
+  if(!f||!b){return;}
+  var fd=new FormData();fd.append('front',f);fd.append('back',b);fd.append('_csrf','{{ csrf_token() }}');
+  try{var r=await fetch('/deck/{{ deck.id }}/card/new',{method:'POST',body:fd});if(r.ok){location.reload();}}catch(e){}
+}
 </script>
 </body>
 </html>
