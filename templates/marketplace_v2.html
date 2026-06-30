@@ -778,13 +778,13 @@ html.dark .icon-moon { display: block; }
       <h1 class="page-title">{{ t('v2_mkt_title') }}</h1>
       <p class="page-subtitle">{{ t('v2_mkt_subtitle') }}</p>
 
-      <div class="mkt-search-row">
+      <form class="mkt-search-row" action="/marketplace/search" method="GET">
         <div class="mkt-search-wrap">
           <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="{{ t('v2_mkt_search_ph') }}">
+          <input type="text" name="q" placeholder="{{ t('v2_mkt_search_ph') }}">
         </div>
-        <button class="btn-search">{{ t('v2_search_btn') }}</button>
-      </div>
+        <button type="submit" class="btn-search">{{ t('v2_search_btn') }}</button>
+      </form>
     </div>
 
     <!-- ─────────────────────────────────────────────
@@ -795,7 +795,7 @@ html.dark .icon-moon { display: block; }
         <div class="section-title">
           {{ t('v2_sec_popular') }}
         </div>
-        <a href="#" class="view-all">
+        <a href="{{ url_for('marketplace') }}" class="view-all">
           {{ t('v2_view_all_arrow') }}
           <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
@@ -832,11 +832,11 @@ html.dark .icon-moon { display: block; }
               <span class="deck-subject-tag">{{ f.subj_title }}</span>
             </div>
             <div class="deck-actions">
-              <button class="btn-primary">
+              <button class="btn-primary" onclick="location.href='/collection/{{ f.slug }}'">
                 <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 {{ t('v2_add_to_library') }}
               </button>
-              <button class="btn-ghost">
+              <button class="btn-ghost" onclick="location.href='/collection/{{ f.slug }}'">
                 <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 {{ t('v2_preview') }}
               </button>
@@ -855,7 +855,7 @@ html.dark .icon-moon { display: block; }
         <div class="section-title">
           {{ t('v2_sec_browse_subject') }}
         </div>
-        <a href="#" class="view-all">
+        <a href="{{ url_for('marketplace') }}" class="view-all">
           {{ t('v2_all_subjects') }}
           <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
@@ -863,7 +863,7 @@ html.dark .icon-moon { display: block; }
 
       <div class="subject-grid">
         {% for s in subjects %}
-        <div class="subject-tile">
+        <div class="subject-tile" style="cursor:pointer;" onclick="location.href='/marketplace/subject/{{ s.slug }}'">
           <img src="{{ url_for('static', filename='subjects/' + s.slug + '.jpg') }}" alt="{{ s.title }}">
           <div class="subject-arrow">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
