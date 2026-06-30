@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ t('td_h') }}</title>
+
+<!-- Tailwind Play CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Alpine.js 3.13.5 -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<!-- Google Fonts: Space Grotesk + Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Dark-mode pre-paint (no flash) -->
+<script>
+  (function() {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<!-- i18n strings for Alpine JS (avoids tojson-in-double-quotes bug) -->
+<script>
+  var T = {
+    ai_rate_limit: {{ t('td_ai_rate_limit')|tojson }},
+    ai_overload:   {{ t('td_ai_overload')|tojson }},
+    ai_unavail:    {{ t('td_ai_unavail')|tojson }},
+    ai_error:      {{ t('td_ai_error')|tojson }},
+    net_error:     {{ t('td_net_error')|tojson }}
+  };
+</script>
+
+{% set pct = ((stats.correct / total * 100) if total else 0) | round(0, 'common') | int %}
+
+<style>
+  /* ── Design Tokens ── */
+  :root {
+    --brand-1: #6366f1;
+    --brand-2: #8b5cf6;
+    --brand-3: #ec4899;
+    --brand-grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --brand-grad-tri: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    --success: #10b981;
+    --page-bg: #f6f5fb;
+    --topbar-h: 60px;
+    --shadow-card: 0 4px 20px -6px rgba(100,90,180,.12);
+    --shadow-raised: 0 16px 40px -12px rgba(99,102,241,.22);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --text: #1e293b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--page-bg); }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.35); border-radius: 3px; }
+
+  /* ── Focus topbar ── */
+  .fc2-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--topbar-h);
+    background: rgba(255,255,255,.92);
+    border-bottom: 1px solid rgba(99,102,241,.08);
+    box-shadow: 0 1px 16px -4px rgba(99,102,241,.09);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+  }
+
+  .fc2-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    padding: 7px 12px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(99,102,241,.12);
+    background: rgba(99,102,241,.04);
+    transition: all .18s var(--ease);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .fc2-back-btn:hover { background: rgba(99,102,241,.10); color: var(--brand-1); border-color: rgba(99,102,241,.25); }
+
+  .fc2-topbar-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+
+  .fc2-icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 11px;
+    background: rgba(99,102,241,.06);
+    border: 1.5px solid rgba(99,102,241,.10);
+    display: grid; place-items: center;
+    cursor: pointer; color: #64748b;
+    transition: all .18s;
+    flex-shrink: 0;
+  }
+  .fc2-icon-btn:hover { background: rgba(99,102,241,.14); color: var(--brand-1); }
+
+  .fc2-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* ── Logo ── */
+  .fc2-logo-tile {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: var(--brand-grad-tri);
+    display: grid; place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px -2px rgba(99,102,241,.45);
+    letter-spacing: -0.03em;
+  }
+  .fc2-wordmark {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: -0.03em;
+    background: var(--brand-grad-tri);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    white-space: nowrap;
+  }
+
+  /* Theme icon swap */
+  html:not(.dark) .icon-moon { display: none; }
+  html.dark .icon-sun  { display: none; }
+  html.dark .icon-moon { display: block; }
+
+  /* ── Main layout ── */
+  .fc2-main {
+    min-height: calc(100vh - var(--topbar-h));
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 28px 16px 56px;
+  }
+  .fc2-content {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Score hero ── */
+  .td2-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5ff 50%, #e9eeff 100%);
+    border: 1px solid rgba(99,102,241,.15);
+    border-radius: 24px;
+    padding: 36px 28px 32px;
+    text-align: center;
+    box-shadow: 0 16px 40px -12px rgba(99,102,241,.20),
+                inset 0 1px 0 rgba(255,255,255,.9);
+    position: relative;
+    overflow: hidden;
+  }
+  .td2-hero::before {
+    content: "";
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    top: -120px; right: -80px;
+    background: radial-gradient(circle, rgba(99,102,241,.2), transparent 70%);
+    filter: blur(50px);
+    pointer-events: none;
+  }
+  .td2-emoji {
+    font-size: 64px;
+    margin-bottom: 12px;
+    display: block;
+    line-height: 1;
+  }
+  .td2-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .td2-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 20px;
+  }
+
+  /* Donut ring SVG */
+  .td2-ring-wrap {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 24px;
+  }
+  .td2-ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .td2-pct-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .td2-pct-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    opacity: 0.55;
+    margin-top: 2px;
+  }
+
+  /* Stat chips (correct / wrong) */
+  .td2-stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 320px;
+    margin: 0 auto 24px;
+  }
+  .td2-stat-chip {
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .td2-stat-chip-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .td2-stat-chip-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-top: 4px;
+    opacity: 0.65;
+  }
+  .chip-correct {
+    background: rgba(16,185,129,.10);
+    border: 1.5px solid rgba(16,185,129,.25);
+    color: #065f46;
+  }
+  .chip-correct .td2-stat-chip-value {
+    background: linear-gradient(135deg, #10b981, #059669);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .chip-wrong {
+    background: rgba(239,68,68,.08);
+    border: 1.5px solid rgba(239,68,68,.2);
+    color: #991b1b;
+  }
+  .chip-wrong .td2-stat-chip-value {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* CTA buttons */
+  .td2-cta-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-v2-primary {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: var(--brand-grad-tri);
+    color: #fff; font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
+    box-shadow: 0 6px 16px -4px rgba(99,102,241,.45);
+    transition: all .2s var(--ease);
+    text-decoration: none;
+  }
+  .btn-v2-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -4px rgba(99,102,241,.6); }
+  .btn-v2-ghost {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: rgba(99,102,241,.07);
+    color: var(--brand-1); font-size: 14px; font-weight: 700;
+    border: 1.5px solid rgba(99,102,241,.18); cursor: pointer;
+    transition: all .18s;
+    text-decoration: none;
+  }
+  .btn-v2-ghost:hover { background: rgba(99,102,241,.14); }
+
+  /* ── Placement block ── */
+  .td2-placement-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5ff 100%);
+    border: 1.5px solid rgba(99,102,241,.15);
+    border-radius: 20px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-card);
+  }
+  .td2-placement-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .td2-placement-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .td2-placement-desc {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 14px;
+  }
+
+  /* ── Review section ── */
+  .td2-review-card {
+    background: #fff;
+    border: 1px solid rgba(99,102,241,.10);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+  }
+  .td2-review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .td2-review-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+  .td2-filter-row {
+    display: flex;
+    gap: 4px;
+    background: rgba(99,102,241,.06);
+    border: 1px solid rgba(99,102,241,.12);
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .td2-filter-btn {
+    padding: 6px 14px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all .18s;
+    background: transparent;
+    color: #64748b;
+  }
+  .td2-filter-btn.active-wrong { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; box-shadow: 0 2px 8px -2px rgba(239,68,68,.4); }
+  .td2-filter-btn.active-all   { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: #fff; box-shadow: 0 2px 8px -2px rgba(99,102,241,.35); }
+
+  /* Review item */
+  .td2-review-item {
+    border-radius: 16px;
+    border: 2px solid;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .td2-review-item:last-child { margin-bottom: 0; }
+  .td2-item-correct { border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.04); }
+  .td2-item-wrong   { border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.04); }
+
+  .td2-item-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .td2-item-badge {
+    flex-shrink: 0;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .badge-correct { background: linear-gradient(135deg, #10b981, #059669); }
+  .badge-wrong   { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+  .td2-item-meta {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 4px;
+  }
+  .td2-item-question {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Option list in review */
+  .td2-opt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 40px;
+  }
+  .td2-opt-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid;
+  }
+  .opt-neutral  { background: rgba(255,255,255,.7); border-color: rgba(99,102,241,.1); }
+  .opt-correct  { background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.3); }
+  .opt-my-wrong { background: rgba(239,68,68,.08);  border-color: rgba(239,68,68,.25); }
+
+  .td2-opt-letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .letter-neutral  { background: #e2e8f0; color: #64748b; }
+  .letter-correct  { background: #10b981; color: #fff; }
+  .letter-my-wrong { background: #ef4444; color: #fff; }
+
+  .td2-opt-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .td2-opt-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .chip-lbl-correct  { background: rgba(16,185,129,.12); color: #059669; }
+  .chip-lbl-my-wrong { background: rgba(239,68,68,.12);  color: #dc2626; }
+
+  /* Fallback answer display (no options) */
+  .td2-answer-fallback {
+    padding-left: 40px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── Dark mode ── */
+  html.dark {
+    --page-bg: #0f1729;
+    --shadow-card: 0 12px 40px -8px rgba(0,0,0,.5);
+    --shadow-raised: 0 20px 50px -10px rgba(0,0,0,.65);
+    --text: #e2e8f0;
+  }
+  html.dark body {
+    background: linear-gradient(180deg,#0f1729,#141c38);
+    color: var(--text);
+  }
+  html.dark .fc2-topbar {
+    background: rgba(15,23,41,.92);
+    border-bottom-color: rgba(99,102,241,.15);
+    box-shadow: 0 1px 20px -4px rgba(0,0,0,.4);
+  }
+  html.dark .fc2-back-btn {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.2);
+    color: #94a3b8;
+  }
+  html.dark .fc2-back-btn:hover { background: rgba(99,102,241,.2); color: #a5b4fc; }
+  html.dark .fc2-topbar-title { color: #e2e8f0; }
+  html.dark .fc2-icon-btn {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.2);
+    color: #94a3b8;
+  }
+  html.dark .fc2-icon-btn:hover { background: rgba(99,102,241,.2); color: #a5b4fc; }
+
+  html.dark .td2-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 50%, #312e81 100%);
+    border-color: rgba(139,92,246,.3);
+  }
+  html.dark .td2-title { color: #f1f5f9; }
+  html.dark .td2-subtitle { color: #94a3b8; }
+  html.dark .chip-correct {
+    background: rgba(16,185,129,.14);
+    border-color: rgba(16,185,129,.3);
+    color: #6ee7b7;
+  }
+  html.dark .chip-wrong {
+    background: rgba(239,68,68,.12);
+    border-color: rgba(239,68,68,.25);
+    color: #fca5a5;
+  }
+  html.dark .td2-placement-card {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.2);
+  }
+  html.dark .td2-placement-title { color: #e2e8f0; }
+  html.dark .td2-placement-desc  { color: #94a3b8; }
+  html.dark .td2-review-card {
+    background: rgba(20,28,56,.8);
+    border-color: rgba(99,102,241,.15);
+  }
+  html.dark .td2-review-title { color: #e2e8f0; }
+  html.dark .td2-filter-row {
+    background: rgba(99,102,241,.1);
+    border-color: rgba(99,102,241,.2);
+  }
+  html.dark .td2-filter-btn { color: #94a3b8; }
+  html.dark .td2-item-correct { border-color: rgba(16,185,129,.25); background: rgba(16,185,129,.06); }
+  html.dark .td2-item-wrong   { border-color: rgba(239,68,68,.2);  background: rgba(239,68,68,.06); }
+  html.dark .td2-item-meta    { color: #64748b; }
+  html.dark .td2-item-question { color: #e2e8f0; }
+  html.dark .opt-neutral  { background: rgba(30,41,75,.5); border-color: rgba(99,102,241,.15); }
+  html.dark .opt-correct  { background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.3); }
+  html.dark .opt-my-wrong { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.25); }
+  html.dark .letter-neutral { background: rgba(99,102,241,.2); color: #94a3b8; }
+  html.dark .td2-opt-text  { color: #e2e8f0; }
+  html.dark .chip-lbl-correct  { background: rgba(16,185,129,.15); color: #34d399; }
+  html.dark .chip-lbl-my-wrong { background: rgba(239,68,68,.15);  color: #f87171; }
+  html.dark .td2-answer-fallback { color: #e2e8f0; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .fc2-topbar { padding: 0 12px; gap: 8px; }
+    .fc2-main { padding: 16px 12px 48px; }
+    .td2-hero { padding: 28px 18px 24px; }
+    .td2-emoji { font-size: 48px; }
+    .td2-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div x-data="{ filter: 'wrong' }">
+
+  <!-- ═══════════════════════════════════
+       FOCUS TOPBAR
+  ═══════════════════════════════════ -->
+  <header class="fc2-topbar">
+    <!-- LEFT -->
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <a href="{{ url_for('dashboard_v2_page') }}" style="display:flex;align-items:center;gap:6px;text-decoration:none;">
+        <div class="fc2-logo-tile">Q</div>
+      </a>
+      {% if deck_id %}
+      <a href="{{ url_for('deck_view', deck_id=deck_id) }}" class="fc2-back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>{{ t('td_to_deck') }}</span>
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- CENTER -->
+    <div style="text-align:center;min-width:0;">
+      <div class="fc2-topbar-title">{{ t('td_h') }}</div>
+    </div>
+
+    <!-- RIGHT: theme toggle -->
+    <div class="fc2-topbar-right">
+      <button class="fc2-icon-btn" id="themeToggleBtn" aria-label="Toggle theme">
+        <svg class="icon-sun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════
+       MAIN
+  ═══════════════════════════════════ -->
+  <main class="fc2-main">
+    <div class="fc2-content">
+
+      <!-- ── Score hero ── -->
+      <div class="td2-hero">
+        <span class="td2-emoji">
+          {% if pct >= 90 %}🏆{% elif pct >= 70 %}🎉{% elif pct >= 50 %}👍{% else %}💪{% endif %}
+        </span>
+        <div class="td2-title">{{ t('td_h') }}</div>
+        <div class="td2-subtitle">{{ total }} {{ t('td_questions') }}</div>
+
+        <!-- Donut ring -->
+        <div class="td2-ring-wrap">
+          {% set stroke = 251.2 %}
+          {% set dash = (pct / 100 * stroke)|round(1) %}
+          <svg width="130" height="130" viewBox="0 0 130 130" style="transform:rotate(-90deg);">
+            <circle cx="65" cy="65" r="54" fill="none" stroke="rgba(99,102,241,.10)" stroke-width="12"/>
+            <circle cx="65" cy="65" r="54" fill="none"
+              stroke="url(#ringGrad)"
+              stroke-width="12"
+              stroke-linecap="round"
+              stroke-dasharray="{{ dash }} {{ stroke }}"
+              stroke-dashoffset="0"/>
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%"   stop-color="#6366f1"/>
+                <stop offset="50%"  stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="td2-ring-center">
+            <span class="td2-pct-value"
+              style="{% if pct >= 70 %}background:linear-gradient(135deg,#10b981,#059669);{% elif pct >= 50 %}background:linear-gradient(135deg,#f59e0b,#d97706);{% else %}background:linear-gradient(135deg,#ef4444,#dc2626);{% endif %} -webkit-background-clip:text;background-clip:text;color:transparent;">
+              {{ pct }}%
+            </span>
+            <span class="td2-pct-label" style="color:#94a3b8;">score</span>
+          </div>
+        </div>
+
+        <!-- Stat chips -->
+        <div class="td2-stat-row">
+          <div class="td2-stat-chip chip-correct">
+            <div class="td2-stat-chip-value">{{ stats.correct }}</div>
+            <div class="td2-stat-chip-label">{{ t('td_correct') }}</div>
+          </div>
+          <div class="td2-stat-chip chip-wrong">
+            <div class="td2-stat-chip-value">{{ stats.wrong }}</div>
+            <div class="td2-stat-chip-label">{{ t('td_wrong') }}</div>
+          </div>
+        </div>
+
+        <!-- CTA buttons -->
+        <div class="td2-cta-row">
+          {% if deck_id %}
+          <a href="/deck/{{ deck_id }}/test" class="btn-v2-primary">{{ t('td_again') }}</a>
+          <a href="{{ url_for('deck_view', deck_id=deck_id) }}" class="btn-v2-ghost">{{ t('td_to_deck') }}</a>
+          {% else %}
+          <a href="/dashboard" class="btn-v2-primary">{{ t('td_to_dashboard') }}</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ── Placement block ── -->
+      {% if placement %}
+      <div class="td2-placement-card">
+        <div class="td2-placement-header">
+          <span style="font-size:24px;">🎯</span>
+          <div class="td2-placement-title">{{ t('pl_result_h') }}</div>
+        </div>
+        <p class="td2-placement-desc">
+          {{ t('pl_your_level') }}
+          <strong>
+            {% if placement.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}
+            {% elif placement.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}
+            {% else %}🔴 {{ t('lvl_advanced') }}{% endif %}
+          </strong>
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          {% if placement.collection %}
+          <a href="/collection/{{ placement.collection.slug }}" class="btn-v2-primary">
+            {{ t('pl_start_with') }} «{{ placement.collection.title }}» →
+          </a>
+          {% endif %}
+          <a href="/marketplace/subject/{{ placement.subject_slug }}" class="btn-v2-ghost">{{ t('pl_back_subject') }}</a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ── Review section ── -->
+      {% if review %}
+      <div class="td2-review-card">
+        <div class="td2-review-header">
+          <div class="td2-review-title">{{ t('td_review_h') }}</div>
+          <div class="td2-filter-row">
+            <button
+              @click="filter = 'wrong'"
+              :class="filter === 'wrong' ? 'active-wrong' : ''"
+              class="td2-filter-btn">
+              {{ t('td_only_wrong') }} ({{ stats.wrong }})
+            </button>
+            <button
+              @click="filter = 'all'"
+              :class="filter === 'all' ? 'active-all' : ''"
+              class="td2-filter-btn">
+              {{ t('td_all') }} ({{ total }})
+            </button>
+          </div>
+        </div>
+
+        <div>
+          {% for r in review %}
+          <div
+            class="td2-review-item {% if r.is_correct %}td2-item-correct{% else %}td2-item-wrong{% endif %}"
+            x-show="filter === 'all' || (filter === 'wrong' && {{ 'true' if not r.is_correct else 'false' }})">
+
+            <!-- Item header -->
+            <div class="td2-item-header">
+              <span class="td2-item-badge {% if r.is_correct %}badge-correct{% else %}badge-wrong{% endif %}">
+                {% if r.is_correct %}✓{% else %}✗{% endif %}
+              </span>
+              <div style="flex:1;">
+                <div class="td2-item-meta">{{ t('td_question_n') }} {{ loop.index }}</div>
+                <div class="td2-item-question">{{ r.front }}</div>
+              </div>
+            </div>
+
+            <!-- Options list or fallback -->
+            {% if r.options %}
+            <div class="td2-opt-list">
+              {% for opt in r.options %}
+              {% if opt.letter == r.correct %}
+              <div class="td2-opt-row opt-correct">
+                <span class="td2-opt-letter letter-correct">{{ opt.letter }}</span>
+                <span class="td2-opt-text">{{ opt.text }}</span>
+                <span class="td2-opt-chip chip-lbl-correct">{{ t('td_correct_chip') }}</span>
+              </div>
+              {% elif opt.letter == r.chosen and not r.is_correct %}
+              <div class="td2-opt-row opt-my-wrong">
+                <span class="td2-opt-letter letter-my-wrong">{{ opt.letter }}</span>
+                <span class="td2-opt-text">{{ opt.text }}</span>
+                <span class="td2-opt-chip chip-lbl-my-wrong">{{ t('td_your_chip') }}</span>
+              </div>
+              {% else %}
+              <div class="td2-opt-row opt-neutral">
+                <span class="td2-opt-letter letter-neutral">{{ opt.letter }}</span>
+                <span class="td2-opt-text">{{ opt.text }}</span>
+              </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="td2-answer-fallback">
+              <div><strong>{{ t('td_correct_answer') }}:</strong> {{ r.back }}</div>
+              {% if not r.is_correct and r.chosen %}
+              <div style="color:#dc2626;margin-top:4px;"><strong>{{ t('td_your_answer') }}:</strong> {{ r.chosen }}</div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- /.fc2-content -->
+  </main>
+
+</div><!-- /x-data -->
+
+<!-- Theme toggle script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('themeToggleBtn');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

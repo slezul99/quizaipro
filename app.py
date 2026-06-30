@@ -2821,7 +2821,7 @@ def test_view():
                 "collection": _target,
             }
             session.pop("test_placement", None)
-        return render_template("test_done.html",
+        return render_template("test_done_v2.html" if _use_v2() else "test_done.html",
             stats=stats, total=len(queue), deck_id=deck_id, review=review,
             placement=placement)
     conn = db.get_conn()
@@ -2847,7 +2847,7 @@ def test_view():
         if _m and _m.start() > 0:
             card_d["front"] = _front[:_m.start()].strip()
 
-    return render_template("test.html",
+    return render_template("test_v2.html" if _use_v2() else "test.html",
         card=card_d, options=options, correct_letter=correct_letter,
         idx=idx, total=len(queue),
         stats=session.get("test_stats", {"correct": 0, "wrong": 0}),
