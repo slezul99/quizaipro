@@ -186,7 +186,14 @@
     border: none; background: transparent; text-align: left; width: 100%;
     text-decoration: none;
   }
-  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .nav-item svg {
+    width: 18px; height: 18px; flex-shrink: 0;
+    padding: 6px; box-sizing: content-box;
+    background: rgba(99,102,241,.07); border-radius: 9px;
+    transition: background .18s, transform .18s;
+  }
+  .nav-item:hover svg { background: rgba(99,102,241,.14); transform: scale(1.05); }
+  .nav-item.active svg { background: rgba(99,102,241,.20); }
   .nav-item:hover { background: #f4f3fb; color: #1e293b; }
   .nav-item.active {
     background: linear-gradient(135deg, rgba(99,102,241,.12), rgba(139,92,246,.08));
@@ -718,6 +725,9 @@
   html.dark .nav-item { color: #94a3b8; }
   html.dark .nav-item:hover { background: rgba(99,102,241,.1); color: #e2e8f0; }
   html.dark .nav-item.active { background: linear-gradient(135deg,rgba(99,102,241,.22),rgba(139,92,246,.15)); color: #a5b4fc; }
+  html.dark .nav-item svg { background: rgba(99,102,241,.12); }
+  html.dark .nav-item:hover svg { background: rgba(99,102,241,.2); }
+  html.dark .nav-item.active svg { background: rgba(99,102,241,.3); }
   html.dark .sidebar-sep { background: rgba(99,102,241,.12); }
   html.dark .sidebar-promo {
     background: linear-gradient(135deg,rgba(99,102,241,.15),rgba(139,92,246,.18),rgba(236,72,153,.1));
