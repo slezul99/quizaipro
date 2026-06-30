@@ -379,13 +379,13 @@
   .stat-pill:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(99,102,241,.2); border-color: rgba(99,102,241,.2); }
 
   .stat-chip {
-    width: 30px; height: 30px; border-radius: 9px;
+    width: 38px; height: 38px; border-radius: 11px;
     display: grid; place-items: center;
     margin-bottom: 9px;
-    flex-shrink: 0;
+    flex-shrink: 0; font-size: 19px;
   }
-  .stat-chip svg { width: 15px; height: 15px; }
-  .stat-chip-ring { width: 30px; height: 30px; position: relative; margin-bottom: 9px; flex-shrink: 0; display: grid; place-items: center; }
+  .stat-chip svg { width: 19px; height: 19px; }
+  .stat-chip-ring { width: 38px; height: 38px; position: relative; margin-bottom: 9px; flex-shrink: 0; display: grid; place-items: center; }
 
   .stat-pill-val {
     font-family: 'Space Grotesk', sans-serif;
@@ -760,10 +760,12 @@
   html.dark .hero-illus::after {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(15,23,41,.55) 0%, rgba(30,41,75,.40) 100%);
+    background: radial-gradient(ellipse 78% 68% at 48% 44%, rgba(20,28,56,0) 26%, rgba(18,25,52,.82) 90%),
+                linear-gradient(180deg, rgba(15,23,41,.15), rgba(15,23,41,.34));
     pointer-events: none;
     z-index: 1;
   }
+  html.dark .hero-illus img { filter: saturate(.92) brightness(.93); }
 
   /* Section headings */
   html.dark .section-title { color: #e2e8f0; }
@@ -993,12 +995,12 @@
                   {% set r_pct = (retention.now | round | int) %}
                   {% set offset = (75.4 * (1 - r_pct / 100)) | round(1) %}
                   <div class="stat-chip-ring">
-                    <svg viewBox="0 0 32 32" width="30" height="30" style="transform:rotate(-90deg);">
+                    <svg viewBox="0 0 32 32" width="38" height="38" style="transform:rotate(-90deg);">
                       <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(16,185,129,.15)" stroke-width="3"/>
                       <circle cx="16" cy="16" r="12" fill="none" stroke="#10b981" stroke-width="3"
                         stroke-dasharray="75.4" stroke-dashoffset="{{ offset }}" stroke-linecap="round"/>
                     </svg>
-                    <div style="position:absolute;inset:0;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-size:7px;font-weight:800;color:#059669;">{{ r_pct }}%</div>
+                    <div style="position:absolute;inset:0;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:800;color:#059669;">{{ r_pct }}%</div>
                   </div>
                   <div class="stat-pill-val" style="color:#059669;">{{ r_pct }}%</div>
                 {% else %}
