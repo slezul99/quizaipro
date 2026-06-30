@@ -145,13 +145,14 @@
     background: #ffffff;
     border-right: 1px solid rgba(99,102,241,.08);
     display: flex; flex-direction: column;
-    padding: 20px 12px;
+    padding: 18px 12px 14px;
     position: sticky; top: var(--topbar-h);
     height: calc(100vh - var(--topbar-h));
-    overflow-y: auto;
+    overflow: hidden;
   }
 
-  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { width: 0; height: 0; }
   .sidebar-sep { height: 1px; background: rgba(99,102,241,.08); margin: 6px 4px; }
 
   .logo-tile {
@@ -178,7 +179,7 @@
 
   .nav-item {
     display: flex; align-items: center; gap: 11px;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border-radius: 11px;
     font-size: 13.5px; font-weight: 500;
     color: #64748b;
@@ -213,11 +214,12 @@
 
   /* Sidebar promo card */
   .sidebar-promo {
+    flex-shrink: 0;
     border-radius: 16px;
     background: linear-gradient(135deg, rgba(99,102,241,.10), rgba(139,92,246,.12), rgba(236,72,153,.08));
     border: 1.5px solid rgba(99,102,241,.18);
-    padding: 16px;
-    margin-top: 16px;
+    padding: 14px;
+    margin-top: 14px;
   }
   .promo-crown { width: 34px; height: 34px; border-radius: 10px; background: var(--brand-grad-tri); display: grid; place-items: center; margin-bottom: 10px; }
   .promo-title { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
@@ -236,10 +238,11 @@
 
   /* Sidebar user row */
   .sidebar-user {
+    flex-shrink: 0;
     display: flex; align-items: center; gap: 10px;
-    padding: 12px;
+    padding: 10px 12px 4px;
     border-top: 1px solid rgba(99,102,241,.08);
-    margin-top: 12px;
+    margin-top: 10px;
   }
   .sidebar-user .av {
     width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
