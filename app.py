@@ -958,12 +958,12 @@ def set_lang(lang):
 
 
 def _use_v2():
-    """Feature flag for the v2 redesign. OFF by default — prod behaviour is
-    unchanged. Toggle per-session with ?v2=1 / ?v2=0 on any core page."""
+    """Feature flag for the v2 redesign. ON by default (the redesign is the
+    live experience). Per-session opt-out with ?v2=0 (and ?v2=1 to opt back in)."""
     v = request.args.get("v2")
     if v is not None:
         session["use_v2"] = (v == "1")
-    return session.get("use_v2", False)
+    return session.get("use_v2", True)
 
 
 # ---------------------- auth (username/password) ----------------------------
