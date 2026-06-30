@@ -6553,7 +6553,7 @@ def tutor_page():
             print(f"[tutor_page] restore session error: {e}")
 
     return render_template(
-        "tutor.html",
+        "tutor_v2.html" if _use_v2() else "tutor.html",
         is_super_admin=is_super_admin(user),
         deepseek_available=ai_gen.is_deepseek_available(),
     )
