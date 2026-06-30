@@ -225,12 +225,13 @@ def create_goal(conn, user, *, title: str, target_type: str, target_id: int,
              start_date, end_date, start_at, end_at,
              total_cards, daily_quota, exam_required, solo_mode)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (user["id"], title, target_type, target_id, difficulty,
+     RETURNING id""", (user["id"], title, target_type, target_id, difficulty,
           today_iso, end_date, now.isoformat(), end_dt.isoformat(),
           len(cards), quota, 1 if exam_required else 0,
           1 if solo_mode else 0))
+    _gid = cur.fetchone()[0]   # fetch RETURNING before commit (SQLite-safe)
     conn.commit()
-    return cur.lastrowid
+    return _gid
 
 
 def get_today_progress(conn, user_id: int, goal: dict) -> dict:

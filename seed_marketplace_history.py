@@ -30,7 +30,7 @@ def upsert_subject(slug, ru, en, uz, dru, den, duz, icon, color, color2, sort):
     c.execute("""INSERT OR IGNORE INTO mp_subjects
         (slug,title_ru,title_en,title_uz,desc_ru,desc_en,desc_uz,
          icon,color,color2,sort_order,is_active)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,1)""",
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,1) RETURNING id""",
         (slug, ru, en, uz, dru, den, duz, icon, color, color2, sort))
     return c.execute("SELECT id FROM mp_subjects WHERE slug=?", (slug,)).fetchone()[0]
 
@@ -49,9 +49,9 @@ if not sys_user:
     from werkzeug.security import generate_password_hash
     import secrets
     c.execute("""INSERT INTO users (username,password_hash,role,full_name,lang)
-        VALUES ('quizaipro_system',?,?,?,?)""",
+        VALUES ('quizaipro_system',?,?,?,?) RETURNING id""",
         (generate_password_hash(secrets.token_hex(32)), 'individual', 'QuizAIPro Library', 'en'))
-    OWNER = c.lastrowid
+    OWNER = c.fetchone()[0]
 else:
     OWNER = sys_user[0]
 
@@ -72,8 +72,8 @@ def get_or_create_deck(name, icon, desc, deck_type="mcq"):
     if r:
         return r[0]
     c.execute("""INSERT INTO decks (owner_id,name,icon,description,is_public,deck_type,created_via)
-        VALUES (?,?,?,?,1,?,'seed')""", (OWNER, name, icon, desc, deck_type))
-    return c.lastrowid
+        VALUES (?,?,?,?,1,?,'seed') RETURNING id""", (OWNER, name, icon, desc, deck_type))
+    return c.fetchone()[0]
 
 
 def link_deck(coll_id, deck_id, sort=1):

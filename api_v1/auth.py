@@ -133,11 +133,12 @@ def register():
 
         cur = conn.execute(
             """INSERT INTO users (org_id, username, password_hash, role, full_name, lang)
-               VALUES (NULL, ?, ?, 'individual', ?, 'ru')""",
+               VALUES (NULL, ?, ?, 'individual', ?, 'ru') RETURNING id""",
             (email, generate_password_hash(password), full_name),
         )
+        _uid = cur.fetchone()[0]   # fetch RETURNING before commit (SQLite-safe)
         conn.commit()
-        user = conn.execute("SELECT * FROM users WHERE id=?", (cur.lastrowid,)).fetchone()
+        user = conn.execute("SELECT * FROM users WHERE id=?", (_uid,)).fetchone()
     finally:
         conn.close()
 

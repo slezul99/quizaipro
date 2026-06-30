@@ -471,14 +471,18 @@ def post_test_result():
             INSERT OR IGNORE INTO test_attempts
                 (user_id, scope_type, scope_id, scope_name, total_q, correct, wrong,
                  score_pct, duration_sec, is_perfect, xp_earned, started_at, finished_at, client_result_id)
-            VALUES (?, 'deck', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, 'deck', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
         """, (user["id"], parsed["deck_id"], deck["name"], parsed["total_questions"],
               parsed["correct_count"], wrong, score_pct, parsed["duration_seconds"],
               is_perfect, xp_gain, started_at.isoformat(), completed_at.isoformat(), parsed["id"]))
-        already_applied = cur.rowcount == 0
+        # OR IGNORE + RETURNING: a returned row means inserted; None means the
+        # client_result_id already existed (idempotent retry). rowcount is not
+        # reliable alongside RETURNING, so fetchone() is the signal.
+        _row = cur.fetchone()
+        already_applied = _row is None
 
         if not already_applied:
-            attempt_id = cur.lastrowid
+            attempt_id = _row[0]
             _save_attempt_answers(conn, attempt_id, body.get("answers"))
             bump_streak(conn, user, xp_gain, completed_at.isoformat())
             ach_mod.award_test_completed(conn, user["id"], perfect=(is_perfect == 1))

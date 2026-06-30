@@ -82,8 +82,8 @@ def find_or_create_user(email: str, name: str = "") -> int | None:
         return user["id"]
     # Sozdayem
     cur = conn.execute("""INSERT INTO users (org_id, username, password_hash, role, full_name, lang)
-                          VALUES (NULL, ?, ?, 'individual', ?, 'ru')""",
+                          VALUES (NULL, ?, ?, 'individual', ?, 'ru') RETURNING id""",
                        (email, generate_password_hash(secrets.token_urlsafe(16)), name))
-    uid = cur.lastrowid
+    uid = cur.fetchone()[0]
     conn.commit(); conn.close()
     return uid

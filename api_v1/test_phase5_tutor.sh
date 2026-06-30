@@ -37,14 +37,12 @@ AUTH="Authorization: Bearer $ACCESS"
 echo ""
 echo "=== 0b. Create a deck (to test deck-linked conversations) ==="
 SETUP=$(python - "$EMAIL" <<'PYEOF'
-import sys, sqlite3
-conn = sqlite3.connect("quizpro.db")
-conn.row_factory = sqlite3.Row
+import sys, db   # engine-aware: SQLite or Postgres per DATABASE_URL
+conn = db.get_conn()
 email = sys.argv[1]
 user = conn.execute("SELECT id FROM users WHERE username=?", (email,)).fetchone()
 uid = user["id"]
-cur = conn.execute("INSERT INTO decks (owner_id, name, description, is_public) VALUES (?, 'QA5 Tutor Deck', 'qa5', 0)", (uid,))
-deck_id = cur.lastrowid
+deck_id = conn.execute("INSERT INTO decks (owner_id, name, description, is_public) VALUES (?, 'QA5 Tutor Deck', 'qa5', 0) RETURNING id", (uid,)).fetchone()[0]
 conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, 'Hello', 'Привет', '')", (deck_id,))
 conn.commit()
 print(f"DECK_ID={deck_id}")

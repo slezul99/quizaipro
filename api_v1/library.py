@@ -289,19 +289,31 @@ def create_deck():
     desc = (desc or "").strip()[:_DECK_DESC_MAX_LEN] if isinstance(desc, str) else ""
     color = _clean_color(body.get("color"))
     cover = _clean_cover(body.get("cover"))
+    collection_id = body.get("collection_id")
+    cat_id = None
+    if collection_id not in (None, ""):
+        try:
+            cat_id = int(collection_id)
+        except (TypeError, ValueError):
+            return _err("validation_error", "collection_id must be an integer", 400)
 
     conn = db.get_conn()
     try:
+        if cat_id is not None:
+            cat = conn.execute("SELECT * FROM categories WHERE id=?", (cat_id,)).fetchone()
+            if cat is None or not _user_owns_category(user, cat):
+                return _err("validation_error", "collection_id is invalid", 400)
         if user["org_id"]:
             cur = conn.execute(
-                "INSERT INTO decks (org_id, name, description, icon, color, cover, created_via) VALUES (?, ?, ?, '📚', ?, ?, 'mobile')",
-                (user["org_id"], title, desc, color, cover))
+                "INSERT INTO decks (org_id, category_id, name, description, icon, color, cover, created_via) VALUES (?, ?, ?, ?, '📚', ?, ?, 'mobile') RETURNING id",
+                (user["org_id"], cat_id, title, desc, color, cover))
         else:
             cur = conn.execute(
-                "INSERT INTO decks (owner_id, name, description, icon, color, cover, created_via) VALUES (?, ?, ?, '📚', ?, ?, 'mobile')",
-                (user["id"], title, desc, color, cover))
+                "INSERT INTO decks (owner_id, category_id, name, description, icon, color, cover, created_via) VALUES (?, ?, ?, ?, '📚', ?, ?, 'mobile') RETURNING id",
+                (user["id"], cat_id, title, desc, color, cover))
+        _did = cur.fetchone()[0]   # fetch RETURNING before commit (SQLite-safe)
         conn.commit()
-        data = _fetch_one_serialized(conn, user, cur.lastrowid)
+        data = _fetch_one_serialized(conn, user, _did)
     finally:
         conn.close()
     return jsonify({"data": data}), 201
@@ -329,6 +341,15 @@ def update_deck(deck_id):
         sets["color"] = _clean_color(body.get("color"))
     if "cover" in body:
         sets["cover"] = _clean_cover(body.get("cover"))
+    if "collection_id" in body:          # move into / out of a collection
+        cid = body.get("collection_id")
+        if cid in (None, ""):
+            sets["category_id"] = None
+        else:
+            try:
+                sets["category_id"] = int(cid)
+            except (TypeError, ValueError):
+                return _err("validation_error", "collection_id must be an integer", 400)
     if not sets:
         return _err("validation_error", "no fields to update", 400)
 
@@ -339,6 +360,10 @@ def update_deck(deck_id):
             return _err("not_found", "Колода не найдена", 404)
         if not _user_owns_deck(user, deck):
             return _err("forbidden", "Нет доступа к этой колоде", 403)
+        if sets.get("category_id") is not None:
+            tcat = conn.execute("SELECT * FROM categories WHERE id=?", (sets["category_id"],)).fetchone()
+            if tcat is None or not _user_owns_category(user, tcat):
+                return _err("validation_error", "collection_id is invalid", 400)
         clause = ", ".join(f"{k}=?" for k in sets)
         conn.execute(f"UPDATE decks SET {clause} WHERE id=?", (*sets.values(), deck_id))
         conn.commit()
@@ -360,6 +385,140 @@ def delete_deck(deck_id):
         if not _user_owns_deck(user, deck):
             return _err("forbidden", "Нет доступа к этой колоде", 403)
         conn.execute("DELETE FROM decks WHERE id=?", (deck_id,))  # cascades to cards
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"data": {"deleted": True}})
+
+
+# ───────────────── Collections (categories) write API ─────────────────
+# A "collection" in the product is a user `categories` row; decks link via
+# decks.category_id (FK ON DELETE SET NULL — deleting a collection un-files its
+# decks rather than destroying them).
+_CAT_NAME_MAX_LEN = 80
+
+
+def _user_owns_category(user, cat):
+    if user["org_id"]:
+        return cat["org_id"] == user["org_id"]
+    return cat["owner_id"] == user["id"]
+
+
+def _serialize_collection(c, deck_count):
+    return {
+        "id": str(c["id"]),
+        "name": c["name"],
+        "description": "",
+        "icon": ((c["icon"] if "icon" in c.keys() else None) or "").strip() or "📁",
+        "cover_color_hex": (c["color"] if c["color"] else None) or _palette_color(c["id"]),
+        "deck_count": deck_count,
+        "created_at": c["created_at"],
+    }
+
+
+@library_bp.route("/collections", methods=["POST"])
+@jwt_auth.jwt_required
+def create_collection():
+    user = g.current_user
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Invalid JSON body", 400)
+    name = (body.get("name") or "").strip()
+    if not name:
+        return _err("validation_error", "name is required", 400)
+    if len(name) > _CAT_NAME_MAX_LEN:
+        return _err("validation_error", f"name must be at most {_CAT_NAME_MAX_LEN} characters", 400)
+    color = _clean_color(body.get("color")) or "#3B82F6"
+    icon = (body.get("icon") or "").strip()[:8] or "📁"
+    conn = db.get_conn()
+    try:
+        if user["org_id"]:
+            cid = conn.execute(
+                "INSERT INTO categories (org_id, name, icon, color) VALUES (?, ?, ?, ?) RETURNING id",
+                (user["org_id"], name, icon, color)).fetchone()[0]
+        else:
+            cid = conn.execute(
+                "INSERT INTO categories (owner_id, name, icon, color) VALUES (?, ?, ?, ?) RETURNING id",
+                (user["id"], name, icon, color)).fetchone()[0]
+        conn.commit()
+        cat = conn.execute("SELECT * FROM categories WHERE id=?", (cid,)).fetchone()
+        data = _serialize_collection(cat, 0)
+    finally:
+        conn.close()
+    return jsonify({"data": data}), 201
+
+
+@library_bp.route("/collections/<int:collection_id>", methods=["GET"])
+@jwt_auth.jwt_required
+def get_collection(collection_id):
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        cat = conn.execute("SELECT * FROM categories WHERE id=?", (collection_id,)).fetchone()
+        if cat is None:
+            return _err("not_found", "Коллекция не найдена", 404)
+        if not _user_owns_category(user, cat):
+            return _err("forbidden", "Нет доступа к этой коллекции", 403)
+        decks = [d for d in _fetch_user_decks(conn, user) if d.get("category_id") == collection_id]
+        data = _serialize_collection(cat, len(decks))
+        data["decks"] = [_serialize_library_deck(d) for d in _sort_decks(decks, "createdAt")]
+    finally:
+        conn.close()
+    return jsonify({"data": data})
+
+
+@library_bp.route("/collections/<int:collection_id>", methods=["PUT", "PATCH"])
+@jwt_auth.jwt_required
+def update_collection(collection_id):
+    user = g.current_user
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _err("validation_error", "Invalid JSON body", 400)
+    sets = {}
+    if "name" in body:
+        name = (body.get("name") or "").strip()
+        if not name:
+            return _err("validation_error", "name cannot be empty", 400)
+        if len(name) > _CAT_NAME_MAX_LEN:
+            return _err("validation_error", f"name must be at most {_CAT_NAME_MAX_LEN} characters", 400)
+        sets["name"] = name
+    if "color" in body:
+        sets["color"] = _clean_color(body.get("color")) or "#3B82F6"
+    if "icon" in body:
+        sets["icon"] = (body.get("icon") or "").strip()[:8] or "📁"
+    if not sets:
+        return _err("validation_error", "no fields to update", 400)
+    conn = db.get_conn()
+    try:
+        cat = conn.execute("SELECT * FROM categories WHERE id=?", (collection_id,)).fetchone()
+        if cat is None:
+            return _err("not_found", "Коллекция не найдена", 404)
+        if not _user_owns_category(user, cat):
+            return _err("forbidden", "Нет доступа к этой коллекции", 403)
+        clause = ", ".join(f"{k}=?" for k in sets)
+        conn.execute(f"UPDATE categories SET {clause} WHERE id=?", (*sets.values(), collection_id))
+        conn.commit()
+        cat = conn.execute("SELECT * FROM categories WHERE id=?", (collection_id,)).fetchone()
+        deck_count = conn.execute("SELECT COUNT(*) AS c FROM decks WHERE category_id=?", (collection_id,)).fetchone()["c"]
+        data = _serialize_collection(cat, deck_count)
+    finally:
+        conn.close()
+    return jsonify({"data": data})
+
+
+@library_bp.route("/collections/<int:collection_id>", methods=["DELETE"])
+@jwt_auth.jwt_required
+def delete_collection(collection_id):
+    user = g.current_user
+    conn = db.get_conn()
+    try:
+        cat = conn.execute("SELECT * FROM categories WHERE id=?", (collection_id,)).fetchone()
+        if cat is None:
+            return _err("not_found", "Коллекция не найдена", 404)
+        if not _user_owns_category(user, cat):
+            return _err("forbidden", "Нет доступа к этой коллекции", 403)
+        # decks survive — decks.category_id -> NULL via FK ON DELETE SET NULL
+        conn.execute("DELETE FROM categories WHERE id=?", (collection_id,))
         conn.commit()
     finally:
         conn.close()

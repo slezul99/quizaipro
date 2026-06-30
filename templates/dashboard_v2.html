@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizAIPro — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── Design Tokens ── */
+  :root {
+    --brand-1: #6366f1;
+    --brand-2: #8b5cf6;
+    --brand-3: #ec4899;
+    --brand-grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --brand-grad-tri: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    --success: #10b981;
+    --amber: #f59e0b;
+    --orange: #f97316;
+    --page-bg: #f6f5fb;
+    --sidebar-w: 240px;
+    --topbar-h: 68px;
+    --shadow-card: 0 4px 20px -6px rgba(100,90,180,.12);
+    --shadow-raised: 0 16px 40px -12px rgba(99,102,241,.22);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --text: #1e293b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--page-bg); }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.35); border-radius: 3px; }
+
+  /* ── Layout shell ── */
+  .layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    grid-template-rows: var(--topbar-h) 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Top Bar ── */
+  .topbar {
+    grid-column: 1 / -1;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(99,102,241,.08);
+    box-shadow: 0 1px 16px -4px rgba(99,102,241,.09);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 20px;
+    height: var(--topbar-h);
+  }
+
+  /* Logo */
+  .logo-tile {
+    width: 38px; height: 38px;
+    border-radius: 11px;
+    background: var(--brand-grad-tri);
+    display: grid; place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px; font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px -2px rgba(99,102,241,.45);
+    letter-spacing: -0.03em;
+  }
+  .wordmark {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px; font-weight: 700;
+    letter-spacing: -0.03em;
+    background: var(--brand-grad-tri);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+
+  /* Search */
+  .search-wrap {
+    flex: 1; min-width: 0; max-width: 320px;
+    display: flex; align-items: center; gap: 9px;
+    background: #f4f3fb;
+    border: 1.5px solid rgba(99,102,241,.10);
+    border-radius: 999px;
+    padding: 0 14px;
+    height: 40px;
+    color: #94a3b8;
+    font-size: 13.5px;
+    transition: border-color .2s;
+  }
+  .search-wrap:focus-within { border-color: var(--brand-1); }
+  .search-wrap input { border: none; background: transparent; outline: none; flex: 1; font: inherit; color: #334155; font-size: 13.5px; }
+  .search-wrap input::placeholder { color: #94a3b8; }
+  .kbd-hint {
+    background: #fff; border: 1px solid rgba(0,0,0,.10);
+    border-radius: 5px; padding: 1px 6px;
+    font-size: 11px; font-weight: 700; color: #94a3b8;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* Bell */
+  .bell-btn {
+    position: relative; width: 40px; height: 40px;
+    border-radius: 12px; background: #f4f3fb;
+    border: 1.5px solid rgba(99,102,241,.10);
+    display: grid; place-items: center;
+    cursor: pointer; color: #64748b;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .bell-btn:hover { background: #ede9fe; color: var(--brand-1); }
+
+  /* Topbar chips */
+  .topbar-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 700;
+    border: 1.5px solid rgba(99,102,241,.12); background: #fff;
+    color: var(--text); white-space: nowrap;
+  }
+  .topbar-chip--streak { border-color: rgba(249,115,22,.25); background: rgba(249,115,22,.06); color: #c2410c; }
+  .topbar-chip--xp     { border-color: rgba(99,102,241,.22); background: rgba(99,102,241,.07); color: #4338ca; }
+
+  /* User avatar */
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #ec4899 100%);
+    display: grid; place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px; font-weight: 800; color: #fff;
+    letter-spacing: -0.01em;
+    box-shadow: 0 2px 8px -2px rgba(99,102,241,.4);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: #ffffff;
+    border-right: 1px solid rgba(99,102,241,.08);
+    display: flex; flex-direction: column;
+    padding: 20px 12px;
+    position: sticky; top: var(--topbar-h);
+    height: calc(100vh - var(--topbar-h));
+    overflow-y: auto;
+  }
+
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .sidebar-sep { height: 1px; background: rgba(99,102,241,.08); margin: 6px 4px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 10px 12px;
+    border-radius: 11px;
+    font-size: 13.5px; font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all .18s var(--ease);
+    position: relative;
+    border: none; background: transparent; text-align: left; width: 100%;
+    text-decoration: none;
+  }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .nav-item:hover { background: #f4f3fb; color: #1e293b; }
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(99,102,241,.12), rgba(139,92,246,.08));
+    color: var(--brand-1);
+    font-weight: 600;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 22px;
+    background: var(--brand-grad-tri);
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* Sidebar promo card */
+  .sidebar-promo {
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(99,102,241,.10), rgba(139,92,246,.12), rgba(236,72,153,.08));
+    border: 1.5px solid rgba(99,102,241,.18);
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .promo-crown { width: 34px; height: 34px; border-radius: 10px; background: var(--brand-grad-tri); display: grid; place-items: center; margin-bottom: 10px; }
+  .promo-title { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+  .promo-sub { font-size: 11.5px; color: #64748b; line-height: 1.45; margin-bottom: 13px; }
+  .btn-upgrade {
+    display: block; text-align: center; width: 100%;
+    padding: 9px 0;
+    border-radius: 999px;
+    background: var(--brand-grad-tri);
+    color: #fff; font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer;
+    box-shadow: 0 6px 16px -4px rgba(99,102,241,.45);
+    transition: all .2s var(--ease);
+  }
+  .btn-upgrade:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -4px rgba(99,102,241,.6); }
+
+  /* Sidebar user row */
+  .sidebar-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px;
+    border-top: 1px solid rgba(99,102,241,.08);
+    margin-top: 12px;
+  }
+  .sidebar-user .av {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #ec4899 100%);
+    display: grid; place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px; font-weight: 800; color: #fff;
+    letter-spacing: -0.01em;
+    box-shadow: 0 2px 6px -2px rgba(99,102,241,.35);
+  }
+  .sidebar-user .nm { font-size: 13px; font-weight: 600; color: var(--text); }
+  .sidebar-user .pl { font-size: 11px; color: var(--amber); font-weight: 600; }
+  .kebab { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-size: 16px; display: grid; place-items: center; transition: all .15s; }
+  .kebab:hover { background: #f1f0fa; color: #1e293b; }
+
+  /* ── Main area ── */
+  .main-area { padding: 28px 28px 48px; overflow-y: auto; }
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    max-width: 1400px;
+  }
+  .content-col { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+
+  /* ── Cards ── */
+  .card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(99,102,241,.07);
+  }
+
+  /* Section headers */
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px; font-weight: 700;
+    color: var(--text); letter-spacing: -0.025em;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .view-all {
+    font-size: 13px; font-weight: 600; color: var(--brand-1);
+    text-decoration: none; cursor: pointer;
+    transition: color .15s;
+  }
+  .view-all:hover { color: var(--brand-2); }
+
+  /* ── Hero banner ── */
+  .hero-banner {
+    border-radius: 22px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, #f3f1fb 0%, #faf9ff 100%);
+    position: relative; overflow: visible;
+    display: flex; align-items: center; gap: 0;
+    min-height: 200px;
+    box-shadow: 0 4px 24px -6px rgba(99,102,241,.12), 0 1px 0 rgba(255,255,255,.9) inset;
+    border: 1px solid rgba(99,102,241,.09);
+  }
+
+  /* Illustration side */
+  .hero-illus {
+    width: 250px; min-width: 200px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    align-self: stretch;
+    margin: -28px 0 -28px -32px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 22px 0 0 22px;
+  }
+  .hero-illus img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .hero-content { flex: 1; min-width: 0; padding-left: 26px; }
+  .hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px; font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  .hero-sub { font-size: 14px; color: #64748b; margin-bottom: 22px; }
+
+  /* Stat tile row — hero layout: XP hero spans full width, 3 compacts below */
+  .stat-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+  }
+  /* Hero stat (XP) — spans full row */
+  .stat-pill--hero {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(99,102,241,.10) 0%, rgba(139,92,246,.10) 100%);
+    border: 1.5px solid rgba(99,102,241,.22);
+    border-radius: 16px;
+    padding: 16px 18px 15px;
+    box-shadow: 0 4px 16px -6px rgba(99,102,241,.18);
+    transition: all .22s var(--ease);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .stat-pill--hero:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -8px rgba(99,102,241,.28); border-color: rgba(99,102,241,.38); }
+  .stat-pill--hero .stat-chip {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(139,92,246,.18));
+  }
+  .stat-pill--hero .stat-chip svg { width: 20px; height: 20px; }
+  .stat-pill--hero .stat-pill-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px; font-weight: 800;
+    color: var(--brand-1); line-height: 1; letter-spacing: -0.03em;
+  }
+  .stat-pill--hero .stat-pill-label {
+    font-size: 11.5px; color: #64748b; font-weight: 600; margin-top: 2px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  /* Compact stats */
+  .stat-pill {
+    background: #fff;
+    min-width: 0;
+    border: 1px solid rgba(99,102,241,.10);
+    border-radius: 16px;
+    padding: 13px 12px 12px;
+    box-shadow: 0 2px 10px -4px rgba(99,102,241,.12);
+    transition: all .22s var(--ease);
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .stat-pill:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(99,102,241,.2); border-color: rgba(99,102,241,.2); }
+
+  .stat-chip {
+    width: 30px; height: 30px; border-radius: 9px;
+    display: grid; place-items: center;
+    margin-bottom: 9px;
+    flex-shrink: 0;
+  }
+  .stat-chip svg { width: 15px; height: 15px; }
+  .stat-chip-ring { width: 30px; height: 30px; position: relative; margin-bottom: 9px; flex-shrink: 0; display: grid; place-items: center; }
+
+  .stat-pill-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px; font-weight: 800;
+    color: var(--text); line-height: 1; letter-spacing: -0.02em;
+    margin-bottom: 3px;
+  }
+  .stat-pill-label { font-size: 10.5px; color: #94a3b8; font-weight: 600; }
+
+  /* ── Continue Learning cards ── */
+  .course-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .course-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(99,102,241,.08);
+    box-shadow: 0 2px 12px -4px rgba(99,102,241,.10);
+    transition: all .3s var(--ease);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+  .course-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px -10px rgba(99,102,241,.25); border-color: rgba(99,102,241,.18); }
+
+  /* Cover card — initial letter tile (replaces emoji placeholder) */
+  .course-cover-initial {
+    height: 108px; position: relative; overflow: hidden;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+  }
+  /* Decorative shimmer/noise overlay on the cover */
+  .course-cover-initial::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(255,255,255,.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 75%, rgba(255,255,255,.10) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .course-cover-letter {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 46px; font-weight: 800;
+    color: rgba(255,255,255,.92);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    position: relative; z-index: 1;
+    text-shadow: 0 2px 16px rgba(0,0,0,.18);
+    user-select: none;
+  }
+
+  .course-body { padding: 14px 15px 15px; flex: 1; display: flex; flex-direction: column; }
+  .course-subject {
+    display: inline-block;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    margin-bottom: 8px; align-self: flex-start;
+  }
+  .course-title {
+    font-weight: 700; font-size: 13.5px; color: var(--text);
+    margin-bottom: 11px; line-height: 1.35;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; min-height: 2.7em;
+  }
+  .progress-wrap { margin-bottom: 11px; }
+  .progress-pct-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .progress-label { font-size: 10.5px; color: #64748b; font-weight: 600; }
+  .progress-pct-val { font-size: 10.5px; color: var(--brand-1); font-weight: 700; }
+  .progress-track {
+    height: 5px; background: rgba(99,102,241,.08); border-radius: 999px; overflow: hidden;
+  }
+  .progress-fill { height: 100%; border-radius: 999px; background: var(--brand-grad-tri); }
+  .btn-continue {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 700;
+    color: var(--brand-1);
+    background: rgba(99,102,241,.08);
+    border-radius: 999px; padding: 7px 14px;
+    border: 1px solid rgba(99,102,241,.12);
+    cursor: pointer; align-self: flex-start;
+    transition: all .18s;
+    margin-top: auto;
+  }
+  .btn-continue:hover { background: rgba(99,102,241,.16); border-color: rgba(99,102,241,.28); }
+
+  /* chevron nav row */
+  .chevron-row { display: flex; gap: 6px; }
+  .chevron-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1.5px solid rgba(99,102,241,.15);
+    background: #fff; color: #64748b;
+    display: grid; place-items: center; cursor: pointer;
+    transition: all .18s;
+  }
+  .chevron-btn:hover { background: #ede9fe; color: var(--brand-1); border-color: rgba(99,102,241,.3); }
+  .chevron-btn svg { width: 14px; height: 14px; }
+
+  /* ── Analytics ── */
+  .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .analytics-card {
+    background: #fff;
+    border-radius: 18px; padding: 18px;
+    border: 1px solid rgba(99,102,241,.08);
+    box-shadow: 0 2px 12px -4px rgba(99,102,241,.09);
+    transition: all .3s var(--ease);
+  }
+  .analytics-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -8px rgba(99,102,241,.2); }
+  .analytics-label { font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+  .analytics-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px; font-weight: 800;
+    color: var(--text); letter-spacing: -0.02em; line-height: 1;
+    margin-bottom: 3px;
+  }
+  .analytics-delta {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--success); margin-bottom: 12px;
+  }
+  .analytics-delta svg { width: 12px; height: 12px; }
+  /* Chart wrapper for gridlines */
+  .chart-wrap { position: relative; }
+  .chart-gridlines {
+    position: absolute; inset: 0 0 0 0;
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .chart-gridlines span {
+    display: block; height: 1px;
+    background: rgba(99,102,241,.07);
+    width: 100%;
+  }
+
+  /* Analytics empty state — intentional baseline, not a broken chart */
+  .chart-empty {
+    position: relative; height: 52px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .chart-empty-baseline {
+    width: 100%; height: 1px;
+    background: rgba(99,102,241,.12);
+    border-radius: 1px;
+  }
+  .chart-empty-msg {
+    font-size: 11px; color: #94a3b8; font-weight: 500;
+    margin-top: 8px; line-height: 1.4;
+  }
+  /* Sparkline SVG */
+  .sparkline { display: block; width: 100%; }
+  /* Bar chart */
+  .bar-chart { width: 100%; }
+
+  /* ── Right rail ── */
+  .right-rail { display: flex; flex-direction: column; gap: 20px; }
+  .rail-card { background: #fff; border-radius: 20px; box-shadow: var(--shadow-card); border: 1px solid rgba(99,102,241,.07); padding: 22px; }
+  .rail-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .rail-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--text); letter-spacing: -0.02em;
+  }
+  .rail-link { font-size: 12.5px; font-weight: 600; color: var(--brand-1); cursor: pointer; text-decoration: none; }
+
+  /* Weekly goal ring */
+  .goal-ring-container { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+  .goal-big {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px; font-weight: 800;
+    color: var(--text); line-height: 1; letter-spacing: -0.02em;
+  }
+  .goal-sub { font-size: 10px; font-weight: 600; color: #94a3b8; text-align: center; margin-top: 3px; }
+  .goal-caption { font-size: 12px; color: #64748b; text-align: center; line-height: 1.45; margin-bottom: 16px; }
+
+  /* Day dots */
+  .day-dots { display: flex; gap: 7px; justify-content: center; }
+  .day-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .day-dot {
+    width: 32px; height: 32px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 800;
+    color: #94a3b8;
+    background: rgba(99,102,241,.06);
+    border: 1.5px solid rgba(99,102,241,.10);
+    transition: all .2s;
+  }
+  .day-dot.filled {
+    background: var(--brand-grad-tri);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 10px -3px rgba(99,102,241,.45);
+  }
+  .day-dot.future {
+    opacity: 0.4;
+  }
+  .day-dot svg { width: 13px; height: 13px; }
+  .day-label { font-size: 10px; font-weight: 600; color: #94a3b8; }
+
+  /* Recent activity */
+  .activity-list { display: flex; flex-direction: column; gap: 1px; }
+  .activity-item {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(99,102,241,.06);
+  }
+  .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+  /* Icon chip — neutral tint per §3 "Icon chips" */
+  .activity-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: grid; place-items: center;
+    flex-shrink: 0; font-size: 17px;
+    background: rgba(99,102,241,.08);
+    border: 1.5px solid rgba(99,102,241,.12);
+    position: relative;
+  }
+  /* Small grade-colour status dot */
+  .activity-icon .grade-dot {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 9px; height: 9px; border-radius: 999px;
+    border: 1.5px solid #fff;
+  }
+  html.dark .activity-icon .grade-dot { border-color: rgba(30,41,75,.9); }
+  html.dark .activity-icon {
+    background: rgba(99,102,241,.12);
+    border-color: rgba(99,102,241,.2);
+  }
+  .activity-content { flex: 1; min-width: 0; }
+  .activity-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .activity-sub { font-size: 11.5px; color: #64748b; margin-top: 2px; }
+  .activity-time { font-size: 11px; font-weight: 600; color: #94a3b8; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 32px 16px;
+    color: #94a3b8; font-size: 13px; font-weight: 500;
+  }
+  .empty-state .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+  /* Gradient text utility */
+  .grad-text {
+    background: var(--brand-grad-tri);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Week dropdown */
+  .week-drop {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 600; color: #64748b;
+    background: #f4f3fb; border: 1.5px solid rgba(99,102,241,.10);
+    border-radius: 10px; padding: 7px 12px;
+    cursor: pointer; transition: all .18s;
+    border: none;
+  }
+  .week-drop:hover { border-color: rgba(99,102,241,.25); color: var(--brand-1); }
+  .week-drop svg { width: 13px; height: 13px; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .content-grid { grid-template-columns: 1fr; }
+    .course-cards { grid-template-columns: repeat(2, 1fr); }
+    .analytics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .course-cards { grid-template-columns: 1fr 1fr; }
+    .analytics-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .course-cards, .analytics-grid { grid-template-columns: 1fr; }
+    .main-area { padding: 16px; }
+    .stat-pills { gap: 7px; }
+    .stat-pill { padding: 8px 10px; }
+  }
+
+  /* ════════════════════════════════════════════════
+     DARK THEME — token overrides only
+     ════════════════════════════════════════════════ */
+  html.dark {
+    --page-bg: #0f1729;
+    --shadow-card: 0 12px 40px -8px rgba(0,0,0,.5);
+    --shadow-raised: 0 20px 50px -10px rgba(0,0,0,.65);
+    --text: #e2e8f0;
+  }
+  html.dark body {
+    background: linear-gradient(180deg,#0f1729,#141c38);
+    color: var(--text);
+  }
+
+  /* Topbar */
+  html.dark .topbar {
+    background: rgba(15,23,41,.92);
+    border-bottom-color: rgba(99,102,241,.15);
+    box-shadow: 0 1px 20px -4px rgba(0,0,0,.4);
+    backdrop-filter: blur(12px);
+  }
+  html.dark .search-wrap {
+    background: rgba(15,23,41,.7);
+    border-color: rgba(99,102,241,.3);
+    color: #94a3b8;
+  }
+  html.dark .search-wrap input { color: #e2e8f0; }
+  html.dark .search-wrap input::placeholder { color: #64748b; }
+  html.dark .kbd-hint { background: rgba(30,41,75,.8); border-color: rgba(99,102,241,.25); color: #64748b; }
+  html.dark .bell-btn {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.2);
+    color: #94a3b8;
+  }
+  html.dark .bell-btn:hover { background: rgba(99,102,241,.2); color: #a5b4fc; }
+  html.dark .topbar-chip { background: rgba(30,41,75,.8); border-color: rgba(99,102,241,.25); color: #cbd5e1; }
+  html.dark .topbar-chip--streak { background: rgba(249,115,22,.12); border-color: rgba(249,115,22,.3); color: #fb923c; }
+  html.dark .topbar-chip--xp { background: rgba(99,102,241,.15); border-color: rgba(99,102,241,.35); color: #a5b4fc; }
+
+  /* Sidebar */
+  html.dark .sidebar {
+    background: #111a2e;
+    border-right-color: rgba(99,102,241,.15);
+  }
+  html.dark .nav-item { color: #94a3b8; }
+  html.dark .nav-item:hover { background: rgba(99,102,241,.1); color: #e2e8f0; }
+  html.dark .nav-item.active { background: linear-gradient(135deg,rgba(99,102,241,.22),rgba(139,92,246,.15)); color: #a5b4fc; }
+  html.dark .sidebar-sep { background: rgba(99,102,241,.12); }
+  html.dark .sidebar-promo {
+    background: linear-gradient(135deg,rgba(99,102,241,.15),rgba(139,92,246,.18),rgba(236,72,153,.1));
+    border-color: rgba(99,102,241,.28);
+  }
+  html.dark .promo-title { color: #e2e8f0; }
+  html.dark .promo-sub { color: #94a3b8; }
+  html.dark .sidebar-user { border-top-color: rgba(99,102,241,.12); }
+
+  /* Cards / surfaces */
+  html.dark .stat-pill,
+  html.dark .course-card,
+  html.dark .analytics-card,
+  html.dark .rail-card {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.18);
+    box-shadow: 0 12px 40px -8px rgba(0,0,0,.5);
+  }
+
+  /* Hero banner */
+  html.dark .hero-banner {
+    background: linear-gradient(135deg,rgba(20,28,56,.95) 0%,rgba(30,41,75,.85) 100%);
+    border-color: rgba(99,102,241,.25);
+  }
+  /* Hero illustration panel — darken in dark mode so it doesn't glow */
+  html.dark .hero-illus {
+    background: linear-gradient(135deg,#141c38 0%,#1e2950 100%);
+    position: relative;
+  }
+  html.dark .hero-illus::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(15,23,41,.55) 0%, rgba(30,41,75,.40) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Section headings */
+  html.dark .section-title { color: #e2e8f0; }
+  html.dark .view-all { color: #818cf8; }
+  html.dark .chevron-btn { background: rgba(30,41,75,.65); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+  html.dark .chevron-btn:hover { background: rgba(99,102,241,.15); color: #a5b4fc; border-color: rgba(99,102,241,.35); }
+
+  html.dark .hero-sub { color: #94a3b8; }
+  html.dark .stat-pill-val { color: #e2e8f0; }
+  html.dark .stat-pill-label { color: #94a3b8; }
+  html.dark .stat-pill--hero {
+    background: linear-gradient(135deg, rgba(99,102,241,.18) 0%, rgba(139,92,246,.15) 100%);
+    border-color: rgba(99,102,241,.35);
+  }
+  html.dark .stat-pill--hero .stat-pill-val { color: #a5b4fc; }
+  html.dark .stat-pill--hero .stat-pill-label { color: #94a3b8; }
+
+  html.dark .course-title { color: #e2e8f0; }
+  html.dark .progress-label { color: #94a3b8; }
+  html.dark .progress-track { background: rgba(99,102,241,.15); }
+
+  html.dark .analytics-val { color: #e2e8f0; }
+  html.dark .analytics-label { color: #94a3b8; }
+
+  html.dark .rail-title { color: #e2e8f0; }
+  html.dark .rail-link { color: #818cf8; }
+
+  html.dark .goal-big { color: #e2e8f0; }
+  html.dark .goal-sub { color: #94a3b8; }
+  html.dark .goal-caption { color: #94a3b8; }
+  html.dark .day-dot { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+  html.dark .day-label { color: #64748b; }
+
+  html.dark .activity-title { color: #e2e8f0; }
+  html.dark .activity-sub { color: #94a3b8; }
+  html.dark .activity-item { border-bottom-color: rgba(99,102,241,.1); }
+
+  html.dark .week-drop { background: rgba(15,23,41,.7); border-color: rgba(99,102,241,.25); color: #94a3b8; }
+  html.dark .week-drop:hover { color: #a5b4fc; }
+
+  /* Theme icon swap */
+  html:not(.dark) .icon-moon { display: none; }
+  html.dark .icon-sun { display: none; }
+  html.dark .icon-moon { display: block; }
+</style>
+</head>
+<body>
+
+{# ── Dark theme: apply saved preference before paint ── #}
+<script>
+  (function() {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<div class="layout">
+
+  <!-- ═══════════════════════════════════════════════
+       TOP BAR
+  ═══════════════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="{{ t('v2_search_ph') }}">
+      <span class="kbd-hint">⌘K</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;">
+      <!-- Notifications -->
+      <button class="bell-btn" aria-label="Notifications">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <!-- Streak chip -->
+      <div class="topbar-chip topbar-chip--streak">🔥 {{ streak_days }}</div>
+      <!-- XP chip -->
+      <div class="topbar-chip topbar-chip--xp">⭐ {{ total_xp }}</div>
+      <!-- Theme toggle -->
+      <button class="bell-btn" id="themeToggleBtn" aria-label="Toggle theme">
+        <svg class="icon-sun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <!-- Avatar -->
+      <div class="user-avatar" style="cursor:pointer;">S</div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════
+       LEFT SIDEBAR
+  ═══════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 4px 18px;flex-shrink:0;">
+      <div class="logo-tile">Q</div>
+      <span class="wordmark">QuizAIPro</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Dashboard — ACTIVE -->
+      <button class="nav-item active">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        {{ t('v2_nav_dashboard') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        {{ t('v2_nav_library') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('marketplace_v2_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        {{ t('v2_nav_marketplace') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        {{ t('v2_nav_tutor') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('ai_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/></svg>
+        {{ t('v2_nav_generator') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        {{ t('v2_nav_flashcards') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        {{ t('v2_nav_quizzes') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        {{ t('v2_nav_notes') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        {{ t('v2_nav_analytics') }}
+      </button>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        {{ t('v2_nav_achievements') }}
+      </button>
+      <div class="sidebar-sep"></div>
+      <button class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+        {{ t('v2_nav_settings') }}
+      </button>
+    </nav>
+
+    <!-- Upgrade promo -->
+    <div class="sidebar-promo">
+      <div class="promo-crown">
+        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 20h20M4 20l2-10 6 4 4-8 4 8 6-4-2 10"/></svg>
+      </div>
+      <div class="promo-title">{{ t('v2_upgrade_title') }}</div>
+      <div class="promo-sub">{{ t('v2_upgrade_sub') }}</div>
+      <button class="btn-upgrade">{{ t('v2_upgrade_btn') }}</button>
+    </div>
+
+    <!-- User mini row -->
+    <div class="sidebar-user">
+      <div class="av">S</div>
+      <div>
+        <div class="nm">{{ t('v2_user_default') }}</div>
+        <div class="pl">{{ t('v2_free_plan') }}</div>
+      </div>
+      <button class="kebab" aria-label="More options">&#8942;</button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════ -->
+  <main class="main-area">
+    <div class="content-grid">
+
+      <!-- ─── LEFT CONTENT COLUMN ─── -->
+      <div class="content-col">
+
+        <!-- 1. HERO BANNER -->
+        <div class="hero-banner">
+          <!-- Illustration side -->
+          <div class="hero-illus">
+            <img src="{{ url_for('static', filename='dashboard/hero_ai.webp') }}" alt="AI learning">
+          </div>
+
+          <!-- Text + stat tiles -->
+          <div class="hero-content">
+            <div class="hero-title">{{ t('v2_welcome_back') }}</div>
+            <div class="hero-sub">
+              {% if due > 0 %}
+                {{ t('v2_hero_due_pre') }}<strong>{{ due }}</strong>{{ t('v2_hero_due_post') }}
+              {% else %}
+                {{ t('v2_all_caught_up') }}
+              {% endif %}
+            </div>
+
+            <!-- Hero XP + 3 compact stats -->
+            <div class="stat-pills">
+
+              <!-- ★ HERO: Total XP — full-width, dominant number -->
+              <div class="stat-pill--hero">
+                <div class="stat-chip">
+                  <svg fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div>
+                  <div class="stat-pill-val">{{ total_xp }}</div>
+                  <div class="stat-pill-label">{{ t('v2_stat_total_xp') }}</div>
+                </div>
+              </div>
+
+              <!-- Compact: Day Streak (orange semantic) -->
+              <div class="stat-pill">
+                <div class="stat-chip" style="background:rgba(249,115,22,.12);font-size:15px;display:grid;place-items:center;">
+                  🔥
+                </div>
+                <div class="stat-pill-val" style="color:#ea580c;">{{ streak_days }}</div>
+                <div class="stat-pill-label">{{ t('v2_stat_day_streak') }}</div>
+              </div>
+
+              <!-- Compact: Memory / Retention ring (green semantic) -->
+              <div class="stat-pill">
+                {% if retention and retention.now is not none %}
+                  {% set r_pct = (retention.now | round | int) %}
+                  {% set offset = (75.4 * (1 - r_pct / 100)) | round(1) %}
+                  <div class="stat-chip-ring">
+                    <svg viewBox="0 0 32 32" width="30" height="30" style="transform:rotate(-90deg);">
+                      <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(16,185,129,.15)" stroke-width="3"/>
+                      <circle cx="16" cy="16" r="12" fill="none" stroke="#10b981" stroke-width="3"
+                        stroke-dasharray="75.4" stroke-dashoffset="{{ offset }}" stroke-linecap="round"/>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-size:7px;font-weight:800;color:#059669;">{{ r_pct }}%</div>
+                  </div>
+                  <div class="stat-pill-val" style="color:#059669;">{{ r_pct }}%</div>
+                {% else %}
+                  <div class="stat-chip" style="background:rgba(16,185,129,.12);font-size:15px;display:grid;place-items:center;">🧠</div>
+                  <div class="stat-pill-val">—</div>
+                {% endif %}
+                <div class="stat-pill-label">{{ t('v2_stat_memory_now') }}</div>
+              </div>
+
+              <!-- Compact: Total cards (neutral/indigo) -->
+              <div class="stat-pill">
+                <div class="stat-chip" style="background:rgba(99,102,241,.12);">
+                  <svg fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg>
+                </div>
+                <div class="stat-pill-val">{{ total }}</div>
+                <div class="stat-pill-label">{{ t('v2_stat_total_cards') }}</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. CONTINUE LEARNING — real decks -->
+        <div>
+          <div class="section-head">
+            <div class="section-title">
+              <svg width="20" height="20" fill="none" stroke="var(--brand-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              {{ t('v2_sec_continue') }}
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <a class="view-all" href="/dashboard">{{ t('v2_view_all') }}</a>
+              <div class="chevron-row">
+                <button class="chevron-btn" aria-label="Scroll left" onclick="scrollCourses(-1)">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button class="chevron-btn" aria-label="Scroll right" onclick="scrollCourses(1)">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {% if decks %}
+            <div class="course-cards" id="courseCardsRow">
+              {% for deck in decks[:8] %}
+                {# Compute progress percentage safely #}
+                {% set pct = ((deck.learned_count / deck.card_count * 100) | round | int) if deck.card_count > 0 else 0 %}
+                {# 4 on-brand cover gradients cycling by index — indigo/violet/pink family #}
+                {% set cover_grads = [
+                  'linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)',
+                  'linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)',
+                  'linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)',
+                  'linear-gradient(135deg,#8b5cf6 0%,#d946ef 100%)'
+                ] %}
+                <a class="course-card" href="{{ url_for('deck_view', deck_id=deck.id) }}">
+                  <!-- Cover tile: first-letter initial on brand gradient -->
+                  <div class="course-cover-initial" style="background:{{ cover_grads[loop.index0 % 4] }};">
+                    <span class="course-cover-letter">{{ deck.name[0]|upper }}</span>
+                  </div>
+                  <div class="course-body">
+                    {% if deck.category_name %}
+                      <span class="course-subject" style="background:rgba(99,102,241,.10);color:#4f46e5;">{{ deck.category_name }}</span>
+                    {% endif %}
+                    <div class="course-title">{{ deck.name }}</div>
+                    <div class="progress-wrap">
+                      <div class="progress-pct-row">
+                        <span class="progress-label">{{ t('v2_progress_learned') }}</span>
+                        <span class="progress-pct-val">{{ pct }}%</span>
+                      </div>
+                      <div class="progress-track">
+                        <div class="progress-fill" style="width:{{ pct }}%;"></div>
+                      </div>
+                    </div>
+                    <div class="btn-continue">
+                      {% if deck.due_count > 0 %}
+                        {{ t('v2_review_pre') }}{{ deck.due_count }}{{ t('v2_review_suffix') }}
+                      {% else %}
+                        {{ t('v2_study_arrow') }}
+                      {% endif %}
+                    </div>
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-icon">📚</div>
+              <div>{{ t('v2_no_decks') }}</div>
+              <a href="/dashboard" style="color:var(--brand-1);font-weight:700;margin-top:8px;display:inline-block;">{{ t('v2_create_first_deck') }}</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- 3. LEARNING ANALYTICS — real series data -->
+        <div>
+          <div class="section-head">
+            <div class="section-title">
+              <svg width="19" height="19" fill="none" stroke="var(--brand-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              {{ t('v2_sec_analytics') }}
+            </div>
+            <span style="font-size:12px;color:#64748b;font-weight:600;">{{ t('v2_last_7_days') }}</span>
+          </div>
+
+          <div class="analytics-grid">
+
+            {# Compute max count and max cum_xp for scaling bars/lines #}
+            {% set max_count = namespace(val=1) %}
+            {% set max_cum = namespace(val=1) %}
+            {% for s in series %}
+              {% if s.count > max_count.val %}{% set max_count.val = s.count %}{% endif %}
+              {% if s.cum_xp > max_cum.val %}{% set max_cum.val = s.cum_xp %}{% endif %}
+            {% endfor %}
+
+            <!-- Reviews this week — bar chart -->
+            <div class="analytics-card">
+              <div class="analytics-label">{{ t('v2_reviews_this_week') }}</div>
+              <div class="analytics-val">{{ week_reviews }}</div>
+              <div class="analytics-delta" style="color:#64748b;">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                {{ t('v2_7day_activity') }}
+              </div>
+              {% if week_reviews == 0 %}
+                {# Empty state — intentional baseline, not a broken chart #}
+                <div class="chart-empty">
+                  <svg width="100%" height="36" viewBox="0 0 160 36" preserveAspectRatio="none">
+                    <line x1="0" y1="30" x2="160" y2="30" stroke="rgba(99,102,241,.10)" stroke-width="1"/>
+                    {# Ghost tick marks suggest a chart waiting to fill #}
+                    {% for i in range(7) %}
+                      <rect x="{{ i * 22 + 4 }}" y="26" width="14" height="4" rx="2" fill="rgba(99,102,241,.08)"/>
+                    {% endfor %}
+                  </svg>
+                  <div class="chart-empty-msg">{{ t('v2_empty_no_reviews') }}</div>
+                </div>
+              {% else %}
+                <!-- Bar chart from real series -->
+                <div class="chart-wrap">
+                  <div class="chart-gridlines"><span></span><span></span><span></span></div>
+                  <svg class="bar-chart" viewBox="0 0 160 52" preserveAspectRatio="none" height="52">
+                    <defs>
+                      <linearGradient id="bgReal1" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#6366f1"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                      </linearGradient>
+                    </defs>
+                    <line x1="0" y1="44" x2="160" y2="44" stroke="rgba(99,102,241,.12)" stroke-width="1"/>
+                    {% for s in series %}
+                      {% set bar_h = ((s.count / max_count.val) * 38) | round | int if max_count.val > 0 else 2 %}
+                      {% set bar_h = [bar_h, 2] | max %}
+                      {% set x_pos = loop.index0 * 22 + 4 %}
+                      <rect x="{{ x_pos }}" y="{{ 44 - bar_h }}" width="14" height="{{ bar_h }}" rx="3"
+                        fill="url(#bgReal1)" opacity="{{ 0.5 + (loop.index0 / 8) | round(2) }}"/>
+                      <text x="{{ x_pos + 7 }}" y="51" text-anchor="middle" font-size="7" fill="#94a3b8" font-family="Inter">{{ s.label[:1] }}</text>
+                    {% endfor %}
+                  </svg>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- XP Growth — cumulative line sparkline -->
+            <div class="analytics-card">
+              <div class="analytics-label">{{ t('v2_xp_this_week') }}</div>
+              <div class="analytics-val">{{ week_xp }}</div>
+              <div class="analytics-delta" style="color:#8b5cf6;">
+                <svg fill="none" stroke="#8b5cf6" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                {{ t('v2_cumulative_xp') }}
+              </div>
+              {% if week_xp == 0 %}
+                {# Empty state — flat baseline with encouraging nudge #}
+                <div class="chart-empty">
+                  <svg width="100%" height="36" viewBox="0 0 160 36" preserveAspectRatio="none">
+                    <line x1="0" y1="30" x2="160" y2="30" stroke="rgba(139,92,246,.12)" stroke-width="1" stroke-dasharray="4 3"/>
+                    <circle cx="0" cy="30" r="3" fill="rgba(139,92,246,.20)"/>
+                    <circle cx="160" cy="30" r="3" fill="rgba(139,92,246,.20)"/>
+                  </svg>
+                  <div class="chart-empty-msg">{{ t('v2_empty_no_xp') }}</div>
+                </div>
+              {% else %}
+                <div class="chart-wrap">
+                  <div class="chart-gridlines"><span></span><span></span><span></span></div>
+                  <svg class="sparkline" viewBox="0 0 160 48" preserveAspectRatio="none" height="52">
+                    <defs>
+                      <linearGradient id="sgReal2" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#8b5cf6" stop-opacity=".28"/>
+                        <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    {# Build SVG path from 7 series points #}
+                    {% set pts = namespace(line='', area='') %}
+                    {% for s in series %}
+                      {% set x = (loop.index0 * 160 / 6) | round | int %}
+                      {% set y = (44 - (s.cum_xp / max_cum.val * 40) | round | int) if max_cum.val > 0 else 44 %}
+                      {% if loop.first %}
+                        {% set pts.line = 'M' ~ x ~ ' ' ~ y %}
+                        {% set pts.area = 'M' ~ x ~ ' ' ~ y %}
+                      {% else %}
+                        {% set pts.line = pts.line ~ ' L' ~ x ~ ' ' ~ y %}
+                        {% set pts.area = pts.area ~ ' L' ~ x ~ ' ' ~ y %}
+                      {% endif %}
+                    {% endfor %}
+                    <path d="{{ pts.line }}" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="{{ pts.area }} L160 48 L0 48Z" fill="url(#sgReal2)"/>
+                    {# End dot at last point #}
+                    {% set last_x = 160 %}
+                    {% set last_y = (44 - (series[-1].cum_xp / max_cum.val * 40) | round | int) if max_cum.val > 0 else 44 %}
+                    <circle cx="{{ last_x }}" cy="{{ last_y }}" r="3" fill="#8b5cf6"/>
+                  </svg>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Today's Progress vs Daily Goal -->
+            <div class="analytics-card">
+              <div class="analytics-label">{{ t('v2_todays_goal') }}</div>
+              <div class="analytics-val">{{ today_reviews }} / {{ daily_goal }}</div>
+              <div class="analytics-delta" style="{% if today_reviews >= daily_goal %}color:var(--success){% else %}color:#f59e0b{% endif %};">
+                {% if today_reviews >= daily_goal %}
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+                  {{ t('v2_goal_reached') }}
+                {% else %}
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                  {{ daily_goal - today_reviews }} {{ t('v2_more_to_go') }}
+                {% endif %}
+              </div>
+              {% if today_reviews == 0 and week_reviews == 0 %}
+                {# Empty state — no activity yet today or this week #}
+                <div class="chart-empty" style="margin-top:8px;">
+                  <div class="progress-track" style="height:8px;background:rgba(16,185,129,.08);">
+                    <div style="height:100%;width:0%;background:linear-gradient(90deg,#10b981,#059669);border-radius:999px;"></div>
+                  </div>
+                  <svg width="100%" height="30" viewBox="0 0 160 30" preserveAspectRatio="none" style="margin-top:8px;">
+                    <line x1="0" y1="24" x2="160" y2="24" stroke="rgba(16,185,129,.10)" stroke-width="1"/>
+                    {% for i in range(7) %}
+                      <rect x="{{ i * 22 + 4 }}" y="20" width="14" height="4" rx="2" fill="rgba(16,185,129,.08)"/>
+                    {% endfor %}
+                  </svg>
+                  <div class="chart-empty-msg">{{ t('v2_empty_no_goal_progress') }}</div>
+                </div>
+              {% else %}
+                <!-- Goal progress bar -->
+                <div style="margin-top:8px;">
+                  {% set goal_pct = [(today_reviews / daily_goal * 100) | round | int, 100] | min if daily_goal > 0 else 0 %}
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <span style="font-size:10.5px;color:#64748b;font-weight:600;">{{ t('v2_reviews_today') }}</span>
+                    <span style="font-size:10.5px;color:var(--brand-1);font-weight:700;">{{ goal_pct }}%</span>
+                  </div>
+                  <div class="progress-track" style="height:8px;">
+                    <div class="progress-fill" style="width:{{ goal_pct }}%;"></div>
+                  </div>
+                  <!-- Mini bar chart for this week -->
+                  <div style="margin-top:12px;">
+                    <svg class="bar-chart" viewBox="0 0 160 36" preserveAspectRatio="none" height="36">
+                      <defs>
+                        <linearGradient id="bgGoal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#10b981"/>
+                          <stop offset="100%" stop-color="#059669"/>
+                        </linearGradient>
+                      </defs>
+                      {% for s in series %}
+                        {% set bar_h = ((s.count / max_count.val) * 28) | round | int if max_count.val > 0 else 2 %}
+                        {% set bar_h = [bar_h, 2] | max %}
+                        {% set x_pos = loop.index0 * 22 + 4 %}
+                        <rect x="{{ x_pos }}" y="{{ 30 - bar_h }}" width="14" height="{{ bar_h }}" rx="3"
+                          fill="url(#bgGoal)" opacity="0.75"/>
+                      {% endfor %}
+                    </svg>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /.content-col -->
+
+      <!-- ─── RIGHT RAIL ─── -->
+      <div class="right-rail">
+
+        <!-- Weekly Goal ring -->
+        <div class="rail-card">
+          <div class="rail-head">
+            <span class="rail-title">{{ t('v2_sec_weekly_goal') }}</span>
+            <a class="rail-link" href="/growth">{{ t('v2_view_details') }}</a>
+          </div>
+
+          {# week_done / 7 → ring progress; circ = 2*PI*64 ≈ 402 #}
+          {% set ring_pct = (week_done / 7) %}
+          {% set ring_offset = (402 * (1 - ring_pct)) | round(1) %}
+          <div style="display:flex;justify-content:center;margin-bottom:14px;">
+            <div class="goal-ring-container">
+              <svg viewBox="0 0 160 160" width="160" height="160" style="transform:rotate(-90deg);">
+                <circle cx="80" cy="80" r="64" fill="none" stroke="rgba(99,102,241,.10)" stroke-width="10"/>
+                <circle cx="80" cy="80" r="64" fill="none" stroke-width="10" stroke-linecap="round"
+                  stroke-dasharray="402" stroke-dashoffset="{{ ring_offset }}"
+                  style="stroke:url(#goalGrad)"/>
+                <defs>
+                  <linearGradient id="goalGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#6366f1"/>
+                    <stop offset="50%" stop-color="#8b5cf6"/>
+                    <stop offset="100%" stop-color="#ec4899"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div style="position:absolute;text-align:center;">
+                <div class="goal-big">{{ week_done }}/7</div>
+                <div class="goal-sub">{{ t('v2_days_completed') }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="goal-caption">
+            {% if week_done >= 7 %}
+              {{ t('v2_perfect_week') }}
+            {% elif week_done >= 4 %}
+              {{ t('v2_keep_it_up') }}
+            {% elif week_done > 0 %}
+              {{ t('v2_good_start') }} — {{ 7 - week_done }} {{ t('v2_days_to_go') }}
+            {% else %}
+              {{ t('v2_start_today') }}
+            {% endif %}
+          </div>
+
+          <!-- Day dots — single row, letter inside dot (no duplicate label row) -->
+          <div class="day-dots">
+            {% for wd in week_days %}
+              <div class="day-dot-wrap">
+                <div class="day-dot {% if wd.done %}filled{% elif wd.future %}future{% endif %}">
+                  {% if wd.done %}
+                    <svg fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  {% else %}
+                    {{ wd.label }}
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Recent Activity — real data -->
+        <div class="rail-card">
+          <div class="rail-head">
+            <span class="rail-title">{{ t('v2_sec_recent_activity') }}</span>
+          </div>
+
+          {% if recent_activity %}
+            <div class="activity-list">
+              {% for act in recent_activity[:6] %}
+                {# Grade-based dot colour only — chip stays neutral #}
+                {% if act.grade and act.grade >= 4 %}
+                  {% set dot_color = '#10b981' %}
+                  {% set grade_label = t('v2_grade_good') %}
+                {% elif act.grade and act.grade == 3 %}
+                  {% set dot_color = '#f59e0b' %}
+                  {% set grade_label = t('v2_grade_ok') %}
+                {% else %}
+                  {% set dot_color = '#ef4444' %}
+                  {% set grade_label = t('v2_grade_hard') %}
+                {% endif %}
+                <div class="activity-item">
+                  {# Neutral tint chip per §3 "Icon chips" + small grade-colour status dot #}
+                  <div class="activity-icon">
+                    {{ act.deck_icon or '📚' }}
+                    <span class="grade-dot" style="background:{{ dot_color }};"></span>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-title">{{ act.deck_name }}</div>
+                    <div class="activity-sub">{{ grade_label }} · {{ t('v2_grade_word') }} {{ act.grade }}</div>
+                  </div>
+                  <div class="activity-time">{{ act.ago }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-icon">📖</div>
+              <div>{{ t('v2_no_activity') }}</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Study streak card -->
+        <div class="rail-card">
+          <div class="rail-head">
+            <span class="rail-title">{{ t('v2_sec_study_activity') }}</span>
+            <span style="font-size:11.5px;font-weight:700;color:#10b981;background:rgba(16,185,129,.10);padding:3px 10px;border-radius:999px;">🔥 {{ streak_days }}{{ t('v2_day_streak_suffix') }}</span>
+          </div>
+
+          <!-- Per-category breakdown if available -->
+          {% if by_category %}
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              {% for cat_name, cat_data in by_category.items() %}
+                {% set cat_total = cat_data.decks | sum(attribute='card_count') %}
+                {% set cat_learned = cat_data.decks | sum(attribute='learned_count') %}
+                {% set cat_pct = ((cat_learned / cat_total * 100) | round | int) if cat_total > 0 else 0 %}
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                    <span style="font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;">
+                      {{ cat_data.icon }} {{ cat_name }}
+                    </span>
+                    <span style="font-size:11px;color:var(--brand-1);font-weight:700;">{{ cat_pct }}%</span>
+                  </div>
+                  <div class="progress-track" style="height:5px;">
+                    <div class="progress-fill" style="width:{{ cat_pct }}%;"></div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-icon">📊</div>
+              <div>{{ t('v2_no_data') }}</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Achievements placeholder (no backing data) -->
+        <div class="rail-card">
+          <div class="rail-head">
+            <span class="rail-title">{{ t('v2_sec_achievements') }}</span>
+          </div>
+          <div style="text-align:center;padding:18px 12px 8px;">
+            <div style="font-size:32px;margin-bottom:10px;">🏅</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;">{{ t('v2_coming_soon') }}</div>
+            <div style="font-size:12px;color:#64748b;line-height:1.5;">{{ t('v2_achievements_desc') }}</div>
+          </div>
+        </div>
+
+      </div><!-- /.right-rail -->
+
+    </div><!-- /.content-grid -->
+  </main>
+
+</div><!-- /.layout -->
+
+<script>
+  // ── Dark theme toggle ──
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('themeToggleBtn');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+    }
+  });
+
+  // ── Course card row scroll (chevron buttons) ──
+  function scrollCourses(dir) {
+    var row = document.getElementById('courseCardsRow');
+    if (row) row.scrollBy({ left: dir * 240, behavior: 'smooth' });
+  }
+
+  // ── Card entrance animations ──
+  window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.course-card, .analytics-card, .rail-card').forEach(function(el, i) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(16px)';
+      el.style.transition = 'opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1)';
+      setTimeout(function() {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 60 + i * 35);
+    });
+
+    var hero = document.querySelector('.hero-banner');
+    if (hero) {
+      hero.style.opacity = '0';
+      hero.style.transform = 'translateY(10px)';
+      hero.style.transition = 'opacity .5s cubic-bezier(0.16,1,0.3,1), transform .5s cubic-bezier(0.16,1,0.3,1)';
+      setTimeout(function() { hero.style.opacity = '1'; hero.style.transform = 'none'; }, 30);
+    }
+  });
+</script>
+</body>
+</html>

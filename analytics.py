@@ -177,9 +177,13 @@ def get_geo(ip: str) -> dict:
             geo = fetch_geo(ip)
             # Sokhranyaem v kesh
             conn.execute("""
-                INSERT OR REPLACE INTO ip_geo_cache
+                INSERT INTO ip_geo_cache
                 (ip, country, country_name, region, city, timezone, isp, cached_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (ip) DO UPDATE SET
+                    country=excluded.country, country_name=excluded.country_name,
+                    region=excluded.region, city=excluded.city, timezone=excluded.timezone,
+                    isp=excluded.isp, cached_at=excluded.cached_at
             """, (
                 ip, geo["country"], geo["country_name"],
                 geo["region"], geo["city"], geo["timezone"], geo["isp"],

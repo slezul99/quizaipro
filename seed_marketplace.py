@@ -32,8 +32,8 @@ def get_or_create_deck(owner_id, name, icon, desc, deck_type="mcq"):
     if row:
         return row[0]
     c.execute("""INSERT INTO decks (owner_id,name,icon,description,is_public,deck_type,created_via)
-        VALUES (?,?,?,?,1,?,'seed')""", (owner_id, name, icon, desc, deck_type))
-    return c.lastrowid
+        VALUES (?,?,?,?,1,?,'seed') RETURNING id""", (owner_id, name, icon, desc, deck_type))
+    return c.fetchone()[0]
 
 def link_deck(coll_id, deck_id, sort):
     c.execute("INSERT OR IGNORE INTO collection_decks (collection_id,deck_id,sort_order) VALUES (?,?,?)",
@@ -45,7 +45,7 @@ def add_cards(deck_id, cards):
     if existing > 0:
         return  # already seeded
     for front, back, note in cards:
-        c.execute("INSERT INTO cards (deck_id,front,back,note) VALUES (?,?,?,?)",
+        c.execute("INSERT INTO cards (deck_id,front,back,note) VALUES (?,?,?,?) RETURNING id",
                   (deck_id, front, back, note))
 
 # ─────────────────────────────────────────────
@@ -56,9 +56,9 @@ if not sys_user:
     from werkzeug.security import generate_password_hash
     import secrets
     c.execute("""INSERT INTO users (username,password_hash,role,full_name,lang)
-        VALUES ('quizaipro_system',?,?,?,?)""",
+        VALUES ('quizaipro_system',?,?,?,?) RETURNING id""",
         (generate_password_hash(secrets.token_hex(32)), 'individual', 'QuizAIPro Library', 'en'))
-    OWNER = c.lastrowid
+    OWNER = c.fetchone()[0]
 else:
     OWNER = sys_user[0]
 

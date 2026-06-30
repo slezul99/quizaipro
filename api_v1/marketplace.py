@@ -390,7 +390,7 @@ def search_decks():
     params = []
     if q:
         like = f"%{q}%"
-        where.append("(d.name LIKE ? OR d.description LIKE ?)")
+        where.append("(d.name LIKE /*ci*/ ? OR d.description LIKE /*ci*/ ?)")
         params += [like, like]
     if subject_id:
         where.append("""EXISTS (
@@ -443,13 +443,13 @@ def clone_deck(deck_id):
 
         if user["org_id"]:
             cur = conn.execute(
-                "INSERT INTO decks (org_id, name, icon, description) VALUES (?, ?, ?, ?)",
+                "INSERT INTO decks (org_id, name, icon, description) VALUES (?, ?, ?, ?) RETURNING id",
                 (user["org_id"], src["name"], src["icon"], src["description"]))
         else:
             cur = conn.execute(
-                "INSERT INTO decks (owner_id, name, icon, description) VALUES (?, ?, ?, ?)",
+                "INSERT INTO decks (owner_id, name, icon, description) VALUES (?, ?, ?, ?) RETURNING id",
                 (user["id"], src["name"], src["icon"], src["description"]))
-        new_deck_id = cur.lastrowid
+        new_deck_id = cur.fetchone()[0]
 
         cards = conn.execute(
             "SELECT front, back, note, image_url FROM cards WHERE deck_id=?", (deck_id,)

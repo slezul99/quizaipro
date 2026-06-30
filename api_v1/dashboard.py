@@ -442,13 +442,13 @@ def get_activity():
                         JOIN cards c2 ON c2.id = r2.card_id
                         WHERE r2.user_id = r.user_id 
                           AND c2.deck_id = d.id 
-                          AND DATE(r2.reviewed_at) = DATE(r.reviewed_at)
+                          AND DATE(r2.reviewed_at) = r.rday
                     ) AS details
-                FROM reviews r
+                FROM (SELECT reviews.*, DATE(reviewed_at) AS rday FROM reviews) r
                 JOIN cards c ON c.id = r.card_id
                 JOIN decks d ON d.id = c.deck_id
                 WHERE r.user_id = ?
-                GROUP BY d.id, DATE(r.reviewed_at)
+                GROUP BY d.id, r.rday, r.user_id
                 
                 UNION ALL
                 

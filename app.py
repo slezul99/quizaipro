@@ -861,12 +861,12 @@ def sitemap_xml():
             SELECT username FROM users
             WHERE COALESCE(profile_public, 1) = 1
               AND username IS NOT NULL
-              AND username NOT LIKE '%@%'              -- net email-pohojih usernames
-              AND username NOT LIKE '%backdoor%'       -- net podozritel'nyh
-              AND username NOT LIKE '%xss%'
-              AND username NOT LIKE '%admin%'
-              AND username NOT LIKE '%system%'
-              AND username NOT LIKE '%test%'
+              AND username NOT LIKE /*ci*/ '%@%'              -- net email-pohojih usernames
+              AND username NOT LIKE /*ci*/ '%backdoor%'       -- net podozritel'nyh
+              AND username NOT LIKE /*ci*/ '%xss%'
+              AND username NOT LIKE /*ci*/ '%admin%'
+              AND username NOT LIKE /*ci*/ '%system%'
+              AND username NOT LIKE /*ci*/ '%test%'
               AND LENGTH(username) >= 3
               AND xp > 0                                -- tol'ko aktivnye polzovateli
             ORDER BY xp DESC LIMIT 200
@@ -955,6 +955,15 @@ def set_lang(lang):
         conn.execute("UPDATE users SET lang=? WHERE id=?", (lang, session["user_id"]))
         conn.commit(); conn.close()
     return redirect(request.referrer or url_for("index"))
+
+
+def _use_v2():
+    """Feature flag for the v2 redesign. OFF by default — prod behaviour is
+    unchanged. Toggle per-session with ?v2=1 / ?v2=0 on any core page."""
+    v = request.args.get("v2")
+    if v is not None:
+        session["use_v2"] = (v == "1")
+    return session.get("use_v2", False)
 
 
 # ---------------------- auth (username/password) ----------------------------
@@ -1068,9 +1077,9 @@ def register():
                 exists = conn.execute("SELECT id FROM organizations WHERE name=?", (org_name,)).fetchone()
                 if exists:
                     flash("Организация уже существует", "error"); return render_template("register.html")
-                cur = conn.execute("INSERT INTO organizations (name, slug) VALUES (?, ?)",
+                cur = conn.execute("INSERT INTO organizations (name, slug) VALUES (?, ?) RETURNING id",
                                    (org_name, slugify(org_name)))
-                org_id = cur.lastrowid
+                org_id = cur.fetchone()[0]
                 conn.execute("""INSERT INTO users (org_id, username, password_hash, role, lang)
                                VALUES (?, ?, ?, 'admin', 'ru')""",
                             (org_id, username, generate_password_hash(password)))
@@ -1295,10 +1304,10 @@ def api_install_demo_decks():
         for deck_data in DEMO_DECKS:
             cur = conn.execute(
                 """INSERT INTO decks (org_id, owner_id, name, icon, is_public)
-                   VALUES (?, ?, ?, ?, 0)""",
+                   VALUES (?, ?, ?, ?, 0) RETURNING id""",
                 (org_id, user_id, deck_data["name"], deck_data["icon"])
             )
-            deck_id = cur.lastrowid
+            deck_id = cur.fetchone()[0]
             created_ids.append(deck_id)
             for front, back, note in deck_data["cards"]:
                 conn.execute(
@@ -1323,16 +1332,26 @@ def api_install_demo_decks():
         }), 500
 
 
+@app.route("/dashboard/v2")
+@login_required
+def dashboard_v2_page():
+    """PREVIEW — redesigned student dashboard (v2). Reuses _student_dashboard_data."""
+    user = current_user()
+    return render_template("dashboard_v2.html", **_student_dashboard_data(user))
+
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
     user = current_user()
     if user["role"] in ("admin", "teacher"):
         return _admin_dashboard(user)
+    if _use_v2():
+        return dashboard_v2_page()
     return _student_dashboard(user)
 
 
-def _student_dashboard(user):
+def _student_dashboard_data(user):
     conn = db.get_conn()
     now = datetime.utcnow().isoformat()
     # has_mcq / has_terms — predvychislennye flagi (NULL = eshchyo ne schitano → fallback na SQL)
@@ -1430,14 +1449,101 @@ def _student_dashboard(user):
     else:
         all_cats = conn.execute("SELECT * FROM categories WHERE owner_id=? ORDER BY parent_id IS NULL DESC, name",
                                 (user["id"],)).fetchall()
+    # Recent activity — real review events (deck + grade + timestamp), newest first.
+    activity_rows = conn.execute("""
+        SELECT r.grade AS grade, r.reviewed_at AS reviewed_at,
+               d.name AS deck_name, d.icon AS deck_icon
+        FROM reviews r
+        JOIN cards c ON c.id = r.card_id
+        JOIN decks d ON d.id = c.deck_id
+        WHERE r.user_id = ?
+        ORDER BY r.reviewed_at DESC
+        LIMIT 10
+    """, (user["id"],)).fetchall()
+
+    # Per-day review counts (last 35 days) → real streak / weekly goal / charts.
+    day_rows = conn.execute("""
+        SELECT DATE(reviewed_at) AS d, COUNT(*) AS c
+        FROM reviews
+        WHERE user_id=? AND reviewed_at >= DATE('now','-35 day')
+        GROUP BY DATE(reviewed_at)
+    """, (user["id"],)).fetchall()
     conn.close()
-    return render_template("dashboard_student.html",
+
+    day_counts = {r["d"]: r["c"] for r in day_rows if r["d"]}
+    today = datetime.utcnow().date()
+
+    # Streak — consecutive days ending today (or yesterday) with >=1 review.
+    streak_days = 0
+    cur = today if day_counts.get(today.isoformat(), 0) else today - timedelta(days=1)
+    while day_counts.get(cur.isoformat(), 0) > 0:
+        streak_days += 1
+        cur -= timedelta(days=1)
+
+    # Current week (Mon→Sun) activity dots.
+    monday = today - timedelta(days=today.weekday())
+    wl = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+    week_days = []
+    for i in range(7):
+        dd = monday + timedelta(days=i)
+        week_days.append({'label': wl[i],
+                          'done': day_counts.get(dd.isoformat(), 0) > 0,
+                          'future': dd > today})
+    week_done = sum(1 for w in week_days if w['done'])
+
+    # Last-7-days series for the analytics charts (oldest → newest).
+    dn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    series, cum = [], 0
+    for i in range(6, -1, -1):
+        dd = today - timedelta(days=i)
+        c = day_counts.get(dd.isoformat(), 0)
+        cum += c
+        series.append({'label': dn[dd.weekday()], 'count': c,
+                       'xp': c * 10, 'cum_xp': cum * 10})
+    week_reviews = sum(s['count'] for s in series)
+    week_xp = week_reviews * 10
+    total_xp = total_reviews * 10
+
+    def _ago(ts):
+        if not ts:
+            return ''
+        try:
+            tt = datetime.strptime(ts[:19], '%Y-%m-%d %H:%M:%S')
+        except Exception:
+            try:
+                tt = datetime.fromisoformat(ts.replace('Z', '').split('.')[0])
+            except Exception:
+                return ts[:10]
+        sec = max(0, (datetime.utcnow() - tt).total_seconds())
+        if sec < 60:
+            return 'now'
+        if sec < 3600:
+            return '%dm' % (sec // 60)
+        if sec < 86400:
+            return '%dh' % (sec // 3600)
+        return '%dd' % (sec // 86400)
+
+    recent_activity = [{
+        'grade': r['grade'], 'reviewed_at': r['reviewed_at'],
+        'deck_name': r['deck_name'], 'deck_icon': r['deck_icon'],
+        'ago': _ago(r['reviewed_at']),
+    } for r in activity_rows]
+
+    return dict(
         decks=decks, total=total, learned=learned, due=due,
         total_reviews=total_reviews, by_category=by_category,
         all_categories=all_cats,
         today_reviews=today_reviews, daily_goal=daily_goal,
-        retention=retention,
+        retention=retention, recent_activity=recent_activity,
+        streak_days=streak_days, week_days=week_days, week_done=week_done,
+        series=series, week_reviews=week_reviews, week_xp=week_xp,
+        total_xp=total_xp,
     )
+
+
+def _student_dashboard(user):
+    return render_template("dashboard_student.html",
+                           **_student_dashboard_data(user))
 
 
 def _admin_dashboard(user):
@@ -1591,11 +1697,11 @@ def admin_user_new():
     conn = db.get_conn()
     try:
         cur = conn.execute("""INSERT INTO users (org_id, username, password_hash, role, full_name, lang)
-                               VALUES (?, ?, ?, ?, ?, 'ru')""",
+                               VALUES (?, ?, ?, ?, ?, 'ru') RETURNING id""",
                           (user["org_id"], username, generate_password_hash(password), role, full_name))
         if group_id and role == "student":
             conn.execute("INSERT OR IGNORE INTO group_members (group_id, user_id) VALUES (?, ?)",
-                         (group_id, cur.lastrowid))
+                         (group_id, cur.fetchone()[0]))
         conn.commit()
         # Avto-zhurnal: poluchaem imya organizatsii
         org_name = ""
@@ -1788,12 +1894,12 @@ def deck_new():
     tour_flag = (request.form.get("tour") or "").strip()
     conn = db.get_conn()
     if user["org_id"]:
-        cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
+        cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?, ?, ?, ?) RETURNING id",
                           (user["org_id"], category_id, name, icon))
     else:
-        cur = conn.execute("INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
+        cur = conn.execute("INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?, ?, ?, ?) RETURNING id",
                           (user["id"], category_id, name, icon))
-    deck_id = cur.lastrowid
+    deck_id = cur.fetchone()[0]
     conn.commit(); conn.close()
     target = url_for("deck_view", deck_id=deck_id)
     if tour_flag == "basic":
@@ -1801,10 +1907,70 @@ def deck_new():
     return redirect(target)
 
 
+@app.route("/deck/<int:deck_id>/v2")
+@login_required
+def deck_view_v2(deck_id):
+    """PREVIEW — redesigned deck detail (v2). Reuses deck/cards/retention data."""
+    user = current_user()
+    conn = db.get_conn()
+    deck = conn.execute("""SELECT d.*, c.name AS category_name FROM decks d
+                           LEFT JOIN categories c ON c.id=d.category_id WHERE d.id=?""",
+                        (deck_id,)).fetchone()
+    if not deck or not can_view_deck(user, dict(deck)):
+        conn.close(); abort(404)
+    deck = _localize_deck_fields(dict(deck), session.get("lang", "ru"))
+    cards_raw = conn.execute("""SELECT c.*, p.ef, p.interval_days, p.reviews, p.lapses,
+        p.due_at, p.stability, p.last_reviewed
+        FROM cards c LEFT JOIN user_card_progress p ON p.card_id=c.id AND p.user_id=?
+        WHERE c.deck_id=? ORDER BY c.id DESC""", (user["id"], deck_id)).fetchall()
+    cards_all = [dict(c) for c in cards_raw]
+    conn.close()
+
+    _user_lang = session.get("lang", "ru")
+    if _user_lang in ("en", "uz"):
+        for c in cards_all:
+            for fld in ("front", "back", "note"):
+                tr = c.get(f"{fld}_{_user_lang}", "")
+                if tr:
+                    c[fld] = tr
+
+    new_count = learning_count = hard_count = 0
+    for c in cards_all:
+        lvl = sm2.card_level(c)
+        diff = sm2.card_difficulty(c)
+        if lvl == "new":
+            tag, new_count = ("new", new_count + 1)
+        elif diff.get("key") == "hard":
+            tag, hard_count = ("hard", hard_count + 1)
+        else:
+            tag, learning_count = ("learning", learning_count + 1)
+        c["tag"] = tag
+        # Clean question: strip inline MCQ option lines if present
+        front = (c.get("front") or "").strip()
+        lines, opt_re = [], re.compile(r"^([A-Za-zА-Яа-яЁё])\s*[\)\.\:\-]\s+")
+        for line in front.split("\n"):
+            if opt_re.match(line.strip()):
+                break
+            lines.append(line)
+        c["q"] = ("\n".join(lines).strip() or front)
+        c["a"] = (c.get("back") or "").strip()
+
+    retention = fsrs.deck_retention(cards_all)
+    cards = cards_all[:30]
+    return render_template(
+        "deck_v2.html", deck=deck, cards=cards,
+        card_total=len(cards_all), shown=len(cards),
+        new_count=new_count, learning_count=learning_count, hard_count=hard_count,
+        retention=retention, category_name=deck.get("category_name"),
+    )
+
+
 @app.route("/deck/<int:deck_id>")
 @login_required
 def deck_view(deck_id):
     user = current_user()
+    if _use_v2():
+        return deck_view_v2(deck_id)
     conn = db.get_conn()
     deck = conn.execute("""SELECT d.*, c.name AS category_name FROM decks d
                             LEFT JOIN categories c ON c.id=d.category_id WHERE d.id=?""",
@@ -1946,13 +2112,13 @@ def deck_clone(deck_id):
 
     if user["org_id"]:
         cur = conn.execute("""INSERT INTO decks (org_id, category_id, name, icon, description)
-                              VALUES (?, ?, ?, ?, ?)""",
+                              VALUES (?, ?, ?, ?, ?) RETURNING id""",
                           (user["org_id"], src["category_id"], new_name, src["icon"], src["description"]))
     else:
         cur = conn.execute("""INSERT INTO decks (owner_id, category_id, name, icon, description)
-                              VALUES (?, ?, ?, ?, ?)""",
+                              VALUES (?, ?, ?, ?, ?) RETURNING id""",
                           (user["id"], src["category_id"], new_name, src["icon"], src["description"]))
-    new_deck_id = cur.lastrowid
+    new_deck_id = cur.fetchone()[0]
 
     # Kopiruem karty (bez progressа — eto novaya kolod dlya samostoyatelnogo izucheniya)
     cards = conn.execute("SELECT front, back, note, image_url FROM cards WHERE deck_id=?",
@@ -1978,9 +2144,9 @@ def card_new(deck_id):
     front = request.form.get("front", "").strip() or "Вопрос..."
     back = request.form.get("back", "").strip() or "Ответ..."
     note = request.form.get("note", "").strip()
-    cur = conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+    cur = conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?) RETURNING id",
                        (deck_id, front, back, note))
-    cid = cur.lastrowid
+    cid = cur.fetchone()[0]
     refresh_deck_content_flags(conn, deck_id)
     conn.commit(); conn.close()
     return jsonify({"ok": True, "id": cid})
@@ -2201,12 +2367,17 @@ def api_card_grade(card_id):
                      (user["id"], card_id)).fetchone()
     cur_state = dict(p) if p else {"ef": 2.5, "interval_days": 0, "reviews": 0, "lapses": 0}
     new_state = fsrs.calc_fsrs(cur_state, grade)
-    conn.execute("""INSERT OR REPLACE INTO user_card_progress
+    conn.execute("""INSERT INTO user_card_progress
         (user_id, card_id, ef, interval_days, reviews, lapses, due_at, last_grade, last_reviewed,
          is_favorite, is_difficult)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,
                 COALESCE((SELECT is_favorite FROM user_card_progress WHERE user_id=? AND card_id=?), 0),
-                COALESCE((SELECT is_difficult FROM user_card_progress WHERE user_id=? AND card_id=?), 0))""",
+                COALESCE((SELECT is_difficult FROM user_card_progress WHERE user_id=? AND card_id=?), 0))
+        ON CONFLICT (user_id, card_id) DO UPDATE SET
+            ef=excluded.ef, interval_days=excluded.interval_days, reviews=excluded.reviews,
+            lapses=excluded.lapses, due_at=excluded.due_at, last_grade=excluded.last_grade,
+            last_reviewed=excluded.last_reviewed, is_favorite=excluded.is_favorite,
+            is_difficult=excluded.is_difficult""",
         (user["id"], card_id, new_state["ef"], new_state["interval_days"],
          new_state["reviews"], new_state["lapses"], new_state["due_at"],
          grade, datetime.utcnow().isoformat(),
@@ -2225,9 +2396,11 @@ def api_card_grade(card_id):
         streak = streak + 1 if last == yesterday else 1
     conn.execute("""
         UPDATE users 
-        SET xp=?, streak=?, max_streak=MAX(COALESCE(max_streak, 0), ?), last_study=? 
+        SET xp=?, streak=?,
+            max_streak=CASE WHEN COALESCE(max_streak, 0) >= ? THEN max_streak ELSE ? END,
+            last_study=?
         WHERE id=?
-    """, (new_xp, streak, streak, datetime.utcnow().isoformat(), user["id"]))
+    """, (new_xp, streak, streak, streak, datetime.utcnow().isoformat(), user["id"]))
     new_unlocks = ach_mod.check_and_award(conn, user["id"])
     today_count = conn.execute(
         "SELECT COUNT(*) AS c FROM reviews WHERE user_id=? AND DATE(reviewed_at) = DATE('now')",
@@ -2377,9 +2550,13 @@ def study_grade():
                      (user["id"], card_id)).fetchone()
     cur_state = dict(p) if p else {"ef": 2.5, "interval_days": 0, "reviews": 0, "lapses": 0}
     new_state = fsrs.calc_fsrs(cur_state, grade)
-    conn.execute("""INSERT OR REPLACE INTO user_card_progress
+    conn.execute("""INSERT INTO user_card_progress
         (user_id, card_id, ef, interval_days, reviews, lapses, due_at, last_grade, last_reviewed)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (user_id, card_id) DO UPDATE SET
+            ef=excluded.ef, interval_days=excluded.interval_days, reviews=excluded.reviews,
+            lapses=excluded.lapses, due_at=excluded.due_at, last_grade=excluded.last_grade,
+            last_reviewed=excluded.last_reviewed""",
         (user["id"], card_id, new_state["ef"], new_state["interval_days"],
          new_state["reviews"], new_state["lapses"], new_state["due_at"],
          grade, datetime.utcnow().isoformat()))
@@ -2397,9 +2574,11 @@ def study_grade():
         streak = streak + 1 if last == yesterday else 1
     conn.execute("""
         UPDATE users 
-        SET xp=?, streak=?, max_streak=MAX(COALESCE(max_streak, 0), ?), last_study=? 
+        SET xp=?, streak=?,
+            max_streak=CASE WHEN COALESCE(max_streak, 0) >= ? THEN max_streak ELSE ? END,
+            last_study=?
         WHERE id=?
-    """, (new_xp, streak, streak, datetime.utcnow().isoformat(), user["id"]))
+    """, (new_xp, streak, streak, streak, datetime.utcnow().isoformat(), user["id"]))
     # Achievements
     new_unlocks = ach_mod.check_and_award(conn, user["id"])
     # Goal achievement
@@ -2678,9 +2857,13 @@ def test_answer():
                      (user["id"], card_id)).fetchone()
     cur_state = dict(p) if p else {"ef": 2.5, "interval_days": 0, "reviews": 0, "lapses": 0}
     new_state = fsrs.calc_fsrs(cur_state, grade)
-    conn.execute("""INSERT OR REPLACE INTO user_card_progress
+    conn.execute("""INSERT INTO user_card_progress
         (user_id, card_id, ef, interval_days, reviews, lapses, due_at, last_grade, last_reviewed)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (user_id, card_id) DO UPDATE SET
+            ef=excluded.ef, interval_days=excluded.interval_days, reviews=excluded.reviews,
+            lapses=excluded.lapses, due_at=excluded.due_at, last_grade=excluded.last_grade,
+            last_reviewed=excluded.last_reviewed""",
         (user["id"], card_id, new_state["ef"], new_state["interval_days"],
          new_state["reviews"], new_state["lapses"], new_state["due_at"],
          grade, datetime.utcnow().isoformat()))
@@ -3141,10 +3324,10 @@ def category_duel_challenge(category_id, username):
 
     cur = conn.execute(
         """INSERT INTO duels (player1_id, player2_id, deck_id, question_count, shuffle_seed)
-           VALUES (?, ?, ?, ?, ?)""",
+           VALUES (?, ?, ?, ?, ?) RETURNING id""",
         (user["id"], target["id"], deck_id, len(card_ids), secrets.randbelow(10**9)+1)
     )
-    duel_id = cur.lastrowid
+    duel_id = cur.fetchone()[0]
     for i, cid in enumerate(card_ids):
         conn.execute("INSERT INTO duel_cards (duel_id, position, card_id) VALUES (?, ?, ?)",
                      (duel_id, i, cid))
@@ -3617,11 +3800,51 @@ def inject_tree_status():
         return {}
 
 
+@app.route("/growth/v2")
+@login_required
+def growth_page_v2():
+    """PREVIEW — redesigned levels/growth page (v2). Same stage logic as /growth."""
+    user = current_user()
+    streak = (user["streak"] if user and "streak" in user.keys() else 0) or 0
+    idx = 0
+    for i, s in enumerate(GROWTH_STAGES):
+        if streak >= s["start"]:
+            idx = i
+    current = GROWTH_STAGES[idx]
+    nxt = GROWTH_STAGES[idx + 1] if idx + 1 < len(GROWTH_STAGES) else None
+    if nxt:
+        span = max(1, nxt["start"] - current["start"])
+        stage_progress = max(0.0, min(1.0, (streak - current["start"]) / span))
+        days_to_next = max(0, nxt["start"] - streak)
+    else:
+        stage_progress, days_to_next = 1.0, 0
+
+    stages = []
+    for i, s in enumerate(GROWTH_STAGES):
+        stages.append({
+            "key": s["key"], "img": s["img"], "start": s["start"], "level": i + 1,
+            "title": t(f"gr_t_{s['key']}"), "rank": t(f"gr_r_{s['key']}"),
+            "range": t(f"gr_g_{s['key']}"),
+            "current": (s["key"] == current["key"]),
+            "locked": (s["start"] > streak),
+        })
+
+    return render_template(
+        "growth_v2.html",
+        stages=stages, streak=streak, level_num=(idx + 1),
+        current=stages[idx],
+        next_title=(t(f"gr_t_{nxt['key']}") if nxt else None),
+        days_to_next=days_to_next, stage_progress=stage_progress,
+    )
+
+
 @app.route("/growth")
 @login_required
 def growth_page():
     """Стадии роста — анимированные деревья серии (web)."""
     user = current_user()
+    if _use_v2():
+        return growth_page_v2()
     streak = (user["streak"] if user and "streak" in user.keys() else 0) or 0
     idx = 0
     for i, s in enumerate(GROWTH_STAGES):
@@ -3784,15 +4007,15 @@ def deck_ai_convert(deck_id, direction):
     deck_type_new = "terms" if direction == "to_terms" else "mcq"
     if user["org_id"]:
         cur = conn.execute(
-            "INSERT INTO decks (org_id, category_id, name, icon, deck_type, created_via) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO decks (org_id, category_id, name, icon, deck_type, created_via) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
             (user["org_id"], deck["category_id"], new_deck_name, icon, deck_type_new, "ai_convert")
         )
     else:
         cur = conn.execute(
-            "INSERT INTO decks (owner_id, category_id, name, icon, deck_type, created_via) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO decks (owner_id, category_id, name, icon, deck_type, created_via) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
             (user["id"], deck["category_id"], new_deck_name, icon, deck_type_new, "ai_convert")
         )
-    new_deck_id = cur.lastrowid
+    new_deck_id = cur.fetchone()[0]
     for c in new_cards:
         conn.execute(
             "INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
@@ -3940,12 +4163,12 @@ def import_deck_json():
     desc = deck_data.get("description", "")
 
     if user["org_id"]:
-        cur = conn.execute("INSERT INTO decks (org_id, name, icon, description) VALUES (?, ?, ?, ?)",
+        cur = conn.execute("INSERT INTO decks (org_id, name, icon, description) VALUES (?, ?, ?, ?) RETURNING id",
                           (user["org_id"], name, icon, desc))
     else:
-        cur = conn.execute("INSERT INTO decks (owner_id, name, icon, description) VALUES (?, ?, ?, ?)",
+        cur = conn.execute("INSERT INTO decks (owner_id, name, icon, description) VALUES (?, ?, ?, ?) RETURNING id",
                           (user["id"], name, icon, desc))
-    new_deck_id = cur.lastrowid
+    new_deck_id = cur.fetchone()[0]
     for c in cards:
         if not c.get("front") or not c.get("back"):
             continue
@@ -3957,11 +4180,58 @@ def import_deck_json():
     return redirect(url_for("deck_view", deck_id=new_deck_id))
 
 
+@app.route("/marketplace/v2")
+@login_required
+def marketplace_v2_page():
+    """PREVIEW — redesigned marketplace (v2). Reuses the same subjects/featured data."""
+    conn = db.get_conn()
+    lang = session.get("lang", "ru")
+
+    subjects_raw = conn.execute("""
+        SELECT s.*,
+            (SELECT COALESCE(SUM(
+                (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c2.id)
+             ),0) FROM collections c2 WHERE c2.subject_id=s.id AND c2.is_active=1) AS deck_count
+        FROM mp_subjects s WHERE s.is_active=1 ORDER BY s.sort_order ASC
+    """).fetchall()
+    subjects = []
+    for s in subjects_raw:
+        d = dict(s)
+        subjects.append({
+            "slug": d["slug"],
+            "title": d.get(f"title_{lang}") or d["title_en"],
+            "deck_count": d["deck_count"] or 0,
+        })
+
+    featured_raw = conn.execute("""
+        SELECT c.*,
+            s.slug AS subject_slug, s.title_ru AS subj_ru, s.title_en AS subj_en, s.title_uz AS subj_uz,
+            (SELECT COUNT(*) FROM collection_decks WHERE collection_id=c.id) AS deck_count
+        FROM collections c
+        LEFT JOIN mp_subjects s ON s.id=c.subject_id
+        WHERE c.is_active=1 ORDER BY c.sort_order ASC, c.id ASC LIMIT 6
+    """).fetchall()
+    featured = []
+    for row in featured_raw:
+        d = dict(row)
+        featured.append({
+            "slug": d.get("slug"),
+            "title": d.get(f"title_{lang}") or d["title_en"],
+            "subj_title": d.get(f"subj_{lang}") or d.get("subj_en", ""),
+            "subject_slug": d.get("subject_slug") or "english",
+            "deck_count": d["deck_count"] or 0,
+        })
+    conn.close()
+    return render_template("marketplace_v2.html", subjects=subjects, featured=featured)
+
+
 @app.route("/marketplace")
 @login_required
 def marketplace():
     """Marketplace v2 — Educational Library with Subjects."""
     user = current_user()
+    if _use_v2():
+        return marketplace_v2_page()
     conn = db.get_conn()
     lang = session.get("lang", "ru")
 
@@ -4427,7 +4697,7 @@ def marketplace_search():
 
     if q:
         where_parts.append(
-            "(c.title_ru LIKE ? OR c.title_en LIKE ? OR c.title_uz LIKE ? OR c.tags LIKE ?)"
+            "(c.title_ru LIKE /*ci*/ ? OR c.title_en LIKE /*ci*/ ? OR c.title_uz LIKE /*ci*/ ? OR c.tags LIKE /*ci*/ ?)"
         )
         like = f"%{q}%"
         params += [like, like, like, like]
@@ -4472,7 +4742,7 @@ def marketplace_search():
     params_d = []
     if q:
         like = f"%{q}%"
-        where_d.append("(d.name LIKE ? OR d.description LIKE ?)")
+        where_d.append("(d.name LIKE /*ci*/ ? OR d.description LIKE /*ci*/ ?)")
         params_d += [like, like]
     if ctype == "test":
         where_d.append("d.has_mcq=1")
@@ -4528,7 +4798,7 @@ def global_search():
         # Polzovateli (tol'ko publichnye + ne korp)
         results["users"] = [dict(r) for r in conn.execute("""
             SELECT id, username, full_name, xp, streak FROM users
-            WHERE (username LIKE ? OR full_name LIKE ?)
+            WHERE (username LIKE /*ci*/ ? OR full_name LIKE /*ci*/ ?)
               AND role='individual' AND org_id IS NULL
               AND COALESCE(profile_public, 1) = 1
             LIMIT 20
@@ -4542,7 +4812,7 @@ def global_search():
                      ELSE (SELECT username FROM users WHERE id=d.owner_id) END AS author,
                 (SELECT username FROM users WHERE id=d.owner_id) AS author_username
             FROM decks d
-            WHERE d.is_public=1 AND (d.name LIKE ? OR d.description LIKE ?)
+            WHERE d.is_public=1 AND (d.name LIKE /*ci*/ ? OR d.description LIKE /*ci*/ ?)
             ORDER BY d.clones_count DESC LIMIT 20
         """, (like, like)).fetchall()]
         # Publichnye kanaly
@@ -4550,7 +4820,7 @@ def global_search():
             SELECT c.id, c.name, c.avatar,
                 (SELECT COUNT(*) FROM chat_members WHERE chat_id=c.id) AS member_count
             FROM chats c
-            WHERE c.type='channel' AND c.is_public=1 AND c.name LIKE ?
+            WHERE c.type='channel' AND c.is_public=1 AND c.name LIKE /*ci*/ ?
             ORDER BY member_count DESC LIMIT 20
         """, (like,)).fetchall()]
         conn.close()
@@ -4619,11 +4889,91 @@ def leaderboard():
     return render_template("leaderboard.html", top_users=top_users, my_rank=my_rank, current=user)
 
 
+@app.route("/u/<username>/v2")
+@login_required
+def public_profile_v2(username):
+    """PREVIEW — redesigned profile (v2). Reuses the same data as public_profile;
+    does NOT touch the production /u/<username> route. Behind a preview URL only."""
+    user = current_user()
+    conn = db.get_conn()
+    target = conn.execute(
+        "SELECT * FROM users WHERE username=? AND role='individual' AND org_id IS NULL",
+        (username,),
+    ).fetchone()
+    if not target:
+        conn.close()
+        flash("Пользователь не найден", "error")
+        return redirect(url_for("leaderboard"))
+
+    is_me = (user["id"] == target["id"])
+    tid = target["id"]
+
+    cards_total = conn.execute(
+        "SELECT COUNT(*) AS c FROM cards c JOIN decks d ON d.id=c.deck_id WHERE d.owner_id=?",
+        (tid,)).fetchone()["c"]
+    learned = conn.execute(
+        "SELECT COUNT(*) AS c FROM user_card_progress WHERE user_id=? AND interval_days >= 7",
+        (tid,)).fetchone()["c"]
+    reviews = conn.execute(
+        "SELECT COUNT(*) AS c FROM reviews WHERE user_id=?", (tid,)).fetchone()["c"]
+    decks_public = conn.execute(
+        "SELECT COUNT(*) AS c FROM decks WHERE owner_id=? AND is_public=1", (tid,)).fetchone()["c"]
+    rank_row = conn.execute(
+        "SELECT COUNT(*) + 1 AS rank FROM users WHERE role='individual' AND org_id IS NULL AND xp > ?",
+        (target["xp"] or 0,)).fetchone()
+    rank = rank_row["rank"] if rank_row else None
+
+    # Achievements: earned (real) + a few locked (catalog, not yet earned)
+    earned_keys = [r["ach_key"] for r in conn.execute(
+        "SELECT ach_key FROM user_achievements WHERE user_id=? ORDER BY unlocked_at DESC",
+        (tid,)).fetchall()]
+    conn.close()
+
+    earned = [ach_mod.ACH_BY_KEY[k] for k in earned_keys if k in ach_mod.ACH_BY_KEY]
+    locked = [a for a in ach_mod.ACHIEVEMENTS if a["key"] not in earned_keys][:3]
+
+    # Growth stage from streak (same logic as /growth)
+    streak = (target["streak"] or 0)
+    idx = 0
+    for i, s in enumerate(GROWTH_STAGES):
+        if streak >= s["start"]:
+            idx = i
+    current = GROWTH_STAGES[idx]
+    nxt = GROWTH_STAGES[idx + 1] if idx + 1 < len(GROWTH_STAGES) else None
+    if nxt:
+        span = max(1, nxt["start"] - current["start"])
+        stage_progress = max(0.0, min(1.0, (streak - current["start"]) / span))
+        days_to_next = max(0, nxt["start"] - streak)
+    else:
+        stage_progress, days_to_next = 1.0, 0
+
+    member_since = ""
+    try:
+        member_since = datetime.strptime(str(target["created_at"])[:10], "%Y-%m-%d").strftime("%b %d, %Y")
+    except Exception:
+        member_since = str(target["created_at"])[:10]
+
+    return render_template(
+        "profile_v2.html",
+        target=target, is_me=is_me, rank=rank,
+        xp=(target["xp"] or 0), streak=streak,
+        learned=learned, reviews=reviews,
+        cards_total=cards_total, decks_public=decks_public,
+        member_since=member_since,
+        stage=current, stages=GROWTH_STAGES, level_num=(idx + 1),
+        current_key=current["key"], next_stage=nxt,
+        days_to_next=days_to_next, stage_progress=stage_progress,
+        earned=earned, locked=locked, ach_total=len(earned),
+    )
+
+
 @app.route("/u/<username>")
 @login_required
 def public_profile(username):
     """Publichnyy profil' polzovatelya: ego XP, streak, kolody."""
     user = current_user()
+    if _use_v2():
+        return public_profile_v2(username)
     conn = db.get_conn()
     target = conn.execute("""
         SELECT * FROM users WHERE username=? AND role='individual' AND org_id IS NULL
@@ -5213,8 +5563,8 @@ def chat_dm_open(username):
     if existing:
         chat_id = existing["id"]
     else:
-        cur = conn.execute("INSERT INTO chats (type, owner_id) VALUES ('dm', ?)", (user["id"],))
-        chat_id = cur.lastrowid
+        cur = conn.execute("INSERT INTO chats (type, owner_id) VALUES ('dm', ?) RETURNING id", (user["id"],))
+        chat_id = cur.fetchone()[0]
         conn.execute("INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, 'member')",
                      (chat_id, user["id"]))
         conn.execute("INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, 'member')",
@@ -5239,9 +5589,9 @@ def chat_new():
         return redirect(url_for("chats_list"))
     conn = db.get_conn()
     cur = conn.execute("""INSERT INTO chats (type, name, owner_id, is_public, avatar)
-                          VALUES (?, ?, ?, ?, ?)""",
+                          VALUES (?, ?, ?, ?, ?) RETURNING id""",
                        (chat_type, name, user["id"], is_public, avatar))
-    chat_id = cur.lastrowid
+    chat_id = cur.fetchone()[0]
     conn.execute("INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, 'owner')",
                  (chat_id, user["id"]))
     conn.commit(); conn.close()
@@ -5326,9 +5676,9 @@ def duel_challenge(username):
         return jsonify({"error": "not_enough_cards"}), 400
 
     cur = conn.execute("""INSERT INTO duels (player1_id, player2_id, deck_id, question_count, shuffle_seed)
-                          VALUES (?, ?, ?, ?, ?)""",
+                          VALUES (?, ?, ?, ?, ?) RETURNING id""",
                        (user["id"], target["id"], deck_id, len(cards), secrets.randbelow(10**9)+1))
-    duel_id = cur.lastrowid
+    duel_id = cur.fetchone()[0]
     for i, c in enumerate(cards):
         conn.execute("INSERT INTO duel_cards (duel_id, position, card_id) VALUES (?, ?, ?)",
                      (duel_id, i, c["id"]))
@@ -5718,9 +6068,9 @@ def tournament_new():
         flash("В колоде должно быть минимум 5 вопросов", "error")
         return redirect(url_for("tournaments_list"))
     cur = conn.execute("""INSERT INTO tournaments (name, creator_id, deck_id, size)
-                          VALUES (?, ?, ?, ?)""",
+                          VALUES (?, ?, ?, ?) RETURNING id""",
                        (name, user["id"], deck_id, size))
-    t_id = cur.lastrowid
+    t_id = cur.fetchone()[0]
     # Sozdatel' avtomaticheski v turnire
     conn.execute("INSERT INTO tournament_players (tournament_id, user_id, slot) VALUES (?, ?, 0)",
                  (t_id, user["id"]))
@@ -5840,10 +6190,10 @@ def tournament_match_start(match_id):
     cards = conn.execute("SELECT id FROM cards WHERE deck_id=? ORDER BY RANDOM() LIMIT 5",
                          (t["deck_id"],)).fetchall()
     cur = conn.execute("""INSERT INTO duels (player1_id, player2_id, deck_id, question_count, status, question_started_at)
-                          VALUES (?, ?, ?, ?, 'running', ?)""",
+                          VALUES (?, ?, ?, ?, 'running', ?) RETURNING id""",
                        (m["player1_id"], m["player2_id"], t["deck_id"], len(cards),
                         datetime.utcnow().isoformat()))
-    duel_id = cur.lastrowid
+    duel_id = cur.fetchone()[0]
     for i, c in enumerate(cards):
         conn.execute("INSERT INTO duel_cards (duel_id, position, card_id) VALUES (?, ?, ?)",
                      (duel_id, i, c["id"]))
@@ -5927,16 +6277,16 @@ def study_group_new():
         return redirect(url_for("study_groups_list"))
     conn = db.get_conn()
     # Sozdayem chat dlya gruppy
-    cur = conn.execute("INSERT INTO chats (type, name, owner_id, avatar) VALUES ('group', ?, ?, ?)",
+    cur = conn.execute("INSERT INTO chats (type, name, owner_id, avatar) VALUES ('group', ?, ?, ?) RETURNING id",
                        (name, user["id"], avatar))
-    chat_id = cur.lastrowid
+    chat_id = cur.fetchone()[0]
     conn.execute("INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, 'owner')",
                  (chat_id, user["id"]))
     # Sozdayem study group
     cur = conn.execute("""INSERT INTO study_groups (name, owner_id, description, avatar, is_public, chat_id)
-                          VALUES (?, ?, ?, ?, ?, ?)""",
+                          VALUES (?, ?, ?, ?, ?, ?) RETURNING id""",
                        (name, user["id"], description, avatar, is_public, chat_id))
-    g_id = cur.lastrowid
+    g_id = cur.fetchone()[0]
     conn.execute("INSERT INTO study_group_members (group_id, user_id, role) VALUES (?, ?, 'owner')",
                  (g_id, user["id"]))
     conn.commit(); conn.close()
@@ -6118,13 +6468,13 @@ def marketplace_clone(deck_id):
     new_name = src["name"]
     if user["org_id"]:
         cur = conn.execute("""INSERT INTO decks (org_id, name, icon, description)
-                              VALUES (?, ?, ?, ?)""",
+                              VALUES (?, ?, ?, ?) RETURNING id""",
                           (user["org_id"], new_name, src["icon"], src["description"]))
     else:
         cur = conn.execute("""INSERT INTO decks (owner_id, name, icon, description)
-                              VALUES (?, ?, ?, ?)""",
+                              VALUES (?, ?, ?, ?) RETURNING id""",
                           (user["id"], new_name, src["icon"], src["description"]))
-    new_deck_id = cur.lastrowid
+    new_deck_id = cur.fetchone()[0]
 
     cards = conn.execute("SELECT front, back, note, image_url FROM cards WHERE deck_id=?",
                          (deck_id,)).fetchall()
@@ -6304,13 +6654,13 @@ def api_tutor_ask():
                         return None
                     if user.get("org_id"):
                         cur2 = c2.execute(
-                            "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                            "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai') RETURNING id",
                             (user["org_id"], deck_name, "🤖"))
                     else:
                         cur2 = c2.execute(
-                            "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                            "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai') RETURNING id",
                             (user["id"], deck_name, "🤖"))
-                    did = cur2.lastrowid
+                    did = cur2.fetchone()[0]
                     for cc in cards:
                         c2.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
                                    (did, cc["front"], cc["back"], cc.get("note", "")))
@@ -6450,10 +6800,10 @@ def api_tutor_conversations_create():
     title = (request.json or {}).get("title", "Новый чат")[:80]
     conn = db.get_conn()
     cur = conn.execute(
-        "INSERT INTO tutor_conversations (user_id, title) VALUES (?, ?)",
+        "INSERT INTO tutor_conversations (user_id, title) VALUES (?, ?) RETURNING id",
         (user["id"], title)
     )
-    conv_id = cur.lastrowid
+    conv_id = cur.fetchone()[0]
     conn.commit(); conn.close()
     return jsonify({"id": conv_id, "title": title})
 
@@ -6549,10 +6899,10 @@ def _tutor_get_or_create_conv(user_id: int, first_message: str) -> int:
     title = first_message.strip()[:60] or "Новый чат"
     conn = db.get_conn()
     cur = conn.execute(
-        "INSERT INTO tutor_conversations (user_id, title) VALUES (?,?)",
+        "INSERT INTO tutor_conversations (user_id, title) VALUES (?,?) RETURNING id",
         (user_id, title)
     )
-    conv_id = cur.lastrowid
+    conv_id = cur.fetchone()[0]
     conn.commit(); conn.close()
     session["tutor_conv_id"] = conv_id
     return conv_id
@@ -6792,10 +7142,10 @@ def live_start(deck_id):
             break
 
     cur = conn.execute(
-        "INSERT INTO live_sessions (code, deck_id, host_id, question_count, time_per_q, shuffle_seed) VALUES (?,?,?,?,?,?)",
+        "INSERT INTO live_sessions (code, deck_id, host_id, question_count, time_per_q, shuffle_seed) VALUES (?,?,?,?,?,?) RETURNING id",
         (code, deck_id, user["id"], len(cards_raw), time_per_q, secrets.randbelow(10**9)+1)
     )
-    sess_id = cur.lastrowid
+    sess_id = cur.fetchone()[0]
     for pos, c in enumerate(cards_raw):
         conn.execute("INSERT INTO live_session_cards (session_id, position, card_id) VALUES (?,?,?)",
                      (sess_id, pos, c["id"]))
@@ -6859,10 +7209,10 @@ def live_create():
 
         cur = conn.execute(
             """INSERT INTO live_sessions (code, deck_id, host_id, host_role, question_count, time_per_q, shuffle_seed)
-               VALUES (?,?,?,?,?,?,?)""",
+               VALUES (?,?,?,?,?,?,?) RETURNING id""",
             (code, deck_id, user["id"], host_role, len(cards_ids_for_session), time_per_q, secrets.randbelow(10**9)+1)
         )
-        sess_id = cur.lastrowid
+        sess_id = cur.fetchone()[0]
         for pos, cid in enumerate(cards_ids_for_session):
             conn.execute("INSERT INTO live_session_cards (session_id, position, card_id) VALUES (?,?,?)",
                          (sess_id, pos, cid))
@@ -7994,12 +8344,12 @@ def import_page():
             # Prioritet: yavnoe imya > imya fayla > defolt s datoy
             target_name = new_deck_name or uploaded_filename or f"Импорт {datetime.now():%Y-%m-%d}"
             if user["org_id"]:
-                cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
+                cur = conn.execute("INSERT INTO decks (org_id, category_id, name, icon) VALUES (?, ?, ?, ?) RETURNING id",
                                   (user["org_id"], category_id, target_name, "📥"))
             else:
-                cur = conn.execute("INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?, ?, ?, ?)",
+                cur = conn.execute("INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?, ?, ?, ?) RETURNING id",
                                   (user["id"], category_id, target_name, "📥"))
-            target_id = cur.lastrowid
+            target_id = cur.fetchone()[0]
         for c in cards:
             conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
                          (target_id, c["front"], c["back"], c.get("note", "")))
@@ -8113,15 +8463,15 @@ def _save_vision_cards_to_deck(job_id: str, cards: list[dict]) -> int:
         else:
             if user_d["org_id"]:
                 cur = conn.execute(
-                    "INSERT INTO decks (org_id, category_id, name, icon, is_public, created_via) VALUES (?, ?, ?, ?, 0, 'vision_pdf')",
+                    "INSERT INTO decks (org_id, category_id, name, icon, is_public, created_via) VALUES (?, ?, ?, ?, 0, 'vision_pdf') RETURNING id",
                     (user_d["org_id"], category_id, new_deck_name, "🤖")
                 )
             else:
                 cur = conn.execute(
-                    "INSERT INTO decks (owner_id, category_id, name, icon, is_public, created_via) VALUES (?, ?, ?, ?, 0, 'vision_pdf')",
+                    "INSERT INTO decks (owner_id, category_id, name, icon, is_public, created_via) VALUES (?, ?, ?, ?, 0, 'vision_pdf') RETURNING id",
                     (user_d["id"], category_id, new_deck_name, "🤖")
                 )
-            target_id = cur.lastrowid
+            target_id = cur.fetchone()[0]
 
         for c in cards:
             conn.execute(
@@ -8369,13 +8719,13 @@ def ai_page():
                     tname = _new_deck_name or f"AI {datetime.now():%Y-%m-%d %H:%M}"
                     if _org_id:
                         cur = conn.execute(
-                            "INSERT INTO decks (org_id, category_id, name, icon) VALUES (?,?,?,?)",
+                            "INSERT INTO decks (org_id, category_id, name, icon) VALUES (?,?,?,?) RETURNING id",
                             (_org_id, _category_id, tname, "🤖"))
                     else:
                         cur = conn.execute(
-                            "INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?,?,?,?)",
+                            "INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?,?,?,?) RETURNING id",
                             (_user_id, _category_id, tname, "🤖"))
-                    target_id = cur.lastrowid
+                    target_id = cur.fetchone()[0]
                 for c in cards:
                     conn.execute(
                         "INSERT INTO cards (deck_id, front, back, note) VALUES (?,?,?,?)",
@@ -8488,13 +8838,13 @@ def ai_photo_page():
                 tname = new_deck_name or f"📸 {topic[:40]}"
                 if _org_id:
                     cur = conn.execute(
-                        "INSERT INTO decks (org_id, category_id, name, icon) VALUES (?,?,?,?)",
+                        "INSERT INTO decks (org_id, category_id, name, icon) VALUES (?,?,?,?) RETURNING id",
                         (_org_id, category_id, tname, "📸"))
                 else:
                     cur = conn.execute(
-                        "INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?,?,?,?)",
+                        "INSERT INTO decks (owner_id, category_id, name, icon) VALUES (?,?,?,?) RETURNING id",
                         (_user_id, category_id, tname, "📸"))
-                target_id = cur.lastrowid
+                target_id = cur.fetchone()[0]
             for c in cards:
                 conn.execute(
                     "INSERT INTO cards (deck_id, front, back, note, image_url) VALUES (?,?,?,?,?)",
@@ -8579,10 +8929,10 @@ def support_new():
         return redirect(url_for("support_page"))
     conn = db.get_conn()
     cur = conn.execute(
-        "INSERT INTO support_tickets (user_id, subject) VALUES (?, ?)",
+        "INSERT INTO support_tickets (user_id, subject) VALUES (?, ?) RETURNING id",
         (user["id"], subject or "Без темы")
     )
-    ticket_id = cur.lastrowid
+    ticket_id = cur.fetchone()[0]
     conn.execute(
         "INSERT INTO support_messages (ticket_id, sender_id, is_admin, text) VALUES (?, ?, 0, ?)",
         (ticket_id, user["id"], text)

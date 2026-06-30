@@ -38,14 +38,12 @@ AUTH="Authorization: Bearer $ACCESS"
 echo ""
 echo "=== 0b. Create a deck with MCQ cards + a plain (non-MCQ) card ==="
 SETUP=$(python - "$EMAIL" <<'PYEOF'
-import sys, sqlite3
-conn = sqlite3.connect("quizpro.db")
-conn.row_factory = sqlite3.Row
+import sys, db   # engine-aware: SQLite or Postgres per DATABASE_URL
+conn = db.get_conn()
 email = sys.argv[1]
 user = conn.execute("SELECT id FROM users WHERE username=?", (email,)).fetchone()
 uid = user["id"]
-cur = conn.execute("INSERT INTO decks (owner_id, name, description, is_public) VALUES (?, 'QA4 Test Deck', 'qa4', 0)", (uid,))
-deck_id = cur.lastrowid
+deck_id = conn.execute("INSERT INTO decks (owner_id, name, description, is_public) VALUES (?, 'QA4 Test Deck', 'qa4', 0) RETURNING id", (uid,)).fetchone()[0]
 # MCQ card 1: correct = B
 conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, 'Capital of France?', 'B) Paris', 'A) London\nB) Paris\nC) Berlin\nD) Madrid')", (deck_id,))
 # MCQ card 2: correct = A

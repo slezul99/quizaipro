@@ -157,7 +157,7 @@ def get_conversations():
             pattern = "%" + _like_escape(q) + "%"
             rows = conn.execute(
                 _CONVERSATION_SELECT +
-                " WHERE tc.user_id=? AND tc.title LIKE ? ESCAPE '\\'"
+                " WHERE tc.user_id=? AND tc.title LIKE /*ci*/ ? ESCAPE '\\'"
                 " ORDER BY tc.pinned DESC, tc.updated_at DESC LIMIT 200",
                 (user["id"], pattern),
             ).fetchall()
@@ -443,13 +443,13 @@ def post_stream_message():
                     return None
                 if user["org_id"]:
                     cur2 = c2.execute(
-                        "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                        "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai') RETURNING id",
                         (user["org_id"], deck_name, "🤖"))
                 else:
                     cur2 = c2.execute(
-                        "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai')",
+                        "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'tutor_ai') RETURNING id",
                         (user["id"], deck_name, "🤖"))
-                did = cur2.lastrowid
+                did = cur2.fetchone()[0]
                 for cc in cards:
                     c2.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
                                (did, cc["front"], cc["back"], cc.get("note", "")))

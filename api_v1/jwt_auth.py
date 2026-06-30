@@ -85,10 +85,10 @@ def _store_refresh_token(conn, user_id: int, raw_token: str, device_token: str |
     expires_at = (_now() + REFRESH_TOKEN_TTL).strftime("%Y-%m-%d %H:%M:%S")
     cur = conn.execute(
         """INSERT INTO refresh_tokens (user_id, token_hash, device_token, expires_at)
-           VALUES (?, ?, ?, ?)""",
+           VALUES (?, ?, ?, ?) RETURNING id""",
         (user_id, _hash_token(raw_token), device_token, expires_at),
     )
-    return cur.lastrowid
+    return cur.fetchone()[0]
 
 
 def issue_token_pair(user_row, device_token: str | None = None):

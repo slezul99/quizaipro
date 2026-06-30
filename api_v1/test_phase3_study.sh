@@ -39,28 +39,23 @@ AUTH="Authorization: Bearer $ACCESS"
 echo ""
 echo "=== 0b. Create a deck + card directly (so we have something to study) ==="
 python - "$BASE" "$EMAIL" <<'PYEOF'
-import sys, sqlite3, datetime
-db_path = "quizpro.db"
-conn = sqlite3.connect(db_path)
-conn.row_factory = sqlite3.Row
+import sys, db   # engine-aware: SQLite or Postgres per DATABASE_URL
+conn = db.get_conn()
 email = sys.argv[2]
 user = conn.execute("SELECT id FROM users WHERE username=?", (email,)).fetchone()
 if user is None:
     print("NO_USER"); sys.exit(0)
 uid = user["id"]
-cur = conn.execute("INSERT INTO decks (owner_id, name, description, is_public) VALUES (?, 'QA Deck', 'qa', 0)", (uid,))
-deck_id = cur.lastrowid
-cur = conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, 'Q1', 'A1', 'hint1')", (deck_id,))
-card_id = cur.lastrowid
+deck_id = conn.execute("INSERT INTO decks (owner_id, name, description, is_public) VALUES (?, 'QA Deck', 'qa', 0) RETURNING id", (uid,)).fetchone()[0]
+card_id = conn.execute("INSERT INTO cards (deck_id, front, back, note) VALUES (?, 'Q1', 'A1', 'hint1') RETURNING id", (deck_id,)).fetchone()[0]
 conn.commit()
 print(f"DECK_ID={deck_id}")
 print(f"CARD_ID={card_id}")
 PYEOF
 
 SETUP=$(python - "$EMAIL" <<'PYEOF'
-import sys, sqlite3
-conn = sqlite3.connect("quizpro.db")
-conn.row_factory = sqlite3.Row
+import sys, db   # engine-aware: SQLite or Postgres per DATABASE_URL
+conn = db.get_conn()
 email = sys.argv[1]
 user = conn.execute("SELECT id FROM users WHERE username=?", (email,)).fetchone()
 uid = user["id"]

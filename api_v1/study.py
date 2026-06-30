@@ -250,17 +250,18 @@ def post_create_deck():
     try:
         if user["org_id"]:
             cur = conn.execute(
-                "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'mobile_ai')",
+                "INSERT INTO decks (org_id, name, icon, created_via) VALUES (?, ?, ?, 'mobile_ai') RETURNING id",
                 (user["org_id"], title, "🤖"))
         else:
             cur = conn.execute(
-                "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'mobile_ai')",
+                "INSERT INTO decks (owner_id, name, icon, created_via) VALUES (?, ?, ?, 'mobile_ai') RETURNING id",
                 (user["id"], title, "🤖"))
+        _did = cur.fetchone()[0]   # fetch RETURNING before commit (SQLite-safe)
         conn.commit()
         row = conn.execute("""
             SELECT d.*, (SELECT COUNT(*) FROM cards c WHERE c.deck_id = d.id) AS card_count
             FROM decks d WHERE d.id = ?
-        """, (cur.lastrowid,)).fetchone()
+        """, (_did,)).fetchone()
     finally:
         conn.close()
 
@@ -382,11 +383,12 @@ def post_create_card(deck_id):
         if not _user_owns_deck(user, deck):
             return _err("forbidden", "Нет доступа к этой колоде", 403)
         cur = conn.execute(
-            "INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?)",
+            "INSERT INTO cards (deck_id, front, back, note) VALUES (?, ?, ?, ?) RETURNING id",
             (deck_id, parsed["front"], parsed["back"], parsed["note"]))
+        _cid = cur.fetchone()[0]   # fetch RETURNING before commit (SQLite-safe)
         _recalc_deck_flags(conn, deck_id)
         conn.commit()
-        row = _load_card_row(conn, deck_id, cur.lastrowid)
+        row = _load_card_row(conn, deck_id, _cid)
     finally:
         conn.close()
     return jsonify({"data": _serialize_card(row, _resolve_lang(user))}), 201
@@ -461,8 +463,11 @@ def _validate_grade_payload(body):
     deck_id = body.get("deck_id")
     if card_id is None or deck_id is None:
         return None, "card_id and deck_id are required"
-    card_id = str(card_id)
-    deck_id = str(deck_id)
+    try:
+        card_id = int(card_id)
+        deck_id = int(deck_id)
+    except (TypeError, ValueError):
+        return None, "card_id and deck_id must be integers"
 
     grade = body.get("grade")
     if isinstance(grade, bool) or not isinstance(grade, int) or grade not in _VALID_GRADES:
@@ -555,9 +560,11 @@ def bump_streak(conn, user, xp_gain, graded_at_iso):
         streak = streak + 1 if last == yesterday else 1
     conn.execute("""
         UPDATE users 
-        SET xp=?, streak=?, max_streak=MAX(COALESCE(max_streak, 0), ?), last_study=? 
+        SET xp=?, streak=?,
+            max_streak=CASE WHEN COALESCE(max_streak, 0) >= ? THEN max_streak ELSE ? END,
+            last_study=?
         WHERE id=?
-    """, (new_xp, streak, streak, datetime.utcnow().isoformat(), user["id"]))
+    """, (new_xp, streak, streak, streak, datetime.utcnow().isoformat(), user["id"]))
     return streak
 
 
@@ -606,11 +613,17 @@ def post_grade():
             lapses = ((prior["lapses"] if prior else 0) or 0) + (1 if parsed["grade"] < 3 else 0)
 
             conn.execute("""
-                INSERT OR REPLACE INTO user_card_progress
+                INSERT INTO user_card_progress
                     (user_id, card_id, ef, interval_days, repetitions, reviews, lapses,
                      due_at, last_grade, last_reviewed, is_favorite, is_difficult)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                     COALESCE(?, 0), COALESCE(?, 0))
+                ON CONFLICT (user_id, card_id) DO UPDATE SET
+                    ef=excluded.ef, interval_days=excluded.interval_days,
+                    repetitions=excluded.repetitions, reviews=excluded.reviews,
+                    lapses=excluded.lapses, due_at=excluded.due_at,
+                    last_grade=excluded.last_grade, last_reviewed=excluded.last_reviewed,
+                    is_favorite=excluded.is_favorite, is_difficult=excluded.is_difficult
             """, (user["id"], parsed["card_id"], parsed["ease_factor"], parsed["interval"],
                   parsed["repetitions"], reviews, lapses, parsed["next_review_at"],
                   parsed["grade"], parsed["graded_at"],

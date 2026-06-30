@@ -30,9 +30,9 @@ def get_or_create_topic_deck(coll_id, name, icon):
         return r[0]
     c.execute("""INSERT INTO decks (owner_id,name,icon,description,is_public,
                  deck_type,created_via,has_mcq,has_terms)
-                 VALUES (?,?,?,?,1,'mcq','seed',1,0)""",
+                 VALUES (?,?,?,?,1,'mcq','seed',1,0) RETURNING id""",
               (OWNER, name, icon, ""))
-    return c.lastrowid
+    return c.fetchone()[0]
 
 
 _n_decks = 0
