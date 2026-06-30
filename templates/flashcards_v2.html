@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ deck.icon }} {{ deck.name }} — {{ t('v2_nav_flashcards') }}</title>
+
+<!-- Tailwind Play CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Alpine.js (same version as base.html) -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<!-- Google Fonts: Space Grotesk + Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Inline dark-mode preference before paint (prevent flash) -->
+<script>
+  (function() {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<style>
+  /* ── Design Tokens (mirrors dashboard_v2) ── */
+  :root {
+    --brand-1: #6366f1;
+    --brand-2: #8b5cf6;
+    --brand-3: #ec4899;
+    --brand-grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --brand-grad-tri: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    --success: #10b981;
+    --amber: #f59e0b;
+    --orange: #f97316;
+    --page-bg: #f6f5fb;
+    --topbar-h: 60px;
+    --shadow-card: 0 4px 20px -6px rgba(100,90,180,.12);
+    --shadow-raised: 0 16px 40px -12px rgba(99,102,241,.22);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --text: #1e293b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--page-bg); }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.35); border-radius: 3px; }
+
+  /* ── Focus topbar (slim) ── */
+  .fc2-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--topbar-h);
+    background: rgba(255,255,255,.92);
+    border-bottom: 1px solid rgba(99,102,241,.08);
+    box-shadow: 0 1px 16px -4px rgba(99,102,241,.09);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+  }
+
+  /* Back button */
+  .fc2-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    padding: 7px 12px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(99,102,241,.12);
+    background: rgba(99,102,241,.04);
+    transition: all .18s var(--ease);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .fc2-back-btn:hover { background: rgba(99,102,241,.10); color: var(--brand-1); border-color: rgba(99,102,241,.25); }
+
+  /* Center deck info block */
+  .fc2-deck-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .fc2-deck-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 340px;
+  }
+  .fc2-counter {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--brand-1);
+    letter-spacing: -0.01em;
+  }
+
+  /* Progress bar (topbar) */
+  .fc2-progress-wrap {
+    width: 100%;
+    max-width: 320px;
+  }
+  .fc2-progress-track {
+    height: 4px;
+    background: rgba(99,102,241,.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .fc2-progress-fill {
+    height: 100%;
+    background: var(--brand-grad-tri);
+    border-radius: 999px;
+    transition: width 0.5s var(--ease);
+  }
+
+  /* Theme toggle (bell-btn style) */
+  .fc2-icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 11px;
+    background: rgba(99,102,241,.06);
+    border: 1.5px solid rgba(99,102,241,.10);
+    display: grid; place-items: center;
+    cursor: pointer; color: #64748b;
+    transition: all .18s;
+    flex-shrink: 0;
+  }
+  .fc2-icon-btn:hover { background: rgba(99,102,241,.14); color: var(--brand-1); }
+
+  /* Right controls */
+  .fc2-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── Focus main layout ── */
+  .fc2-main {
+    min-height: calc(100vh - var(--topbar-h));
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 28px 16px 56px;
+  }
+  .fc2-content {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* ── Filter pills ── */
+  .fc2-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .fc2-filter-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(99,102,241,.15);
+    background: rgba(255,255,255,.9);
+    color: #64748b;
+    text-decoration: none;
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .fc2-filter-pill:hover { border-color: rgba(99,102,241,.3); color: var(--brand-1); }
+  .fc2-filter-pill.active-all  { background: var(--brand-1); color: #fff; border-color: var(--brand-1); }
+  .fc2-filter-pill.active-fav  { background: #ec4899; color: #fff; border-color: #ec4899; }
+  .fc2-filter-pill.active-hard { background: #ef4444; color: #fff; border-color: #ef4444; }
+  .fc2-filter-pill.active-fading { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+
+  /* ── 3D Flip card ── */
+  .fc2-scene {
+    perspective: 1800px;
+  }
+  .fc2-card {
+    position: relative;
+    width: 100%;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-style: preserve-3d;
+  }
+  .fc2-card.is-flipped {
+    transform: rotateY(180deg);
+  }
+  .fc2-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    padding: 52px 28px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+  }
+  .fc2-front {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5ff 50%, #e9eeff 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25),
+                0 12px 24px -8px rgba(99, 102, 241, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  .fc2-back {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    transform: rotateY(180deg);
+    box-shadow: 0 30px 60px -20px rgba(139, 92, 246, 0.5),
+                0 12px 24px -8px rgba(236, 72, 153, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  /* Glow overlay */
+  .fc2-front::before, .fc2-back::before {
+    content: "";
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .fc2-front::before {
+    top: -60px; right: -60px;
+    background: radial-gradient(circle, rgba(99,102,241,0.4), transparent 70%);
+  }
+  .fc2-back::before {
+    bottom: -60px; left: -60px;
+    background: radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%);
+  }
+
+  /* Label (QUESTION / ANSWER) */
+  .fc2-label {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    opacity: 0.55;
+    white-space: nowrap;
+  }
+
+  /* Card text with adaptive font sizes */
+  .fc2-text {
+    font-size: clamp(16px, 3.5vw, 32px);
+    line-height: 1.4;
+    font-weight: 600;
+    width: 100%;
+    max-width: 92%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.4) transparent;
+    padding: 0 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .fc2-text::-webkit-scrollbar { width: 3px; }
+  .fc2-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.35); border-radius: 3px; }
+  /* Length-based size tiers (applied via JS) */
+  .fc2-text.len-xs  { font-size: clamp(22px, 4vw, 38px); }
+  .fc2-text.len-sm  { font-size: clamp(18px, 3.2vw, 30px); }
+  .fc2-text.len-md  { font-size: clamp(15px, 2.5vw, 24px); }
+  .fc2-text.len-lg  { font-size: clamp(13px, 2vw, 19px); }
+  .fc2-text.len-xl  { font-size: clamp(12px, 1.8vw, 16px); }
+  @media (max-width: 640px) {
+    .fc2-text.len-xs  { font-size: clamp(20px, 5.5vw, 30px); }
+    .fc2-text.len-sm  { font-size: clamp(16px, 4.5vw, 24px); }
+    .fc2-text.len-md  { font-size: clamp(14px, 3.8vw, 20px); }
+    .fc2-text.len-lg  { font-size: clamp(13px, 3.2vw, 17px); }
+    .fc2-text.len-xl  { font-size: clamp(12px, 3vw, 15px); }
+  }
+
+  /* Card stage */
+  .fc2-stage {
+    height: min(68vh, 560px);
+    min-height: 360px;
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  /* Swipe overlays */
+  .fc2-swipe-hint {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 5;
+    font-size: 48px;
+  }
+  .fc2-swipe-left { left: 12px; color: #ef4444; }
+  .fc2-swipe-right { right: 12px; color: #10b981; }
+
+  /* Tap hint pulse animation */
+  @keyframes fc2-tap-hint {
+    0%, 100% { box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25), 0 0 0 0 rgba(99,102,241,0.4); }
+    50% { box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.25), 0 0 0 12px rgba(99,102,241,0); }
+  }
+  .fc2-card:not(.is-flipped):not(.has-flipped-once) .fc2-front {
+    animation: fc2-tap-hint 2.4s ease-in-out infinite;
+  }
+
+  /* ── Nav buttons (circle) ── */
+  .fc2-nav-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px -10px rgba(99,102,241,0.35),
+                0 4px 12px rgba(0,0,0,0.06);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s var(--ease);
+    cursor: pointer; user-select: none;
+    border: 1.5px solid rgba(99,102,241,.12);
+    flex-shrink: 0;
+  }
+  .fc2-nav-btn:hover { transform: scale(1.08); box-shadow: 0 15px 40px -10px rgba(99,102,241,.5); }
+  .fc2-nav-btn:active { transform: scale(0.95); }
+  .fc2-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+  /* ── Action row (fav/hard/speak) ── */
+  .fc2-action-btn {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    border-width: 2px;
+    border-style: solid;
+    transition: all .2s var(--ease);
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,.10);
+    cursor: pointer;
+  }
+  .fc2-action-btn:hover { transform: scale(1.1); }
+  .fc2-action-btn:active { transform: scale(0.94); }
+
+  /* ── Grade buttons ── */
+  .fc2-grade-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .fc2-grade-btn {
+    border-radius: 20px;
+    padding: 18px 8px 14px;
+    font-weight: 700;
+    text-align: center;
+    transition: all .2s var(--ease);
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--shadow-card);
+  }
+  .fc2-grade-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-raised); }
+  .fc2-grade-btn:active { transform: scale(0.96); }
+  .fc2-grade-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+  .fc2-grade-btn .grade-emoji { font-size: 26px; margin-bottom: 6px; }
+  .fc2-grade-btn .grade-label { font-size: 13.5px; font-weight: 700; }
+  .fc2-grade-btn .grade-sub { font-size: 10.5px; opacity: 0.65; margin-top: 3px; }
+
+  /* Hard = amber-to-red */
+  .fc2-grade-hard {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    color: #c2410c;
+    border: 1px solid rgba(249,115,22,.18);
+  }
+  /* Good = brand indigo */
+  .fc2-grade-good {
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    color: #4338ca;
+    border: 1px solid rgba(99,102,241,.18);
+  }
+  /* Easy = green */
+  .fc2-grade-easy {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: #065f46;
+    border: 1px solid rgba(16,185,129,.18);
+  }
+
+  /* Dot nav */
+  .fc2-dot-nav {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .fc2-dot {
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    transition: all .25s var(--ease);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .fc2-dot.active { background: var(--brand-1); width: 28px; }
+  .fc2-dot.seen   { background: rgba(99,102,241,.45); }
+  .fc2-dot.unseen { background: rgba(99,102,241,.13); }
+
+  /* Keys hint */
+  .fc2-keys-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 10px;
+  }
+  .fc2-keys-hint kbd {
+    display: inline-block;
+    background: rgba(99,102,241,.08);
+    border: 1px solid rgba(99,102,241,.15);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    color: #64748b;
+  }
+
+  /* Empty state */
+  .fc2-empty {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(99,102,241,.08);
+    padding: 56px 24px;
+    text-align: center;
+  }
+
+  /* Completion overlay */
+  .fc2-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    background: rgba(15,23,41,.60);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .fc2-dialog {
+    background: #fff;
+    border-radius: 24px;
+    padding: 40px 32px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 32px 64px -16px rgba(99,102,241,.35);
+    border: 1px solid rgba(99,102,241,.10);
+  }
+  @keyframes fc2-celebrate {
+    0%   { transform: scale(0); opacity: 0; }
+    55%  { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .fc2-celebrate { animation: fc2-celebrate 0.55s var(--ease); }
+
+  /* Wordmark in topbar (focus mode — no sidebar) */
+  .fc2-wordmark {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: -0.03em;
+    background: var(--brand-grad-tri);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    white-space: nowrap;
+  }
+  .fc2-logo-tile {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: var(--brand-grad-tri);
+    display: grid; place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px -2px rgba(99,102,241,.45);
+    letter-spacing: -0.03em;
+  }
+
+  /* ── Dark mode ── */
+  html.dark {
+    --page-bg: #0f1729;
+    --shadow-card: 0 12px 40px -8px rgba(0,0,0,.5);
+    --shadow-raised: 0 20px 50px -10px rgba(0,0,0,.65);
+    --text: #e2e8f0;
+  }
+  html.dark body {
+    background: linear-gradient(180deg,#0f1729,#141c38);
+    color: var(--text);
+  }
+
+  html.dark .fc2-topbar {
+    background: rgba(15,23,41,.92);
+    border-bottom-color: rgba(99,102,241,.15);
+    box-shadow: 0 1px 20px -4px rgba(0,0,0,.4);
+  }
+  html.dark .fc2-back-btn {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.2);
+    color: #94a3b8;
+  }
+  html.dark .fc2-back-btn:hover { background: rgba(99,102,241,.2); color: #a5b4fc; border-color: rgba(99,102,241,.35); }
+  html.dark .fc2-deck-name { color: #e2e8f0; }
+  html.dark .fc2-icon-btn {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.2);
+    color: #94a3b8;
+  }
+  html.dark .fc2-icon-btn:hover { background: rgba(99,102,241,.2); color: #a5b4fc; }
+
+  /* Card faces */
+  html.dark .fc2-front {
+    background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 50%, #312e81 100%);
+    color: #f1f5f9;
+    border-color: rgba(139,92,246,.3);
+  }
+  html.dark .fc2-front::before {
+    background: radial-gradient(circle, rgba(139,92,246,.45), transparent 70%);
+  }
+  html.dark .fc2-front .fc2-text { color: #f1f5f9 !important; }
+  html.dark .fc2-front .fc2-label { color: #c4b5fd !important; }
+  html.dark .fc2-back {
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 50%, #be185d 100%);
+  }
+
+  /* Nav buttons dark */
+  html.dark .fc2-nav-btn {
+    background: rgba(30,41,75,.9);
+    border-color: rgba(139,92,246,.3);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3);
+  }
+  html.dark .fc2-nav-btn svg { color: #c4b5fd !important; }
+
+  /* Grade buttons dark */
+  html.dark .fc2-grade-hard {
+    background: linear-gradient(135deg, rgba(249,115,22,.22), rgba(234,88,12,.15));
+    color: #fdba74; border-color: rgba(249,115,22,.3);
+  }
+  html.dark .fc2-grade-good {
+    background: linear-gradient(135deg, rgba(99,102,241,.22), rgba(79,70,229,.15));
+    color: #a5b4fc; border-color: rgba(99,102,241,.3);
+  }
+  html.dark .fc2-grade-easy {
+    background: linear-gradient(135deg, rgba(16,185,129,.22), rgba(5,150,105,.15));
+    color: #6ee7b7; border-color: rgba(16,185,129,.3);
+  }
+
+  /* Progress track dark */
+  html.dark .fc2-progress-track { background: rgba(99,102,241,.2); }
+  html.dark .fc2-filter-pill { background: rgba(30,41,75,.8); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+  html.dark .fc2-filter-pill:hover { color: #a5b4fc; border-color: rgba(99,102,241,.35); }
+  html.dark .fc2-dot.unseen { background: rgba(99,102,241,.18); }
+  html.dark .fc2-keys-hint { color: #64748b; }
+  html.dark .fc2-keys-hint kbd { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+
+  /* Empty + dialog dark */
+  html.dark .fc2-empty {
+    background: rgba(30,41,75,.65);
+    border-color: rgba(99,102,241,.18);
+  }
+  html.dark .fc2-dialog {
+    background: rgba(20,28,56,.98);
+    border-color: rgba(99,102,241,.25);
+    color: #e2e8f0;
+  }
+  html.dark .fc2-dialog h2 { color: #e2e8f0; }
+  html.dark .fc2-dialog p  { color: #94a3b8; }
+
+  /* Autoplay toggle button */
+  .fc2-auto-btn {
+    font-size: 12.5px; font-weight: 700;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(99,102,241,.15);
+    background: rgba(255,255,255,.9);
+    color: #64748b;
+    cursor: pointer;
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .fc2-auto-btn:hover { border-color: rgba(99,102,241,.3); color: var(--brand-1); }
+  .fc2-auto-btn.is-on { background: var(--brand-1); color: #fff; border-color: var(--brand-1); }
+  html.dark .fc2-auto-btn { background: rgba(30,41,75,.8); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+  html.dark .fc2-auto-btn.is-on { background: var(--brand-1); color: #fff; border-color: var(--brand-1); }
+
+  /* Shuffle button */
+  .fc2-shuffle-btn {
+    font-size: 12.5px; font-weight: 700;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(99,102,241,.15);
+    background: rgba(255,255,255,.9);
+    color: #64748b;
+    cursor: pointer;
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .fc2-shuffle-btn:hover { border-color: rgba(99,102,241,.3); color: var(--brand-1); }
+  html.dark .fc2-shuffle-btn { background: rgba(30,41,75,.8); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+
+  /* Theme icon swap (mirrors dashboard_v2) */
+  html:not(.dark) .icon-moon { display: none; }
+  html.dark .icon-sun  { display: none; }
+  html.dark .icon-moon { display: block; }
+
+  /* Utility: v2 btn for dialog */
+  .btn-v2-primary {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 11px 22px;
+    border-radius: 999px;
+    background: var(--brand-grad-tri);
+    color: #fff; font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
+    box-shadow: 0 6px 16px -4px rgba(99,102,241,.45);
+    transition: all .2s var(--ease);
+    text-decoration: none;
+  }
+  .btn-v2-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -4px rgba(99,102,241,.6); }
+  .btn-v2-ghost {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 11px 22px;
+    border-radius: 999px;
+    background: rgba(99,102,241,.07);
+    color: var(--brand-1); font-size: 14px; font-weight: 700;
+    border: 1.5px solid rgba(99,102,241,.18); cursor: pointer;
+    transition: all .18s;
+    text-decoration: none;
+  }
+  .btn-v2-ghost:hover { background: rgba(99,102,241,.14); }
+  .btn-v2-success {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 11px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
+    box-shadow: 0 6px 16px -4px rgba(16,185,129,.40);
+    transition: all .2s var(--ease);
+    text-decoration: none;
+  }
+  .btn-v2-success:hover { transform: translateY(-1px); }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .fc2-main { padding: 16px 12px 48px; }
+    .fc2-topbar { padding: 0 12px; gap: 8px; }
+    .fc2-deck-name { max-width: 180px; }
+    .fc2-grade-btn { padding: 14px 4px 10px; }
+    .fc2-grade-btn .grade-emoji { font-size: 22px; }
+    .fc2-grade-btn .grade-label { font-size: 12px; }
+    .fc2-grade-btn .grade-sub { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     ALPINE COMPONENT ROOT
+════════════════════════════════════════════ -->
+<div x-data="flashcards()" x-init="init()"
+  @keydown.window.space.prevent="flip()"
+  @keydown.window.arrow-right.prevent="next()"
+  @keydown.window.arrow-left.prevent="prev()"
+  @keydown.window.f="toggleFavorite()"
+  @keydown.window.d="toggleDifficult()"
+  @keydown.window.1.prevent="if(flipped) grade(3)"
+  @keydown.window.2.prevent="if(flipped) grade(4)"
+  @keydown.window.3.prevent="if(flipped) grade(5)">
+
+  <!-- ════════════════════════════════════════════
+       FOCUS TOPBAR
+  ════════════════════════════════════════════ -->
+  <header class="fc2-topbar">
+    <!-- LEFT: logo + back -->
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <a href="{{ url_for('dashboard_v2_page') }}" style="display:flex;align-items:center;gap:6px;text-decoration:none;">
+        <div class="fc2-logo-tile">Q</div>
+        <span class="fc2-wordmark" style="display:none;" class="sm:inline">QuizAIPro</span>
+      </a>
+      <a href="{{ url_for('deck_view', deck_id=deck.id) }}" class="fc2-back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>{{ t('fc_back_deck') }}</span>
+      </a>
+    </div>
+
+    <!-- CENTER: deck name + counter + progress -->
+    <div class="fc2-deck-info">
+      <div class="fc2-deck-name">{{ deck.icon }} {{ deck.name }}</div>
+      <div class="fc2-counter" x-text="cards.length ? (idx + 1) + ' / ' + cards.length : ''"></div>
+      <div class="fc2-progress-wrap">
+        <div class="fc2-progress-track">
+          <div class="fc2-progress-fill" :style="`width: ${cards.length ? ((idx + 1) / cards.length * 100) : 0}%`"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: shuffle / autoplay / theme toggle -->
+    <div class="fc2-topbar-right">
+      <button @click="shuffle()" class="fc2-shuffle-btn" title="{{ t('fc_shuffle') }}">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:3px;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+        <span class="hidden sm:inline">{{ t('fc_shuffle') }}</span>
+      </button>
+      <button @click="autoplayOn = !autoplayOn"
+        :class="autoplayOn ? 'is-on' : ''"
+        class="fc2-auto-btn">
+        <span x-text='autoplayOn ? {{ t("fc_auto_on")|tojson }} : {{ t("fc_auto_off")|tojson }}'></span>
+      </button>
+      <!-- Theme toggle -->
+      <button class="fc2-icon-btn" id="themeToggleBtn" aria-label="Toggle theme">
+        <svg class="icon-sun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════════ -->
+  <main class="fc2-main">
+    <div class="fc2-content">
+
+      <!-- Hint -->
+      <p style="text-align:center;font-size:12px;color:#94a3b8;margin-bottom:16px;">{{ t('fc_hint') }}</p>
+
+      <!-- Filter pills -->
+      <div class="fc2-filters">
+        <a href="/deck/{{ deck.id }}/flashcards"
+          class="fc2-filter-pill {% if not only_fav and not only_hard and not only_fading %}active-all{% endif %}">
+          {{ t('fc_filter_all') }}
+        </a>
+        <a href="/deck/{{ deck.id }}/flashcards?only_fav=1"
+          class="fc2-filter-pill {% if only_fav %}active-fav{% endif %}">
+          {{ t('fc_filter_fav') }}
+        </a>
+        <a href="/deck/{{ deck.id }}/flashcards?only_hard=1"
+          class="fc2-filter-pill {% if only_hard %}active-hard{% endif %}">
+          {{ t('fc_filter_hard') }}
+        </a>
+        <a href="/deck/{{ deck.id }}/flashcards?only_fading=1&force=1"
+          class="fc2-filter-pill {% if only_fading %}active-fading{% endif %}">
+          🧠 {{ t('fc_filter_fading') }}
+        </a>
+      </div>
+
+      <!-- ── Empty state ── -->
+      {% if cards|length == 0 %}
+      <div class="fc2-empty">
+        <div style="font-size:64px;margin-bottom:12px;">🃏</div>
+        <p style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">{{ t('fc_empty_h') }}</p>
+        <p style="font-size:14px;color:#64748b;">
+          {% if only_fav %}{{ t('fc_empty_fav') }}{% elif only_hard %}{{ t('fc_empty_hard') }}{% else %}{{ t('fc_empty_default') }}{% endif %}
+        </p>
+      </div>
+
+      {% else %}
+
+      <!-- ── CARD STAGE ── -->
+      <div class="fc2-stage">
+        <!-- Swipe overlays -->
+        <div class="fc2-swipe-hint fc2-swipe-left" :style="`opacity: ${dragX &lt; -30 ? Math.min(1, -dragX/120) : 0}`">←</div>
+        <div class="fc2-swipe-hint fc2-swipe-right" :style="`opacity: ${dragX &gt; 30 ? Math.min(1, dragX/120) : 0}`">→</div>
+
+        <div class="fc2-scene h-full">
+          <div class="fc2-card h-full"
+            :class="{ 'is-flipped': flipped, 'has-flipped-once': hasFlippedOnce }"
+            :style="`transform: ${flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'} translateX(${dragX}px) rotate(${dragX/40}deg)`"
+            @click="flip()"
+            @touchstart.passive="dragStart($event)"
+            @touchmove.passive="dragMove($event)"
+            @touchend="dragEnd($event)"
+            @mousedown.prevent="dragStart($event)"
+            @mousemove.prevent="dragMove($event)"
+            @mouseup.prevent="dragEnd($event)"
+            @mouseleave.prevent="dragEnd($event)">
+
+            <!-- FRONT -->
+            <div class="fc2-face fc2-front">
+              <span class="fc2-label" style="color:#6366f1;">{{ t('fc_question') }}</span>
+              <template x-if="current && current.image_url">
+                <img :src="current.image_url" :alt="current.front" style="max-height:128px;border-radius:14px;margin-bottom:16px;box-shadow:0 8px 24px -8px rgba(99,102,241,.4);">
+              </template>
+              <div class="fc2-text" style="color:var(--text);" x-text="current ? current.front : ''"></div>
+              <div style="position:absolute;bottom:16px;font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">{{ t('fc_tap_flip') }}</div>
+            </div>
+
+            <!-- BACK -->
+            <div class="fc2-face fc2-back">
+              <span class="fc2-label" style="color:rgba(255,255,255,.75);">{{ t('fc_answer') }}</span>
+              <div class="fc2-text" x-text="answerText()"></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /.fc2-stage -->
+
+      <!-- ── ACTION ROW (prev / fav+hard+speak / next) ── -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;gap:8px;">
+        <button class="fc2-nav-btn" @click.stop="prev()" :disabled="idx === 0" title="{{ t('fc_prev_title') }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#6366f1;"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <!-- Favorite -->
+          <button @click.stop="toggleFavorite()"
+            :class="current && current.is_favorite ? 'bg-pink-500 text-white border-pink-500' : ''"
+            class="fc2-action-btn"
+            :style="current && current.is_favorite ? 'background:#ec4899;color:#fff;border-color:#ec4899;' : 'background:rgba(255,255,255,.9);border-color:#fbcfe8;color:#ec4899;'"
+            title="{{ t('fc_fav_title') }}">
+            <span x-text="current && current.is_favorite ? '⭐' : '☆'"></span>
+          </button>
+          <!-- Difficult -->
+          <button @click.stop="toggleDifficult()"
+            class="fc2-action-btn"
+            :style="current && current.is_difficult ? 'background:#ef4444;color:#fff;border-color:#ef4444;' : 'background:rgba(255,255,255,.9);border-color:#fecaca;color:#ef4444;'"
+            title="{{ t('fc_hard_title') }}">
+            <span x-text="current && current.is_difficult ? '🔥' : '💧'"></span>
+          </button>
+          <!-- Speak -->
+          <button @click.stop="speak()"
+            class="fc2-action-btn"
+            style="background:rgba(255,255,255,.9);border-color:#c7d2fe;color:#6366f1;"
+            title="{{ t('fc_speak_title') }}">🔊</button>
+        </div>
+
+        <button class="fc2-nav-btn" @click.stop="next()" :disabled="idx === cards.length - 1 && !autoplayOn" title="{{ t('fc_next_title') }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#6366f1;"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- ── GRADE ROW (visible after flip) ── -->
+      <div x-show="flipped" x-transition class="fc2-grade-row">
+        <!-- Hard -->
+        <button @click.stop="grade(3)" :disabled="grading" class="fc2-grade-btn fc2-grade-hard">
+          <div class="grade-emoji">😣</div>
+          <div class="grade-label">{{ t('fc_grade_hard') }}</div>
+          <div class="grade-sub">{{ t('fc_grade_hard_sub') }}</div>
+        </button>
+        <!-- Good (brand indigo — the dominant action) -->
+        <button @click.stop="grade(4)" :disabled="grading" class="fc2-grade-btn fc2-grade-good">
+          <div class="grade-emoji">👍</div>
+          <div class="grade-label">{{ t('fc_grade_good') }}</div>
+          <div class="grade-sub">{{ t('fc_grade_good_sub') }}</div>
+        </button>
+        <!-- Easy -->
+        <button @click.stop="grade(5)" :disabled="grading" class="fc2-grade-btn fc2-grade-easy">
+          <div class="grade-emoji">⭐</div>
+          <div class="grade-label">{{ t('fc_grade_easy') }}</div>
+          <div class="grade-sub">{{ t('fc_grade_easy_sub') }}</div>
+        </button>
+      </div>
+
+      <!-- Keys hint -->
+      <p x-show="flipped" class="fc2-keys-hint">
+        {{ t('fc_keys_hint')|safe }}
+      </p>
+
+      <!-- ── DOT NAVIGATION ── -->
+      <div class="fc2-dot-nav" x-show="cards.length <= 30">
+        <template x-for="(c, i) in cards" :key="c.id">
+          <div class="fc2-dot"
+            :class="i === idx ? 'active' : (i < idx ? 'seen' : 'unseen')"
+            @click="goTo(i)"></div>
+        </template>
+      </div>
+
+      {% endif %}<!-- /cards -->
+
+      <!-- ── COMPLETION OVERLAY ── -->
+      <div x-show="completed" x-transition.opacity
+        class="fc2-overlay" x-cloak
+        @click.self="completed = false">
+        <div class="fc2-dialog fc2-celebrate">
+          <div style="font-size:64px;margin-bottom:12px;">🎉</div>
+          <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin-bottom:8px;">{{ t('fc_done_h') }}</h2>
+          <p style="font-size:14px;color:#64748b;margin-bottom:4px;">{{ t('fc_done_sub_pre') }} <strong x-text="cards.length"></strong> {{ t('fc_done_sub_post') }}</p>
+          <p style="font-size:13px;color:#94a3b8;margin-bottom:4px;">{{ t('fc_time') }}: <strong x-text="formatTime(elapsed)"></strong></p>
+          <p x-show="sessionXp > 0" style="font-size:16px;font-weight:800;color:#f59e0b;margin-bottom:20px;">+<span x-text="sessionXp"></span> XP</p>
+          <p x-show="sessionXp === 0" style="margin-bottom:20px;"></p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button @click="restart()" class="btn-v2-primary">{{ t('fc_again') }}</button>
+            <a href="/deck/{{ deck.id }}/test?count=10&shuffle=1" class="btn-v2-success">{{ t('fc_test') }}</a>
+            <a href="/deck/{{ deck.id }}" class="btn-v2-ghost">{{ t('fc_back_deck') }}</a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.fc2-content -->
+  </main>
+
+</div><!-- /x-data -->
+
+<!-- ════════════════════════════════════════════
+     ALPINE COMPONENT — copied verbatim from flashcards.html
+════════════════════════════════════════════ -->
+<script>
+function flashcards() {
+  return {
+    cards: {{ cards|tojson }},
+    idx: 0,
+    flipped: false,
+    hasFlippedOnce: false,
+    autoplayOn: false,
+    autoplayTimer: null,
+    completed: false,
+    elapsed: 0,
+    timer: null,
+    dragX: 0,
+    isDragging: false,
+    dragStartX: 0,
+    grading: false,
+    sessionXp: 0,
+
+    get current() { return this.cards[this.idx] || null; },
+
+    /** Vyderzhivayem TOL'KO tekst pravil'nogo otveta, bez bukvy i bez variantov A/B/C. */
+    answerText() {
+      if (!this.current) return '';
+      const back = (this.current.back || '').trim();
+      // Beryom pervuyu nepustuyu stroku
+      const firstLine = back.split(/\r?\n/).find(l => l.trim()) || back;
+      // Esli formata "A) tekst" — ubirayem prefix
+      const m = firstLine.match(/^[A-Za-zА-Яа-яЁё0-9]+\s*[\)\.\:\-]\s*(.+)$/);
+      return (m ? m[1] : firstLine).trim();
+    },
+
+    init() {
+      this.timer = setInterval(() => this.elapsed++, 1000);
+      window.addEventListener('beforeunload', () => this.notifyComplete());
+
+      // Autoplay watcher: chrez 4 sek perevorot, escho cherez 4 sek next
+      this.$watch('autoplayOn', (val) => {
+        if (this.autoplayTimer) clearInterval(this.autoplayTimer);
+        if (val) {
+          this.autoplayTimer = setInterval(() => {
+            if (!this.flipped) this.flip();
+            else { this.flipped = false; this.next(); }
+          }, 3500);
+        }
+      });
+
+      // Auto-scale text on card change
+      this.$watch('idx', () => this._updateTextSize());
+      this.$watch('flipped', () => this._updateTextSize());
+      this.$nextTick(() => this._updateTextSize());
+    },
+
+    // Assign len-* class to .fc2-text elements based on text length
+    _updateTextSize() {
+      this.$nextTick(() => {
+        document.querySelectorAll('.fc2-text').forEach(el => {
+          const len = (el.textContent || '').length;
+          el.classList.remove('len-xs','len-sm','len-md','len-lg','len-xl');
+          if (len < 60)       el.classList.add('len-xs');
+          else if (len < 120) el.classList.add('len-sm');
+          else if (len < 220) el.classList.add('len-md');
+          else if (len < 400) el.classList.add('len-lg');
+          else                el.classList.add('len-xl');
+          // Scroll back to top when card changes
+          el.scrollTop = 0;
+        });
+      });
+    },
+
+    flip() {
+      this.flipped = !this.flipped;
+      this.hasFlippedOnce = true;
+    },
+
+    next() {
+      if (this.idx < this.cards.length - 1) {
+        this.flipped = false;
+        this.idx++;
+      } else {
+        this.completed = true;
+        if (this.autoplayOn) this.toggleAutoplay();
+        clearInterval(this.timer);
+        this.notifyComplete();
+      }
+    },
+
+    prev() {
+      if (this.idx > 0) {
+        this.flipped = false;
+        this.idx--;
+      }
+    },
+
+    goTo(i) {
+      if (i >= 0 && i < this.cards.length) {
+        this.flipped = false;
+        this.idx = i;
+      }
+    },
+
+    shuffle() {
+      const a = [...this.cards];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      this.cards = a;
+      this.idx = 0;
+      this.flipped = false;
+    },
+
+    restart() {
+      this.idx = 0;
+      this.flipped = false;
+      this.completed = false;
+      this.elapsed = 0;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = setInterval(() => this.elapsed++, 1000);
+    },
+
+    speak() {
+      if (!this.current) return;
+      const text = this.flipped ? this.answerText() : this.current.front;
+      if (!text) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = /[а-яА-Я]/.test(text) ? 'ru-RU' : 'en-US';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    },
+
+    async toggleFavorite() {
+      if (!this.current) return;
+      const id = this.current.id;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        const r = await fetch(`/api/card/${id}/favorite`, { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data.ok) {
+          this.cards[this.idx].is_favorite = data.is_favorite;
+        }
+      } catch (e) { console.error(e); }
+    },
+
+    async toggleDifficult() {
+      if (!this.current) return;
+      const id = this.current.id;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        const r = await fetch(`/api/card/${id}/difficult`, { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data.ok) {
+          this.cards[this.idx].is_difficult = data.is_difficult;
+        }
+      } catch (e) { console.error(e); }
+    },
+
+    async grade(g) {
+      if (!this.current || this.grading) return;
+      this.grading = true;
+      const id = this.current.id;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        fd.append('grade', String(g));
+        const r = await fetch(`/api/card/${id}/grade`, { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data && data.ok) {
+          this.sessionXp += data.xp_gain || 0;
+          // Esli est' nove dostizheniya — pokazyvaem
+          if (data.achievements && data.achievements.length && window.showAchievementToasts) {
+            window.showAchievementToasts(data.achievements);
+          }
+          // Pluyushchaya XP-anim
+          this.flashXp(data.xp_gain);
+        }
+      } catch (e) { console.error(e); }
+      this.grading = false;
+      // Avto-perehod k slelduyushchey karte
+      setTimeout(() => this.next(), 220);
+    },
+
+    flashXp(amount) {
+      if (!amount) return;
+      const el = document.createElement('div');
+      el.textContent = '+' + amount + ' XP';
+      el.style.cssText = `
+        position: fixed; left: 50%; top: 30%;
+        transform: translateX(-50%);
+        font-size: 42px; font-weight: 800;
+        color: #f59e0b; text-shadow: 0 4px 16px rgba(245,158,11,0.5);
+        pointer-events: none; z-index: 100;
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+      `;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => {
+        el.style.top = '15%';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-50%) scale(1.5)';
+      });
+      setTimeout(() => el.remove(), 1100);
+    },
+
+    // === Swipe / drag ===
+    dragStart(e) {
+      this.isDragging = true;
+      this.dragStartX = (e.touches ? e.touches[0].clientX : e.clientX);
+      this.dragX = 0;
+    },
+    dragMove(e) {
+      if (!this.isDragging) return;
+      const x = (e.touches ? e.touches[0].clientX : e.clientX);
+      this.dragX = x - this.dragStartX;
+    },
+    dragEnd(e) {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      const threshold = 80;
+      if (this.dragX < -threshold) this.next();
+      else if (this.dragX > threshold) this.prev();
+      this.dragX = 0;
+    },
+
+    formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    },
+
+    async notifyComplete() {
+      if (!this.cards.length) return;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', '{{ csrf_token() }}');
+        fd.append('seen', String(this.idx + 1));
+        const r = await fetch('/api/flashcards/complete', { method: 'POST', body: fd });
+        const data = await r.json();
+        if (data && data.achievements && data.achievements.length && window.showAchievementToasts) {
+          window.showAchievementToasts(data.achievements);
+        }
+      } catch (e) {}
+    },
+  };
+}
+
+// === Autoplay ===
+document.addEventListener('alpine:init', () => {
+  // Watcher na autoplayOn
+  document.addEventListener('change', (e) => {});
+});
+</script>
+
+<!-- Dark theme toggle (same pattern as dashboard_v2) -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('themeToggleBtn');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

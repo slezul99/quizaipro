@@ -2337,7 +2337,7 @@ def flashcards_view(deck_id):
             flash("Нет остывающих карт — память свежа! 🧠", "info")
             return redirect(url_for("deck_view", deck_id=deck_id))
 
-    return render_template("flashcards.html",
+    return render_template("flashcards_v2.html" if _use_v2() else "flashcards.html",
         deck=_localize_deck_fields(dict(deck), lang),
         cards=cards_list,
         only_fav=only_fav,
@@ -2528,7 +2528,7 @@ def category_flashcards(category_id):
         "icon": cat["icon"] or "📁",
     }
     cards_list = [dict(c) for c in cards]
-    return render_template("flashcards.html",
+    return render_template("flashcards_v2.html" if _use_v2() else "flashcards.html",
         deck=virtual_deck,
         cards=cards_list,
         only_fav=only_fav,
