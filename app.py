@@ -3538,7 +3538,7 @@ def stats_page():
 
     conn.close()
 
-    return render_template("stats.html",
+    return render_template("stats_v2.html" if _use_v2() else "stats.html",
         heatmap=heatmap,
         last_30=last_30,
         last_7_total=last_7_total,
