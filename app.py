@@ -966,6 +966,35 @@ def _use_v2():
     return session.get("use_v2", True)
 
 
+def _deck_subject_slug(name, category=None):
+    """Best-effort map a user deck to one of the marketplace subject covers
+    (static/subjects/{english,mathematics,programming,business,history,science}.jpg)
+    by keyword, for the v2 dashboard 'Continue Learning' cover art. The template
+    keeps an onerror gradient+initial fallback, so a wrong guess still looks fine."""
+    t = " %s %s " % ((name or "").lower(), (category or "").lower())
+    rules = [
+        ("english", ("english", "англ", "angl", "beginner", "ielts", "grammar",
+                     "vocabular", "toefl", "speaking", "язык")),
+        ("mathematics", ("math", "матем", "алгебр", "algebra", "геометр", "geometry",
+                         "calculus", "тригоном", "уравнен")),
+        ("programming", ("program", "програм", "python", "java", "code", "код",
+                         "технолог", "software", "comput", "компьютер", "devops", "айти")),
+        ("business", ("business", "бизнес", "эконом", "econom", "finance", "финанс",
+                      "marketing", "маркет", "менеджмент")),
+        ("history", ("history", "истор", "древн", "ancient", " рим", "rome", "египет",
+                     "egypt", "средневеков", "война", " век")),
+        ("science", ("science", "наук", "biolog", "биолог", "physic", "физик", "chem",
+                     "хим", "geograf", "географ", "astro", "анатом")),
+    ]
+    for slug, kws in rules:
+        if any(k in t for k in kws):
+            return slug
+    return "science"
+
+
+app.jinja_env.globals["deck_subject_slug"] = _deck_subject_slug
+
+
 # ---------------------- auth (username/password) ----------------------------
 
 @app.route("/login", methods=["GET", "POST"])
