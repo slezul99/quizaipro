@@ -4881,7 +4881,7 @@ def settings_page():
         conn.commit(); conn.close()
         flash("Настройки сохранены", "success")
         return redirect(url_for("settings_page"))
-    return render_template("settings.html", user=user)
+    return render_template("settings_v2.html" if _use_v2() else "settings.html", user=user)
 
 
 @app.route("/leaderboard")
