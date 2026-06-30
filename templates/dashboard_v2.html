@@ -588,13 +588,18 @@
     flex-shrink: 0; font-size: 17px;
     background: rgba(99,102,241,.08);
     border: 1.5px solid rgba(99,102,241,.12);
-    position: relative;
+    position: relative; overflow: visible;
+  }
+  /* Subject cover art (falls back to the emoji underneath on error) */
+  .activity-icon img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; border-radius: 9px; z-index: 0;
   }
   /* Small grade-colour status dot */
   .activity-icon .grade-dot {
     position: absolute; bottom: -2px; right: -2px;
     width: 9px; height: 9px; border-radius: 999px;
-    border: 1.5px solid #fff;
+    border: 1.5px solid #fff; z-index: 1;
   }
   html.dark .activity-icon .grade-dot { border-color: rgba(30,41,75,.9); }
   html.dark .activity-icon {
@@ -1325,6 +1330,7 @@
                 <div class="activity-item">
                   {# Neutral tint chip per §3 "Icon chips" + small grade-colour status dot #}
                   <div class="activity-icon">
+                    <img src="{{ url_for('static', filename='subjects/' + deck_subject_slug(act.deck_name) + '.jpg') }}" alt="" onerror="this.remove()">
                     {{ act.deck_icon or '📚' }}
                     <span class="grade-dot" style="background:{{ dot_color }};"></span>
                   </div>
