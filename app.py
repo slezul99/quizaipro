@@ -5960,7 +5960,7 @@ def duels_list():
         ORDER BY d.created_at DESC LIMIT 50
     """, (user["id"], user["id"])).fetchall()
     conn.close()
-    return render_template("duels_list.html", duels=duels, current_user_id=user["id"])
+    return render_template("duels_list_v2.html" if _use_v2() else "duels_list.html", duels=duels, current_user_id=user["id"])
 
 
 # === END DUELS ===
@@ -6075,7 +6075,7 @@ def tournaments_list():
         ORDER BY t.created_at DESC LIMIT 50
     """, (user["id"],)).fetchall()
     conn.close()
-    return render_template("tournaments_list.html", open_tours=open_tours, my_tours=my_tours)
+    return render_template("tournaments_list_v2.html" if _use_v2() else "tournaments_list.html", open_tours=open_tours, my_tours=my_tours)
 
 
 @app.route("/tournament/new", methods=["POST"])

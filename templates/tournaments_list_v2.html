@@ -1,0 +1,100 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('tn_h') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}<style>[x-cloak]{display:none!important;}</style>{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto" x-data="{ showNew: false, decks: [] }" x-init="fetch('/api/my-decks').then(r => r.ok ? r.json() : {decks:[]}).then(d => decks = d.decks || []);">
+  <div class="flex justify-between items-end mb-7 flex-wrap gap-3">
+    <div class="section-header left" style="margin-bottom:0;">
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('tn_badge') }}</span>
+      <h1 class="section-h">{{ t('tn_h') }}</h1>
+      <p class="section-sub">{{ t('tn_sub') }}</p>
+    </div>
+    <button @click="showNew = true" class="btn-premium">{{ t('tn_create') }}</button>
+  </div>
+
+  {% if open_tours %}
+  <div class="mb-8">
+    <h2 class="font-bold text-xl mb-3" style="font-family:'Space Grotesk',sans-serif; color:var(--text);">{{ t('tn_open_h') }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% for tn in open_tours %}
+      <a href="/tournament/{{ tn.id }}" class="glass-premium card-hover" style="padding:20px;">
+        <div class="flex items-start gap-3 mb-2">
+          <span class="text-3xl">{{ tn.deck_icon }}</span>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold truncate" style="color:var(--text);">{{ tn.name }}</h3>
+            <p class="text-xs" style="color:var(--text-muted);">@{{ tn.creator_username }} · {{ tn.deck_name }}</p>
+          </div>
+          <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ tn.players_count }}/{{ tn.size }}</span>
+        </div>
+        <div class="text-xs mt-2" style="color:var(--text-2);">⚔️ {{ tn.size }} {{ t('tn_players') }} · {{ t('tn_bracket') }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if my_tours %}
+  <div>
+    <h2 class="font-bold text-xl mb-3" style="font-family:'Space Grotesk',sans-serif; color:var(--text);">{{ t('tn_my_h') }}</h2>
+    <div class="space-y-2">
+      {% for tn in my_tours %}
+      <a href="/tournament/{{ tn.id }}" class="glass-premium card-hover flex items-center gap-3" style="padding:16px 20px;">
+        <span class="text-2xl">{{ tn.deck_icon }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold truncate" style="color:var(--text);">{{ tn.name }}</div>
+          <div class="text-xs" style="color:var(--text-muted);">{{ tn.deck_name }} · {{ tn.size }} {{ t('tn_players') }}</div>
+        </div>
+        <span class="badge {% if tn.status == 'open' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300{% elif tn.status == 'running' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300{% else %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300{% endif %}">
+          {% if tn.status == 'open' %}{{ t('tn_status_open') }}{% elif tn.status == 'running' %}{{ t('tn_status_running') }}{% else %}{{ t('tn_status_finished') }}{% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not open_tours and not my_tours %}
+  <div class="text-center glass-premium" style="padding:64px 20px;">
+    <div class="text-7xl mb-4">🏆</div>
+    <p class="mb-5 text-lg" style="color:var(--text-2);">{{ t('tn_empty') }}</p>
+    <button @click="showNew = true" class="btn-premium">{{ t('tn_create_first') }}</button>
+  </div>
+  {% endif %}
+
+  <!-- Modal -->
+  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(15,23,41,.6); backdrop-filter:blur(4px);" @click.self="showNew = false" x-cloak>
+    <form method="POST" action="/tournament/new" class="glass-premium max-w-md w-full" style="padding:28px;">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="section-h" style="font-size:1.5rem;">{{ t('tn_modal_h') }}</h3>
+      <p class="text-xs mb-4 mt-2" style="color:var(--text-muted);">{{ t('tn_modal_sub') }}</p>
+
+      <label class="text-xs uppercase tracking-wider font-bold block mb-2" style="color:var(--text-muted);">{{ t('tn_modal_name') }}</label>
+      <input name="name" required maxlength="60" placeholder="{{ t('tn_modal_name_ph') }}" class="input-premium mb-4">
+
+      <label class="text-xs uppercase tracking-wider font-bold block mb-2" style="color:var(--text-muted);">{{ t('tn_modal_deck') }}</label>
+      <select name="deck_id" required class="input-premium mb-4">
+        <option value="">{{ t('tn_modal_deck_ph') }}</option>
+        <template x-for="d in decks" :key="d.id">
+          <option :value="d.id" x-text="d.icon + ' ' + d.name + ' (' + d.cnt + ')'"></option>
+        </template>
+      </select>
+
+      <label class="text-xs uppercase tracking-wider font-bold block mb-2" style="color:var(--text-muted);">{{ t('tn_modal_size') }}</label>
+      <div class="grid grid-cols-3 gap-2 mb-5">
+        {% for s in [4, 8, 16] %}
+        <label class="cursor-pointer">
+          <input type="radio" name="size" value="{{ s }}" {% if loop.first %}checked{% endif %} class="hidden peer">
+          <div class="py-3 rounded-xl border-2 border-indigo-200/50 dark:border-indigo-700/40 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/40 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 text-center font-bold transition">{{ s }} {{ t('tn_modal_size_unit') }}</div>
+        </label>
+        {% endfor %}
+      </div>
+
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">{{ t('tn_modal_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('tn_modal_create') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
