@@ -9044,7 +9044,8 @@ def support_page():
             ORDER BY t.last_activity DESC
         """, (user["id"],)).fetchall()
     conn.close()
-    return render_template("support_list.html", tickets=tickets, is_admin=is_super_admin(user))
+    return render_template("support_list_v2.html" if _use_v2() else "support_list.html",
+                           tickets=tickets, is_admin=is_super_admin(user))
 
 
 @app.route("/support/new", methods=["POST"])
@@ -9098,7 +9099,8 @@ def support_ticket(ticket_id):
     else:
         conn.execute("UPDATE support_messages SET is_read=1 WHERE ticket_id=? AND is_admin=1", (ticket_id,))
     conn.commit(); conn.close()
-    return render_template("support_chat.html", ticket=ticket, messages=messages, is_admin=is_super_admin(user))
+    return render_template("support_chat_v2.html" if _use_v2() else "support_chat.html",
+                           ticket=ticket, messages=messages, is_admin=is_super_admin(user))
 
 
 @app.route("/support/<int:ticket_id>/reply", methods=["POST"])

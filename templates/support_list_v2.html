@@ -1,0 +1,99 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('sup_badge') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}<style>[x-cloak]{display:none!important}</style>{% endblock %}
+{% block content %}
+{% from "_icons.html" import icon %}
+<div class="max-w-4xl mx-auto" x-data="{ showNew: false }">
+  <div class="section-header left mb-6">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('sup_badge') }}</span>
+    <h1 class="section-h">{% if is_admin %}{{ t('sup_h_admin') }}{% else %}{{ t('sup_h_user') }}{% endif %}</h1>
+    <p class="section-sub">
+      {% if is_admin %}
+      {{ t('sup_sub_admin') }}
+      {% else %}
+      {{ t('sup_sub_user_pre') }} <b>@Slezul</b>, <b>@Aza_Dev0320</b> {{ t('sup_sub_user_post') }}
+      {% endif %}
+    </p>
+  </div>
+
+  {% if not is_admin %}
+  <!-- Telegram contacts -->
+  <div class="glass-premium mb-6" style="background: linear-gradient(135deg, rgba(34,158,217,0.12), rgba(99,102,241,0.06)); border-color: rgba(34,158,217,0.4);">
+    <div class="flex items-center gap-4 flex-wrap">
+      <div class="text-5xl">📨</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-lg" style="color:var(--text);">{{ t('sup_tg_h') }}</div>
+        <div class="text-sm" style="color:var(--text-muted);">{{ t('sup_tg_sub') }}</div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="https://t.me/Slezul" target="_blank" class="btn-premium" style="font-size: 14px; padding: 10px 18px;">📨 @Slezul</a>
+        <a href="https://t.me/Aza_Dev0320" target="_blank" class="btn-premium-ghost" style="font-size: 14px; padding: 10px 18px;">📨 @Aza_Dev0320</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- New ticket button -->
+  <button @click="showNew = !showNew" class="btn-premium w-full justify-center mb-4" style="font-size: 15px;">
+    <span x-show="!showNew">{{ t('sup_new_btn') }}</span>
+    <span x-show="showNew" x-cloak>{{ t('sup_collapse') }}</span>
+  </button>
+
+  <!-- New ticket form -->
+  <div x-show="showNew" x-cloak x-transition class="glass-premium mb-6">
+    <h3 class="font-bold text-lg mb-4" style="color:var(--text);">{{ t('sup_new_h') }}</h3>
+    <form method="POST" action="/support/new" class="space-y-3">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div>
+        <label class="text-xs uppercase tracking-wider font-bold block mb-1.5" style="color:var(--text-muted);">{{ t('sup_subj_label') }}</label>
+        <input name="subject" maxlength="200" placeholder="{{ t('sup_subj_ph') }}" class="input-premium">
+      </div>
+      <div>
+        <label class="text-xs uppercase tracking-wider font-bold block mb-1.5" style="color:var(--text-muted);">{{ t('sup_msg_label') }}</label>
+        <textarea name="text" rows="5" required maxlength="5000" placeholder="{{ t('sup_msg_ph') }}" class="input-premium" style="resize: vertical;"></textarea>
+      </div>
+      <button type="submit" class="btn-premium">{{ t('sup_send') }}</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- Tickets list -->
+  {% if tickets %}
+  <div class="space-y-3">
+    {% for tk in tickets %}
+    <a href="/support/{{ tk.id }}" class="glass-premium card-hover block transition" style="padding: 1.25rem;">
+      <div class="flex items-start gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md flex-shrink-0"
+             style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+          {{ icon('chat', 22) }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold" style="color:var(--text);">{{ tk.subject or t('sup_no_subject') }}</span>
+            {% if is_admin %}<span class="text-xs font-semibold" style="color:var(--brand-1);">@{{ tk.user_username }}</span>{% endif %}
+            {% if tk.status == 'closed' %}
+            <span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">{{ t('sup_closed') }}</span>
+            {% else %}
+            <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ t('sup_open') }}</span>
+            {% endif %}
+            {% if tk.unread and tk.unread > 0 %}
+            <span class="badge bg-red-500 text-white">+{{ tk.unread }} {{ t('sup_new_unread') }}</span>
+            {% endif %}
+          </div>
+          <div class="text-sm truncate mt-1" style="color:var(--text-muted);">{{ tk.last_text or t('sup_no_msgs') }}</div>
+          <div class="text-xs mt-1" style="color:var(--text-muted);">{{ (tk.last_activity or tk.created_at)|tashkent }}</div>
+        </div>
+        <span class="text-xl" style="color:var(--text-muted);">→</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-16 glass-premium">
+    <div class="text-7xl mb-4">📭</div>
+    <p class="mb-2 text-lg" style="color:var(--text-2);">{% if is_admin %}{{ t('sup_empty_admin') }}{% else %}{{ t('sup_empty_user') }}{% endif %}</p>
+    {% if not is_admin %}<p class="text-sm" style="color:var(--text-muted);">{{ t('sup_empty_user_hint') }}</p>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
