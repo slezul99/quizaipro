@@ -1,0 +1,173 @@
+{% extends "base_v2.html" %}
+{% block title %}{{ t('test_detail_title') }} · QuizAIPro{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}<style>[x-cloak]{display:none!important;}</style>{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <a href="/test/history{% if attempt.scope_type %}?scope_type={{ attempt.scope_type }}&scope_id={{ attempt.scope_id }}{% endif %}" class="inline-flex items-center gap-1 text-sm font-semibold mb-3" style="color:var(--brand-1);"><span>←</span> {{ t('test_back_history') }}</a>
+
+  {% set sc = (attempt.score_pct or 0)|round|int %}
+  {% set color = 'emerald' if sc >= 80 else ('indigo' if sc >= 60 else ('amber' if sc >= 40 else 'rose')) %}
+  <div class="rounded-2xl p-5 mb-6 border-2 {% if color == 'emerald' %}bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-500/40{% elif color == 'indigo' %}bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-500/40{% elif color == 'amber' %}bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-500/40{% else %}bg-rose-50 dark:bg-rose-900/20 border-rose-300 dark:border-rose-500/40{% endif %}">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-extrabold flex items-center gap-3" style="color:var(--text);">
+          <span class="text-3xl">📊</span>
+          <span>{% if attempt.scope_type == 'category' %}📁{% else %}📚{% endif %} {{ attempt.scope_name or '—' }}</span>
+        </h1>
+        <p class="text-xs mt-1" style="color:var(--text-muted);">{{ attempt.finished_at|tashkent('%d.%m.%Y %H:%M') }}{% if attempt.duration_sec %} · ⏱ {{ (attempt.duration_sec / 60)|round(1) }} {{ t('test_minutes_short') }}{% endif %}</p>
+      </div>
+      <div class="text-right">
+        <div class="text-4xl font-black {% if color == 'emerald' %}text-emerald-600 dark:text-emerald-400{% elif color == 'indigo' %}text-indigo-600 dark:text-indigo-400{% elif color == 'amber' %}text-amber-600 dark:text-amber-400{% else %}text-rose-600 dark:text-rose-400{% endif %}">{{ sc }}%</div>
+        <div class="text-xs mt-1" style="color:var(--text-muted);">
+          <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ attempt.correct }}</span> / <span class="text-rose-600 dark:text-rose-400 font-bold">{{ attempt.wrong }}</span>
+          {{ t('test_n_questions').replace('{total}', attempt.total_q|string) }}
+          {% if attempt.is_perfect %} · ⭐ <b>{{ t('test_perfect') }}</b>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if not answers %}
+  <div class="rounded-2xl glass p-8 text-center">
+    <div class="text-5xl mb-3">📋</div>
+    <h3 class="text-base font-bold mb-1" style="color:var(--text);">{{ t('test_detail_not_saved_h') }}</h3>
+    <p class="text-sm" style="color:var(--text-muted);">{{ t('test_detail_not_saved_body') }}</p>
+  </div>
+  {% else %}
+
+  <div class="space-y-4">
+    {% for a in answers %}
+    {% set is_ok = a.is_correct == 1 %}
+    <div class="rounded-2xl border-2 overflow-hidden {% if is_ok %}border-emerald-300 dark:border-emerald-500/40{% else %}bg-rose-50/40 dark:bg-rose-900/15 border-rose-300 dark:border-rose-500/40{% endif %}" {% if is_ok %}style="background:var(--surface);"{% endif %}
+         {% if not is_ok %}x-data="{ d: null, loading: false, err: '', fq: null, floading: false, ferr: '', picked: null,
+           async diagnose() {
+             if (this.d || this.loading) return;
+             this.loading = true; this.err = '';
+             try {
+               const fd = new FormData(); fd.append('answer_id', '{{ a.id }}');
+               const resp = await fetch('/api/diagnose-answer', { method: 'POST', body: fd });
+               const data = await resp.json();
+               if (data.ok) { this.d = data.diagnosis; }
+               else if (data.error === 'rate_limit') { this.err = {{ t('td_ai_rate_limit')|tojson }}; }
+               else if (data.error === 'ai_unavailable') { this.err = {{ t('td_ai_unavail')|tojson }}; }
+               else { this.err = {{ t('td_diag_error')|tojson }}; }
+             } catch(e) { this.err = {{ t('td_net_error')|tojson }}; }
+             this.loading = false;
+           },
+           async followup() {
+             if (this.fq || this.floading) return;
+             this.floading = true; this.ferr = '';
+             try {
+               const fd = new FormData(); fd.append('answer_id', '{{ a.id }}');
+               if (this.d && this.d.misconception) fd.append('misconception', this.d.misconception);
+               const resp = await fetch('/api/followup-question', { method: 'POST', body: fd });
+               const data = await resp.json();
+               if (data.ok) { this.fq = data.followup; }
+               else if (data.error === 'rate_limit') { this.ferr = {{ t('td_ai_rate_limit')|tojson }}; }
+               else if (data.error === 'ai_unavailable') { this.ferr = {{ t('td_ai_unavail')|tojson }}; }
+               else { this.ferr = {{ t('td_fu_error')|tojson }}; }
+             } catch(e) { this.ferr = {{ t('td_net_error')|tojson }}; }
+             this.floading = false;
+           } }"{% endif %}>
+
+      <div class="px-5 py-4" style="border-bottom:1px solid var(--border);">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 {% if is_ok %}bg-emerald-200 text-emerald-800 dark:bg-emerald-700 dark:text-emerald-100{% else %}bg-rose-200 text-rose-800 dark:bg-rose-700 dark:text-rose-100{% endif %}">{% if is_ok %}✓{% else %}✗{% endif %}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-[11px] uppercase tracking-wider font-semibold mb-1" style="color:var(--text-muted);">{{ t('test_question_n').replace('{n}', a.position|string) }}</div>
+            <div class="text-base font-semibold whitespace-pre-line" style="color:var(--text);">{{ a.front }}</div>
+          </div>
+        </div>
+      </div>
+
+      {% if a.options %}
+      <div class="px-5 py-3 space-y-1.5">
+        {% for opt in a.options %}
+        {% set is_chosen = (a.chosen and a.chosen|upper == opt.letter) %}
+        {% set is_correct_letter = (a.correct and a.correct|upper == opt.letter) %}
+        <div class="flex items-start gap-2 px-3 py-2 rounded-lg text-sm transition {% if is_correct_letter %}bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-600{% elif is_chosen and not is_correct_letter %}bg-rose-100 dark:bg-rose-900/40 border border-rose-300 dark:border-rose-600{% else %}bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700{% endif %}">
+          <div class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 {% if is_correct_letter %}bg-emerald-500 text-white{% elif is_chosen and not is_correct_letter %}bg-rose-500 text-white{% else %}bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300{% endif %}">{{ opt.letter }}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-slate-800 dark:text-slate-100">{{ opt.text }}</div>
+            <div class="flex flex-wrap gap-1 mt-1">
+              {% if is_chosen %}<span class="text-[10px] px-1.5 py-0.5 rounded font-bold {% if is_correct_letter %}bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100{% else %}bg-rose-200 dark:bg-rose-800 text-rose-900 dark:text-rose-100{% endif %}">{{ t('test_your_answer') }}</span>{% endif %}
+              {% if is_correct_letter %}<span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">{{ t('test_correct_label') }}</span>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="px-5 py-3 space-y-2 text-sm">
+        <div class="flex items-start gap-2">
+          <span class="text-[11px] uppercase tracking-wider font-bold w-32 flex-shrink-0 pt-0.5" style="color:var(--text-muted);">{{ t('test_your_answer') }}:</span>
+          <span class="flex-1 px-2 py-1 rounded {% if is_ok %}bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200{% else %}bg-rose-100 dark:bg-rose-900/40 text-rose-900 dark:text-rose-200{% endif %}">{{ a.chosen or '—' }}</span>
+        </div>
+        {% if not is_ok %}
+        <div class="flex items-start gap-2">
+          <span class="text-[11px] uppercase tracking-wider font-bold w-32 flex-shrink-0 pt-0.5" style="color:var(--text-muted);">{{ t('test_correct_answer') }}:</span>
+          <span class="flex-1 px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200">{{ a.correct or a.back or '—' }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if not is_ok %}
+      <div class="px-5 pb-4">
+        <button x-show="!d" @click="diagnose()" :disabled="loading" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition disabled:opacity-60">
+          <span x-show="!loading">🧠 {{ t('td_diag_btn') }}</span>
+          <span x-show="loading" x-cloak>⏳ {{ t('td_diag_loading') }}</span>
+        </button>
+        <p x-show="err" x-cloak x-text="err" class="mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
+        <div x-show="d" x-cloak class="mt-3 space-y-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-900/15 border border-indigo-200 dark:border-indigo-500/30 p-4">
+          <div>
+            <div class="text-[11px] uppercase tracking-wider font-bold text-rose-600 dark:text-rose-400 mb-0.5">{{ t('td_diag_why_wrong') }}</div>
+            <p class="text-sm text-slate-800 dark:text-slate-100" x-text="d.why_wrong"></p>
+          </div>
+          <template x-if="d.why_correct"><div><div class="text-[11px] uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">{{ t('td_diag_why_correct') }}</div><p class="text-sm text-slate-800 dark:text-slate-100" x-text="d.why_correct"></p></div></template>
+          <template x-if="d.misconception"><div><div class="text-[11px] uppercase tracking-wider font-bold text-amber-600 dark:text-amber-400 mb-0.5">{{ t('td_diag_misconception') }}</div><p class="text-sm text-slate-800 dark:text-slate-100" x-text="d.misconception"></p></div></template>
+          <template x-if="d.tip"><div class="flex items-start gap-2 pt-1"><span>💡</span><p class="text-sm font-medium text-indigo-800 dark:text-indigo-200" x-text="d.tip"></p></div></template>
+
+          <div class="pt-2" style="border-top:1px solid rgba(99,102,241,.2);">
+            <button x-show="!fq" @click="followup()" :disabled="floading" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition disabled:opacity-60">
+              <span x-show="!floading">🎯 {{ t('td_fu_btn') }}</span>
+              <span x-show="floading" x-cloak>⏳ {{ t('td_diag_loading') }}</span>
+            </button>
+            <p x-show="ferr" x-cloak x-text="ferr" class="mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
+            <div x-show="fq" x-cloak class="mt-3">
+              <p class="text-sm font-bold mb-2" style="color:var(--text);" x-text="fq && fq.question"></p>
+              <div class="space-y-1.5">
+                <template x-for="opt in (fq ? fq.options : [])" :key="opt.letter">
+                  <button @click="if(!picked) picked = opt.letter" :disabled="picked" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left border transition"
+                    :class="{ 'bg-emerald-100 dark:bg-emerald-900/40 border-emerald-400': picked && opt.letter === fq.correct_letter, 'bg-rose-100 dark:bg-rose-900/40 border-rose-400': picked === opt.letter && opt.letter !== fq.correct_letter, 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400': !picked, 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-70': picked && opt.letter !== fq.correct_letter && picked !== opt.letter }">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" x-text="opt.letter"></span>
+                    <span class="flex-1 text-slate-800 dark:text-slate-100" x-text="opt.text"></span>
+                    <span x-show="picked && opt.letter === fq.correct_letter" class="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                    <span x-show="picked === opt.letter && opt.letter !== fq.correct_letter" class="text-rose-600 dark:text-rose-400 font-bold">✗</span>
+                  </button>
+                </template>
+              </div>
+              <div x-show="picked" x-cloak class="mt-2">
+                <p class="text-sm font-bold" :class="picked === fq.correct_letter ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="picked === fq.correct_letter ? {{ t('td_fu_correct')|tojson }} : {{ t('td_fu_wrong')|tojson }}"></p>
+                <p x-show="fq && fq.explanation" class="text-sm mt-1" style="color:var(--text-2);" x-text="fq && fq.explanation"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="mt-6 text-center">
+    {% if attempt.scope_type == 'deck' %}
+    <a href="/deck/{{ attempt.scope_id }}/test?count={{ attempt.total_q }}&shuffle=1" class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition">{{ t('test_retake') }}</a>
+    {% elif attempt.scope_type == 'category' %}
+    <a href="/category/{{ attempt.scope_id }}/test?count={{ attempt.total_q }}" class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition">{{ t('test_retake') }}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

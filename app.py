@@ -2711,7 +2711,7 @@ def test_attempt_detail(attempt_id):
         ad["options"] = opts
         answers_parsed.append(ad)
 
-    return render_template("test_attempt_detail.html",
+    return render_template("test_attempt_detail_v2.html" if _use_v2() else "test_attempt_detail.html",
         attempt=dict(attempt),
         answers=answers_parsed,
     )
