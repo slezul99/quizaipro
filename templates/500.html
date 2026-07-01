@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>500 — QuizAIPro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#f6f5fb; --surface:#fff; --text:#1e1b2e; --muted:#6b7280; --border:#eceaf3;
+            --b1:#6366f1; --b2:#8b5cf6; --b3:#ec4899; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0f0e17; --surface:#1a1826; --text:#f3f2f8; --muted:#9b98a8; --border:#2a2740; }
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg);
+           font-family:'Inter',system-ui,sans-serif; color:var(--text); padding:24px; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:24px;
+            box-shadow:0 20px 60px -20px rgba(99,102,241,.25); padding:48px 40px; max-width:460px;
+            width:100%; text-align:center; }
+    .code { font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:96px; line-height:1;
+            background:linear-gradient(135deg,var(--b1),var(--b2),var(--b3));
+            -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    h1 { font-family:'Space Grotesk',sans-serif; font-size:24px; margin:12px 0 8px; }
+    p { color:var(--muted); font-size:15px; margin:0 0 28px; }
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:13px 28px; border-radius:999px;
+           background:linear-gradient(135deg,var(--b1),var(--b2)); color:#fff; font-weight:700;
+           text-decoration:none; box-shadow:0 8px 22px -6px rgba(99,102,241,.5); transition:transform .15s; }
+    .btn:hover { transform:translateY(-2px); }
+    .alt { display:block; margin-top:16px; color:var(--b1); font-size:14px; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="code">500</div>
+    <h1>Что-то пошло не так</h1>
+    <p>На нашей стороне произошла ошибка. Мы уже знаем о ней и разбираемся. Попробуйте обновить страницу через минуту.</p>
+    <a class="btn" href="/dashboard">На главную</a>
+    <a class="alt" href="/">Вернуться на сайт QuizAIPro</a>
+  </div>
+</body>
+</html>

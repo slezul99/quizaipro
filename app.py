@@ -130,6 +130,22 @@ app.config["GOOGLE_SITE_VERIFICATION"] = os.environ.get("GOOGLE_SITE_VERIFICATIO
 app.config["YANDEX_VERIFICATION"] = os.environ.get("YANDEX_VERIFICATION", "")
 
 
+# === OBSERVABILITY: leveled stdout logging =================================
+# Railway captures stdout/stderr; configure real logging (the app historically
+# used bare print()) so operational events are greppable and severity-tagged.
+# LOG_LEVEL env overrides (default INFO). New code should use `log`/app.logger;
+# existing print() calls keep working during the migration.
+import logging
+_LOG_LEVEL = getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper(), logging.INFO)
+logging.basicConfig(
+    level=_LOG_LEVEL,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
+log = logging.getLogger("quizpro")
+app.logger.setLevel(_LOG_LEVEL)
+
+
 # === RATE LIMITING (brute-force zashchita) ===
 # Prostoy in-memory limiter. Dlya MVP horoshchiy.
 _rate_limits = {}  # {key: [(timestamp, ...)]}
@@ -944,6 +960,46 @@ def favicon():
         "favicon.ico",
         mimetype="image/vnd.microsoft.icon"
     )
+
+
+# === HEALTH / READINESS PROBES ============================================
+# /healthz — liveness: the process is up (no dependencies touched).
+# /readyz  — readiness: can we actually serve traffic (DB reachable)?
+# Kept out of analytics/bot paths; cheap and side-effect-free.
+@app.route("/healthz")
+def healthz():
+    from flask import Response
+    return Response("ok", mimetype="text/plain")
+
+
+@app.route("/readyz")
+def readyz():
+    from flask import Response
+    try:
+        conn = db.get_conn()
+        try:
+            conn.execute("SELECT 1")
+        finally:
+            conn.close()
+        return jsonify({"status": "ready", "db": "ok"})
+    except Exception as e:
+        app.logger.error("readiness check failed: %s: %s", type(e).__name__, e)
+        return jsonify({"status": "unready", "db": "error"}), 503
+
+
+# === ERROR HANDLERS =======================================================
+# Standalone (no base template / context processor) so they render even when
+# the failure is in the layout or a context processor itself.
+@app.errorhandler(404)
+def handle_404(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def handle_500(e):
+    # Log full traceback to stderr (Railway captures it) with request context.
+    app.logger.exception("Unhandled 500 on %s %s", request.method, request.path)
+    return render_template("500.html"), 500
 
 
 @app.route("/set-lang/<lang>")
