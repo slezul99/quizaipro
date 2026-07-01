@@ -1862,7 +1862,7 @@ def categories_list():
     for r in roots:
         r["children"] = children_by_parent.get(r["id"], [])
 
-    return render_template("categories.html",
+    return render_template("categories_v2.html" if _use_v2() else "categories.html",
         roots=roots,
         all_cats=all_cats,
         # Dlya formy "novaya podkategoriya" — nuzhny tol'ko korni

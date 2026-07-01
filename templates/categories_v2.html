@@ -1,0 +1,141 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('categories') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}<style>[x-cloak]{display:none!important;} .subcat{background:rgba(99,102,241,.05); border:1.5px solid var(--border);}</style>{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto" x-data="{ showNew: false, parentId: null, parentName: '' }">
+  <a href="/dashboard" class="inline-flex items-center gap-1 text-sm font-semibold mb-3" style="color:var(--brand-1);"><span>←</span> Dashboard</a>
+
+  <div class="flex justify-between items-end mb-7 flex-wrap gap-3">
+    <div class="section-header left" style="margin-bottom:0;">
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('cat_badge') }}</span>
+      <h1 class="section-h">{{ t('categories') }}</h1>
+      <p class="section-sub">{{ t('cat_sub') }}</p>
+    </div>
+    <button @click="showNew = true; parentId = null; parentName = ''" class="btn-premium" data-tour="new-category-btn">+ {{ t('categories') }}</button>
+  </div>
+
+  <div class="space-y-4">
+    {% for r in roots %}
+    <div class="glass-premium" style="padding:20px;">
+      <div class="flex items-start justify-between mb-3 gap-3 flex-wrap">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="text-4xl">{{ r.icon }}</div>
+          <div>
+            <h3 class="text-xl font-bold" style="font-family:'Space Grotesk',sans-serif; letter-spacing:-0.02em; color:var(--text);">{{ r.name }}</h3>
+            <p class="text-xs mt-0.5" style="color:var(--text-muted);">{{ r.children|length }} {{ t('cat_subcats') }} · {{ r.deck_count }} {{ t('cat_tests') }} · {{ r.card_count or 0 }} {{ t('cat_cards') }}</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button @click="showNew = true; parentId = {{ r.id }}; parentName = '{{ r.name|e }}'" class="btn-premium-ghost" style="font-size:12px; padding:8px 14px;">{{ t('cat_add_level') }}</button>
+          <form method="POST" action="/category/{{ r.id }}/delete" onsubmit="return confirm({{ t('cat_del_confirm')|tojson }})">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="hover:text-red-500 transition p-2" style="color:var(--text-muted);" title="{{ t('cat_del_title') }}">✕</button>
+          </form>
+        </div>
+      </div>
+
+      {% if (r.card_count or 0) >= 3 %}
+      <div class="flex gap-2 mb-3">
+        <a href="/category/{{ r.id }}/play" class="flex-1 p-4 rounded-2xl text-white text-center font-bold transition shadow-md" style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); box-shadow: 0 10px 28px -6px rgba(99,102,241,0.45);">{{ t('cat_play_full') }}</a>
+        <a href="/test/history?scope_type=category&scope_id={{ r.id }}" class="px-4 py-3 rounded-2xl font-bold transition text-sm flex items-center gap-2 whitespace-nowrap" style="background: rgba(168,85,247,0.12); color: #a855f7; border: 1.5px solid rgba(168,85,247,0.35);" title="{{ t('cat_history_title') }}">📊 <span class="hidden sm:inline">{{ t('cat_history_short') }}</span></a>
+      </div>
+      {% endif %}
+
+      {% if r.children %}
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4 pl-4" style="border-left:2px solid var(--border);">
+        {% for ch in r.children %}
+        <div class="subcat rounded-2xl p-4 group/sub transition">
+          <div class="flex items-start justify-between mb-2">
+            <span class="text-2xl">{{ ch.icon }}</span>
+            <form method="POST" action="/category/{{ ch.id }}/delete" onsubmit="return confirm({{ t('cat_del_lvl_confirm')|tojson }})">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button class="hover:text-red-500 text-xs opacity-0 group-hover/sub:opacity-100 transition" style="color:var(--text-muted);">✕</button>
+            </form>
+          </div>
+          <div class="font-bold text-sm" style="color:var(--text);">{{ ch.name }}</div>
+          <div class="text-xs mt-1" style="color:var(--text-muted);">{{ ch.deck_count }} {{ t('cat_tests') }} · {{ ch.card_count or 0 }} {{ t('cat_cards') }}</div>
+          {% if (ch.card_count or 0) >= 3 %}
+          <div class="flex gap-1 mt-2">
+            <a href="/category/{{ ch.id }}/play" class="flex-1 px-2 py-1.5 rounded-lg text-white text-[11px] font-bold text-center transition" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px -2px rgba(99,102,241,0.4);">{{ t('cat_play_small') }}</a>
+            <a href="/test/history?scope_type=category&scope_id={{ ch.id }}" class="px-2 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center" style="background: rgba(168,85,247,0.12); color: #a855f7; border: 1px solid rgba(168,85,247,0.35);" title="{{ t('cat_history_short') }}">📊</a>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-xs italic ml-4 mt-2" style="color:var(--text-muted);">{{ t('cat_no_lvls') }}</div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="text-center glass-premium" style="padding:64px 20px;">
+      <div class="text-7xl mb-4">📁</div>
+      <p class="mb-5" style="color:var(--text-2);">{{ t('cat_empty') }}</p>
+      <button @click="showNew = true; parentId = null" class="btn-premium">{{ t('cat_create_first') }}</button>
+      <p class="text-xs mt-4" style="color:var(--text-muted);">{{ t('cat_example') }}: <b>English</b>, {{ t('cat_inside') }} — <b>Beginner / Elementary / Intermediate</b></p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Modal -->
+  <div x-show="showNew" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(15,23,41,.6); backdrop-filter:blur(4px);" @click.self="showNew = false" x-cloak>
+    <form method="POST" action="/category/new" class="glass-premium max-w-md w-full" style="padding:28px;">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="section-h" style="font-size:1.5rem;">
+        <span x-show="!parentId">{{ t('cat_modal_new') }}</span>
+        <span x-show="parentId">{{ t('cat_modal_lvl_in') }} <span x-text="parentName" style="color:var(--brand-1);"></span></span>
+      </h3>
+      <p class="text-xs mb-5 mt-2" style="color:var(--text-muted);">
+        <span x-show="!parentId">{{ t('cat_modal_ex_root') }}</span>
+        <span x-show="parentId">{{ t('cat_modal_ex_lvl') }}</span>
+      </p>
+      <input type="hidden" name="parent_id" :value="parentId">
+      <div class="flex gap-3 mb-5">
+        <input name="icon" maxlength="2" :value="parentId ? '🎓' : '📁'" class="input-premium" style="width:70px; text-align:center; font-size:28px; padding:6px;">
+        <input name="name" required placeholder="{{ t('deck_name_label') }}" class="input-premium" style="flex:1;" autofocus>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="showNew = false" class="btn-premium-ghost">{{ t('cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('create') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="/static/tour/tour.css">
+<script src="/static/tour/tour.js"></script>
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tour') !== 'categories') return;
+  var lang = '{{ lang }}' || 'ru';
+  var i18n_pack = {
+    ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
+    en: { next: 'Next', back: 'Back', skip: 'Skip', finish: '✓ Done', step: 'Step' },
+    uz: { next: 'Keyingi', back: 'Orqaga', skip: 'O\'tkazib yuborish', finish: '✓ Tayyor', step: 'Qadam' },
+  };
+  QTour.setI18n(i18n_pack[lang] || i18n_pack.ru);
+  var steps = [
+    { floating: true, title: {{ t('tour_cat_intro_t')|tojson }}, body: {{ t('tour_cat_intro_b')|tojson }} },
+    { selector: '[data-tour="new-category-btn"]', title: {{ t('tour_cat_create_t')|tojson }}, body: {{ t('tour_cat_create_b')|tojson }}, side: 'bottom' },
+    { floating: true, title: {{ t('tour_cat_subs_t')|tojson }}, body: {{ t('tour_cat_subs_b')|tojson }} },
+    { floating: true, title: {{ t('tour_cat_done_t')|tojson }}, body: {{ t('tour_cat_done_b')|tojson }} },
+  ];
+  function start() {
+    QTour.start(steps, {
+      onComplete: function() {
+        try { var fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}'); fd.append('stage', 'categories'); fetch('/api/tour/complete', { method: 'POST', body: fd }); } catch(e) {}
+        try { var url = new URL(window.location.href); url.searchParams.delete('tour'); history.replaceState(null, '', url.pathname + (url.search ? url.search : '')); } catch(e) {}
+      },
+      onSkip: function() {
+        try { var url = new URL(window.location.href); url.searchParams.delete('tour'); history.replaceState(null, '', url.pathname + (url.search ? url.search : '')); } catch(e) {}
+      },
+    });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', start); } else { setTimeout(start, 200); }
+})();
+</script>
+{% endblock %}
