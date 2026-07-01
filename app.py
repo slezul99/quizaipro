@@ -1680,7 +1680,7 @@ def _admin_dashboard(user):
     cat_stats_worst = sorted([c for c in cat_stats if c["reviews"] > 0],
                               key=lambda x: x["success_rate"])[:10]
     conn.close()
-    return render_template("dashboard_admin.html",
+    return render_template("dashboard_admin_v2.html" if _use_v2() else "dashboard_admin.html",
         groups=groups, categories=categories, decks=decks,
         total_cards=total_cards, org_progress=org_progress,
         org_learned=org_learned, org_total=org_total, n_students=len(students),
@@ -1708,7 +1708,8 @@ def admin_students():
                                 ORDER BY role, username""", (user["org_id"],)).fetchall()
     groups = conn.execute("SELECT * FROM groups WHERE org_id=? ORDER BY name", (user["org_id"],)).fetchall()
     conn.close()
-    return render_template("admin_users.html", students=students, teachers=teachers, groups=groups)
+    return render_template("admin_users_v2.html" if _use_v2() else "admin_users.html",
+                           students=students, teachers=teachers, groups=groups)
 
 
 @app.route("/admin/user/new", methods=["POST"])
@@ -4530,7 +4531,8 @@ def admin_collections():
         FROM decks d WHERE d.is_public=1 ORDER BY d.clones_count DESC LIMIT 200
     """).fetchall()
     conn.close()
-    return render_template("admin_collections.html", collections=colls, pub_decks=pub_decks)
+    return render_template("admin_collections_v2.html" if _use_v2() else "admin_collections.html",
+                           collections=colls, pub_decks=pub_decks)
 
 
 @app.route("/admin/collections/create", methods=["POST"])
@@ -7397,7 +7399,8 @@ def live_host(code):
         conn.close(); abort(404)
     deck = conn.execute("SELECT * FROM decks WHERE id=?", (sess["deck_id"],)).fetchone()
     conn.close()
-    return render_template("live_host.html", sess=dict(sess), deck=dict(deck) if deck else None)
+    return render_template("live_host_v2.html" if _use_v2() else "live_host.html",
+                           sess=dict(sess), deck=dict(deck) if deck else None)
 
 
 @app.route("/live/join", methods=["GET", "POST"])
@@ -7458,7 +7461,8 @@ def live_play(code):
                  (sess["id"], user["id"]))
     conn.commit()
     conn.close()
-    return render_template("live_play.html", code=code, sess=dict(sess))
+    return render_template("live_play_v2.html" if _use_v2() else "live_play.html",
+                           code=code, sess=dict(sess))
 
 
 def _live_auto_advance(conn, sess_d):
@@ -9500,7 +9504,7 @@ def superadmin_dashboard():
     user_activity = conn.execute(sql).fetchall()
 
     conn.close()
-    return render_template("superadmin.html",
+    return render_template("superadmin_v2.html" if _use_v2() else "superadmin.html",
         stats=stats,
         by_role=[dict(r) for r in by_role],
         top_users=[dict(u) for u in top_users],
@@ -9574,7 +9578,7 @@ def superadmin_analytics():
     finally:
         conn.close()
 
-    return render_template("superadmin_analytics.html",
+    return render_template("superadmin_analytics_v2.html" if _use_v2() else "superadmin_analytics.html",
         days=days, summary=summary,
         by_country=by_country, by_city=by_city, daily=daily,
         by_device=by_device, by_browser=by_browser, by_os=by_os,
@@ -9680,7 +9684,7 @@ def superadmin_user_detail(user_id):
     """, (user_id,)).fetchall()
 
     conn.close()
-    return render_template("superadmin_user.html",
+    return render_template("superadmin_user_v2.html" if _use_v2() else "superadmin_user.html",
         u=user_d,
         activity=[dict(a) for a in activity],
         decks=[dict(d) for d in decks],

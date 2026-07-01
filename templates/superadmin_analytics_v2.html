@@ -1,0 +1,177 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — Аналитика{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-7 flex flex-wrap items-end justify-between gap-3">
+    <div class="section-header left" style="margin-bottom:0;">
+      <span class="section-badge"><span class="badge-dot"></span>Superadmin</span>
+      <h1 class="section-h">Аналитика</h1>
+      <p class="section-sub">Реальные посетители · без ботов · без API-вызовов</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <form method="POST" action="/superadmin/analytics/reset-geo"
+            onsubmit="return confirm('Очистить старую (неправильную) геолокацию у всех визитов? Счётчики визитов сохранятся, обновятся только страна/город. Новые визиты будут с верной геолокацией.');">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-premium-ghost" style="font-size:12px;padding:7px 14px;">
+          🧹 Очистить геоданные
+        </button>
+      </form>
+      <a href="/superadmin" class="text-xs font-medium hover:underline" style="color:var(--text-muted);">← Дашборд</a>
+    </div>
+  </div>
+
+  <!-- Period selector -->
+  <div class="mb-6 inline-flex p-1 rounded-xl gap-1" style="background:rgba(99,102,241,.06);">
+    {% for d, lbl in [(1, 'Сегодня'), (7, '7 дней'), (30, '30 дней'), (90, '90 дней'), (365, 'Год')] %}
+      <a href="?days={{ d }}"
+         class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition
+                {% if days == d %}bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm{% else %}hover:bg-black/[.03] dark:hover:bg-white/[.05]{% endif %}"
+         style="{% if days != d %}color:var(--text-muted);{% endif %}">
+        {{ lbl }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- KPI cards -->
+  <div class="grid grid-cols-3 gap-3 mb-5">
+    {% set kpis = [
+      ('Визиты',     summary.total_visits,    'stat-blue'),
+      ('Уникальных', summary.unique_visitors, 'stat-purple'),
+      ('Онлайн',     online_now|length,       'stat-emerald'),
+    ] %}
+    {% for name, value, cls in kpis %}
+    <div class="stat-card {{ cls }}">
+      <div class="stat-value text-3xl sm:text-4xl tabular-nums">{{ value }}</div>
+      <div class="stat-label mt-1.5 flex items-center gap-1.5">
+        {% if name == 'Онлайн' and online_now %}<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>{% endif %}
+        {{ name }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Online now -->
+  {% if online_now %}
+  <div class="glass-premium p-5 mb-5">
+    <div class="text-[11px] font-semibold uppercase tracking-wider mb-3" style="color:var(--text-muted);">Сейчас на сайте</div>
+    <div class="divide-y" style="border-color:var(--border);">
+      {% for v in online_now %}
+      <div class="flex items-center gap-3 py-2 text-xs first:pt-0 last:pb-0">
+        <span class="font-semibold min-w-[90px] truncate">
+          {% if v.username %}<span style="color:var(--brand-1);">@{{ v.username }}</span>
+          {% else %}<span style="color:var(--text-muted);">гость</span>{% endif %}
+        </span>
+        <span class="truncate" style="color:var(--text-muted);">{{ v.country or '—' }}{% if v.city %}, {{ v.city }}{% endif %}</span>
+        <span style="color:var(--text-muted);">{{ v.device_type }}</span>
+        <span class="ml-auto font-mono truncate max-w-[40%]" style="color:var(--text-2);">{{ v.path }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Daily chart -->
+  {% if daily %}
+  <div class="glass-premium p-5 mb-5">
+    <div class="text-[11px] font-semibold uppercase tracking-wider mb-5" style="color:var(--text-muted);">Посещения по дням</div>
+    <div class="flex items-end gap-1.5 h-32">
+      {% set max_d = (daily | map(attribute='visits') | max) or 1 %}
+      {% for d in daily %}
+        <div class="group flex-1 flex flex-col items-center justify-end gap-1.5 min-w-0 h-full">
+          <div class="text-[10px] font-medium tabular-nums leading-none opacity-0 group-hover:opacity-100 transition" style="color:var(--text-muted);">{{ d.visits or '' }}</div>
+          <div class="w-full max-w-[28px] rounded-md bg-indigo-500/90 dark:bg-indigo-400/80 group-hover:bg-indigo-600 dark:group-hover:bg-indigo-300 transition-colors"
+               style="height:{{ [(d.visits / max_d * 100)|int, 3]|max }}%;"
+               title="{{ d.day }} — {{ d.visits }}"></div>
+          <div class="tabular-nums" style="font-size:9px;color:var(--text-muted);">{{ d.day[5:] }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Countries · Pages · Devices -->
+  <div class="grid lg:grid-cols-3 gap-3 mb-5">
+
+    <!-- Top countries -->
+    <div class="glass-premium p-5">
+      <div class="text-[11px] font-semibold uppercase tracking-wider mb-4" style="color:var(--text-muted);">Страны</div>
+      {% if by_country %}
+      <div class="space-y-2.5">
+        {% set max_c = by_country[0].visits or 1 %}
+        {% for c in by_country[:8] %}
+        <div class="flex items-center gap-2.5">
+          <span class="text-xs font-semibold w-7" style="color:var(--text-2);">{{ c.country }}</span>
+          <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:rgba(99,102,241,.08);">
+            <div class="h-full bg-indigo-500/80 dark:bg-indigo-400/70 rounded-full" style="width:{{ [(c.visits / max_c * 100)|int, 4]|max }}%"></div>
+          </div>
+          <span class="text-xs font-semibold tabular-nums w-8 text-right" style="color:var(--text);">{{ c.visits }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-xs" style="color:var(--text-muted);">Нет данных</p>{% endif %}
+    </div>
+
+    <!-- Top pages -->
+    <div class="glass-premium p-5">
+      <div class="text-[11px] font-semibold uppercase tracking-wider mb-4" style="color:var(--text-muted);">Страницы</div>
+      {% if top_pages %}
+      <div class="space-y-2.5">
+        {% for p in top_pages[:8] %}
+        <div class="flex items-center gap-2.5">
+          <span class="flex-1 font-mono text-xs truncate" style="color:var(--text-2);">{{ p.path }}</span>
+          <span class="text-xs font-semibold tabular-nums w-8 text-right" style="color:var(--text);">{{ p.visits }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-xs" style="color:var(--text-muted);">Нет данных</p>{% endif %}
+    </div>
+
+    <!-- Devices -->
+    <div class="glass-premium p-5">
+      <div class="text-[11px] font-semibold uppercase tracking-wider mb-4" style="color:var(--text-muted);">Устройства</div>
+      {% if by_device %}
+      {% set dev_total = (by_device | map(attribute='visits') | sum) or 1 %}
+      {% set dev_icons = {'mobile': '📱', 'desktop': '🖥', 'tablet': '📲'} %}
+      <div class="space-y-3">
+        {% for d in by_device %}
+        <div>
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="capitalize" style="color:var(--text-2);">{{ dev_icons.get(d.device_type, '•') }} {{ d.device_type }}</span>
+            <span class="font-semibold tabular-nums" style="color:var(--text);">{{ (d.visits / dev_total * 100)|round|int }}%</span>
+          </div>
+          <div class="h-1.5 rounded-full overflow-hidden" style="background:rgba(99,102,241,.08);">
+            <div class="h-full rounded-full" style="width:{{ (d.visits / dev_total * 100)|int }}%; background:var(--text-muted);"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-xs" style="color:var(--text-muted);">Нет данных</p>{% endif %}
+    </div>
+
+  </div>
+
+  <!-- Recent visits -->
+  <div class="glass-premium p-5">
+    <div class="text-[11px] font-semibold uppercase tracking-wider mb-3" style="color:var(--text-muted);">Последние посещения</div>
+    {% if recent_visits %}
+    <div class="divide-y max-h-96 overflow-y-auto -mx-1 px-1" style="border-color:var(--border);">
+      {% for v in recent_visits %}
+      <div class="flex items-center gap-3 py-2 text-xs">
+        <span class="font-mono tabular-nums whitespace-nowrap" style="color:var(--text-muted);">{{ v.created_at|tashkent('%H:%M') }}</span>
+        <span class="font-semibold min-w-[80px] truncate">
+          {% if v.username %}<span style="color:var(--brand-1);">@{{ v.username }}</span>
+          {% else %}<span style="color:var(--text-muted);">гость</span>{% endif %}
+        </span>
+        <span class="truncate hidden sm:block" style="color:var(--text-muted);">{{ v.country or '' }}{% if v.city %}, {{ v.city }}{% endif %}</span>
+        <span class="ml-auto font-mono truncate max-w-[45%]" style="color:var(--text-2);">{{ v.path }}</span>
+        <span class="whitespace-nowrap hidden sm:block" style="color:var(--text-muted);">{{ v.device_type }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<p class="text-xs" style="color:var(--text-muted);">Нет данных</p>{% endif %}
+  </div>
+
+</div>
+{% endblock %}
