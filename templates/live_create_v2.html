@@ -1,0 +1,158 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('lv_h_create') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto" x-data="liveCreate()">
+  <div class="text-center mb-6">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('lv_badge') }}</span>
+    <h1 class="section-h" style="font-size:clamp(1.7rem,3.5vw,2.4rem); margin-top:8px;">{{ t('lv_h_create') }}</h1>
+    <p class="text-sm mt-2" style="color:var(--text-2);">{{ t('lv_sub_create') }}</p>
+  </div>
+
+  <form method="post" action="/live/create" class="glass-premium space-y-5" style="padding:24px;">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="mode" :value="mode">
+
+    <!-- deck/category toggle -->
+    <div>
+      <label class="block text-sm font-bold mb-2" style="color:var(--text);">{{ t('lv_source') }}</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" @click="mode='deck'"
+          :class="mode === 'deck' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 dark:border-slate-700'"
+          class="p-3 rounded-xl border-2 font-bold transition" :style="mode !== 'deck' ? 'background:var(--surface); color:var(--text);' : ''">{{ t('lv_by_deck') }}</button>
+        <button type="button" @click="mode='category'"
+          :class="mode === 'category' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 dark:border-slate-700'"
+          class="p-3 rounded-xl border-2 font-bold transition" :style="mode !== 'category' ? 'background:var(--surface); color:var(--text);' : ''">{{ t('lv_by_cat') }}</button>
+      </div>
+    </div>
+
+    <!-- Deck picker -->
+    <div x-show="mode === 'deck'">
+      <label class="block text-sm font-bold mb-2" style="color:var(--text);">{{ t('lv_deck_lbl') }}</label>
+      <div class="mb-2">
+        <select x-model="categoryFilter" class="input-premium">
+          <option value="">{{ t('lv_all_cats') }}</option>
+          <template x-for="c in categories" :key="c.id">
+            <option :value="c.id" x-text="(c.parent_name ? c.parent_name + ' / ' : '') + (c.icon || '📁') + ' ' + c.name"></option>
+          </template>
+        </select>
+      </div>
+      <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <template x-for="d in filteredDecks()" :key="d.id">
+          <label class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition"
+            :class="deckId === d.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-gray-200 dark:border-slate-700'" :style="deckId !== d.id ? 'background:var(--surface);' : ''">
+            <input type="radio" name="deck_id" :value="d.id" x-model.number="deckId" class="hidden">
+            <span class="text-2xl" x-text="d.icon || '📚'"></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate" style="color:var(--text);" x-text="d.name"></div>
+              <div class="text-xs" style="color:var(--text-muted);" x-text="d.cnt + ' {{ t('lv_cards_short') }}'"></div>
+            </div>
+            <span x-show="deckId === d.id" class="text-xl" style="color:var(--brand-1);">✓</span>
+          </label>
+        </template>
+        <div x-show="filteredDecks().length === 0" class="text-center italic py-4" style="color:var(--text-muted);">{{ t('lv_no_decks') }}</div>
+      </div>
+    </div>
+
+    <!-- Category picker -->
+    <div x-show="mode === 'category'">
+      <label class="block text-sm font-bold mb-2" style="color:var(--text);">{{ t('lv_cat_lbl') }}</label>
+      <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <template x-for="c in categories" :key="c.id">
+          <label class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition"
+            :class="categoryId === c.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-gray-200 dark:border-slate-700'" :style="categoryId !== c.id ? 'background:var(--surface);' : ''">
+            <input type="radio" name="category_id" :value="c.id" x-model.number="categoryId" class="hidden">
+            <span class="text-2xl" x-text="c.icon || '📁'"></span>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate" style="color:var(--text);" x-text="(c.parent_name ? c.parent_name + ' / ' : '') + c.name"></div>
+            </div>
+            <span x-show="categoryId === c.id" class="text-xl" style="color:var(--brand-1);">✓</span>
+          </label>
+        </template>
+        <div x-show="categories.length === 0" class="text-center italic py-4" style="color:var(--text-muted);">{{ t('lv_no_cats') }}</div>
+      </div>
+      <p class="text-xs mt-2" style="color:var(--text-muted);">{{ t('lv_cat_hint') }}</p>
+    </div>
+
+    <!-- Host role -->
+    <div>
+      <label class="block text-sm font-bold mb-2" style="color:var(--text);">{{ t('lv_role') }}</label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition"
+          :class="hostRole === 'observer' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-gray-200 dark:border-slate-700'" :style="hostRole !== 'observer' ? 'background:var(--surface);' : ''">
+          <input type="radio" name="host_role" value="observer" x-model="hostRole" class="hidden">
+          <span class="text-3xl">👁</span>
+          <span class="font-semibold" style="color:var(--text);">{{ t('lv_observer') }}</span>
+          <span class="text-xs text-center" style="color:var(--text-muted);">{{ t('lv_observer_sub') }}</span>
+        </label>
+        <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition"
+          :class="hostRole === 'participant' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30' : 'border-gray-200 dark:border-slate-700'" :style="hostRole !== 'participant' ? 'background:var(--surface);' : ''">
+          <input type="radio" name="host_role" value="participant" x-model="hostRole" class="hidden">
+          <span class="text-3xl">🎮</span>
+          <span class="font-semibold" style="color:var(--text);">{{ t('lv_participant') }}</span>
+          <span class="text-xs text-center" style="color:var(--text-muted);">{{ t('lv_participant_sub') }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Number of questions -->
+    <div>
+      <label class="block text-sm font-bold mb-2" style="color:var(--text);">{{ t('lv_q_count') }}</label>
+      <div class="flex gap-2 flex-wrap">
+        <template x-for="n in [5,10,15,20,30]" :key="n">
+          <button type="button" @click="count = n"
+            :class="count === n ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 dark:border-slate-700'"
+            class="px-4 py-2 rounded-xl border-2 font-bold transition" :style="count !== n ? 'background:var(--surface); color:var(--text);' : ''" x-text="n"></button>
+        </template>
+      </div>
+      <input type="hidden" name="count" :value="count">
+    </div>
+
+    <!-- Time per question -->
+    <div>
+      <label class="block text-sm font-bold mb-2" style="color:var(--text);">{{ t('lv_time_per_q') }}</label>
+      <div class="flex gap-2 flex-wrap">
+        <template x-for="tt in [10,20,30,45,60]" :key="tt">
+          <button type="button" @click="timePerQ = tt"
+            :class="timePerQ === tt ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 dark:border-slate-700'"
+            class="px-4 py-2 rounded-xl border-2 font-bold transition" :style="timePerQ !== tt ? 'background:var(--surface); color:var(--text);' : ''" x-text="tt + '{{ t('lv_time_unit') }}'"></button>
+        </template>
+      </div>
+      <input type="hidden" name="time_per_q" :value="timePerQ">
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+      :disabled="(mode === 'deck' && !deckId) || (mode === 'category' && !categoryId)"
+      :class="((mode === 'deck' && !deckId) || (mode === 'category' && !categoryId)) ? 'opacity-40 cursor-not-allowed' : ''"
+      class="btn-premium w-full justify-center" style="font-size:17px; padding:14px 28px;">{{ t('lv_create_btn') }}</button>
+  </form>
+
+  <div class="text-center mt-4">
+    <a href="/live/history" class="text-sm font-semibold" style="color:var(--brand-1);">{{ t('lv_history_link') }}</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function liveCreate() {
+  const preselectCat = {{ preselect_category|tojson if preselect_category else 'null' }};
+  return {
+    decks: {{ decks|tojson }},
+    categories: {{ categories|tojson }},
+    mode: preselectCat ? 'category' : 'deck',
+    deckId: null,
+    categoryId: preselectCat,
+    hostRole: 'observer',
+    count: {{ preselect_count|tojson if preselect_count else 10 }},
+    timePerQ: 20,
+    categoryFilter: '',
+    filteredDecks() {
+      if (!this.categoryFilter) return this.decks;
+      return this.decks.filter(d => String(d.category_id) === String(this.categoryFilter));
+    }
+  };
+}
+</script>
+{% endblock %}

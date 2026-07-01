@@ -7291,7 +7291,7 @@ def live_create():
     preselect_count = request.args.get("count", type=int) or 10
     if preselect_count < 3: preselect_count = 10
     if preselect_count > 50: preselect_count = 50
-    return render_template("live_create.html",
+    return render_template("live_create_v2.html" if _use_v2() else "live_create.html",
         decks=decks,
         categories=[dict(c) for c in cats_raw],
         preselect_category=preselect_category,
@@ -7321,7 +7321,7 @@ def live_history():
         ORDER BY s.finished_at DESC LIMIT 50
     """, (user["id"], user["id"], user["id"], user["id"], user["id"], user["id"])).fetchall()
     conn.close()
-    return render_template("live_history.html", sessions=sessions)
+    return render_template("live_history_v2.html" if _use_v2() else "live_history.html", sessions=sessions)
 
 
 @app.route("/live/history/<code>")
@@ -7441,7 +7441,7 @@ def live_join():
                      (sess["id"], user["id"]))
         conn.commit(); conn.close()
         return redirect(url_for("live_play", code=code))
-    return render_template("live_join.html")
+    return render_template("live_join_v2.html" if _use_v2() else "live_join.html")
 
 
 @app.route("/live/<code>/play")

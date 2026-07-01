@@ -1,0 +1,19 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('lj_h') }}{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto text-center" style="padding-top:40px;">
+  <div class="text-7xl mb-5">🎮</div>
+  <h1 class="section-h">{{ t('lj_h') }}</h1>
+  <p class="mb-8 mt-3" style="color:var(--text-2);">{{ t('lj_sub') }}</p>
+
+  <form method="POST" action="/live/join" class="glass-premium" style="padding:28px;">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input name="code" required maxlength="6" placeholder="ABCD23" class="input-premium"
+      style="font-size:32px; text-align:center; font-weight:900; letter-spacing:0.4em; text-transform:uppercase; font-family:'Space Grotesk',monospace; padding:18px;"
+      autofocus autocomplete="off">
+    <button type="submit" class="btn-premium w-full justify-center mt-5" style="font-size:16px; padding:14px 28px;">{{ t('lj_enter') }}</button>
+  </form>
+
+  <a href="/dashboard" class="text-sm inline-block mt-6 font-semibold" style="color:var(--brand-1);">{{ t('lj_back') }}</a>
+</div>
+{% endblock %}
