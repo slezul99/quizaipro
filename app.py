@@ -167,16 +167,62 @@ if _SENTRY_DSN:
         log.warning("Sentry not enabled: %s: %s", type(_sentry_e).__name__, _sentry_e)
 
 
+# === Redis (shared state) — ACTIVE ONLY when REDIS_URL is set =============
+# Makes rate-limiting shared across gunicorn workers/instances and durable across
+# restarts (the in-process dict below is per-worker and lost on restart). Soft-
+# fail like the Sentry/api_v1 guards: if REDIS_URL is unset or the server is
+# unreachable, everything transparently falls back to the in-memory limiter, so
+# the site always boots and never locks users out on a Redis hiccup.
+_REDIS_URL = os.environ.get("REDIS_URL", "").strip()
+redis_client = None
+if _REDIS_URL:
+    try:
+        import redis as _redis_lib
+        redis_client = _redis_lib.from_url(
+            _REDIS_URL, socket_timeout=1.5, socket_connect_timeout=1.5,
+            decode_responses=True, health_check_interval=30,
+        )
+        redis_client.ping()
+        log.info("Redis connected — shared rate limiting enabled")
+    except Exception as _redis_e:
+        redis_client = None
+        log.warning("Redis not enabled (falling back to in-memory): %s: %s",
+                    type(_redis_e).__name__, _redis_e)
+
+
 # === RATE LIMITING (brute-force zashchita) ===
-# Prostoy in-memory limiter. Dlya MVP horoshchiy.
-_rate_limits = {}  # {key: [(timestamp, ...)]}
+# Sliding-window limiter. Redis-backed when available (shared + durable), else a
+# per-process in-memory dict (fine for a single gunicorn worker).
+_rate_limits = {}  # {key: [timestamp, ...]}  — in-memory fallback
 
 
 def rate_limit(key: str, max_attempts: int = 5, window_seconds: int = 60) -> bool:
-    """Vozvrashchaet True esli mozhno, False esli prevyshen limit."""
+    """Return True if allowed, False if the limit is exceeded (sliding window)."""
+    if redis_client is not None:
+        try:
+            return _rate_limit_redis(key, max_attempts, window_seconds)
+        except Exception as e:
+            # A Redis error must never lock users out — degrade to in-memory.
+            app.logger.warning("rate_limit: redis error, falling back to memory: %s", e)
+    return _rate_limit_memory(key, max_attempts, window_seconds)
+
+
+def _rate_limit_redis(key: str, max_attempts: int, window_seconds: int) -> bool:
+    """Sliding window via a Redis sorted set (scores = timestamps), atomic pipeline."""
+    now = datetime.utcnow().timestamp()
+    rk = f"rl:{key}"
+    p = redis_client.pipeline()
+    p.zremrangebyscore(rk, 0, now - window_seconds)     # drop entries outside window
+    p.zcard(rk)                                          # count remaining (before add)
+    p.zadd(rk, {f"{now}:{secrets.token_hex(4)}": now})   # record this attempt
+    p.expire(rk, window_seconds + 1)                     # self-cleanup
+    _, count, _, _ = p.execute()
+    return count < max_attempts
+
+
+def _rate_limit_memory(key: str, max_attempts: int, window_seconds: int) -> bool:
     now = datetime.utcnow().timestamp()
     attempts = _rate_limits.get(key, [])
-    # Ochishchayem starye popytki vne okna
     attempts = [t for t in attempts if now - t < window_seconds]
     if len(attempts) >= max_attempts:
         _rate_limits[key] = attempts
