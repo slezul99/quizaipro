@@ -91,6 +91,20 @@ def _ident(name):
     return '"%s"' % name.replace('"', '""')
 
 
+def _sqlite_type_to_pg(decl):
+    """Map a SQLite declared type to a Postgres type for reconciled columns."""
+    u = (decl or "").upper()
+    if "INT" in u:
+        return "bigint"
+    if any(k in u for k in ("CHAR", "CLOB", "TEXT")):
+        return "text"
+    if any(k in u for k in ("REAL", "FLOA", "DOUB", "NUMERIC", "DEC")):
+        return "double precision"
+    if "BLOB" in u:
+        return "bytea"
+    return "text"   # app stores dates/bools/misc as TEXT/INTEGER; TEXT is a safe default
+
+
 def run_copy(src, dst, paramstyle, is_pg, id_tables, log=print):
     """Copy all data src -> dst. paramstyle: '%s' (pg) or '?' (sqlite self-test)."""
     tables, columns, fkdeps, selfcols = discover(src)
@@ -187,7 +201,29 @@ def ensure_schema(src, dst, log=print):
             cur.execute(db.translate_sql(sql, False)); dst.commit(); idx += 1
         except Exception as e:
             dst.rollback(); log("  index %s: %s" % (name, str(e).splitlines()[0][:90]))
-    log("  schema ensured: %d tables, %d indexes" % (made, idx))
+    # Column reconciliation: SQLite's stored CREATE text (sqlite_master.sql) can
+    # lag behind the ACTUAL columns — runtime `ALTER TABLE ... ADD COLUMN` in
+    # app.py (e.g. users.tour_*_done) isn't always reflected there, and a table
+    # created by an earlier partial run may predate such columns. PRAGMA
+    # table_info reports the real columns, so add any that the target is missing.
+    reconciled = 0
+    for t in order:
+        info = src.execute('PRAGMA table_info(%s)' % _ident(t)).fetchall()  # (cid,name,type,...)
+        have = {r[0].lower() for r in dst.execute(
+            "SELECT column_name FROM information_schema.columns WHERE table_name=%s",
+            (t,)).fetchall()}
+        for col in info:
+            cname, ctype = col[1], col[2]
+            if cname.lower() in have:
+                continue
+            try:
+                cur.execute('ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s %s' % (
+                    _ident(t), _ident(cname), _sqlite_type_to_pg(ctype)))
+                dst.commit(); reconciled += 1
+                log("  + %s.%s (%s)" % (t, cname, _sqlite_type_to_pg(ctype)))
+            except Exception as e:
+                dst.rollback(); log("  col %s.%s: %s" % (t, cname, str(e).splitlines()[0][:80]))
+    log("  schema ensured: %d tables, %d indexes, %d columns reconciled" % (made, idx, reconciled))
 
 
 def verify(src, dst, tables):
