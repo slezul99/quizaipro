@@ -6159,7 +6159,7 @@ def tournament_view(tournament_id):
             my_match = dict(my_match)
 
     conn.close()
-    return render_template("tournament_view.html",
+    return render_template("tournament_view_v2.html" if _use_v2() else "tournament_view.html",
         tournament=dict(t), players=players, rounds=rounds, is_player=is_player,
         my_match=my_match, current_uid=user["id"])
 
@@ -6392,7 +6392,7 @@ def study_group_view(group_id):
     accuracy = round(total_correct / total_reviews * 100) if total_reviews else 0
 
     conn.close()
-    return render_template("study_group_view.html",
+    return render_template("study_group_view_v2.html" if _use_v2() else "study_group_view.html",
         group=dict(group), members=members, group_decks=group_decks,
         is_member=is_member, available_decks=available_decks,
         total_reviews=total_reviews, accuracy=accuracy)

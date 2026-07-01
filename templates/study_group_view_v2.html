@@ -1,0 +1,149 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ group.name }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}<style>[x-cloak]{display:none!important;}</style>{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto" x-data="{ showAddDeck: false }">
+  <a href="/study-groups" class="text-sm" style="color:var(--brand-1);">{{ t('sgv_back') }}</a>
+
+  <!-- Hero -->
+  <div class="glass p-6 my-4" style="border-radius:24px;">
+    <div class="flex items-start gap-4 flex-wrap">
+      <span class="text-5xl">{{ group.avatar }}</span>
+      <div class="flex-1 min-w-0">
+        <h1 class="h-display text-3xl mb-1">{{ group.name }}</h1>
+        <p class="text-sm mb-2" style="color:var(--text-2);">@{{ group.owner_username }} · {{ members|length }} {{ t('sgv_members') }}</p>
+        {% if group.description %}<p style="color:var(--text-2);">{{ group.description }}</p>{% endif %}
+      </div>
+      <div class="flex gap-2">
+        {% if group.chat_id and is_member %}
+        <a href="/chat/{{ group.chat_id }}" class="btn-premium text-sm">{{ t('sgv_chat_btn') }}</a>
+        {% endif %}
+        {% if is_member %}
+        <form method="POST" action="/study-group/{{ group.id }}/leave" onsubmit="return confirm({{ t('sgv_leave_confirm')|tojson }})">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn btn-ghost text-sm">{{ t('sgv_leave') }}</button>
+        </form>
+        {% else %}
+        <form method="POST" action="/study-group/{{ group.id }}/join">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn-premium text-sm">{{ t('sgv_join') }}</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="glass" style="border-radius:16px; padding:20px;">
+      <div class="icon-bubble bg-gradient-to-br from-indigo-100 to-purple-200 mb-2">👥</div>
+      <div class="text-2xl font-bold h-display">{{ members|length }}</div>
+      <div class="text-xs mt-1 font-medium" style="color:var(--text-muted);">{{ t('sgv_members_card') }}</div>
+    </div>
+    <div class="glass" style="border-radius:16px; padding:20px;">
+      <div class="icon-bubble bg-gradient-to-br from-emerald-100 to-emerald-200 mb-2">📚</div>
+      <div class="text-2xl font-bold h-display text-emerald-600 dark:text-emerald-300">{{ group_decks|length }}</div>
+      <div class="text-xs mt-1 font-medium" style="color:var(--text-muted);">{{ t('sgv_decks_card') }}</div>
+    </div>
+    <div class="glass" style="border-radius:16px; padding:20px;">
+      <div class="icon-bubble bg-gradient-to-br from-blue-100 to-blue-200 mb-2">⚡</div>
+      <div class="text-2xl font-bold h-display text-blue-600 dark:text-blue-300">{{ total_reviews }}</div>
+      <div class="text-xs mt-1 font-medium" style="color:var(--text-muted);">{{ t('sgv_total_answers') }}</div>
+    </div>
+    <div class="glass" style="border-radius:16px; padding:20px;">
+      <div class="icon-bubble bg-gradient-to-br from-orange-100 to-pink-200 mb-2">🎯</div>
+      <div class="text-2xl font-bold h-display text-orange-600 dark:text-orange-300">{{ accuracy }}%</div>
+      <div class="text-xs mt-1 font-medium" style="color:var(--text-muted);">{{ t('sgv_accuracy') }}</div>
+    </div>
+  </div>
+
+  <!-- Decks -->
+  <div class="glass p-6 mb-6" style="border-radius:24px;">
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+      <h3 class="font-bold" style="color:var(--text);">{{ t('sgv_library_h') }}</h3>
+      {% if is_member and available_decks %}
+      <button @click="showAddDeck = true" class="btn btn-ghost text-sm">{{ t('sgv_add_deck_btn') }}</button>
+      {% endif %}
+    </div>
+    {% if group_decks %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {% for d in group_decks %}
+      <div class="rounded-2xl p-4 border group" style="background:rgba(99,102,241,.05); border-color:var(--border);">
+        <div class="flex items-start gap-3 mb-2">
+          <span class="text-3xl">{{ d.icon }}</span>
+          <div class="flex-1 min-w-0">
+            <a href="/deck/{{ d.id }}" class="font-bold truncate block" style="color:var(--text);">{{ d.name }}</a>
+            <p class="text-xs" style="color:var(--text-muted);">{{ d.cnt }} {{ t('dk_cards_count') }} · {{ t('sgv_card_from') }}{{ d.added_by_username }}</p>
+          </div>
+        </div>
+        <div class="flex gap-1 mt-2">
+          <a href="/deck/{{ d.id }}/flashcards" class="text-xs flex-1 justify-center rounded-lg px-3 py-1.5 font-bold text-white text-center" style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);">🃏 Flashcards</a>
+          <a href="/deck/{{ d.id }}/test" class="btn btn-ghost text-xs">📝</a>
+          {% if is_member %}
+          <form method="POST" action="/study-group/{{ group.id }}/remove-deck/{{ d.id }}" onsubmit="return confirm({{ t('sgv_remove_confirm')|tojson }})">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="text-red-500 rounded-lg px-2 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center py-6" style="color:var(--text-muted);">{{ t('sgv_no_decks') }}</p>
+    {% endif %}
+  </div>
+
+  <!-- Members + leaderboard -->
+  <div class="glass p-6" style="border-radius:24px;">
+    <h3 class="font-bold mb-4" style="color:var(--text);">{{ t('sgv_lb_h') }}</h3>
+    <div class="space-y-2">
+      {% for m in members %}
+      <a href="/u/{{ m.username }}" class="sgv-row flex items-center gap-3 p-3 rounded-2xl border transition" style="background:rgba(99,102,241,.05); border-color:var(--border);">
+        <span class="w-8 text-center text-sm font-bold
+          {% if loop.index == 1 %}text-yellow-500 text-xl{% elif loop.index == 2 %}text-gray-400 text-lg{% elif loop.index == 3 %}text-orange-500 text-lg{% else %}sgv-rank{% endif %}">
+          {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+        </span>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+          style="{% if m.avatar_color %}background:{{ m.avatar_color }}{% else %}background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899){% endif %}">
+          {{ (m.full_name or m.username)[0]|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold truncate" style="color:var(--text);">
+            {{ m.full_name or m.username }}
+            {% if m.role == 'owner' %}<span class="text-xs ml-1">👑</span>{% endif %}
+          </div>
+          <div class="text-xs" style="color:var(--text-muted);">⭐ {{ m.xp }} · 🔥 {{ m.streak }}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-bold" style="color:var(--brand-1);">{{ m.group_reviews }}</div>
+          <div class="text-xs" style="color:var(--text-muted);">{{ t('sgv_answers_short') }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Add deck modal -->
+  <div x-show="showAddDeck" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(15,23,41,.5); backdrop-filter:blur(4px);" @click.self="showAddDeck = false" x-cloak>
+    <form method="POST" action="/study-group/{{ group.id }}/add-deck" class="glass-strong p-7 max-w-md w-full" style="border-radius:24px;">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="text-xl font-bold mb-1 h-display">{{ t('sgv_add_modal_h') }}</h3>
+      <p class="text-xs mb-4" style="color:var(--text-muted);">{{ t('sgv_add_modal_sub') }}</p>
+      <select name="deck_id" required class="input-premium mb-5">
+        <option value="">{{ t('sgv_pick_deck') }}</option>
+        {% for d in available_decks %}
+        <option value="{{ d.id }}">{{ d.icon }} {{ d.name }}</option>
+        {% endfor %}
+      </select>
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="showAddDeck = false" class="btn btn-ghost">{{ t('sgv_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('sgv_add') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block styles_extra %}{% endblock %}
+{% block scripts %}<style>.sgv-row:hover{background:rgba(99,102,241,.10)!important;} .sgv-rank{color:var(--text-muted);}</style>{% endblock %}

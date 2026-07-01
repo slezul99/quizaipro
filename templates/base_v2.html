@@ -710,14 +710,16 @@
     font-size: clamp(1.7rem, 3vw, 2.1rem); letter-spacing: -.03em; line-height: 1.15; color: var(--text);
   }
   .section-sub { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+  .h-display { font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: -.02em; color: var(--text); }
   .section-divider-mini { display: flex; align-items: center; gap: 8px; margin: 10px 0; color: var(--brand-2); }
   .section-divider-mini .line { flex: 1; height: 1px; background: rgba(99,102,241,.15); max-width: 40px; }
 
   /* Cards */
-  .glass, .glass-premium, .card {
+  .glass, .glass-premium, .glass-strong, .card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 20px; box-shadow: var(--shadow-card);
   }
+  .icon-bubble { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; }
   .card-hover { transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
   .card-hover:hover { transform: translateY(-3px); box-shadow: 0 14px 32px -10px rgba(99,102,241,.25); }
 
