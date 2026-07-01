@@ -444,7 +444,7 @@ def get_by_city(days: int = 30, limit: int = 50) -> list[dict]:
         WHERE created_at >= ? AND city IS NOT NULL AND city != ''
               AND country != 'LOCAL' AND country != '?'
               AND device_type != 'bot' AND {_EXCL_ADMINS} AND {_NOT_API}
-        GROUP BY country, city
+        GROUP BY country, country_name, city
         ORDER BY visits DESC
         LIMIT ?
     """, (cutoff, limit)).fetchall()

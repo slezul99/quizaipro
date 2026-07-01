@@ -9711,9 +9711,11 @@ def superadmin_analytics():
     conn = db.get_conn()
     try:
         online_now = conn.execute("""
-            SELECT v.ip, v.country, v.country_name, v.city, v.path,
-                   v.device_type, v.browser, v.os,
-                   u.username,
+            SELECT MAX(v.ip) AS ip, MAX(v.country) AS country,
+                   MAX(v.country_name) AS country_name, MAX(v.city) AS city,
+                   MAX(v.path) AS path, MAX(v.device_type) AS device_type,
+                   MAX(v.browser) AS browser, MAX(v.os) AS os,
+                   MAX(u.username) AS username,
                    MAX(v.created_at) AS last_seen
             FROM visits v
             LEFT JOIN users u ON u.id = v.user_id
