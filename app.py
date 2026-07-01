@@ -7380,7 +7380,7 @@ def live_history_view(code):
                        "options": opts, "correct": correct})
 
     conn.close()
-    return render_template("live_history_view.html",
+    return render_template("live_history_view_v2.html" if _use_v2() else "live_history_view.html",
         sess=dict(sess), questions=parsed,
         players=[dict(p) for p in players],
         answers_by_user=by_user)
