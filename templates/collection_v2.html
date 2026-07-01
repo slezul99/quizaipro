@@ -1,0 +1,83 @@
+{% extends "base_v2.html" %}
+{% from '_macros.html' import deck_preview_modal with context %}
+{% block title %}{{ coll.title }} — QuizAIPro{% endblock %}
+{% block head_scripts %}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": {{ coll.title|tojson }},
+  "description": {{ (coll.desc or coll.title)|tojson }},
+  "numberOfItems": {{ decks|length }},
+  "itemListElement": [
+    {% for d in decks %}
+    { "@type": "ListItem", "position": {{ loop.index }},
+      "url": {{ (request.url_root.rstrip('/') + '/deck/' + d.id|string)|tojson }},
+      "item": { "@type": "LearningResource", "name": {{ d.name|tojson }},
+        "description": {{ (d.description or d.name)|tojson }}, "learningResourceType": "Flashcard deck" } }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <a href="/marketplace" class="inline-flex items-center gap-1 text-sm font-semibold mb-6" style="color:var(--brand-1);"><span>←</span> {{ t('nav_marketplace') }}</a>
+
+  <!-- Collection header -->
+  <div class="rounded-3xl p-8 mb-8 text-white relative overflow-hidden" style="background: linear-gradient(135deg, {{ coll.color }}, {{ coll.color2 }});">
+    <img src="{{ asset('collections/' ~ coll.slug ~ '.jpg') }}" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+    <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(100deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.34) 40%, rgba(0,0,0,.08) 62%, transparent 78%);"></div>
+    <div class="relative z-10">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4" style="background: rgba(255,255,255,.20); box-shadow: inset 0 1.5px 1px rgba(255,255,255,.5), 0 6px 16px -6px rgba(0,0,0,.35); backdrop-filter: blur(6px);">{{ coll.icon }}</div>
+      <h1 class="text-3xl md:text-4xl font-black mb-3 leading-tight">{{ coll.title }}</h1>
+      {% if coll.desc %}<p class="text-white/80 text-lg max-w-2xl leading-relaxed">{{ coll.desc }}</p>{% endif %}
+      <div class="flex flex-wrap gap-3 mt-5 items-center">
+        <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">📚 {{ decks|length }} {{ npl(decks|length, 'mk_decks') }}</span>
+        {% if coll.level %}
+        <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">
+          {% if coll.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}{% elif coll.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}{% elif coll.level == 'advanced' %}🔴 {{ t('lvl_advanced') }}{% elif coll.level == 'mixed' %}🟢🟡🔴 {{ t('lvl_mixed') }}{% else %}{{ coll.level }}{% endif %}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Decks grid -->
+  {% if decks %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for d in decks %}
+    <div x-data="{}" class="group relative rounded-3xl overflow-hidden flex flex-col min-h-[210px] p-5 text-white shadow-lg border border-white/10 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl" style="background: linear-gradient(135deg, {{ coll.color }}, {{ coll.color2 }});">
+      <img src="{{ asset('collections/' ~ coll.slug ~ '.jpg') }}" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+      <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(90deg, rgba(0,0,0,.60) 0%, rgba(0,0,0,.34) 32%, rgba(0,0,0,.05) 56%, transparent 70%);"></div>
+      <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 42%);"></div>
+
+      <a href="/deck/{{ d.id }}" class="relative z-10 block flex-1">
+        <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0 mb-3" style="background: rgba(255,255,255,.20); box-shadow: inset 0 1px 1px rgba(255,255,255,.45), 0 4px 10px -4px rgba(0,0,0,.4); backdrop-filter: blur(5px);">{{ d.icon or coll.icon }}</div>
+        <h3 class="font-black text-lg leading-tight mb-2 max-w-[64%]" style="text-shadow:0 2px 6px rgba(0,0,0,.6);">{{ d.name }}</h3>
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold" style="background: rgba(255,255,255,.18); backdrop-filter: blur(6px);">{% if d.has_mcq %}📝 {{ d.card_count }} {{ npl(d.card_count, 'mk_questions') }}{% else %}🃏 {{ d.card_count }} {{ npl(d.card_count, 'mk_cards') }}{% endif %}</span>
+      </a>
+
+      <div class="relative z-10 flex gap-2 mt-3">
+        {% if d.has_mcq %}
+        <a href="/deck/{{ d.id }}/test" onclick="event.stopPropagation()" class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">📝 {{ t('btn_test') }}</a>
+        {% elif d.has_terms %}
+        <a href="/deck/{{ d.id }}/flashcards" onclick="event.stopPropagation()" class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">🃏 {{ t('mk_flashcards') }}</a>
+        {% else %}
+        <a href="/deck/{{ d.id }}" onclick="event.stopPropagation()" class="flex-1 text-center px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">📚 {{ t('mk_qs_start_btn') }}</a>
+        {% endif %}
+        <button type="button" @click="$dispatch('preview-deck', {{ d.id }})" class="px-3 py-2 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,.16); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.2);">👁</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {{ deck_preview_modal() }}
+  {% else %}
+  <div class="text-center glass-premium" style="padding:64px 20px;">
+    <div class="text-6xl mb-4">📭</div>
+    <p class="font-semibold" style="color:var(--text-2);">{{ t('mk_empty_collections_h') }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

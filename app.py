@@ -4398,7 +4398,7 @@ def collection_view(slug):
         coll["level"] = next(iter(_levels))
     elif len(_levels) > 1:
         coll["level"] = "mixed"
-    return render_template("collection.html", coll=coll, decks=decks)
+    return render_template("collection_v2.html" if _use_v2() else "collection.html", coll=coll, decks=decks)
 
 
 @app.route("/marketplace/deck/<int:deck_id>/preview")
@@ -4659,7 +4659,7 @@ def marketplace_subject(slug):
         p["desc"]  = p.get(f"desc_{lang}")  or p.get("desc_en", "")
 
     conn.close()
-    return render_template("marketplace_subject.html",
+    return render_template("marketplace_subject_v2.html" if _use_v2() else "marketplace_subject.html",
                            subj=subj, collections=colls, paths=paths)
 
 
