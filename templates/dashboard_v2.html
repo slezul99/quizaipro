@@ -1024,7 +1024,7 @@
         <div class="nm">{{ current_user.full_name or current_user.username }}</div>
         <div class="pl">{{ current_plan|capitalize if current_plan and current_plan != 'free' else t('v2_free_plan') }}</div>
       </div>
-      <button class="kebab" aria-label="More options">&#8942;</button>
+      <button class="kebab" aria-label="{{ t('logout') }}" title="{{ t('logout') }}" onclick="location.href='{{ url_for('logout') }}'"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
   </aside>
 
