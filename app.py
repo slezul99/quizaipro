@@ -5290,7 +5290,7 @@ def friends_page():
         conn2.close()
         if cat_row:
             duel_category = dict(cat_row)
-    return render_template("friends.html",
+    return render_template("friends_v2.html" if _use_v2() else "friends.html",
         friends=friends, incoming=incoming, outgoing=outgoing,
         duel_category=duel_category)
 
@@ -5307,7 +5307,7 @@ def notifications_page():
     """, (user["id"],)).fetchall()
     conn.execute("UPDATE notifications SET is_read=1 WHERE user_id=?", (user["id"],))
     conn.commit(); conn.close()
-    return render_template("notifications.html", notifs=notifs)
+    return render_template("notifications_v2.html" if _use_v2() else "notifications.html", notifs=notifs)
 
 
 @app.route("/api/notifications/unread")

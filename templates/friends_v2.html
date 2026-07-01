@@ -1,0 +1,118 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('fr_h') }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="section-header left">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('fr_badge') }}</span>
+    <h1 class="section-h">{{ t('fr_h') }}</h1>
+    <p class="section-sub">{{ t('fr_sub') }}</p>
+  </div>
+
+  {% if duel_category %}
+  <div class="glass" style="padding:18px; margin-bottom:20px; border:1.5px solid rgba(245,158,11,.4); background:linear-gradient(135deg, rgba(245,158,11,.10), rgba(245,158,11,.03));">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">⚔️</span>
+      <div class="flex-1">
+        <div class="font-bold" style="color:var(--text);">{{ t('fr_duel_by_cat') }} «{{ duel_category.icon or '📁' }} {{ duel_category.name }}»</div>
+        <div class="text-xs" style="color:var(--text-muted);">{{ t('fr_duel_pick') }}</div>
+      </div>
+      <a href="/friends" class="text-xs" style="color:#d97706;">{{ t('fr_cancel') }}</a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if incoming %}
+  <div class="glass" style="padding:22px; margin-bottom:20px;">
+    <h3 class="font-bold mb-4 flex items-center gap-2" style="color:var(--text);">
+      {{ t('fr_incoming') }} <span class="badge" style="background:rgba(236,72,153,.12); color:#db2777;">{{ incoming|length }}</span>
+    </h3>
+    <div class="space-y-2">
+      {% for u in incoming %}
+      <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(99,102,241,.05);">
+        <a href="/u/{{ u.username }}" class="flex items-center gap-3 flex-1 hover:opacity-80">
+          <span class="avatar">{{ u.username[0]|upper }}</span>
+          <span class="font-semibold" style="color:var(--text);">{{ u.username }}</span>
+          <span class="text-xs" style="color:var(--text-muted);">⭐ {{ u.xp }}</span>
+        </a>
+        <div class="flex gap-2">
+          <button onclick="acceptFriend('{{ u.username }}')" class="btn btn-success text-xs">{{ t('fr_accept') }}</button>
+          <button onclick="removeFriend('{{ u.username }}')" class="btn btn-ghost text-xs">✗</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="glass" style="padding:22px; margin-bottom:20px;">
+    <h3 class="font-bold mb-4" style="color:var(--text);">{{ t('fr_friends_title') }} ({{ friends|length }})</h3>
+    {% if friends %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {% for f in friends %}
+      <div class="fr-card flex items-center gap-3 p-3 rounded-2xl transition">
+        <a href="/u/{{ f.username }}" class="flex items-center gap-3 flex-1 min-w-0">
+          <span class="avatar">{{ f.username[0]|upper }}</span>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate" style="color:var(--text);">{{ f.username }}</div>
+            <div class="text-xs" style="color:var(--text-muted);">⭐ {{ f.xp }} · 🔥 {{ f.streak }} · 🌐 {{ f.public_decks }}</div>
+          </div>
+        </a>
+        {% if duel_category %}
+        <button onclick="duelCategory('{{ f.username }}', {{ duel_category.id }})"
+          class="px-3 py-1.5 rounded-lg text-white text-xs font-bold transition flex-shrink-0" style="background:#f97316;"
+          title="{{ t('fr_duel_title') }}">{{ t('fr_duel_btn') }}</button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center py-6" style="color:var(--text-muted);">{{ t('fr_no_friends') }} <a href="/leaderboard" style="color:var(--brand-1);">{{ t('fr_no_friends_link') }}</a>.</p>
+    {% endif %}
+  </div>
+
+  {% if outgoing %}
+  <div class="glass" style="padding:22px;">
+    <h3 class="font-bold mb-4" style="color:var(--text);">{{ t('fr_outgoing') }}</h3>
+    <div class="space-y-2">
+      {% for u in outgoing %}
+      <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(99,102,241,.05);">
+        <span class="avatar">{{ u.username[0]|upper }}</span>
+        <span class="font-medium flex-1" style="color:var(--text);">{{ u.username }}</span>
+        <button onclick="removeFriend('{{ u.username }}')" class="btn btn-ghost text-xs">{{ t('fr_undo') }}</button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+  .fr-card { background: rgba(99,102,241,.05); border: 1px solid var(--border); }
+  .fr-card:hover { background: rgba(99,102,241,.10); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const FR_ERR = {{ t('fr_error')|tojson }};
+async function acceptFriend(username) {
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch(`/friend/${username}/accept`, { method: 'POST', body: fd });
+  location.reload();
+}
+async function removeFriend(username) {
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  await fetch(`/friend/${username}/remove`, { method: 'POST', body: fd });
+  location.reload();
+}
+async function duelCategory(username, categoryId) {
+  const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+  const r = await fetch(`/category/${categoryId}/duel/${username}`, { method: 'POST', body: fd });
+  const data = await r.json();
+  if (r.ok && data.duel_id) { window.location = `/duel/${data.duel_id}`; }
+  else { alert(FR_ERR + ': ' + (data.error || r.status)); }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('nt_h') }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="section-header left">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('nt_badge') }}</span>
+    <h1 class="section-h">{{ t('nt_h') }}</h1>
+  </div>
+
+  {% if notifs %}
+  <div class="glass-premium" style="padding: 8px;">
+    {% for n in notifs %}
+    {% set icon = '👋' %}
+    {% if n.type == 'friend_request' %}{% set icon = '👋' %}
+    {% elif n.type == 'friend_accepted' %}{% set icon = '🤝' %}
+    {% elif n.type == 'deck_clone' %}{% set icon = '📥' %}
+    {% elif n.type == 'achievement' %}{% set icon = '🏆' %}
+    {% endif %}
+    <a {% if n.link %}href="{{ n.link }}"{% endif %}
+      class="notif-row flex items-start gap-3 p-4 rounded-2xl transition">
+      <span class="text-2xl flex-shrink-0">{{ icon }}</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm" style="color:var(--text);">{{ n.message }}</div>
+        <div class="text-xs mt-1 font-semibold" style="color:var(--text-muted);">{{ n.created_at|tashkent }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center glass-premium" style="padding: 64px 20px;">
+    <div class="text-7xl mb-4">📭</div>
+    <h3 class="section-h" style="font-size: 1.6rem;">{{ t('nt_empty_h') }}</h3>
+    <p class="mt-3" style="color:var(--text-muted);">{{ t('nt_empty_sub') }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+  .notif-row { border-bottom: 1px solid var(--border); }
+  .notif-row:last-child { border-bottom: none; }
+  .notif-row:hover { background: rgba(99,102,241,.06); }
+  html.dark .notif-row:hover { background: rgba(99,102,241,.14); }
+</style>
+{% endblock %}
