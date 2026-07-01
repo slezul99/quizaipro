@@ -1,0 +1,20 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('session_done') }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto text-center" style="padding-top:48px;">
+  <div class="text-8xl mb-5">🎉</div>
+  <h2 class="section-h">{{ t('session_done') }}</h2>
+  <p class="mb-8 mt-2 text-lg" style="color:var(--text-2);">{{ total }} {{ t('cards_in_session') }}</p>
+  <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+    <div class="stat-card stat-emerald">
+      <div class="stat-value text-2xl">{{ stats.good }}</div>
+      <div class="stat-label">{{ t('good') }}</div>
+    </div>
+    <div class="stat-card stat-orange">
+      <div class="stat-value text-2xl">{{ stats.again }}</div>
+      <div class="stat-label">{{ t('again') }}</div>
+    </div>
+  </div>
+  <a href="/dashboard" class="btn-premium">{{ t('back_to_decks') }}</a>
+</div>
+{% endblock %}

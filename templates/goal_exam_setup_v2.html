@@ -1,0 +1,46 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('ge_h') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <a href="/goals" class="inline-flex items-center gap-1 text-sm font-semibold mb-3" style="color:var(--brand-1);"><span>{{ t('ge_back') }}</span></a>
+
+  <div class="text-center mt-3 mb-8">
+    <div class="text-7xl mb-3">🏆</div>
+    <h1 class="section-h">{{ t('ge_h') }}</h1>
+    <p class="mt-2" style="color:var(--text-2);"><b>{{ goal.title }}</b></p>
+  </div>
+
+  <div class="glass-premium mb-6" style="padding:24px;">
+    <h2 class="font-bold text-lg mb-4" style="color:var(--text);">{{ t('ge_how_h') }}</h2>
+    <ul class="space-y-2 text-sm" style="color:var(--text-2);">
+      <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span><span>{{ t('ge_how_1') }} <b>{{ t('ge_how_1_pct') }}</b></span></li>
+      <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">🎯</span><span>{{ t('ge_how_2') }}</span></li>
+      <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">🏆</span><span>{{ t('ge_how_3') }}</span></li>
+      <li class="flex items-start gap-2"><span class="text-emerald-500 mt-0.5">🔄</span><span>{{ t('ge_how_4') }}</span></li>
+    </ul>
+  </div>
+
+  <form method="POST" action="/goal/{{ goal.id }}/exam/start" class="glass-premium" style="padding:24px;" x-data="{ count: 20 }">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <h2 class="font-bold text-lg mb-4" style="color:var(--text);">{{ t('ge_settings') }}</h2>
+    <p class="text-sm mb-3" style="color:var(--text-2);">{{ t('ge_seen_pre') }} <b>{{ overall.attempted }}</b> {{ t('ge_seen_mid') }} {{ overall.total }} {{ t('ge_seen_post') }}</p>
+
+    <label class="text-sm font-bold mb-2 block" style="color:var(--text);">{{ t('ge_count_lbl') }}</label>
+    <div class="grid grid-cols-3 md:grid-cols-5 gap-2 mb-3">
+      {% for n in [10, 20, 30, 50, 100] %}
+      <button type="button" @click="count = {{ n }}"
+        :class="count === {{ n }} ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-transparent shadow-md' : 'border-indigo-200/40 dark:border-indigo-700/30'"
+        class="p-3 rounded-xl border-2 font-bold transition" :style="count !== {{ n }} ? 'background:var(--surface); color:var(--text);' : ''">{{ n }}</button>
+      {% endfor %}
+    </div>
+    <button type="button" @click="count = 'all'"
+      :class="count === 'all' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white border-transparent shadow-md' : 'border-indigo-200/40 dark:border-indigo-700/30'"
+      class="w-full p-3 rounded-xl border-2 font-bold transition mb-5" :style="count !== 'all' ? 'background:var(--surface); color:var(--text);' : ''">{{ t('ge_all_pre') }}{{ overall.attempted }} {{ t('ge_all_post') }}</button>
+
+    <input type="hidden" name="count" :value="count">
+
+    <button type="submit" class="btn-premium w-full justify-center" style="background: linear-gradient(135deg, #ef4444, #f59e0b); font-size:17px; padding:16px;">{{ t('ge_start') }}</button>
+  </form>
+</div>
+{% endblock %}

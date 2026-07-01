@@ -2552,7 +2552,7 @@ def study_view():
     idx = session.get("study_idx", 0)
     deck_id = session.get("study_deck")
     if not queue or idx >= len(queue):
-        return render_template("study_done.html",
+        return render_template("study_done_v2.html" if _use_v2() else "study_done.html",
             stats=session.get("study_stats", {"good":0, "again":0}),
             total=len(queue), deck_id=deck_id)
     conn = db.get_conn()
@@ -2665,7 +2665,7 @@ def test_history():
     if scope_type and scope_id and attempts:
         scope_label = attempts[0]["scope_name"] or ""
     conn.close()
-    return render_template("test_history.html",
+    return render_template("test_history_v2.html" if _use_v2() else "test_history.html",
         attempts=[dict(a) for a in attempts],
         summary=summary,
         scope_type=scope_type,
@@ -3281,7 +3281,7 @@ def subject_plan(slug):
         cols.append(d)
     conn.close()
     cols.sort(key=lambda c: (_order.get(c.get("level"), 1), c.get("sort_order") or 0))
-    return render_template("subject_plan.html", subj=subj, steps=cols)
+    return render_template("subject_plan_v2.html" if _use_v2() else "subject_plan.html", subj=subj, steps=cols)
 
 
 @app.route("/category/<int:category_id>/match")
@@ -3710,7 +3710,7 @@ def goal_exam_start(goal_id):
         conn.close(); abort(404)
     overall = goals_mod.get_overall_progress(conn, user["id"], dict(g))
     conn.close()
-    return render_template("goal_exam_setup.html",
+    return render_template("goal_exam_setup_v2.html" if _use_v2() else "goal_exam_setup.html",
         goal=dict(g), overall=overall)
 
 

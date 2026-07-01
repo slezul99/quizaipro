@@ -1,0 +1,48 @@
+{% extends "base_v2.html" %}
+{% block title %}{{ t('plan_h') }} — {{ subj.title }} — QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <a href="/marketplace/subject/{{ subj.slug }}" class="inline-flex items-center gap-1 text-sm font-semibold mb-6" style="color:var(--brand-1);"><span>←</span> {{ subj.title }}</a>
+
+  <div class="rounded-3xl p-7 mb-8 text-white relative overflow-hidden" style="background: linear-gradient(135deg, {{ subj.color }}, {{ subj.color2 }});">
+    <img src="{{ asset('subjects/' ~ subj.slug ~ '.jpg') }}" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">
+    <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(110deg, {{ subj.color }}f2 0%, {{ subj.color }}cc 50%, {{ subj.color2 }}66 100%);"></div>
+    <div class="relative z-10">
+      <h1 class="text-2xl md:text-3xl font-black mb-1" style="text-shadow:0 1px 4px rgba(0,0,0,.3);">🎯 {{ t('plan_h') }}</h1>
+      <p class="text-white/85">{{ subj.title }} · {{ t('plan_sub') }}</p>
+    </div>
+  </div>
+
+  {% if steps %}
+  <div class="relative">
+    <div class="absolute left-[21px] top-3 bottom-3 w-0.5" style="background:var(--border);"></div>
+    {% for c in steps %}
+    <div class="relative flex gap-4 mb-5">
+      <div class="relative z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-white flex-shrink-0 shadow-lg" style="background: linear-gradient(135deg, {{ c.color }}, {{ c.color2 }});">{{ loop.index }}</div>
+      <a href="/collection/{{ c.slug }}" class="flex-1 min-w-0 glass-premium card-hover block p-4">
+        <div class="flex items-start justify-between gap-2 mb-1">
+          <h3 class="font-bold leading-tight" style="color:var(--text);">{{ c.icon }} {{ c.title }}</h3>
+          {% if c.level %}
+          <span class="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold {% if c.level == 'beginner' %}bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300{% elif c.level == 'intermediate' %}bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300{% else %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% endif %}">
+            {% if c.level == 'beginner' %}🟢 {{ t('lvl_beginner') }}{% elif c.level == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}{% else %}🔴 {{ t('lvl_advanced') }}{% endif %}
+          </span>
+          {% endif %}
+        </div>
+        {% if c.desc %}<p class="text-sm line-clamp-2 mb-2" style="color:var(--text-muted);">{{ c.desc }}</p>{% endif %}
+        <div class="text-xs font-semibold mb-2" style="color:var(--text-muted);">📚 {{ c.deck_count }} {{ npl(c.deck_count, 'mk_decks') }} · 📝 {{ c.card_count }} {{ npl(c.card_count, 'mk_questions') }}</div>
+        <div class="h-1.5 rounded-full overflow-hidden" style="background:var(--border);">
+          <div class="h-full rounded-full" style="width: {{ c.progress }}%; background: linear-gradient(90deg, {{ c.color }}, {{ c.color2 }});"></div>
+        </div>
+        <div class="text-[11px] mt-1 font-semibold" style="color:var(--text-muted);">{{ c.progress }}% {{ t('plan_done') }}</div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center glass-premium" style="padding:64px 20px;">
+    <div class="text-6xl mb-4">📭</div>
+    <p class="font-semibold" style="color:var(--text-2);">{{ t('plan_empty') }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

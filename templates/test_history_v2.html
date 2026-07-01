@@ -1,0 +1,82 @@
+{% extends "base_v2.html" %}
+{% block title %}{{ t('test_history_title') }} · QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="mb-6">
+    <a href="{% if scope_type == 'deck' %}/deck/{{ scope_id }}{% elif scope_type == 'category' %}/categories{% else %}/dashboard{% endif %}" class="inline-flex items-center gap-1 text-sm font-semibold mb-3" style="color:var(--brand-1);"><span>←</span> {{ t('back') }}</a>
+    <h1 class="text-3xl font-extrabold flex items-center gap-3" style="color:var(--text);">
+      <span class="text-4xl">📊</span><span>{{ t('test_history_h') }}</span>
+    </h1>
+    {% if scope_label %}
+    <p class="text-sm mt-1" style="color:var(--text-muted);">
+      {% if scope_type == 'deck' %}{{ t('test_scope_deck') }}{% else %}{{ t('test_scope_category') }}{% endif %}
+      <b style="color:var(--text-2);">{{ scope_label }}</b>
+    </p>
+    {% endif %}
+  </div>
+
+  {% if summary.total > 0 %}
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+    <div class="rounded-2xl p-4 glass">
+      <div class="text-[10px] uppercase tracking-wider font-bold" style="color:var(--text-muted);">{{ t('test_total') }}</div>
+      <div class="text-2xl font-extrabold mt-1" style="color:var(--text);">{{ summary.total }}</div>
+    </div>
+    <div class="rounded-2xl p-4 glass">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400">{{ t('test_perfect_count') }}</div>
+      <div class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{{ summary.perfect }}</div>
+    </div>
+    <div class="rounded-2xl p-4 glass">
+      <div class="text-[10px] uppercase tracking-wider font-bold" style="color:var(--brand-1);">{{ t('test_avg_pct') }}</div>
+      <div class="text-2xl font-extrabold mt-1" style="color:var(--brand-1);">{{ summary.avg_score }}%</div>
+    </div>
+    <div class="rounded-2xl p-4 glass">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-amber-600 dark:text-amber-400">{{ t('test_best_score') }}</div>
+      <div class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{{ summary.best_score|round|int }}%</div>
+    </div>
+    <div class="rounded-2xl p-4 glass">
+      <div class="text-[10px] uppercase tracking-wider font-bold" style="color:var(--text-muted);">{{ t('test_time_label') }}</div>
+      <div class="text-2xl font-extrabold mt-1" style="color:var(--text-2);">{{ summary.total_time_min }} {{ t('test_minutes_short') }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl glass overflow-hidden">
+    <div class="px-5 py-3 text-xs uppercase tracking-wider font-bold" style="border-bottom:1px solid var(--border); color:var(--text-muted);">{{ t('test_attempts_subtitle') }}</div>
+    <div>
+      {% for a in attempts %}
+      {% set score_color = 'emerald' if a.score_pct >= 80 else ('indigo' if a.score_pct >= 60 else ('amber' if a.score_pct >= 40 else 'rose')) %}
+      <a href="/test/history/{{ a.id }}" class="th-row block px-5 py-3 flex items-center gap-3 transition group" style="border-top:1px solid var(--border);">
+        <div class="w-12 h-12 rounded-full flex flex-col items-center justify-center flex-shrink-0 {% if score_color == 'emerald' %}bg-emerald-100 dark:bg-emerald-900/40{% elif score_color == 'indigo' %}bg-indigo-100 dark:bg-indigo-900/40{% elif score_color == 'amber' %}bg-amber-100 dark:bg-amber-900/40{% else %}bg-rose-100 dark:bg-rose-900/40{% endif %}">
+          <div class="text-sm font-extrabold leading-none {% if score_color == 'emerald' %}text-emerald-700 dark:text-emerald-300{% elif score_color == 'indigo' %}text-indigo-700 dark:text-indigo-300{% elif score_color == 'amber' %}text-amber-700 dark:text-amber-300{% else %}text-rose-700 dark:text-rose-300{% endif %}">{{ a.score_pct|round|int }}%</div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold truncate" style="color:var(--text);">{% if a.scope_type == 'category' %}📁{% else %}📚{% endif %} {{ a.scope_name or '—' }}</span>
+            {% if a.is_perfect %}<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-emerald-100 font-bold">⭐ 100%</span>{% endif %}
+          </div>
+          <div class="text-xs mt-0.5" style="color:var(--text-muted);">
+            <span class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ a.correct }}</span> /
+            <span class="text-rose-600 dark:text-rose-400 font-semibold">{{ a.wrong }}</span>
+            {{ t('test_n_questions').replace('{total}', a.total_q|string) }}
+            {% if a.duration_sec %} · ⏱ {{ (a.duration_sec / 60)|round(1) }} {{ t('test_minutes_short') }}{% endif %}
+          </div>
+        </div>
+        <div class="text-[11px] whitespace-nowrap" style="color:var(--text-muted);">{{ a.finished_at|tashkent('%d.%m %H:%M') }}</div>
+        {% if a.scope_type == 'deck' %}
+        <a href="/deck/{{ a.scope_id }}/test?count={{ a.total_q }}&shuffle=1" onclick="event.stopPropagation()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 transition whitespace-nowrap">{{ t('test_again') }}</a>
+        {% else %}
+        <a href="/category/{{ a.scope_id }}/test?count={{ a.total_q }}" onclick="event.stopPropagation()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 transition whitespace-nowrap">{{ t('test_again') }}</a>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="rounded-2xl glass p-12 text-center">
+    <div class="text-6xl mb-3">📊</div>
+    <h3 class="text-lg font-bold mb-1" style="color:var(--text);">{{ t('test_no_history_h') }}</h3>
+    <p class="text-sm" style="color:var(--text-muted);">{{ t('test_no_history_body') }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block styles %}<style>.th-row:first-child{border-top:none!important;} .th-row:hover{background:rgba(99,102,241,.05);}</style>{% endblock %}
