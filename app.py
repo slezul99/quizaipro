@@ -1007,17 +1007,20 @@ def healthz():
 
 @app.route("/readyz")
 def readyz():
-    from flask import Response
+    # Reports the ACTIVE db backend (postgres vs sqlite) — useful for confirming,
+    # during the ongoing PG cutover, that prod is really on managed Postgres and
+    # not silently on an ephemeral SQLite file.
+    backend = "postgres" if getattr(db, "IS_PG", False) else "sqlite"
     try:
         conn = db.get_conn()
         try:
             conn.execute("SELECT 1")
         finally:
             conn.close()
-        return jsonify({"status": "ready", "db": "ok"})
+        return jsonify({"status": "ready", "db": "ok", "backend": backend})
     except Exception as e:
         app.logger.error("readiness check failed: %s: %s", type(e).__name__, e)
-        return jsonify({"status": "unready", "db": "error"}), 503
+        return jsonify({"status": "unready", "db": "error", "backend": backend}), 503
 
 
 # === ERROR HANDLERS =======================================================
