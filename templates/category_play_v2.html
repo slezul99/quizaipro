@@ -1,0 +1,88 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ category.name }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto" x-data="{ count: 10, mode: 'flashcards' }">
+  <a href="/categories" class="inline-flex items-center gap-1 text-sm font-semibold mb-3" style="color:var(--brand-1);"><span>←</span> {{ t('cp_back') }}</a>
+
+  <!-- Header -->
+  <div class="glass-premium mb-6" style="padding:20px;">
+    <div class="flex items-center gap-4">
+      <div class="text-5xl">{{ category.icon or '📁' }}</div>
+      <div class="flex-1">
+        <h1 class="section-h" style="font-size: clamp(1.5rem, 3vw, 2.2rem);">{{ category.name }}</h1>
+        <p class="text-sm mt-1" style="color:var(--text-2);">📚 {{ deck_count }} {{ t('cp_decks_count') }} · 🃏 {{ card_count }} {{ t('cp_cards_count') }}</p>
+      </div>
+    </div>
+  </div>
+
+  {% if card_count < 3 %}
+  <div class="glass-premium text-center" style="padding:40px 24px;">
+    <div class="text-6xl mb-3">😕</div>
+    <p class="font-bold text-lg mb-2" style="color:var(--text);">{{ t('cp_not_enough_h') }}</p>
+    <p class="text-sm" style="color:var(--text-muted);">{{ t('cp_not_enough_sub') }}</p>
+  </div>
+  {% else %}
+
+  <!-- Mode picker -->
+  <div class="glass-premium mb-6" style="padding:20px;">
+    <h2 class="text-sm uppercase tracking-wider font-bold mb-3" style="color:var(--text-2);">{{ t('cp_mode_h') }}</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <button type="button" @click="mode='flashcards'" :class="mode === 'flashcards' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/40 text-purple-900 dark:text-purple-200' : 'border-indigo-200/40 dark:border-indigo-700/30'" class="cp-mode p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2" :style="mode !== 'flashcards' ? 'background:var(--surface); color:var(--text);' : ''">
+        <span class="text-3xl">🃏</span><span class="text-sm">{{ t('cp_mode_flashcards') }}</span>
+      </button>
+      <button type="button" @click="mode='test'" :class="mode === 'test' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200' : 'border-indigo-200/40 dark:border-indigo-700/30'" class="cp-mode p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2" :style="mode !== 'test' ? 'background:var(--surface); color:var(--text);' : ''">
+        <span class="text-3xl">📝</span><span class="text-sm">{{ t('cp_mode_test') }}</span>
+      </button>
+      <button type="button" @click="mode='match'" :class="mode === 'match' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200' : 'border-indigo-200/40 dark:border-indigo-700/30'" class="cp-mode p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2" :style="mode !== 'match' ? 'background:var(--surface); color:var(--text);' : ''">
+        <span class="text-3xl">🎯</span><span class="text-sm">{{ t('cp_mode_match') }}</span>
+      </button>
+      {% if current_user.role in ['admin','teacher','individual'] %}
+      <button type="button" @click="mode='live'" :class="mode === 'live' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/40 text-pink-900 dark:text-pink-200' : 'border-indigo-200/40 dark:border-indigo-700/30'" class="cp-mode p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2" :style="mode !== 'live' ? 'background:var(--surface); color:var(--text);' : ''">
+        <span class="text-3xl">🎮</span><span class="text-sm">{{ t('cp_mode_live') }}</span>
+      </button>
+      {% endif %}
+      <button type="button" @click="mode='duel'" :class="mode === 'duel' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/40 text-orange-900 dark:text-orange-200' : 'border-indigo-200/40 dark:border-indigo-700/30'" class="cp-mode p-4 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-2" :style="mode !== 'duel' ? 'background:var(--surface); color:var(--text);' : ''">
+        <span class="text-3xl">⚔️</span><span class="text-sm">{{ t('cp_mode_duel') }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Number of questions -->
+  <div class="glass-premium mb-6" style="padding:20px;" x-show="mode === 'test' || mode === 'live'" x-transition>
+    <h2 class="text-sm uppercase tracking-wider font-bold mb-3" style="color:var(--text-2);">{{ t('cp_q_count_h') }}</h2>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
+      <template x-for="n in [5, 10, 15, 20, 30, 50]" :key="n">
+        <button type="button" @click="count = n" :disabled="n > {{ card_count }}"
+          :class="{ 'border-transparent bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md': count === n, 'border-indigo-200/40 dark:border-indigo-700/30': count !== n, 'opacity-30 cursor-not-allowed': n > {{ card_count }} }"
+          class="px-4 py-3 rounded-xl border-2 font-bold transition" :style="count !== n ? 'background:var(--surface); color:var(--text);' : ''" x-text="n"></button>
+      </template>
+    </div>
+    <p class="text-xs mt-2" style="color:var(--text-muted);">{{ t('cp_q_avail') }}: <b>{{ card_count }}</b></p>
+  </div>
+
+  <!-- Match: pair count -->
+  <div class="glass-premium mb-6" style="padding:20px;" x-show="mode === 'match'" x-transition>
+    <h2 class="text-sm uppercase tracking-wider font-bold mb-3" style="color:var(--text-2);">{{ t('cp_pairs_h') }}</h2>
+    <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
+      <template x-for="n in [4, 6, 8, 10, 12]" :key="n">
+        <button type="button" @click="count = n" :disabled="n > {{ card_count }}"
+          :class="{ 'border-transparent bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md': count === n, 'border-indigo-200/40 dark:border-indigo-700/30': count !== n, 'opacity-30 cursor-not-allowed': n > {{ card_count }} }"
+          class="px-4 py-3 rounded-xl border-2 font-bold transition" :style="count !== n ? 'background:var(--surface); color:var(--text);' : ''" x-text="n"></button>
+      </template>
+    </div>
+  </div>
+
+  <!-- Action buttons by mode -->
+  <div class="space-y-3">
+    <a x-show="mode === 'flashcards'" :href="`/category/{{ category.id }}/flashcards`" class="btn-premium w-full justify-center" style="font-size:16px; padding:14px;">{{ t('cp_open_flashcards') }}</a>
+    <a x-show="mode === 'test'" :href="`/category/{{ category.id }}/test?count=${count}`" class="btn-premium w-full justify-center" style="font-size:16px; padding:14px;">{{ t('cp_start_test_pre') }}<span x-text="count"></span> {{ t('cp_start_test_post') }}</a>
+    <a x-show="mode === 'match'" :href="`/category/{{ category.id }}/match?count=${count}`" class="btn-premium w-full justify-center" style="font-size:16px; padding:14px; background: linear-gradient(135deg, #10b981, #059669);">{{ t('cp_start_match_pre') }}<span x-text="count"></span> {{ t('cp_start_match_post') }}</a>
+    {% if current_user.role in ['admin','teacher','individual'] %}
+    <a x-show="mode === 'live'" :href="`/live/create?category_id={{ category.id }}&count=${count}`" class="btn-premium w-full justify-center" style="font-size:16px; padding:14px; background: linear-gradient(135deg, #ec4899, #be185d);">{{ t('cp_create_live_pre') }}<span x-text="count"></span>{{ t('cp_create_live_post') }}</a>
+    {% endif %}
+    <a x-show="mode === 'duel'" href="/friends?duel_category={{ category.id }}" class="btn-premium w-full justify-center" style="font-size:16px; padding:14px; background: linear-gradient(135deg, #f97316, #ea580c);">{{ t('cp_pick_opponent') }}</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

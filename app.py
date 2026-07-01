@@ -3083,7 +3083,7 @@ def category_play(category_id):
         conn.close(); abort(403)
     card_ids, decks = _category_card_pool(conn, user, category_id)
     conn.close()
-    return render_template("category_play.html",
+    return render_template("category_play_v2.html" if _use_v2() else "category_play.html",
         category=dict(cat),
         card_count=len(card_ids),
         deck_count=len(decks),
