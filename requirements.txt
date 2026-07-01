@@ -13,3 +13,4 @@ stripe>=9.0.0
 PyJWT>=2.8.0
 google-auth>=2.30.0
 psycopg[binary]>=3.1.0
+sentry-sdk[flask]>=2.0.0

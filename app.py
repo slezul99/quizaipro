@@ -21,7 +21,7 @@ for _stream in (sys.stdout, sys.stderr):
     except (AttributeError, ValueError):
         pass
 
-from flask import Flask, render_template, render_template_string, request, jsonify, redirect, url_for, session, flash, abort
+from flask import Flask, render_template, render_template_string, request, jsonify, redirect, url_for, session, flash, abort, g
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -146,6 +146,27 @@ log = logging.getLogger("quizpro")
 app.logger.setLevel(_LOG_LEVEL)
 
 
+# === Sentry error tracking — ACTIVE ONLY when SENTRY_DSN is set ============
+# Soft-fail like the /api/v1 guard: a missing package or bad DSN must never
+# stop the site from booting. Locally (no DSN) it's skipped entirely.
+_SENTRY_DSN = os.environ.get("SENTRY_DSN", "").strip()
+if _SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        sentry_sdk.init(
+            dsn=_SENTRY_DSN,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0") or 0),
+            environment=os.environ.get("RAILWAY_ENVIRONMENT", "development"),
+            release=os.environ.get("RAILWAY_GIT_COMMIT_SHA", "") or None,
+            send_default_pii=False,   # do not ship user PII to Sentry
+        )
+        log.info("Sentry error tracking enabled")
+    except Exception as _sentry_e:
+        log.warning("Sentry not enabled: %s: %s", type(_sentry_e).__name__, _sentry_e)
+
+
 # === RATE LIMITING (brute-force zashchita) ===
 # Prostoy in-memory limiter. Dlya MVP horoshchiy.
 _rate_limits = {}  # {key: [(timestamp, ...)]}
@@ -187,9 +208,19 @@ def get_client_ip():
 
 
 # === SECURITY HEADERS ===
+@app.before_request
+def assign_request_id():
+    """Correlation id for tracing a request across logs (and Sentry). Honors an
+    upstream X-Request-ID (Railway/CF) if present, else generates one."""
+    g.request_id = (request.headers.get("X-Request-ID") or "").strip()[:64] or secrets.token_hex(8)
+
+
 @app.after_request
 def security_headers(response):
     """Dobavlyaem zashchitnye HTTP-zagolovki k kazhdomu otvetu."""
+    rid = getattr(g, "request_id", None)
+    if rid:
+        response.headers["X-Request-ID"] = rid
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "SAMEORIGIN"  # Anti-clickjacking
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -1000,7 +1031,8 @@ def handle_404(e):
 @app.errorhandler(500)
 def handle_500(e):
     # Log full traceback to stderr (Railway captures it) with request context.
-    app.logger.exception("Unhandled 500 on %s %s", request.method, request.path)
+    app.logger.exception("Unhandled 500 [rid=%s] on %s %s",
+                         getattr(g, "request_id", "-"), request.method, request.path)
     return render_template("500.html"), 500
 
 
