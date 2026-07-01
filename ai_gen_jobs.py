@@ -2,6 +2,7 @@
 """Background jobs dlya AI generatsii kart (text/topic/pdf).
 Analogichno vision_jobs.py — khranim sostoyanie v pamyati + disk.
 """
+import os
 import threading
 import time
 import uuid
@@ -15,6 +16,59 @@ _JOBS_DIR.mkdir(exist_ok=True)
 
 _jobs: dict[str, dict] = {}
 _lock = threading.Lock()
+
+# === Optional Redis mirror — ACTIVE ONLY when REDIS_URL is set ==============
+# Makes job STATE readable across gunicorn workers and after a restart (the
+# in-memory _jobs dict above is per-process and cleared on restart, so the
+# progress page could not find a job whose worker had recycled). The running
+# generation thread still uses the in-memory dict as the source of truth; Redis
+# is a best-effort shared mirror that get_job() falls back to. Soft-fail: if
+# REDIS_URL is unset / the package is missing / the server is down, everything
+# behaves exactly as before (memory + disk only).
+_REDIS_TTL = 86400  # keep job state for 24h
+_redis = None
+_REDIS_URL = os.environ.get("REDIS_URL", "").strip()
+if _REDIS_URL:
+    try:
+        import redis as _redis_lib
+        _redis = _redis_lib.from_url(
+            _REDIS_URL, socket_timeout=1.5, socket_connect_timeout=1.5,
+            decode_responses=True,
+        )
+        _redis.ping()
+    except Exception as _e:
+        _redis = None
+        print(f"[ai_gen_jobs] Redis mirror disabled: {type(_e).__name__}: {_e}")
+
+
+def _rk(jid: str) -> str:
+    return f"aigen:job:{jid}"
+
+
+def _serialize(job: dict) -> str:
+    safe = {k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in job.items()}
+    return _json.dumps(safe, ensure_ascii=False)
+
+
+def _deserialize(s: str) -> dict:
+    d = _json.loads(s)
+    ca = d.get("created_at")
+    if isinstance(ca, str):
+        try:
+            d["created_at"] = datetime.fromisoformat(ca)
+        except ValueError:
+            pass
+    return d
+
+
+def _mirror_to_redis(jid: str, job: dict):
+    """Best-effort mirror; never let a Redis hiccup break job processing."""
+    if _redis is None:
+        return
+    try:
+        _redis.set(_rk(jid), _serialize(job), ex=_REDIS_TTL)
+    except Exception as e:
+        print(f"[ai_gen_jobs] redis mirror err: {e}")
 
 
 def _job_file(jid: str) -> Path:
@@ -55,19 +109,37 @@ def create_job(user_id: int, kind: str, count: int, label: str = "") -> str:
     with _lock:
         _jobs[jid] = job
     _save_to_disk(jid, job)
+    _mirror_to_redis(jid, job)
     return jid
 
 
 def get_job(jid: str) -> dict | None:
     with _lock:
-        return _jobs.get(jid)
+        j = _jobs.get(jid)
+    if j is not None:
+        return j
+    # Not in this process's memory — the worker may have restarted or a sibling
+    # worker owns it. Fall back to the shared Redis mirror so the progress page
+    # still resolves the job's status.
+    if _redis is not None:
+        try:
+            v = _redis.get(_rk(jid))
+            if v:
+                return _deserialize(v)
+        except Exception as e:
+            print(f"[ai_gen_jobs] redis get err: {e}")
+    return None
 
 
 def update_job(jid: str, **kwargs):
+    snapshot = None
     with _lock:
         if jid in _jobs:
             _jobs[jid].update(kwargs)
             _save_to_disk(jid, _jobs[jid])
+            snapshot = dict(_jobs[jid])
+    if snapshot is not None:
+        _mirror_to_redis(jid, snapshot)
 
 
 def start_ai_gen_job(jid: str, gen_fn, save_fn):
