@@ -8398,7 +8398,7 @@ def import_page():
                              (user["id"],)).fetchall()
         cats = conn.execute("SELECT * FROM categories WHERE owner_id=?", (user["id"],)).fetchall()
     conn.close()
-    return render_template("import.html", decks=decks, categories=cats)
+    return render_template("import_v2.html" if _use_v2() else "import.html", decks=decks, categories=cats)
 
 
 # ---------------------- VISION PDF — async job + progress -------------------

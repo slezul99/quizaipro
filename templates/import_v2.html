@@ -1,0 +1,185 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('import') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}
+<style>
+  .import-dropzone { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 16px; border: 1.5px dashed rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.04); color: #4f46e5; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .15s ease; }
+  .import-dropzone:hover { border-color: rgba(99, 102, 241, 0.7); background: rgba(99, 102, 241, 0.08); }
+  .import-dropzone.dragging { border-color: #6366f1; background: rgba(99, 102, 241, 0.12); transform: scale(1.01); }
+  .import-dropzone.has-file { border-style: solid; border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.07); color: #059669; }
+  .import-dropzone-ic { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: #fff; background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+  .import-dropzone.has-file .import-dropzone-ic { background: linear-gradient(135deg, #10b981, #059669); }
+  .import-dropzone-text { font-size: 14px; font-weight: 600; min-width: 0; word-break: break-word; }
+  html.dark .import-dropzone { background: rgba(99, 102, 241, 0.08); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; }
+  html.dark .import-dropzone:hover { background: rgba(99, 102, 241, 0.15); border-color: rgba(139, 92, 246, 0.7); }
+  html.dark .import-dropzone.has-file { color: #6ee7b7; border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.1); }
+  .import-file-mini { position: relative; display: inline-flex; align-items: center; gap: 8px; width: 100%; padding: 9px 14px; border-radius: 12px; border: 1.5px dashed rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.04); color: #4f46e5; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color .2s ease, background .2s ease; }
+  .import-file-mini:hover { border-color: rgba(99, 102, 241, 0.7); background: rgba(99, 102, 241, 0.08); }
+  .import-file-mini.has-file { border-style: solid; border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.07); color: #059669; }
+  .import-file-mini input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .import-file-mini .ifm-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html.dark .import-file-mini { background: rgba(99, 102, 241, 0.08); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; }
+  html.dark .import-file-mini:hover { background: rgba(99, 102, 241, 0.15); border-color: rgba(139, 92, 246, 0.7); }
+  html.dark .import-file-mini.has-file { color: #6ee7b7; border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.1); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <a href="/dashboard" class="inline-flex items-center gap-1 text-sm font-semibold mb-3" style="color:var(--brand-1);"><span>←</span> {{ t('back_to_decks') }}</a>
+
+  <div class="section-header left mb-6">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('u_import_badge') }}</span>
+    <h1 class="section-h">{{ t('import') }}</h1>
+    <p class="section-sub">{{ t('u_load_cards_from') }}</p>
+  </div>
+
+  <form method="POST" action="/import" enctype="multipart/form-data" class="glass-premium space-y-5" style="padding:24px;" data-tour="import-form">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div>
+      <label class="text-sm font-bold block mb-2" style="color:var(--text);">{{ t('import_help') }}</label>
+      <div x-data="{ fileName: '', dragging: false }">
+        <label class="import-dropzone" :class="{ 'has-file': fileName, 'dragging': dragging }"
+               @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
+               @drop.prevent="dragging = false; if ($event.dataTransfer.files.length) { $refs.fileInput.files = $event.dataTransfer.files; fileName = $event.dataTransfer.files[0].name; }">
+          <input type="file" name="file" accept=".txt,.csv,.tsv,.docx,.pdf,.xlsx,.xls" class="sr-only" x-ref="fileInput" data-tour="import-file" @change="fileName = $event.target.files.length ? $event.target.files[0].name : ''">
+          <span class="import-dropzone-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+          <span class="import-dropzone-text"><span x-show="!fileName">{{ t('import_dropzone') }}</span><span x-show="fileName" x-text="fileName" class="font-semibold"></span></span>
+        </label>
+      </div>
+      <div class="mt-2 p-3 rounded-xl text-xs" style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05)); border: 1px solid rgba(99,102,241,0.2);">
+        <p class="leading-relaxed" style="color:var(--text-2);">
+          <b>📊 Excel:</b> {{ t('u_excel_format_hint') }}<br>
+          <b>📄 {{ t('u_pdf_scan_hint') }}</b><br>
+          <span style="color:var(--text-muted);">{{ t('u_vision_filter_note') }}</span>
+          <br><span style="color:var(--text-muted);" class="text-[11px]">{{ t('u_vision_quota_note') }}</span>
+        </p>
+      </div>
+
+      <div class="mt-3 p-3 rounded-xl border border-emerald-300/40 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-900/10" data-tour="demo-files">
+        <div class="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-1.5"><span class="text-base">💡</span>{{ t('u_try_demo_files') }}</div>
+        <div class="flex flex-wrap gap-2">
+          <a href="/static/demo_examples/demo_test.xlsx" download class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center gap-1">📊 demo_test.xlsx</a>
+          <a href="/static/demo_examples/demo_terms.xlsx" download class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center gap-1">📚 demo_terms.xlsx</a>
+          <a href="/static/demo_examples/demo.txt" download class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center gap-1">📄 demo.txt</a>
+        </div>
+        <div class="text-[11px] mt-1.5" style="color:var(--text-muted);">{{ t('u_demo_files_hint') }}</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 my-2">
+      <div class="flex-1 h-px" style="background:var(--border);"></div>
+      <span class="text-xs uppercase tracking-wider font-bold" style="color:var(--text-muted);">{{ t('u_or') }}</span>
+      <div class="flex-1 h-px" style="background:var(--border);"></div>
+    </div>
+
+    <div>
+      <label class="text-sm font-bold block mb-2" style="color:var(--text);">{{ t('u_paste_text') }}</label>
+      <textarea name="text" rows="8" class="input-premium" style="font-family: monospace; resize: vertical;" placeholder="{{ t('u_paste_text_ph') }}"></textarea>
+    </div>
+
+    <div>
+      <label class="text-sm font-bold block mb-2" style="color:var(--text);">{{ t('delimiter') }}</label>
+      <div class="flex gap-2 flex-wrap">
+        {% for d, label in [('|', '|'), ('tab', 'Tab'), (';', ';'), (',', ',')] %}
+        <label class="cursor-pointer">
+          <input type="radio" name="delimiter" value="{{ d }}" {% if loop.first %}checked{% endif %} class="hidden peer">
+          <div class="px-5 py-2.5 rounded-xl border-2 border-indigo-200/50 dark:border-indigo-700/40 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/40 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 transition font-bold text-sm" style="background:var(--surface); color:var(--text);">{{ label }}</div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <label class="text-sm font-bold block mb-2" style="color:var(--text);">{{ t('u_where_to_import') }}</label>
+      <select name="deck_id" class="input-premium">
+        <option value="">{{ t('u_create_new_deck') }}</option>
+        {% for d in decks %}<option value="{{ d['id'] }}">{{ d['icon'] }} {{ d['name'] }}</option>{% endfor %}
+      </select>
+      <input name="new_deck_name" placeholder="{{ t('u_new_deck_name_ph') }}" class="input-premium" style="margin-top:8px;">
+    </div>
+
+    <div>
+      <label class="text-sm font-bold block mb-2" style="color:var(--text);">{{ t('u_optional_category') }}</label>
+      <select name="category_id" class="input-premium">
+        <option value="">{{ t('u_no_category') }}</option>
+        {% set roots = categories | selectattr('parent_id', 'none') | list %}
+        {% for r in roots %}
+        <option value="{{ r['id'] }}">{{ r['icon'] }} {{ r['name'] }}</option>
+        {% for ch in categories if ch['parent_id'] == r['id'] %}<option value="{{ ch['id'] }}">&nbsp;&nbsp;&nbsp;└ {{ ch['icon'] }} {{ ch['name'] }}</option>{% endfor %}
+        {% endfor %}
+        {% for c in categories if c['parent_id'] and c['parent_id'] not in roots|map(attribute='id')|list %}<option value="{{ c['id'] }}">{{ c['icon'] }} {{ c['name'] }}</option>{% endfor %}
+      </select>
+      <p class="text-xs mt-1.5" style="color:var(--text-muted);">{{ t('u_create_categories_link_pre') }} <a href="/categories" class="font-semibold" style="color:var(--brand-1);">{{ t('u_create_categories_link') }}</a></p>
+    </div>
+
+    <button type="submit" class="btn-premium w-full justify-center">{{ t('import_btn') }}</button>
+  </form>
+
+  <div class="mt-6 glass-premium" style="padding:24px;">
+    <p class="font-bold mb-3 flex items-center gap-2" style="color:var(--text);"><span class="text-xl">📋</span> {{ t('u_supported_formats') }}</p>
+    <ul class="space-y-2 text-sm" style="color:var(--text-2);">
+      <li><b>{{ t('u_format_simple') }}</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">{{ t('u_format_simple_example') }}</code></li>
+      <li><b>{{ t('u_format_qa') }}</b> <code class="bg-indigo-100/60 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-xs">Q: ... A: ... Note: ...</code></li>
+      <li><b>{{ t('u_format_mcq') }}</b> {{ t('u_format_mcq_hint') }} <code class="bg-emerald-100/60 dark:bg-emerald-900/30 px-2 py-0.5 rounded text-xs">✓</code></li>
+      <li><b>📊 Excel (.xlsx/.xls):</b> {{ t('u_format_excel_hint') }}</li>
+    </ul>
+    <pre class="p-3 rounded-xl mt-3 text-xs overflow-x-auto font-mono" style="background:rgba(99,102,241,.06); color:var(--text-2);">{{ t('u_format_mcq_example') }}</pre>
+  </div>
+
+  <details class="mt-6">
+    <summary class="cursor-pointer text-xs transition flex items-center gap-2 select-none" style="color:var(--text-muted);"><span class="text-base">⚙️</span><span>{{ t('u_advanced_options') }}</span></summary>
+    <div class="mt-3 glass-premium" style="padding:20px; border-color: rgba(16,185,129,0.3);">
+      <h3 class="font-bold text-base mb-2 flex items-center gap-2" style="color:var(--text);"><span class="text-xl">💾</span> {{ t('u_json_backup_title') }}</h3>
+      <p class="text-xs mb-3" style="color:var(--text-2);">{{ t('u_json_backup_desc') }}</p>
+      <form method="POST" action="/import-json" enctype="multipart/form-data" class="flex gap-3 items-center flex-wrap">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div x-data="{ jsonName: '' }" class="flex-1" style="min-width:200px;">
+          <label class="import-file-mini" :class="{ 'has-file': jsonName }">
+            <input type="file" name="file" accept=".json" required @change="jsonName = $event.target.files.length ? $event.target.files[0].name : ''">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span class="ifm-name" x-show="!jsonName">{{ t('import_dropzone') }}</span>
+            <span class="ifm-name" x-show="jsonName" x-text="jsonName"></span>
+          </label>
+        </div>
+        <button type="submit" class="btn-premium-ghost" style="font-size:13px; padding:8px 14px;">💾 {{ t('u_import_json_btn') }}</button>
+      </form>
+    </div>
+  </details>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="/static/tour/tour.css">
+<script src="/static/tour/tour.js"></script>
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tour') !== 'import') return;
+  var lang = '{{ lang }}' || 'ru';
+  var i18n_pack = {
+    ru: { next: 'Дальше', back: 'Назад', skip: 'Пропустить', finish: '✓ Готово', step: 'Шаг' },
+    en: { next: 'Next', back: 'Back', skip: 'Skip', finish: '✓ Done', step: 'Step' },
+    uz: { next: 'Keyingi', back: 'Orqaga', skip: 'O\'tkazib yuborish', finish: '✓ Tayyor', step: 'Qadam' },
+  };
+  QTour.setI18n(i18n_pack[lang] || i18n_pack.ru);
+  var steps = [
+    { floating: true, title: {{ t('tour_import_intro_t')|tojson }}, body: {{ t('tour_import_intro_b')|tojson }} },
+    { selector: '[data-tour="demo-files"]', title: {{ t('tour_import_demo_t')|tojson }}, body: {{ t('tour_import_demo_b')|tojson }}, side: 'bottom' },
+    { selector: '[data-tour="import-file"]', title: {{ t('tour_import_file_t')|tojson }}, body: {{ t('tour_import_file_b')|tojson }}, side: 'bottom' },
+    { floating: true, title: {{ t('tour_import_done_t')|tojson }}, body: {{ t('tour_import_done_b')|tojson }} },
+  ];
+  function start() {
+    QTour.start(steps, {
+      onComplete: function() {
+        try { var fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}'); fd.append('stage', 'import'); fetch('/api/tour/complete', { method: 'POST', body: fd }); } catch(e) {}
+        try { var url = new URL(window.location.href); url.searchParams.delete('tour'); history.replaceState(null, '', url.pathname + (url.search ? url.search : '')); } catch(e) {}
+      },
+      onSkip: function() {
+        try { var url = new URL(window.location.href); url.searchParams.delete('tour'); history.replaceState(null, '', url.pathname + (url.search ? url.search : '')); } catch(e) {}
+      },
+    });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', start); } else { setTimeout(start, 200); }
+})();
+</script>
+{% endblock %}
