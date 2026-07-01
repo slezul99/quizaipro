@@ -261,7 +261,9 @@ def csrf_protect():
         # Iskl: API-vyzovy (XMLHttpRequest s tem zhe origin) — Flask SameSite zaschishchaet ikh
         # Tol'ko proveryaem klassicheskie HTML-formy:
         token = request.form.get("_csrf")
-        if token and token == session.get("_csrf_token"):
+        sess_token = session.get("_csrf_token")
+        # Constant-time compare to avoid leaking the token via timing.
+        if token and sess_token and secrets.compare_digest(token, sess_token):
             return  # OK
         # Esli net tokena no zapros AJAX (fetch s X-Requested-With) — propuskaem
         # potomu chto SameSite=Lax uzhe zashchitil
