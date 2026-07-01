@@ -5428,7 +5428,7 @@ def chat_view(chat_id):
 
     conn.commit()
     conn.close()
-    return render_template("chat_view.html",
+    return render_template("chat_view_v2.html" if _use_v2() else "chat_view.html",
         chat=dict(chat), messages=messages, members=members,
         is_member=is_member, display_name=display_name, pinned=pinned)
 
@@ -5741,7 +5741,7 @@ def duel_view(duel_id):
     if user["id"] not in (duel["player1_id"], duel["player2_id"]):
         conn.close(); abort(403)
     conn.close()
-    return render_template("duel.html", duel=dict(duel))
+    return render_template("duel_v2.html" if _use_v2() else "duel.html", duel=dict(duel))
 
 
 @app.route("/api/duel/<int:duel_id>/state")

@@ -805,6 +805,23 @@
   })();
 </script>
 
+{# ── Auto CSRF/X-Requested-With for fetch() — parity with base.html ── #}
+<script>
+(function() {
+  const csrfToken = "{{ csrf_token() if current_user else '' }}";
+  if (!csrfToken) return;
+  const origFetch = window.fetch;
+  window.fetch = function(url, opts = {}) {
+    opts.headers = opts.headers || {};
+    if (typeof url === 'string' && (url.startsWith('/') || url.startsWith(window.location.origin))) {
+      opts.headers['X-Requested-With'] = 'XMLHttpRequest';
+      opts.headers['X-CSRF-Token'] = csrfToken;
+    }
+    return origFetch(url, opts);
+  };
+})();
+</script>
+
 <div class="layout">
   <div class="nav-scrim" onclick="document.body.classList.remove('nav-open')"></div>
 

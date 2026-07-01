@@ -1,0 +1,216 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — ⚔️ Duel{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}
+<style>
+  .progress-bar { background: rgba(99,102,241,.12); border-radius:999px; overflow:hidden; }
+  .progress-bar > div { height:100%; background: var(--brand-grad-tri); border-radius:999px; transition:width .4s var(--ease); }
+  .pulse-soft { animation: pulseSoft 1.6s ease-in-out infinite; }
+  @keyframes pulseSoft { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.06);opacity:.75;} }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto" x-data="duelApp()" x-init="init()">
+
+  <!-- PENDING -->
+  <div x-show="state.status === 'pending'" x-transition>
+    <div x-show="state.is_p1" class="text-center py-12">
+      <div class="text-7xl mb-4 pulse-soft">⏳</div>
+      <h2 class="h-display text-3xl mb-2">{{ t('du_waiting_p1_pre') }}<span x-text="state.p2_username"></span></h2>
+      <p style="color:var(--text-2);">{{ t('du_waiting_p1_sub') }}</p>
+    </div>
+    <div x-show="!state.is_p1" class="text-center py-12 glass" style="border-radius:24px;">
+      <div class="text-7xl mb-4">⚔️</div>
+      <h2 class="h-display text-3xl mb-2">{{ t('du_invite_h_pre') }}<span x-text="state.p1_username"></span> {{ t('du_invite_h_post') }}</h2>
+      <p class="mb-6" style="color:var(--text-2);">«<span x-text="state.deck_name"></span>» · <span x-text="state.question_count"></span> {{ t('du_invite_questions') }}</p>
+      <div class="flex gap-3 justify-center">
+        <button @click="accept()" class="btn btn-success">{{ t('du_accept_btn') }}</button>
+        <button @click="decline()" class="btn btn-ghost">{{ t('du_decline_btn') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUNNING -->
+  <div x-show="state.status === 'running'" x-transition>
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="glass p-3 text-center" style="border-radius:16px;" :class="state.is_p1 ? 'ring-2' : ''" :style="state.is_p1 ? 'box-shadow:0 0 0 2px var(--brand-1) inset;' : ''">
+        <div class="text-xs" style="color:var(--text-muted);">{{ t('du_you') }}</div>
+        <div class="font-bold text-2xl" style="color:var(--brand-1);" x-text="state.is_p1 ? state.p1_score : state.p2_score"></div>
+      </div>
+      <div class="glass p-3 text-center" style="border-radius:16px;" :style="!state.is_p1 ? 'box-shadow:0 0 0 2px var(--brand-1) inset;' : ''">
+        <div class="text-xs" style="color:var(--text-muted);" x-text="state.is_p1 ? '@'+state.p2_username : '@'+state.p1_username"></div>
+        <div class="font-bold text-2xl" style="color:var(--text);" x-text="state.is_p1 ? state.p2_score : state.p1_score"></div>
+      </div>
+    </div>
+
+    <div class="flex justify-between text-sm mb-2" style="color:var(--text-2);">
+      <span>{{ t('du_q_n_pre') }} <span x-text="state.current_idx + 1"></span> {{ t('du_q_n_mid') }} <span x-text="state.question_count"></span></span>
+      <span class="badge">⏱ <span x-text="timeLeft"></span>{{ t('lp_time_unit') }}</span>
+    </div>
+    <div class="progress-bar h-2 mb-5">
+      <div :style="`width: ${(state.current_idx / state.question_count * 100)}%`"></div>
+    </div>
+
+    <div class="glass p-6" style="border-radius:24px;">
+      <div class="text-xl font-bold mb-5 text-center" style="color:var(--text);" x-text="state.question?.front"></div>
+
+      <div class="space-y-2">
+        <template x-for="opt in state.question?.options || []" :key="opt.letter">
+          <button @click="answer(opt.letter)"
+            :class="{
+              'border-blue-500 bg-blue-50 dark:bg-blue-900/30': state.question?.my_answer === opt.letter,
+              'border-gray-200 dark:border-slate-700 hover:border-indigo-300': !state.question?.my_answer
+            }"
+            class="w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition cursor-pointer">
+            <span :class="state.question?.my_answer === opt.letter ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-slate-700 dark:text-slate-200'"
+              class="w-9 h-9 rounded-full flex items-center justify-center font-bold transition" x-text="opt.letter"></span>
+            <span class="flex-1 font-medium" style="color:var(--text);" x-text="opt.text"></span>
+          </button>
+        </template>
+        <div x-show="!state.question?.options || state.question.options.length === 0"
+          class="text-center text-amber-600 dark:text-amber-300 py-4 bg-amber-50 dark:bg-amber-900/30 rounded-2xl">
+          {{ t('du_no_options') }}
+        </div>
+      </div>
+
+      <div x-show="state.question?.my_answer" x-transition class="mt-5 text-center">
+        <div x-show="state.question?.my_correct" class="text-emerald-600 dark:text-emerald-300 font-bold text-lg">{{ t('du_correct') }}</div>
+        <div x-show="!state.question?.my_correct" class="text-red-600 dark:text-red-300 font-bold text-lg">{{ t('du_wrong') }}</div>
+        <div x-show="!state.question?.opp_answered" class="text-sm mt-2" style="color:var(--text-muted);">{{ t('du_wait_opp') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINISHED -->
+  <div x-show="state.status === 'finished'" x-transition class="text-center py-8">
+    <div class="text-8xl mb-4">
+      <span x-show="state.winner_id === {{ current_user.id }}">🏆</span>
+      <span x-show="state.winner_id && state.winner_id !== {{ current_user.id }}">😔</span>
+      <span x-show="!state.winner_id">🤝</span>
+    </div>
+    <h2 class="h-display text-4xl mb-2">
+      <span x-show="state.winner_id === {{ current_user.id }}">{{ t('du_won_h') }}</span>
+      <span x-show="state.winner_id && state.winner_id !== {{ current_user.id }}">{{ t('du_lost_h') }}</span>
+      <span x-show="!state.winner_id">{{ t('du_draw_h') }}</span>
+    </h2>
+    <p x-show="state.winner_id === {{ current_user.id }}" class="text-emerald-600 dark:text-emerald-300 font-semibold mb-6">{{ t('du_won_bonus') }}</p>
+
+    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+      <div class="glass p-5" style="border-radius:16px;">
+        <div class="text-xs" style="color:var(--text-muted);">{{ t('du_you') }}</div>
+        <div class="text-3xl font-bold" style="color:var(--brand-1);" x-text="state.is_p1 ? state.p1_score : state.p2_score"></div>
+      </div>
+      <div class="glass p-5" style="border-radius:16px;">
+        <div class="text-xs" style="color:var(--text-muted);" x-text="state.is_p1 ? '@'+state.p2_username : '@'+state.p1_username"></div>
+        <div class="text-3xl font-bold" style="color:var(--text);" x-text="state.is_p1 ? state.p2_score : state.p1_score"></div>
+      </div>
+    </div>
+
+    <a href="/duels" class="btn-premium">{{ t('du_to_list') }}</a>
+  </div>
+
+  <!-- DECLINED -->
+  <div x-show="state.status === 'declined'" class="text-center py-12">
+    <div class="text-6xl mb-3">❌</div>
+    <h2 class="h-display text-2xl">{{ t('du_declined_h') }}</h2>
+    <a href="/duels" class="mt-3 inline-block" style="color:var(--brand-1);">{{ t('du_to_list_back') }}</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const DU_T = {
+  error: {{ t('du_error')|tojson }},
+  net_error: {{ t('du_net_error')|tojson }},
+};
+function duelApp() {
+  return {
+    state: {{ duel|tojson }},
+    timeLeft: 0,
+    timeInterval: null,
+    pollInterval: null,
+
+    init() {
+      this.poll();
+      this.pollInterval = setInterval(() => this.poll(), 1500);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+        } else if (!this.pollInterval && this.state.status !== 'finished' && this.state.status !== 'declined') {
+          this.poll();
+          this.pollInterval = setInterval(() => this.poll(), 1500);
+        }
+      });
+    },
+
+    async poll() {
+      try {
+        const r = await fetch('/api/duel/{{ duel.id }}/state');
+        if (r.ok) {
+          const wasFinished = this.state.status === 'finished';
+          this.state = await r.json();
+          this.updateTimer();
+          if (this.state.status === 'finished' || this.state.status === 'declined') {
+            clearInterval(this.pollInterval);
+            if (this.timeInterval) clearInterval(this.timeInterval);
+            if (!wasFinished && this.state.status === 'finished') {
+              this.fetchAchievements();
+            }
+          }
+        }
+      } catch(e) {}
+    },
+
+    async fetchAchievements() {
+      try {
+        const r = await fetch('/api/my/new_achievements');
+        if (r.ok) {
+          const data = await r.json();
+          if (data.achievements && data.achievements.length && window.showAchievementToasts) {
+            window.showAchievementToasts(data.achievements);
+          }
+        }
+      } catch(e) {}
+    },
+
+    updateTimer() {
+      if (this.state.status !== 'running' || !this.state.question?.started_at) {
+        this.timeLeft = 0; return;
+      }
+      const total = this.state.question.time_per_q;
+      const start = new Date(this.state.question.started_at + 'Z').getTime();
+      const calc = () => {
+        const passed = Math.floor((Date.now() - start) / 1000);
+        this.timeLeft = Math.max(0, total - passed);
+      };
+      calc();
+      if (this.timeInterval) clearInterval(this.timeInterval);
+      this.timeInterval = setInterval(calc, 500);
+    },
+
+    async answer(letter) {
+      if (this.state.question?.my_answer) return;
+      try {
+        const fd = new FormData(); fd.append('chosen', letter);
+        const r = await fetch('/api/duel/{{ duel.id }}/answer', { method: 'POST', body: fd });
+        const data = await r.json();
+        console.log('[duel] answer:', r.status, data);
+        if (!r.ok) alert(DU_T.error + ' ' + (data.error || r.status));
+      } catch(e) { console.error(e); alert(DU_T.net_error); }
+      this.poll();
+    },
+    async accept() {
+      const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+      await fetch('/api/duel/{{ duel.id }}/accept', { method: 'POST', body: fd });
+      this.poll();
+    },
+    async decline() {
+      const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+      await fetch('/api/duel/{{ duel.id }}/decline', { method: 'POST', body: fd });
+      this.poll();
+    }
+  };
+}
+</script>
+{% endblock %}

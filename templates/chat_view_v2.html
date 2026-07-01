@@ -1,0 +1,231 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ display_name }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}
+<style>
+  .chat-msg { animation: fadeIn 0.25s ease-out; position: relative; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:none;} }
+  .chat-scroll { scrollbar-width: thin; }
+  .msg-content { white-space: pre-wrap; word-break: break-word; }
+  .msg-actions {
+    position: absolute; top: -10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(15,23,41,.18);
+    padding: 4px 6px; display: none; gap: 2px; z-index: 10;
+  }
+  .chat-msg:hover .msg-actions { display: flex; }
+  .reaction-btn {
+    border-radius: 12px; padding: 2px 8px; font-size: 12px; transition: all 0.15s;
+    border: 1px solid transparent; color: var(--text);
+  }
+  .reaction-btn:hover { background: rgba(99,102,241,0.1); }
+  .reaction-btn.mine { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); color: var(--brand-1); }
+  .chat-input { background: var(--input-bg); border: 1.5px solid rgba(99,102,241,.14); color: var(--text); }
+  .chat-input:focus { outline: none; border-color: var(--brand-1); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto" x-data="chatApp()" x-init="init()">
+  <!-- Header -->
+  <div class="glass p-4 mb-3 flex items-center gap-3" style="border-radius:24px;">
+    <a href="/chats" class="text-sm" style="color:var(--brand-1);">{{ t('cv_back') }}</a>
+    <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0
+      {% if chat.type == 'channel' %}bg-purple-100 dark:bg-purple-900/40{% elif chat.type == 'group' %}bg-emerald-100 dark:bg-emerald-900/40{% else %}bg-indigo-100 dark:bg-indigo-900/40{% endif %}">
+      {% if chat.type == 'dm' %}{{ (display_name or '?')[0]|upper }}{% else %}{{ chat.avatar }}{% endif %}
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="font-bold truncate" style="color:var(--text);">{{ display_name }}</div>
+      <div class="text-xs" style="color:var(--text-muted);">
+        {% if chat.type == 'dm' %}{{ t('cv_dm') }}
+        {% elif chat.type == 'channel' %}{{ t('cv_channel_pre') }} {{ members|length }} {{ t('cv_subscribers') }}
+        {% else %}👥 {{ members|length }} {{ t('cv_members') }}{% endif %}
+      </div>
+    </div>
+    {% if is_member and chat.type != 'dm' %}
+    <form method="POST" action="/chat/{{ chat.id }}/leave" onsubmit="return confirm({{ t('cv_leave_confirm')|tojson }})">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="text-red-500 px-3 py-1.5 rounded-lg text-sm">{{ t('cv_leave_btn') }}</button>
+    </form>
+    {% elif not is_member %}
+    <form method="POST" action="/chat/{{ chat.id }}/join">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn-premium text-sm">{{ t('cv_join_btn') }}</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- Pinned banner -->
+  {% if pinned %}
+  {% set pin = pinned[-1] %}
+  <div class="rounded-2xl p-3 mb-2 flex items-start gap-3" style="background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.35);">
+    <span class="text-lg" style="color:#b45309;">📌</span>
+    <div class="flex-1 min-w-0">
+      <div class="text-xs font-semibold uppercase tracking-wider" style="color:#b45309;">{{ t('cv_pinned') }}</div>
+      <div class="text-sm truncate" style="color:var(--text);">{{ pin.content }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Messages -->
+  <div class="glass flex flex-col" style="border-radius:24px; height: calc(100vh - 260px); min-height: 400px;">
+    <div x-ref="msgs" class="flex-1 overflow-y-auto chat-scroll p-4 space-y-3">
+      <template x-for="m in messages" :key="m.id">
+        <div class="chat-msg flex gap-3 group" :class="m.user_id === me ? 'flex-row-reverse' : ''">
+          <span class="avatar flex-shrink-0" style="width:36px;height:36px;font-size:14px;"
+            x-text="(m.full_name || m.username)[0].toUpperCase()"></span>
+          <div class="max-w-[75%] relative">
+            <!-- Actions -->
+            <div class="msg-actions" :class="m.user_id === me ? 'right-1' : 'left-1'">
+              <template x-for="emoji in ['👍','❤️','😂','🔥','🎉','🤔']" :key="emoji">
+                <button @click="react(m.id, emoji)" class="rounded p-1" x-text="emoji"></button>
+              </template>
+              {% if is_member %}
+              <button @click="pinMsg(m.id)" class="rounded p-1" title="{{ t('cv_pin_title') }}">📌</button>
+              {% endif %}
+              <button @click="deleteMsg(m.id)" x-show="m.user_id === me" class="rounded p-1 text-red-500" title="{{ t('cv_delete_title') }}">🗑</button>
+            </div>
+
+            <div class="text-xs mb-1 px-1" style="color:var(--text-muted);" :class="m.user_id === me ? 'text-right' : ''">
+              <span x-text="m.full_name || m.username"></span> ·
+              <span x-text="formatTime(m.created_at)"></span>
+              <span x-show="m.is_pinned" style="color:#d97706;">📌</span>
+            </div>
+            <div class="rounded-2xl p-3 msg-content"
+              :class="m.user_id === me ? 'text-white' : ''"
+              :style="m.user_id === me ? 'background:linear-gradient(135deg,#6366f1,#8b5cf6);' : 'background:var(--surface); border:1px solid var(--border); color:var(--text);'"
+              x-text="m.content"></div>
+
+            <!-- Reactions -->
+            <div class="flex flex-wrap gap-1 mt-1.5" :class="m.user_id === me ? 'justify-end' : ''">
+              <template x-for="rx in m.reactions || []" :key="rx.emoji">
+                <button @click="react(m.id, rx.emoji)" class="reaction-btn" :class="rx.mine ? 'mine' : ''">
+                  <span x-text="rx.emoji"></span> <span x-text="rx.count"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+      <div x-show="messages.length === 0" class="text-center py-12" style="color:var(--text-muted);">
+        {{ t('cv_no_msgs') }}
+      </div>
+    </div>
+
+    {% if is_member %}
+    {% set can_send = chat.type != 'channel' or current_user.id == chat.owner_id %}
+    {% if can_send %}
+    <form @submit.prevent="send()" class="p-3 flex gap-2" style="border-top:1px solid var(--border);">
+      <textarea x-model="newMsg" @keydown.enter.prevent="if (!$event.shiftKey) send()" rows="1"
+        placeholder="{{ t('cv_input_ph') }}"
+        class="chat-input flex-1 px-4 py-2.5 rounded-xl resize-none"></textarea>
+      <button type="submit" :disabled="!newMsg.trim()" :class="!newMsg.trim() ? 'opacity-40 cursor-not-allowed' : ''"
+        class="btn-premium" style="padding:10px 18px;">→</button>
+    </form>
+    {% else %}
+    <div class="p-4 text-center text-sm" style="border-top:1px solid var(--border); color:var(--text-muted);">
+      {{ t('cv_only_owner') }}
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CV_T = { delete_confirm: {{ t('cv_delete_msg_confirm')|tojson }} };
+function chatApp() {
+  return {
+    messages: {{ messages|tojson }},
+    me: {{ current_user.id }},
+    newMsg: '',
+    lastId: 0,
+    pollInterval: null,
+
+    init() {
+      this.lastId = this.messages.length ? this.messages[this.messages.length-1].id : 0;
+      this.scrollBottom(true);
+      this.pollInterval = setInterval(() => this.poll(), 2500);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+        } else if (!this.pollInterval) {
+          this.poll();
+          this.pollInterval = setInterval(() => this.poll(), 2500);
+        }
+      });
+    },
+
+    async send() {
+      if (!this.newMsg.trim()) return;
+      const fd = new FormData();
+      fd.append('content', this.newMsg);
+      const r = await fetch('/api/chat/{{ chat.id }}/send', { method: 'POST', body: fd });
+      if (r.ok) { this.newMsg = ''; this.poll(); }
+    },
+
+    async poll() {
+      try {
+        const r = await fetch(`/api/chat/{{ chat.id }}/messages?after=${this.lastId}`);
+        if (r.ok) {
+          const data = await r.json();
+          if (data.messages.length) {
+            this.messages.push(...data.messages);
+            this.lastId = data.messages[data.messages.length-1].id;
+            this.$nextTick(() => this.scrollBottom());
+          }
+        }
+      } catch (e) {}
+    },
+
+    async react(msgId, emoji) {
+      const fd = new FormData(); fd.append('emoji', emoji);
+      await fetch(`/api/message/${msgId}/react`, { method: 'POST', body: fd });
+      const msg = this.messages.find(m => m.id === msgId);
+      if (msg) {
+        msg.reactions = msg.reactions || [];
+        const existing = msg.reactions.find(rx => rx.emoji === emoji);
+        if (existing) {
+          if (existing.mine) {
+            existing.count--; existing.mine = false;
+            if (existing.count <= 0) msg.reactions = msg.reactions.filter(rx => rx.emoji !== emoji);
+          } else { existing.count++; existing.mine = true; }
+        } else { msg.reactions.push({ emoji, count: 1, mine: true }); }
+      }
+    },
+
+    async pinMsg(msgId) {
+      const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+      const r = await fetch(`/api/message/${msgId}/pin`, { method: 'POST', body: fd });
+      if (r.ok) location.reload();
+    },
+
+    async deleteMsg(msgId) {
+      if (!confirm(CV_T.delete_confirm)) return;
+      const fd = new FormData(); fd.append('_csrf', '{{ csrf_token() }}');
+      await fetch(`/api/message/${msgId}/delete`, { method: 'POST', body: fd });
+      this.messages = this.messages.filter(m => m.id !== msgId);
+    },
+
+    scrollBottom(force) {
+      const el = this.$refs.msgs;
+      if (!el) return;
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+      if (force || isNearBottom) el.scrollTop = el.scrollHeight;
+    },
+
+    formatTime(iso) {
+      try {
+        const d = new Date(iso.endsWith('Z') ? iso : iso + 'Z');
+        const now = new Date();
+        if (d.toDateString() === now.toDateString()) {
+          return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
+        return d.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' }) + ' ' +
+               d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return ''; }
+    }
+  };
+}
+</script>
+{% endblock %}
