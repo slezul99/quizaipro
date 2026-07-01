@@ -4917,7 +4917,8 @@ def leaderboard():
         my_rank = rank_row["rank"] if rank_row else None
 
     conn.close()
-    return render_template("leaderboard.html", top_users=top_users, my_rank=my_rank, current=user)
+    return render_template("leaderboard_v2.html" if _use_v2() else "leaderboard.html",
+                           top_users=top_users, my_rank=my_rank, current=user)
 
 
 @app.route("/u/<username>/v2")

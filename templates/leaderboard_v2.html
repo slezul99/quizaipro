@@ -1,0 +1,65 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('lb_h') }}{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="section-header left">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('lb_badge') }}</span>
+    <h1 class="section-h">{{ t('lb_h') }}</h1>
+    <p class="section-sub">{{ t('lb_sub') }}</p>
+    {% if my_rank %}
+    <p class="text-sm mt-3" style="color:var(--text-2);">{{ t('lb_my_rank') }}: <span class="font-bold text-xl" style="color:var(--brand-1);">#{{ my_rank }}</span></p>
+    {% endif %}
+  </div>
+
+  {% if top_users %}
+  <div class="glass-premium" style="padding: 12px;">
+    <div class="space-y-2">
+      {% for u in top_users %}
+      {% set rank = loop.index %}
+      <a href="/u/{{ u.username }}"
+        class="flex items-center gap-3 p-3 rounded-2xl transition
+        {% if u.id == current.id %}lb-me{% else %}lb-row{% endif %}">
+        <span class="w-12 text-center text-xl font-bold flex-shrink-0
+          {% if rank == 1 %}text-yellow-500{% elif rank == 2 %}text-gray-400{% elif rank == 3 %}text-orange-500{% else %}lb-rank{% endif %}">
+          {% if rank == 1 %}🥇{% elif rank == 2 %}🥈{% elif rank == 3 %}🥉{% else %}#{{ rank }}{% endif %}
+        </span>
+        <span class="avatar flex-shrink-0">{{ u.username[0]|upper }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold truncate" style="color:var(--text);">{{ u.username }}{% if u.id == current.id %} <span class="text-xs" style="color:var(--brand-1);">{{ t('lb_its_you') }}</span>{% endif %}</div>
+          <div class="text-xs flex gap-3 flex-wrap" style="color:var(--text-muted);">
+            <span>📚 {{ u.decks_count }} {{ t('lb_decks') }}</span>
+            <span>🎓 {{ u.learned_count }} {{ t('lb_learned') }}</span>
+            <span>⚡ {{ u.reviews_count }} {{ t('lb_answers') }}</span>
+            {% if u.public_decks > 0 %}
+            <span class="text-emerald-600 dark:text-emerald-400">🌐 {{ u.public_decks }} {{ t('lb_public') }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="font-bold text-lg" style="color:var(--brand-1);">⭐ {{ u.xp }}</div>
+          <div class="text-xs text-orange-500">🔥 {{ u.streak }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center glass" style="padding: 72px 20px; border-radius:24px;">
+    <div class="text-7xl mb-4">📊</div>
+    <h3 class="text-2xl font-bold mb-3" style="color:var(--text);">{{ t('lb_empty_h') }}</h3>
+    <p style="color:var(--text-muted);">{{ t('lb_empty_sub') }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+  .lb-row { border: 1px solid transparent; }
+  .lb-row:hover { background: rgba(99,102,241,.06); }
+  .lb-me { background: rgba(99,102,241,.10); border: 1.5px solid rgba(99,102,241,.3); }
+  .lb-rank { color: var(--text-muted); }
+  html.dark .lb-row:hover { background: rgba(99,102,241,.14); }
+  html.dark .lb-me { background: rgba(99,102,241,.18); border-color: rgba(99,102,241,.4); }
+</style>
+{% endblock %}
