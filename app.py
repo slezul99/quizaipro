@@ -4709,7 +4709,7 @@ def marketplace_path(slug):
             subj["title"] = subj.get(f"title_{lang}") or subj["title_en"]
 
     conn.close()
-    return render_template("marketplace_path.html", path=path, steps=steps, subj=subj)
+    return render_template("marketplace_path_v2.html" if _use_v2() else "marketplace_path.html", path=path, steps=steps, subj=subj)
 
 
 @app.route("/marketplace/search")
@@ -4810,7 +4810,7 @@ def marketplace_search():
         s["title"] = s.get(f"title_{lang}") or s["title_en"]
 
     conn.close()
-    return render_template("marketplace_search.html",
+    return render_template("marketplace_search_v2.html" if _use_v2() else "marketplace_search.html",
                            collections=colls, decks=decks, subjects=subjects,
                            q=q, subject_slug=subject_slug, level=level,
                            ctype=ctype, sort=sort)
@@ -4855,7 +4855,7 @@ def global_search():
             ORDER BY member_count DESC LIMIT 20
         """, (like,)).fetchall()]
         conn.close()
-    return render_template("search.html", q=q, results=results)
+    return render_template("search_v2.html" if _use_v2() else "search.html", q=q, results=results)
 
 
 @app.route("/settings", methods=["GET", "POST"])

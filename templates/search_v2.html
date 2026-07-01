@@ -1,0 +1,89 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('sr_h') }}{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="section-header left">
+    <span class="section-badge"><span class="badge-dot"></span>{{ t('sr_badge') }}</span>
+    <h1 class="section-h">{{ t('sr_h') }}</h1>
+  </div>
+
+  <form method="GET" class="glass-premium mb-6" style="padding:12px;">
+    <input type="text" name="q" value="{{ q }}" autofocus minlength="2" placeholder="{{ t('sr_ph') }}" class="input-premium">
+  </form>
+
+  {% if q and q|length < 2 %}
+  <p class="text-center py-8" style="color:var(--text-muted);">{{ t('sr_min_chars') }}</p>
+  {% elif q %}
+  <p class="mb-4" style="color:var(--text-2);">{{ t('sr_found_pre') }} <b>{{ results.users|length }}</b> {{ t('sr_users_count') }} · <b>{{ results.decks|length }}</b> {{ t('sr_decks_count') }} · <b>{{ results.channels|length }}</b> {{ t('sr_channels_count') }}</p>
+
+  {% if results.users %}
+  <div class="mb-8">
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2" style="font-family:'Space Grotesk',sans-serif; color:var(--text);">{{ t('sr_users_h') }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {% for u in results.users %}
+      <a href="/u/{{ u.username }}" class="glass-premium card-hover flex items-center gap-3" style="padding:16px;">
+        <span class="avatar">{{ (u.full_name or u.username)[0]|upper }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold truncate" style="color:var(--text);">{{ u.full_name or u.username }}</div>
+          <div class="text-xs" style="color:var(--text-muted);">@{{ u.username }} · ⭐ {{ u.xp }} · 🔥 {{ u.streak }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if results.decks %}
+  <div class="mb-8">
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2" style="font-family:'Space Grotesk',sans-serif; color:var(--text);">{{ t('sr_decks_h') }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {% for d in results.decks %}
+      <div class="glass-premium" style="padding:20px;">
+        <div class="flex items-start gap-3 mb-3">
+          <span class="text-3xl">{{ d.icon }}</span>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold truncate" style="color:var(--text);">{{ d.name }}</h3>
+            <p class="text-xs" style="color:var(--text-muted);">{{ d.card_count }} {{ t('sr_cards_count') }} · 📥 {{ d.clones_count }}</p>
+            {% if d.author_username %}
+            <a href="/u/{{ d.author_username }}" class="text-xs font-semibold" style="color:var(--brand-1);">@{{ d.author }}</a>
+            {% else %}
+            <span class="text-xs" style="color:var(--text-muted);">{{ d.author }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <form method="POST" action="/marketplace/clone/{{ d.id }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-premium w-full justify-center" style="font-size:12px; padding:8px;">{{ t('sr_add_self') }}</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if results.channels %}
+  <div class="mb-8">
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2" style="font-family:'Space Grotesk',sans-serif; color:var(--text);">{{ t('sr_channels_h') }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {% for c in results.channels %}
+      <a href="/chat/{{ c.id }}" class="glass-premium card-hover flex items-center gap-3" style="padding:16px;">
+        <span class="text-3xl">{{ c.avatar }}</span>
+        <div class="flex-1">
+          <div class="font-bold" style="color:var(--text);">{{ c.name }}</div>
+          <div class="text-xs" style="color:var(--text-muted);">{{ c.member_count }} {{ t('sr_subscribers') }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not results.users and not results.decks and not results.channels %}
+  <div class="text-center glass-premium" style="padding:64px 20px;">
+    <div class="text-7xl mb-4">🔍</div>
+    <p style="color:var(--text-2);">{{ t('sr_nothing_pre') }}<b>{{ q }}</b>{{ t('sr_nothing_post') }}</p>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

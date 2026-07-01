@@ -1,0 +1,63 @@
+{% extends "base_v2.html" %}
+{% block title %}{{ path.title }} — QuizAIPro{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-sm mb-6 flex-wrap" style="color:var(--text-muted);">
+    <a href="/marketplace" class="font-semibold" style="color:var(--brand-1);">📚 {{ t('nav_marketplace') }}</a>
+    {% if subj %}<span>›</span><a href="/marketplace/subject/{{ subj.slug }}" class="font-semibold" style="color:var(--brand-1);">{{ subj.icon }} {{ subj.title }}</a>{% endif %}
+    <span>›</span>
+    <span class="font-bold" style="color:var(--text);">{{ path.icon }} {{ path.title }}</span>
+  </nav>
+
+  <!-- Path Hero -->
+  <div class="rounded-3xl p-8 mb-10 text-white relative overflow-hidden" style="background: linear-gradient(135deg, {{ path.color }}, {{ path.color2 }});">
+    <div class="absolute inset-0 opacity-10" style="background: radial-gradient(circle at 80% 20%, white, transparent 60%)"></div>
+    <div class="relative z-10">
+      <div class="text-6xl mb-4">{{ path.icon }}</div>
+      <h1 class="text-3xl md:text-4xl font-black mb-3 leading-tight">{{ path.title }}</h1>
+      {% if path.desc %}<p class="text-white/80 text-lg max-w-2xl leading-relaxed mb-4">{{ path.desc }}</p>{% endif %}
+      <div class="flex flex-wrap gap-3">
+        <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">📋 {{ steps|length }} {{ t('mk_steps_count') }}</span>
+        <span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">
+          {% if path.difficulty == 'beginner' %}🟢 {{ t('lvl_beginner') }}{% elif path.difficulty == 'intermediate' %}🟡 {{ t('lvl_intermediate') }}{% else %}🔴 {{ t('lvl_advanced') }}{% endif %}
+        </span>
+        {% if path.estimated_hours %}<span class="px-3 py-1 rounded-full bg-white/20 text-sm font-semibold">⏱ {{ t('mk_hours_approx') }}{{ path.estimated_hours }} {{ t('mk_hours_word') }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  {% if steps %}
+  <div class="space-y-4">
+    <h2 class="text-xl font-black mb-6" style="color:var(--text);">{{ t('mk_program_h') }}</h2>
+    {% for step in steps %}
+    <div class="flex gap-4 items-start">
+      <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-sm" style="background: linear-gradient(135deg, {{ path.color }}, {{ path.color2 }});">{{ loop.index }}</div>
+      {% if step.step_type == 'collection' and step.coll_slug %}
+      <a href="/collection/{{ step.coll_slug }}" class="group flex-1 glass-premium card-hover flex items-center gap-4 p-4">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background: linear-gradient(135deg, {{ step.coll_color or '#6366f1' }}, {{ step.coll_color2 or '#8b5cf6' }});">{{ step.coll_icon or '📚' }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm" style="color:var(--text);">{{ step.title or step.coll_title or step.coll_slug }}</div>
+          {% if step.coll_deck_count %}<div class="text-xs mt-0.5" style="color:var(--text-muted);">📚 {{ step.coll_deck_count }} {{ npl(step.coll_deck_count, 'mk_decks') }}</div>{% endif %}
+        </div>
+        <div class="font-bold" style="color:var(--text-muted);">→</div>
+      </a>
+      {% else %}
+      <div class="flex-1 glass-premium flex items-center gap-4 p-4 opacity-60">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(99,102,241,.10);">📄</div>
+        <div class="font-bold text-sm" style="color:var(--text-2);">{{ step.title or t('mk_step') ~ ' ' ~ loop.index }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% if not loop.last %}<div class="ml-5 w-0.5 h-4" style="background:var(--border);"></div>{% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center glass-premium" style="padding:64px 20px;">
+    <div class="text-6xl mb-4">🚧</div>
+    <p class="font-semibold" style="color:var(--text-2);">{{ t('mk_program_soon') }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
