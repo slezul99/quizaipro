@@ -2561,7 +2561,7 @@ def study_view():
     if not card:
         session["study_idx"] = idx + 1
         return redirect(url_for("study_view"))
-    return render_template("study.html", card=dict(card), idx=idx, total=len(queue),
+    return render_template("study_v2.html" if _use_v2() else "study.html", card=dict(card), idx=idx, total=len(queue),
         stats=session.get("study_stats", {"good":0, "again":0}), deck_id=deck_id)
 
 
