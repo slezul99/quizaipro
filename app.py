@@ -3328,7 +3328,8 @@ def category_match_game(category_id):
         "name": f"📁 {cat['name']}",
         "icon": cat.get("icon") if hasattr(cat, "get") else (cat["icon"] if "icon" in cat.keys() else "📁"),
     }
-    return render_template("match.html", deck=virtual_deck, pairs=pairs, count=len(pairs),
+    return render_template("match_v2.html" if _use_v2() else "match.html",
+        deck=virtual_deck, pairs=pairs, count=len(pairs),
         category_id=category_id)
 
 
@@ -3414,7 +3415,8 @@ def match_game(deck_id):
             ans = ans[:77] + "..."
         pairs.append({"id": cd["id"], "front": front, "back": ans})
 
-    return render_template("match.html", deck=dict(deck), pairs=pairs, count=len(pairs))
+    return render_template("match_v2.html" if _use_v2() else "match.html",
+                           deck=dict(deck), pairs=pairs, count=len(pairs))
 
 
 @app.route("/api/my/new_achievements")
@@ -8787,7 +8789,8 @@ def ai_page():
     conn.close()
     ok, used, limit = billing.check_ai_limit(user)
     photo_premium = billing.get_active_plan(user) != "free" or is_super_admin(user)
-    return render_template("ai.html", decks=decks, categories=cats, used=used,
+    return render_template("ai_v2.html" if _use_v2() else "ai.html",
+                           decks=decks, categories=cats, used=used,
                            limit=limit, photo_premium=photo_premium)
 
 
@@ -8800,7 +8803,7 @@ def ai_gen_progress(job_id):
     if not job or job["user_id"] != user["id"]:
         flash("Задача не найдена", "error")
         return redirect(url_for("ai_page"))
-    return render_template("ai_gen_progress.html", job=job)
+    return render_template("ai_gen_progress_v2.html" if _use_v2() else "ai_gen_progress.html", job=job)
 
 
 @app.route("/api/ai/progress/<job_id>/status")
