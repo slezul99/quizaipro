@@ -1094,6 +1094,42 @@ def handle_500(e):
     return render_template("500.html"), 500
 
 
+# === BACKUP MANAGEMENT (superadmin) =======================================
+# The automated dumps land on the web volume; these let the owner pull an
+# off-site copy and trigger an on-demand backup.
+@app.route("/superadmin/backups")
+@super_admin_required
+def superadmin_backups():
+    import backup_pg
+    return jsonify({"backups": [
+        {"name": b["name"], "size": b["size"],
+         "mtime": datetime.utcfromtimestamp(b["mtime"]).isoformat()}
+        for b in backup_pg.list_backups()]})
+
+
+@app.route("/superadmin/backups/run", methods=["POST"])
+@super_admin_required
+def superadmin_backup_run():
+    import backup_pg
+    try:
+        path = backup_pg.run_backup(log=lambda m: app.logger.info(m))
+        return jsonify({"ok": True, "file": Path(path).name})
+    except Exception as e:
+        app.logger.error("manual backup failed: %s", e)
+        return jsonify({"ok": False, "error": str(e)[:200]}), 500
+
+
+@app.route("/superadmin/backups/<name>")
+@super_admin_required
+def superadmin_backup_download(name):
+    import re as _re
+    if not _re.fullmatch(r"pgbackup-[0-9\-]+\.json\.gz", name or ""):
+        abort(404)
+    import backup_pg
+    from flask import send_from_directory
+    return send_from_directory(str(backup_pg._backup_dir()), name, as_attachment=True)
+
+
 @app.route("/set-lang/<lang>")
 def set_lang(lang):
     if lang not in ("ru", "en", "uz"): lang = "ru"
@@ -9976,6 +10012,41 @@ try:
     analytics.init_analytics_tables()
 except Exception as _e:
     print(f"[INIT] DB init error: {_e}")
+
+
+# === Automated Postgres backups (free pg_dump alternative) ==================
+# Daily logical dump to the web volume (a separate failure domain from the
+# Postgres service). Postgres only; a Redis lock ensures exactly one worker/
+# instance runs it. Disable with ENABLE_PG_BACKUP=0. Owner can pull an off-site
+# copy via /superadmin/backups.
+def _pg_backup_tick():
+    try:
+        import backup_pg
+        age = backup_pg.latest_backup_age_hours()
+        if age is not None and age < 24:
+            return
+        if redis_client is not None:
+            try:
+                if not redis_client.set("lock:pg_backup", "1", nx=True, ex=1800):
+                    return  # another worker is doing it
+            except Exception:
+                pass
+        backup_pg.run_backup(log=lambda m: app.logger.info(m))
+    except Exception as e:
+        app.logger.warning("pg backup tick failed: %s: %s", type(e).__name__, e)
+
+
+def _pg_backup_loop():
+    import time as _time
+    _time.sleep(120)  # let the app settle after boot
+    while True:
+        _pg_backup_tick()
+        _time.sleep(3600)  # re-check hourly
+
+
+if getattr(db, "IS_PG", False) and os.environ.get("ENABLE_PG_BACKUP", "1") == "1":
+    threading.Thread(target=_pg_backup_loop, daemon=True).start()
+    log.info("Postgres auto-backup scheduler started")
 
 # Auto-seed marketplace v2 (idempotent — uses INSERT OR IGNORE; running twice is safe).
 # Gated by app_migrations table so it runs only once.
