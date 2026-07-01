@@ -5360,7 +5360,7 @@ def chats_list():
         ORDER BY COALESCE(last_msg_at, c.created_at) DESC
     """, (user["id"], user["id"], user["id"])).fetchall()
     conn.close()
-    return render_template("chats_list.html", chats=chats)
+    return render_template("chats_list_v2.html" if _use_v2() else "chats_list.html", chats=chats)
 
 
 @app.route("/chat/<int:chat_id>")
@@ -5675,7 +5675,7 @@ def channels_browse():
         ORDER BY member_count DESC LIMIT 50
     """).fetchall()
     conn.close()
-    return render_template("channels.html", channels=channels)
+    return render_template("channels_v2.html" if _use_v2() else "channels.html", channels=channels)
 
 
 # === END CHATS ===
@@ -6292,7 +6292,7 @@ def study_groups_list():
         ORDER BY g.created_at DESC
     """, (user["id"],)).fetchall()
     conn.close()
-    return render_template("study_groups_list.html",
+    return render_template("study_groups_list_v2.html" if _use_v2() else "study_groups_list.html",
         public_groups=public_groups, my_groups=my_groups)
 
 
