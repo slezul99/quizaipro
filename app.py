@@ -3605,7 +3605,7 @@ def goals_page():
             FROM categories c WHERE c.owner_id=? ORDER BY c.parent_id IS NULL DESC, c.name
         """, (user["id"],)).fetchall()
     conn.close()
-    return render_template("goals.html",
+    return render_template("goals_v2.html" if _use_v2() else "goals.html",
         active=active,
         finished=[dict(g) for g in finished],
         decks=[dict(d) for d in decks if d["cnt"] > 0],

@@ -1,0 +1,262 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('g_h') }}{% endblock %}
+{% block head_scripts %}<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>{% endblock %}
+{% block styles %}<style>
+  [x-cloak]{display:none!important;}
+  .btn-soft{ background:rgba(245,158,11,.14); color:#b45309; border-color:transparent; }
+  .btn-soft:hover{ background:rgba(245,158,11,.24); }
+  html.dark .btn-soft{ background:rgba(245,158,11,.20); color:#fbbf24; }
+  .goal-inp{ width:100%; padding:12px 16px; border-radius:12px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); }
+  .goal-inp:focus{ outline:none; border-color:var(--brand-1); }
+</style>{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto" x-data="{ showNew: false }">
+  <div class="flex justify-between items-end mb-7 flex-wrap gap-3">
+    <div class="section-header left" style="margin-bottom:0;">
+      <span class="section-badge"><span class="badge-dot"></span>{{ t('g_badge') }}</span>
+      <h1 class="section-h">{{ t('g_h') }}</h1>
+      <p class="section-sub">{{ t('g_sub') }}</p>
+    </div>
+    <button @click="showNew = true" class="btn-premium" data-tour="new-goal-btn">{{ t('g_new') }}</button>
+  </div>
+
+  {% if not active %}
+  <div class="rounded-2xl p-5 mb-6 border-2 border-amber-300/60 dark:border-amber-500/40" style="background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(251,191,36,0.05));">
+    <div class="flex items-start gap-3">
+      <div class="text-3xl flex-shrink-0">🎯</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-amber-900 dark:text-amber-200 mb-1.5">{{ t('g_info_what') }}</div>
+        <div class="text-sm text-amber-800 dark:text-amber-100/90 leading-relaxed">{{ t('g_info_desc') }}</div>
+        <div class="mt-3 grid sm:grid-cols-3 gap-2 text-xs">
+          <div class="rounded-lg p-2" style="background:rgba(99,102,241,.06);"><div class="font-bold mb-0.5" style="color:var(--text-2);">📅 {{ t('g_info_step1_t') }}</div><div style="color:var(--text-muted);">{{ t('g_info_step1_b') }}</div></div>
+          <div class="rounded-lg p-2" style="background:rgba(99,102,241,.06);"><div class="font-bold mb-0.5" style="color:var(--text-2);">📊 {{ t('g_info_step2_t') }}</div><div style="color:var(--text-muted);">{{ t('g_info_step2_b') }}</div></div>
+          <div class="rounded-lg p-2" style="background:rgba(99,102,241,.06);"><div class="font-bold mb-0.5" style="color:var(--text-2);">🏆 {{ t('g_info_step3_t') }}</div><div style="color:var(--text-muted);">{{ t('g_info_step3_b') }}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if active %}
+  <div class="space-y-5 mb-8">
+    {% for g in active %}
+    <div class="glass rounded-3xl p-6 relative overflow-hidden">
+      {% if g.status_info.behind %}<div class="absolute top-0 left-0 right-0 h-1.5 bg-orange-500"></div>{% endif %}
+      {% if g.status_info.expired %}<div class="absolute top-0 left-0 right-0 h-1.5 bg-red-600"></div>{% endif %}
+
+      <div class="flex items-start gap-4 mb-4 flex-wrap">
+        <div class="text-5xl flex-shrink-0">{{ g.target_icon }}</div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-xl" style="color:var(--text);">{{ g.title }}</h3>
+          <p class="text-sm mt-0.5" style="color:var(--text-2);">
+            {{ t('g_target_deck') if g.target_type == 'deck' else t('g_target_cat') }}: <b>{{ g.target_name }}</b>
+            <span class="ml-2">
+              {% if g.difficulty == 'easy' %}<span class="badge bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{{ t('g_diff_easy') }}</span>
+              {% elif g.difficulty == 'medium' %}<span class="badge bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">{{ t('g_diff_med') }}</span>
+              {% else %}<span class="badge bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">{{ t('g_diff_hard') }}</span>{% endif %}
+              {% if g.solo_mode %}<span class="badge bg-slate-100 text-slate-700 dark:bg-slate-800/50 dark:text-slate-300 ml-1">{{ t('g_solo') }}</span>{% endif %}
+            </span>
+          </p>
+          <p class="text-xs mt-1" style="color:var(--text-muted);">
+          {{ t('g_until') }} <b>{{ g.end_at|tashkent if g.end_at else g.end_date }}</b>
+            {% if g.status_info.expired %} · <span class="text-red-600 dark:text-red-400 font-bold">{{ t('g_expired') }}</span>
+            {% elif g.status_info.days_left == 0 %} · {{ t('g_left') }} <b class="text-orange-600 dark:text-orange-400">{{ g.status_info.hours_left }}{{ t('g_left_hours') }} {{ g.status_info.minutes_left }}{{ t('g_left_minutes') }}</b>
+            {% else %} · {{ t('g_left') }} <b>{{ g.status_info.days_left }} {{ t('g_left_days') }}</b>{% if g.status_info.hours_left %}{{ g.status_info.hours_left }}{{ t('g_left_hours') }}{% endif %}{% endif %}
+            {% if g.extensions %} · {{ t('g_extended') }}: {{ g.extensions }}{% endif %}
+          </p>
+        </div>
+        <form method="POST" action="/goal/{{ g.id }}/abandon" onsubmit="return confirm({{ t('g_abandon_confirm')|tojson }})">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="hover:text-red-500 text-sm" style="color:var(--text-muted);">{{ t('g_abandon') }}</button>
+        </form>
+      </div>
+
+      <div class="rounded-2xl p-5 mb-4" style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.05)); border: 1px solid rgba(99,102,241,0.15);">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="text-xs uppercase tracking-wider font-bold" style="color:var(--text-muted);">{{ t('g_today') }}</div>
+            <div class="font-bold text-base" style="color:var(--text);">{% if g.today.completed %}{{ t('g_today_done') }}{% else %}{{ t('g_today_left_pre') }} {{ g.today.total_quota - g.today.done }} {{ t('g_today_left_post') }}{% endif %}</div>
+          </div>
+          <div class="text-right"><div class="text-3xl font-bold {% if g.today.completed %}text-emerald-600 dark:text-emerald-400{% else %}text-indigo-600 dark:text-indigo-300{% endif %} font-mono">{{ g.today.done }} / {{ g.today.total_quota }}</div></div>
+        </div>
+        <div class="h-3 rounded-full overflow-hidden" style="background:rgba(99,102,241,.12);"><div class="h-full transition-all duration-500" style="width: {{ (g.today.ratio * 100)|round }}%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div></div>
+        {% if g.today.extra_quota %}<p class="text-xs text-amber-700 dark:text-amber-400 mt-2">{{ t('g_extra_added_pre') }}{{ g.today.extra_quota }} {{ t('g_extra_added_post') }}</p>{% endif %}
+      </div>
+
+      <div class="rounded-2xl p-4 mb-4" style="background:rgba(99,102,241,.05); border:1px solid var(--border);">
+        <div class="text-xs uppercase tracking-wider font-bold mb-2" style="color:var(--text-muted);">{{ t('g_plan') }}</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-sm">
+          {% if g.recommend.has_terms %}<div class="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-2"><div class="text-2xl">🃏</div><div class="font-bold text-purple-700 dark:text-purple-300">{{ g.recommend.flashcards }}</div><div class="text-[11px]" style="color:var(--text-2);">Flashcards</div></div>{% endif %}
+          {% if g.recommend.has_mcq %}<div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-2"><div class="text-2xl">📝</div><div class="font-bold text-emerald-700 dark:text-emerald-300">{{ g.recommend.tests_count }} {% if g.recommend.tests_count == 1 %}{{ t('g_plan_test_one') }}{% else %}{{ t('g_plan_test_few') }}{% endif %}</div><div class="text-[11px]" style="color:var(--text-2);">~{{ g.recommend.tests_questions }} {{ t('g_plan_test_q') }}</div></div>{% endif %}
+          <div class="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-2 {% if g.solo_mode or g.recommend.duels == 0 %}opacity-30{% endif %}"><div class="text-2xl">⚔️</div><div class="font-bold text-orange-700 dark:text-orange-300">{{ g.recommend.duels }}</div><div class="text-[11px]" style="color:var(--text-2);">{% if g.solo_mode %}{{ t('g_plan_off') }}{% else %}{{ t('g_plan_duel') }}{% if g.recommend.duels > 1 %}{{ t('g_plan_duel_pl') }}{% endif %}{% endif %}</div></div>
+          <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-2 {% if g.solo_mode or g.recommend.live == 0 %}opacity-30{% endif %}"><div class="text-2xl">🎮</div><div class="font-bold text-pink-700 dark:text-pink-300">{{ g.recommend.live }}</div><div class="text-[11px]" style="color:var(--text-2);">{% if g.solo_mode %}{{ t('g_plan_off') }}{% else %}{{ t('g_plan_live') }}{% endif %}</div></div>
+        </div>
+        <p class="text-[11px] mt-2 text-center" style="color:var(--text-muted);">{{ t('g_plan_min_pre') }} <b>{{ g.recommend.minutes }}</b> {{ t('g_plan_min_post') }}{% if g.solo_mode %}{{ t('g_plan_solo') }}{% endif %}</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 text-center text-sm mb-3">
+        <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-2"><div class="font-bold text-blue-700 dark:text-blue-300 text-lg">{{ g.overall.attempted }}</div><div class="text-xs" style="color:var(--text-2);">{{ t('g_overall_seen') }}</div></div>
+        <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-2"><div class="font-bold text-emerald-700 dark:text-emerald-300 text-lg">{{ g.overall.learned }}</div><div class="text-xs" style="color:var(--text-2);">{{ t('g_overall_learned') }}</div></div>
+        <div class="rounded-xl p-2" style="background:rgba(99,102,241,.06);"><div class="font-bold text-lg" style="color:var(--text-2);">{{ g.overall.total }}</div><div class="text-xs" style="color:var(--text-2);">{{ t('g_overall_total') }}</div></div>
+      </div>
+
+      {% if g.status_info.behind and not g.status_info.expired %}
+      <div class="bg-orange-50 dark:bg-orange-500/15 border-2 border-orange-300 dark:border-orange-400/50 rounded-2xl p-4 mb-3">
+        <p class="text-sm text-orange-900 dark:text-orange-200 font-bold mb-1">{{ t('g_behind_h') }}</p>
+        <p class="text-xs text-orange-800 dark:text-orange-100/90">{{ t('g_behind_sub_pre') }} {{ g.status_info.elapsed_pct }}{{ t('g_behind_sub_mid') }} {{ (g.status_info.actual_ratio * 100)|round }}{{ t('g_behind_sub_post') }}</p>
+      </div>
+      {% endif %}
+      {% if g.status_info.expired %}
+      <div class="bg-red-50 dark:bg-red-500/15 border-2 border-red-300 dark:border-red-400/50 rounded-2xl p-4 mb-3">
+        <p class="text-sm text-red-900 dark:text-red-200 font-bold mb-1">{{ t('g_expired_h') }}</p>
+        <p class="text-xs text-red-800 dark:text-red-100/90">{{ t('g_expired_sub') }}</p>
+      </div>
+      {% endif %}
+
+      <div class="flex flex-wrap gap-2">
+        <a href="/{% if g.target_type == 'deck' %}deck/{{ g.target_id }}/flashcards{% else %}category/{{ g.target_id }}/play{% endif %}" class="btn-premium text-sm">{{ t('g_act_study') }}</a>
+        <button type="button" @click="$dispatch('goal-extra', { goalId: {{ g.id }}, title: '{{ g.title|e }}' })" class="btn btn-soft text-sm">{{ t('g_act_extra') }}</button>
+        <button type="button" @click="$dispatch('goal-extend', { goalId: {{ g.id }}, currentEnd: '{{ g.end_date }}', currentTime: '{{ g.end_at[11:16] if g.end_at else "23:59" }}' })" class="btn btn-ghost text-sm">{{ t('g_act_extend') }}</button>
+        {% if g.exam_required and g.overall.attempted >= 5 %}
+        <a href="/goal/{{ g.id }}/exam" class="btn text-sm text-white" style="background: linear-gradient(135deg, #ef4444, #f59e0b); border-color:transparent;">{{ t('g_act_exam') }}</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass rounded-3xl p-10 text-center mb-8">
+    <div class="text-6xl mb-3">🎯</div>
+    <h3 class="text-xl font-bold mb-2" style="color:var(--text);">{{ t('g_no_active') }}</h3>
+    <p class="mb-4" style="color:var(--text-2);">{{ t('g_no_active_sub') }}</p>
+    <button @click="showNew = true" class="btn-premium">{{ t('g_create') }}</button>
+  </div>
+  {% endif %}
+
+  {% if finished %}
+  <div class="mb-8">
+    <h2 class="text-xl font-bold mb-3" style="color:var(--text);">{{ t('g_history_h') }}</h2>
+    <div class="space-y-2">
+      {% for g in finished %}
+      <div class="glass rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-3xl flex-shrink-0">{{ g.target_icon or '📚' }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold truncate" style="color:var(--text);">{{ g.title }}</div>
+          <div class="text-xs" style="color:var(--text-muted);">{{ g.target_name }} ·
+            {% if g.status == 'completed' %}<span class="text-emerald-600 dark:text-emerald-400">{{ t('g_status_completed') }}</span>{% if g.exam_score %}({{ g.exam_score|round }}%){% endif %}
+            {% elif g.status == 'abandoned' %}<span style="color:var(--text-muted);">{{ t('g_status_abandoned') }}</span>
+            {% else %}<span class="text-red-500 dark:text-red-400">{{ t('g_status_failed') }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- NEW GOAL MODAL -->
+  <div x-show="showNew" x-transition x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" style="background:rgba(15,23,41,.55); backdrop-filter:blur(4px);" @click.self="showNew = false">
+    <form method="POST" action="/goals/new" class="glass-strong rounded-3xl p-7 max-w-lg w-full my-6"
+      x-data="{ targetType: 'deck', targetId: null, difficulty: 'medium', soloMode: false, endDate: '', endTime: '23:59', tomorrow() { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); } }"
+      x-init="endDate = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })()">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="text-xl font-bold mb-4 h-display">{{ t('g_new_h') }}</h3>
+
+      <div class="mb-4">
+        <label class="text-sm font-bold mb-2 block" style="color:var(--text);">{{ t('g_title_label') }}</label>
+        <input name="title" required maxlength="80" placeholder="{{ t('g_title_ph') }}" class="goal-inp">
+      </div>
+
+      <div class="mb-4">
+        <label class="text-sm font-bold mb-2 block" style="color:var(--text);">{{ t('g_what_label') }}</label>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button type="button" @click="targetType='deck'; targetId=null" :class="targetType === 'deck' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40' : 'border-gray-200 dark:border-slate-700'" class="p-3 rounded-xl border-2 font-semibold transition" :style="targetType !== 'deck' ? 'color:var(--text);' : ''">{{ t('g_what_deck') }}</button>
+          <button type="button" @click="targetType='category'; targetId=null" :class="targetType === 'category' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40' : 'border-gray-200 dark:border-slate-700'" class="p-3 rounded-xl border-2 font-semibold transition" :style="targetType !== 'category' ? 'color:var(--text);' : ''">{{ t('g_what_cat') }}</button>
+        </div>
+        <input type="hidden" name="target_type" :value="targetType">
+        <select name="target_id" required x-model.number="targetId" class="goal-inp">
+          <option value="">{{ t('g_select_pick') }}</option>
+          <template x-if="targetType === 'deck'"><optgroup label="{{ t('g_select_decks') }}">{% for d in decks %}<option value="{{ d.id }}">{{ d.icon }} {{ d.name }} ({{ d.cnt }} {{ t('g_cards_short') }})</option>{% endfor %}</optgroup></template>
+          <template x-if="targetType === 'category'"><optgroup label="{{ t('g_select_cats') }}">{% for c in categories %}<option value="{{ c.id }}">{% if c.parent_name %}{{ c.parent_name }} / {% endif %}{{ c.icon }} {{ c.name }}</option>{% endfor %}</optgroup></template>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div><label class="text-sm font-bold mb-2 block" style="color:var(--text);">{{ t('g_until_when') }}</label><input type="date" name="end_date" required x-model="endDate" :min="tomorrow()" class="goal-inp"></div>
+        <div><label class="text-sm font-bold mb-2 block" style="color:var(--text);">{{ t('g_time') }}</label><input type="time" name="end_time" x-model="endTime" class="goal-inp"></div>
+      </div>
+
+      <div class="mb-4">
+        <label class="text-sm font-bold mb-2 block" style="color:var(--text);">{{ t('g_load_label') }}</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="block"><input type="radio" name="difficulty" value="easy" x-model="difficulty" class="hidden peer"><div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/30 border-gray-200 dark:border-slate-700"><div class="text-2xl mb-1">😌</div><div class="text-xs font-bold" style="color:var(--text);">{{ t('g_load_easy_lbl') }}</div><div class="text-[10px]" style="color:var(--text-muted);">{{ t('g_load_easy_sub') }}</div></div></label>
+          <label class="block"><input type="radio" name="difficulty" value="medium" x-model="difficulty" class="hidden peer"><div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/30 border-gray-200 dark:border-slate-700"><div class="text-2xl mb-1">💪</div><div class="text-xs font-bold" style="color:var(--text);">{{ t('g_load_med_lbl') }}</div><div class="text-[10px]" style="color:var(--text-muted);">{{ t('g_load_med_sub') }}</div></div></label>
+          <label class="block"><input type="radio" name="difficulty" value="hard" x-model="difficulty" class="hidden peer"><div class="p-3 rounded-xl border-2 cursor-pointer text-center transition peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/30 border-gray-200 dark:border-slate-700"><div class="text-2xl mb-1">🔥</div><div class="text-xs font-bold" style="color:var(--text);">{{ t('g_load_hard_lbl') }}</div><div class="text-[10px]" style="color:var(--text-muted);">{{ t('g_load_hard_sub') }}</div></div></label>
+        </div>
+      </div>
+
+      <label class="flex items-center gap-3 mb-3 p-3 rounded-xl cursor-pointer" style="background:rgba(99,102,241,.05); border:1px solid var(--border);">
+        <input type="checkbox" name="solo_mode" value="1" x-model="soloMode" class="w-5 h-5 accent-slate-600">
+        <div class="flex-1"><div class="font-semibold text-sm" style="color:var(--text);">{{ t('g_solo_h') }}</div><div class="text-xs" style="color:var(--text-2);">{{ t('g_solo_sub') }}</div></div>
+      </label>
+
+      <label class="flex items-center gap-3 mb-4 p-3 rounded-xl cursor-pointer" style="background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.4);">
+        <input type="checkbox" name="exam_required" value="1" checked class="w-5 h-5 accent-amber-600">
+        <div class="flex-1"><div class="font-semibold text-sm" style="color:var(--text);">{{ t('g_exam_h') }}</div><div class="text-xs" style="color:var(--text-2);">{{ t('g_exam_sub') }}</div></div>
+      </label>
+
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="showNew = false" class="btn btn-ghost">{{ t('g_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('g_create_btn') }}</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- EXTRA MODAL -->
+  <div x-data="{ open: false, goalId: null, goalTitle: '', extra: 5 }" @goal-extra.window="open=true; goalId=$event.detail.goalId; goalTitle=$event.detail.title; extra=5" x-show="open" x-transition x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(15,23,41,.55); backdrop-filter:blur(4px);" @click.self="open=false">
+    <div class="glass-strong rounded-3xl p-7 max-w-md w-full">
+      <h3 class="text-xl font-bold mb-2 h-display">{{ t('g_extra_h') }}</h3>
+      <p class="text-sm mb-4" style="color:var(--text-2);">{{ t('g_extra_sub') }} <b x-text="goalTitle"></b></p>
+      <div class="grid grid-cols-4 gap-2 mb-5">
+        <template x-for="n in [5, 10, 15, 25]" :key="n"><button @click="extra=n" :class="extra === n ? 'bg-amber-500 text-white border-amber-500' : 'border-gray-200 dark:border-slate-700'" class="p-3 rounded-xl border-2 font-bold" :style="extra !== n ? 'color:var(--text);' : ''" x-text="'+' + n"></button></template>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button @click="open=false" class="btn btn-ghost">{{ t('g_cancel') }}</button>
+        <button @click="addExtra(goalId, extra); open=false" class="btn-premium">{{ t('g_add') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTEND MODAL -->
+  <div x-data="{ open: false, goalId: null, currentEnd: '', newEnd: '', newTime: '23:59' }" @goal-extend.window="open=true; goalId=$event.detail.goalId; currentEnd=$event.detail.currentEnd; newEnd=$event.detail.currentEnd; newTime=$event.detail.currentTime || '23:59'" x-show="open" x-transition x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(15,23,41,.55); backdrop-filter:blur(4px);" @click.self="open=false">
+    <form method="POST" :action="`/goal/${goalId}/extend`" class="glass-strong rounded-3xl p-7 max-w-md w-full">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 class="text-xl font-bold mb-2 h-display">{{ t('g_extend_h') }}</h3>
+      <p class="text-sm mb-4" style="color:var(--text-2);">{{ t('g_extend_sub') }} <b x-text="currentEnd"></b></p>
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <input type="date" name="end_date" x-model="newEnd" :min="currentEnd" required class="goal-inp">
+        <input type="time" name="end_time" x-model="newTime" class="goal-inp">
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button type="button" @click="open=false" class="btn btn-ghost">{{ t('g_cancel') }}</button>
+        <button type="submit" class="btn-premium">{{ t('g_extend_btn') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const G_ERR = {{ t('g_error')|tojson }};
+async function addExtra(goalId, extra) {
+  if (!goalId || !extra) return;
+  const fd = new FormData();
+  fd.append('_csrf', '{{ csrf_token() }}');
+  fd.append('extra', extra);
+  const r = await fetch(`/goal/${goalId}/extra`, { method: 'POST', body: fd });
+  if (r.ok) location.reload();
+  else alert(G_ERR);
+}
+</script>
+{% endblock %}
