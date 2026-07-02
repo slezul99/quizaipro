@@ -42,7 +42,7 @@
     --success: #10b981;
     --page-bg: #f6f5fb;
     --topbar-h: 60px;
-    --shadow-card: 0 4px 20px -6px rgba(100,90,180,.12);
+    --shadow-card: 0 1px 2px rgba(24,20,60,.04), 0 10px 28px -10px rgba(48,36,110,.16);
     --shadow-raised: 0 16px 40px -12px rgba(99,102,241,.22);
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
     --text: #1e293b;
@@ -322,16 +322,12 @@
   }
 
   /* ── Logo tile ── */
-  .fc2-logo-tile {
-    width: 30px; height: 30px; border-radius: 9px;
-    background: var(--brand-grad-tri);
-    display: grid; place-items: center;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px; font-weight: 800; color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 3px 10px -2px rgba(99,102,241,.45);
-    letter-spacing: -0.03em;
-  }
+  .fc2-logo-tile { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; }
+  .fc2-logo-tile img { width: 30px; height: 30px; object-fit: contain; border-radius: 8px; }
+  .fc2-logo-tile .logo-light { display: block; }
+  .fc2-logo-tile .logo-dark { display: none; }
+  html.dark .fc2-logo-tile .logo-light { display: none; }
+  html.dark .fc2-logo-tile .logo-dark { display: block; }
   .fc2-wordmark {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 15px; font-weight: 700;
@@ -349,7 +345,7 @@
   /* ── Dark mode ── */
   html.dark {
     --page-bg: #0f1729;
-    --shadow-card: 0 12px 40px -8px rgba(0,0,0,.5);
+    --shadow-card: 0 2px 8px rgba(0,0,0,.4), 0 22px 46px -16px rgba(0,0,0,.55);
     --shadow-raised: 0 20px 50px -10px rgba(0,0,0,.65);
     --text: #e2e8f0;
   }
@@ -482,7 +478,10 @@
     <!-- LEFT: logo + back -->
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
       <a href="{{ url_for('dashboard_v2_page') }}" style="display:flex;align-items:center;gap:6px;text-decoration:none;">
-        <div class="fc2-logo-tile">Q</div>
+        <div class="fc2-logo-tile">
+          <img src="{{ url_for('static', filename='logo-sm.png', v='1') }}" alt="QuizAIPro" class="logo-light">
+          <img src="{{ url_for('static', filename='logo-org-sm.png', v='1') }}" alt="QuizAIPro" class="logo-dark">
+        </div>
         <span class="fc2-wordmark" style="display:none;" id="topbar-wordmark">QuizAIPro</span>
       </a>
       <a href="{{ url_for('deck_view', deck_id=deck_id) }}" class="fc2-back-btn">
