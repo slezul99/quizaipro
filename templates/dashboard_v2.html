@@ -619,5 +619,14 @@ document.addEventListener('DOMContentLoaded',function(){
     requestAnimationFrame(function f(ts){if(!s)s=ts;var p=Math.min((ts-s)/1100,1),e=1-Math.pow(1-p,3);el.textContent=Math.round(e*t).toLocaleString('ru-RU');if(p<1)requestAnimationFrame(f);});});
 });
 </script>
+<script>
+/* Cmd/Ctrl+K focuses the topbar search */
+document.addEventListener('keydown',function(e){
+  if((e.metaKey||e.ctrlKey)&&(e.key==='k'||e.key==='K')){
+    var s=document.querySelector('.search-wrap input, .search input, .topbar input[name="q"]');
+    if(s){e.preventDefault();s.focus();s.select();}
+  }
+});
+</script>
 </body>
 </html>

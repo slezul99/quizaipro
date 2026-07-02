@@ -1039,5 +1039,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script>document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('nav-open');});</script>
+<script>
+/* Cmd/Ctrl+K focuses the topbar search */
+document.addEventListener('keydown',function(e){
+  if((e.metaKey||e.ctrlKey)&&(e.key==='k'||e.key==='K')){
+    var s=document.querySelector('.search-wrap input, .search input, .topbar input[name="q"]');
+    if(s){e.preventDefault();s.focus();s.select();}
+  }
+});
+</script>
 </body>
 </html>
