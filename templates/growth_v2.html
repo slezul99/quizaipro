@@ -870,11 +870,11 @@ html.dark .icon-moon { display: block; }
         </div>
 
         <div class="hero-actions">
-          <button class="btn-primary">
+          <button class="btn-primary" id="shareTreeBtn" type="button">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             {{ t('v2_share_tree') }}
           </button>
-          <button class="btn-ghost-light">
+          <button class="btn-ghost-light" id="howItWorksBtn" type="button">
             <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             {{ t('v2_how_it_works') }}
           </button>
@@ -966,6 +966,45 @@ window.addEventListener('DOMContentLoaded', () => {
   els.forEach((el, i) => {
     setTimeout(() => el.classList.add('in'), 40 + i * 80);
   });
+
+  // "How it works" → smooth-scroll to the all-stages section.
+  const how = document.getElementById('howItWorksBtn');
+  if (how) how.addEventListener('click', () => {
+    const target = document.querySelector('.stages-section');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // "Share tree" → Web Share API, with a copy-link fallback + toast.
+  const share = document.getElementById('shareTreeBtn');
+  if (share) share.addEventListener('click', async () => {
+    const shareData = {
+      title: 'QuizAIPro',
+      text: {{ t('v2_share_tree')|tojson }} + ' 🌱',
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showGrowthToast({{ t('v2_link_copied')|tojson }});
+    } catch (e) {
+      window.prompt({{ t('v2_link_copied')|tojson }}, window.location.href);
+    }
+  });
+
+  function showGrowthToast(msg) {
+    let el = document.createElement('div');
+    el.textContent = '✓ ' + msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
+      'background:#10b981;color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;' +
+      'font-weight:700;z-index:9999;box-shadow:0 12px 30px -8px rgba(16,185,129,.6);';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+  }
 });
 </script>
 <script>document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('nav-open');});</script>
