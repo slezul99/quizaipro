@@ -78,6 +78,14 @@ html.dark .chip.streak{color:#fb923c} html.dark .chip.xp{color:#a5b4fc}
 .avatar{width:38px;height:38px;border-radius:12px;background:var(--glint);display:grid;place-items:center;color:#fff;
   font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer}
 
+/* Mobile menu (hamburger + off-canvas drawer) */
+.tb-menu{display:none;width:40px;height:40px;border-radius:12px;place-items:center;border:0;background:var(--surface);
+  box-shadow:var(--elev-1);color:var(--text-2);flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tb-menu svg{width:20px;height:20px}
+.nav-scrim{position:fixed;inset:0;background:rgba(12,14,30,.44);z-index:190;opacity:0;visibility:hidden;
+  transition:opacity .25s var(--ease)}
+body.nav-open .nav-scrim{opacity:1;visibility:visible}
+
 .sidebar{grid-row:2/3;position:sticky;top:var(--topbar-h);align-self:start;height:calc(100vh - var(--topbar-h));
   padding:16px 14px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--hair);overflow-y:auto}
 .nav{display:flex;flex-direction:column;gap:2px;flex:1}
@@ -290,7 +298,13 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
 }
 @media (max-width:920px){
   :root{--sidebar-w:0px}
-  .layout{display:block}.sidebar{display:none}
+  .layout{display:block}
+  .tb-menu{display:grid}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;height:100dvh;z-index:200;transform:translateX(-100%);
+    transition:transform .26s var(--ease);will-change:transform;background:var(--page);border-right:1px solid var(--hair);
+    box-shadow:0 24px 60px -12px rgba(0,0,0,.4);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  body.nav-open .sidebar{transform:none}
+  body.nav-open{overflow:hidden}
   .main{padding:18px 15px 54px}
   .hero{padding:26px 22px}.hero-grid{grid-template-columns:1fr}.orb{display:none}
   .hero-h{font-size:26px}
@@ -311,7 +325,7 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
   .mini-stat{font-size:22px}
   .hero-h{font-size:24px}
   .f-title{font-size:22px}
-  .chip.xp{display:none}
+  .chip{display:none}
   .wordmark{display:none}
   .search{display:none}.lang{display:none}
 }
@@ -328,6 +342,9 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
 
   <!-- TOPBAR -->
   <header class="topbar">
+    <button class="tb-menu" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <a class="brand" href="{{ url_for('dashboard') }}" aria-label="QuizAIPro">
       <span class="brand-logo-icon">
         <img src="{{ url_for('static', filename='logo-sm.png', v='1') }}" alt="QuizAIPro" class="logo-light">
@@ -354,6 +371,9 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
       <div class="avatar" onclick="location.href='{{ url_for('public_profile', username=current_user.username) }}'" aria-label="{{ current_user.full_name or current_user.username }}">{{ (current_user.full_name or current_user.username)[0]|upper }}</div>
     </div>
   </header>
+
+  <!-- Mobile drawer scrim -->
+  <div class="nav-scrim" onclick="document.body.classList.remove('nav-open')"></div>
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
