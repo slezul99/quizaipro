@@ -1,0 +1,376 @@
+{% extends "base_v2.html" %}
+{% block title %}QuizAIPro — {{ t('hp_h') }}{% endblock %}
+
+{% block styles %}
+<style>
+  .hlp { max-width: 940px; margin: 0 auto; }
+
+  /* ── Hero ── */
+  .hlp-hero {
+    position: relative; overflow: hidden;
+    border-radius: 22px;
+    padding: 30px 30px 32px;
+    margin-bottom: 22px;
+    background: linear-gradient(135deg, #1c1836 0%, #2a2154 48%, #4a1f52 100%);
+    color: #fff;
+    box-shadow: 0 20px 48px -18px rgba(48,36,110,.5);
+  }
+  .hlp-hero::after {
+    content: ''; position: absolute; right: -60px; top: -60px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(236,72,153,.35), transparent 70%);
+    pointer-events: none;
+  }
+  .hlp-hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
+    font-size: 12px; font-weight: 700; letter-spacing: .02em;
+    margin-bottom: 14px; backdrop-filter: blur(6px);
+  }
+  .hlp-hero-badge::before { content:''; width:7px; height:7px; border-radius:50%; background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,.25); }
+  .hlp-hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
+    margin: 0 0 8px; line-height: 1.1;
+  }
+  .hlp-hero p { font-size: 15px; color: rgba(255,255,255,.82); max-width: 560px; line-height: 1.5; }
+
+  /* ── Quick-start banner ── */
+  .hlp-banner {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    border-radius: 18px; padding: 20px 22px; margin-bottom: 34px;
+    background: linear-gradient(135deg, rgba(99,102,241,.10), rgba(139,92,246,.12), rgba(236,72,153,.07));
+    border: 1.5px solid rgba(99,102,241,.18);
+  }
+  .hlp-banner-icon {
+    width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 26px;
+    background: var(--brand-grad-tri);
+    box-shadow: 0 8px 20px -6px rgba(99,102,241,.55);
+  }
+  .hlp-banner-text { flex: 1; min-width: 200px; }
+  .hlp-banner-title { font-family:'Space Grotesk',sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .hlp-banner-sub { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+  .hlp-banner-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .hlp-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 16px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 700; cursor: pointer;
+    text-decoration: none; border: 1.5px solid transparent;
+    transition: all .18s var(--ease); white-space: nowrap;
+  }
+  .hlp-btn-primary { background: var(--brand-grad); color: #fff; box-shadow: 0 6px 16px -4px rgba(99,102,241,.5); }
+  .hlp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -4px rgba(99,102,241,.62); }
+  .hlp-btn-ghost { background: var(--surface); color: var(--text-2); border-color: var(--border); }
+  .hlp-btn-ghost:hover { border-color: var(--brand-1); color: var(--brand-1); }
+  .hlp-btn-sm { padding: 8px 13px; font-size: 12.5px; }
+  .hlp-btn[disabled] { opacity: .6; cursor: default; transform: none; }
+
+  /* ── Section titles ── */
+  .hlp-sec {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px; font-weight: 700; color: var(--text);
+    letter-spacing: -0.01em; margin: 0 0 16px;
+  }
+  .hlp-sec-emoji {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 17px;
+    background: linear-gradient(135deg, rgba(99,102,241,.12), rgba(139,92,246,.10));
+  }
+
+  /* ── Guided tour stages ── */
+  .hlp-stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 34px; }
+  .hlp-stage {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px; border-radius: 16px; text-decoration: none;
+    background: var(--surface); border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-card);
+    transition: all .18s var(--ease);
+  }
+  .hlp-stage:hover { transform: translateY(-2px); border-color: rgba(99,102,241,.35); }
+  .hlp-stage.done { border-color: rgba(16,185,129,.4); background: linear-gradient(135deg, rgba(16,185,129,.06), transparent); }
+  .hlp-stage.locked { opacity: .6; }
+  .hlp-stage-emoji { font-size: 24px; flex-shrink: 0; }
+  .hlp-stage-meta { flex: 1; min-width: 0; }
+  .hlp-stage-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .hlp-stage-desc { font-size: 12px; color: var(--text-muted); line-height: 1.35; }
+  .hlp-stage-mark {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 13px; font-weight: 800;
+    background: rgba(99,102,241,.12); color: var(--brand-1);
+  }
+  .hlp-stage.done .hlp-stage-mark { background: var(--success); color: #fff; }
+
+  /* ── Accordions (topics + faq) ── */
+  .hlp-acc { display: flex; flex-direction: column; gap: 10px; margin-bottom: 34px; }
+  .hlp-item {
+    border-radius: 16px; overflow: hidden;
+    background: var(--surface); border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-card);
+    transition: border-color .18s var(--ease);
+  }
+  .hlp-item[open] { border-color: rgba(99,102,241,.35); }
+  .hlp-summary {
+    display: flex; align-items: center; gap: 13px;
+    padding: 15px 18px; cursor: pointer; list-style: none;
+    user-select: none;
+  }
+  .hlp-summary::-webkit-details-marker { display: none; }
+  .hlp-t-icon {
+    width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 19px; color: #fff;
+  }
+  .hlp-t-meta { flex: 1; min-width: 0; }
+  .hlp-t-title { font-size: 14.5px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .hlp-t-sub { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+  .hlp-chev { flex-shrink: 0; color: var(--text-muted); transition: transform .2s var(--ease); font-size: 14px; }
+  .hlp-item[open] .hlp-chev { transform: rotate(180deg); }
+
+  .hlp-body { padding: 4px 18px 20px; }
+  .hlp-body-intro { font-size: 13.5px; color: var(--text-2); line-height: 1.6; margin-bottom: 14px; }
+
+  .hlp-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .hlp-step { display: flex; gap: 11px; align-items: flex-start; }
+  .hlp-step-num {
+    width: 24px; height: 24px; border-radius: 8px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 12px; font-weight: 800;
+    background: var(--brand-grad); color: #fff; margin-top: 1px;
+  }
+  .hlp-step-text { font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+
+  .hlp-callout {
+    display: flex; gap: 11px; align-items: flex-start;
+    border-radius: 12px; padding: 13px 15px; margin-top: 12px;
+  }
+  .hlp-callout-tip { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.22); }
+  .hlp-callout-try { background: rgba(99,102,241,.06); border: 1px solid rgba(99,102,241,.18); flex-direction: column; }
+  .hlp-callout-icon { font-size: 17px; flex-shrink: 0; }
+  .hlp-callout-row { display: flex; gap: 11px; align-items: flex-start; }
+  .hlp-eyebrow { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin-bottom: 3px; }
+  .hlp-callout-text { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+  .hlp-try-buttons { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 11px; }
+
+  /* FAQ */
+  .hlp-faq-q { display: flex; align-items: center; gap: 12px; padding: 15px 18px; cursor: pointer; list-style: none; }
+  .hlp-faq-q::-webkit-details-marker { display: none; }
+  .hlp-faq-q-text { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+  .hlp-faq-a { padding: 0 18px 18px; font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
+  .hlp-faq-a a { color: var(--brand-1); font-weight: 600; }
+
+  /* Contact */
+  .hlp-contact {
+    text-align: center; border-radius: 20px; padding: 32px 24px;
+    background: linear-gradient(135deg, rgba(99,102,241,.08), rgba(236,72,153,.06));
+    border: 1.5px solid rgba(99,102,241,.16);
+  }
+  .hlp-contact-icon { font-size: 34px; margin-bottom: 10px; }
+  .hlp-contact h3 { font-family:'Space Grotesk',sans-serif; font-size: 20px; font-weight: 800; color: var(--text); margin: 0 0 6px; }
+  .hlp-contact p { font-size: 14px; color: var(--text-muted); margin: 0 0 18px; }
+  .hlp-contact-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+
+  /* Toast */
+  .hlp-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--success); color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-size: 14px; font-weight: 700; box-shadow: 0 12px 30px -8px rgba(16,185,129,.6);
+    z-index: 100; display: none;
+  }
+  .hlp-toast.show { display: block; }
+
+  @media (max-width: 720px) {
+    .hlp-stages { grid-template-columns: 1fr; }
+    .hlp-hero { padding: 24px 20px; }
+    .hlp-hero h1 { font-size: 24px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set L = help_payload.labels %}
+<div class="hlp">
+
+  <!-- Hero -->
+  <div class="hlp-hero">
+    <div class="hlp-hero-badge">{{ t('hp_badge') }}</div>
+    <h1>{{ t('hp_h') }}</h1>
+    <p>{{ t('hp_sub') }}</p>
+  </div>
+
+  <!-- Quick start -->
+  <div class="hlp-banner">
+    <div class="hlp-banner-icon">🚀</div>
+    <div class="hlp-banner-text">
+      <div class="hlp-banner-title">{{ t('hp_quick_h') }}</div>
+      <div class="hlp-banner-sub">{{ t('hp_quick_sub') }}</div>
+    </div>
+    <div class="hlp-banner-actions">
+      <a href="/tour/basic" class="hlp-btn hlp-btn-primary">🚀 {{ t('hp_run_tour') }}</a>
+      <button id="hlp-demo-btn" type="button" class="hlp-btn hlp-btn-ghost"
+              data-installing="{{ t('hp_installing') }}" data-installed="{{ t('hp_installed') }}">
+        📚 {{ t('hp_install_demo') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Guided tour -->
+  <h2 class="hlp-sec"><span class="hlp-sec-emoji">🎯</span>{{ t('hp_stages_h') }}</h2>
+  <div class="hlp-stages">
+    <a href="/tour/basic" class="hlp-stage {% if tour_progress.basic %}done{% endif %}">
+      <div class="hlp-stage-emoji">📚</div>
+      <div class="hlp-stage-meta">
+        <div class="hlp-stage-title">{{ t('tour_stage_basic_t') }}</div>
+        <div class="hlp-stage-desc">{{ t('tour_stage_basic_b') }}</div>
+      </div>
+      <div class="hlp-stage-mark">{% if tour_progress.basic %}✓{% else %}1{% endif %}</div>
+    </a>
+
+    {% set s2 = tour_progress.basic %}
+    <a href="{% if s2 %}/tour/import{% else %}/tour/basic{% endif %}"
+       class="hlp-stage {% if tour_progress['import'] %}done{% elif not s2 %}locked{% endif %}"
+       {% if not s2 %}title="{{ t('tour_locked_hint') }}"{% endif %}>
+      <div class="hlp-stage-emoji">📥</div>
+      <div class="hlp-stage-meta">
+        <div class="hlp-stage-title">{{ t('tour_stage_import_t') }}</div>
+        <div class="hlp-stage-desc">{{ t('tour_stage_import_b') }}</div>
+      </div>
+      <div class="hlp-stage-mark">{% if tour_progress['import'] %}✓{% elif not s2 %}🔒{% else %}2{% endif %}</div>
+    </a>
+
+    {% set s3 = tour_progress['import'] %}
+    <a href="{% if s3 %}/tour/categories{% elif s2 %}/tour/import{% else %}/tour/basic{% endif %}"
+       class="hlp-stage {% if tour_progress.categories %}done{% elif not s3 %}locked{% endif %}"
+       {% if not s3 %}title="{{ t('tour_locked_hint') }}"{% endif %}>
+      <div class="hlp-stage-emoji">📁</div>
+      <div class="hlp-stage-meta">
+        <div class="hlp-stage-title">{{ t('tour_stage_cat_t') }}</div>
+        <div class="hlp-stage-desc">{{ t('tour_stage_cat_b') }}</div>
+      </div>
+      <div class="hlp-stage-mark">{% if tour_progress.categories %}✓{% elif not s3 %}🔒{% else %}3{% endif %}</div>
+    </a>
+  </div>
+
+  <!-- Topics -->
+  <h2 class="hlp-sec"><span class="hlp-sec-emoji">📖</span>{{ t('hp_topics_h') }}</h2>
+  <div class="hlp-acc">
+    {% for topic in help_payload.topics %}
+    <details class="hlp-item">
+      <summary class="hlp-summary">
+        <div class="hlp-t-icon" style="background: {{ topic.color }};">{{ topic.emoji }}</div>
+        <div class="hlp-t-meta">
+          <div class="hlp-t-title">{{ topic.title }}</div>
+          <div class="hlp-t-sub">{{ topic.sub }}</div>
+        </div>
+        <div class="hlp-chev">▾</div>
+      </summary>
+      <div class="hlp-body">
+        <div class="hlp-body-intro">{{ topic.intro|safe }}</div>
+        <div class="hlp-steps">
+          {% for step in topic.steps %}
+          <div class="hlp-step">
+            <div class="hlp-step-num">{{ loop.index }}</div>
+            <div class="hlp-step-text">{{ step|safe }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if topic.tip %}
+        <div class="hlp-callout hlp-callout-tip">
+          <div class="hlp-callout-icon">💡</div>
+          <div>
+            <div class="hlp-eyebrow">{{ L.useful }}</div>
+            <div class="hlp-callout-text">{{ topic.tip|safe }}</div>
+          </div>
+        </div>
+        {% endif %}
+        {% if topic.actions %}
+        <div class="hlp-callout hlp-callout-try">
+          <div class="hlp-callout-row">
+            <div class="hlp-callout-icon">🎯</div>
+            <div>
+              <div class="hlp-eyebrow">{{ L.try_now }}</div>
+              <div class="hlp-callout-text">{{ topic.actionText or L.try_now_default }}</div>
+            </div>
+          </div>
+          <div class="hlp-try-buttons">
+            {% for btn in topic.actions %}
+            <a href="{{ btn.url }}" class="hlp-btn hlp-btn-primary hlp-btn-sm">{{ btn.label }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+
+  <!-- FAQ -->
+  <h2 class="hlp-sec"><span class="hlp-sec-emoji">❓</span>{{ t('hp_faq_h') }}</h2>
+  <div class="hlp-acc">
+    {% for f in help_payload.faq %}
+    <details class="hlp-item">
+      <summary class="hlp-faq-q">
+        <span class="hlp-faq-q-text">{{ f.q }}</span>
+        <span class="hlp-chev">▾</span>
+      </summary>
+      <div class="hlp-faq-a">{{ f.a|safe }}</div>
+    </details>
+    {% endfor %}
+  </div>
+
+  <!-- Contact -->
+  <div class="hlp-contact">
+    <div class="hlp-contact-icon">💌</div>
+    <h3>{{ t('hp_contact_h') }}</h3>
+    <p>{{ t('hp_contact_sub') }}</p>
+    <div class="hlp-contact-row">
+      <a href="/support" class="hlp-btn hlp-btn-primary">💬 {{ t('hp_chat_support') }}</a>
+    </div>
+    <div class="hlp-contact-row">
+      <a href="https://t.me/Slezul" target="_blank" rel="noopener" class="hlp-btn hlp-btn-ghost">📨 Telegram @Slezul</a>
+      <a href="https://t.me/Aza_Dev0320" target="_blank" rel="noopener" class="hlp-btn hlp-btn-ghost">📨 Telegram @Aza_Dev0320</a>
+    </div>
+    <div class="hlp-contact-row">
+      <a href="tel:+998998018184" class="hlp-btn hlp-btn-ghost">📱 +998 99 801-81-84</a>
+      <a href="tel:+998998129499" class="hlp-btn hlp-btn-ghost">📱 +998 99 812-94-99</a>
+    </div>
+  </div>
+
+  <div id="hlp-toast" class="hlp-toast">✓ {{ L.installed }}</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  var btn = document.getElementById('hlp-demo-btn');
+  if (!btn) return;
+  var busy = false;
+  btn.addEventListener('click', async function() {
+    if (busy) return;
+    busy = true;
+    btn.disabled = true;
+    btn.textContent = '⏳ ' + btn.dataset.installing;
+    try {
+      var fd = new FormData();
+      fd.append('_csrf', '{{ csrf_token() }}');
+      var r = await fetch('/api/install-demo-decks', { method: 'POST', body: fd });
+      var json = await r.json();
+      if (json.ok) {
+        btn.textContent = '✓ ' + btn.dataset.installed;
+        document.getElementById('hlp-toast').classList.add('show');
+        setTimeout(function() { window.location = '/dashboard'; }, 1200);
+      } else {
+        alert('{{ t('hp_installing') }}: ' + (json.error || ''));
+        busy = false; btn.disabled = false;
+        btn.textContent = '📚 {{ t('hp_install_demo') }}';
+      }
+    } catch (e) {
+      busy = false; btn.disabled = false;
+      btn.textContent = '📚 {{ t('hp_install_demo') }}';
+    }
+  });
+})();
+</script>
+{% endblock %}

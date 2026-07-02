@@ -1422,7 +1422,7 @@ def help_page():
         pass  # kolonok eshche net (do migratsii)
     help_payload = help_content.get(lang)
     return render_template(
-        "help.html",
+        "help_v2.html" if _use_v2() else "help.html",
         help_data=help_payload,
         help_payload=help_payload,
         tour_progress=tour_progress,
