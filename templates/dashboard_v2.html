@@ -50,9 +50,11 @@ p{margin:0} a{text-decoration:none;color:inherit} button{font-family:inherit;cur
   padding:0 24px;background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--hair)}
 .brand{display:flex;align-items:center;gap:10px;flex-shrink:0;text-decoration:none}
 .brand-logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center}
-.brand-logo-icon img{width:36px;height:36px;object-fit:contain;display:block;border-radius:9px}
-.logo-light{display:block}.logo-dark{display:none}
-html.dark .logo-light{display:none}html.dark .logo-dark{display:block}
+.brand-logo-icon img{width:36px;height:36px;object-fit:contain;border-radius:9px}
+.brand-logo-icon .logo-light{display:block}
+.brand-logo-icon .logo-dark{display:none}
+html.dark .brand-logo-icon .logo-light{display:none}
+html.dark .brand-logo-icon .logo-dark{display:block}
 .wordmark{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);white-space:nowrap}
 .wordmark .ai{background:var(--glint);-webkit-background-clip:text;background-clip:text;color:transparent}
 .search{flex:1;max-width:340px;display:flex;align-items:center;gap:9px;height:40px;padding:0 14px;border-radius:999px;
