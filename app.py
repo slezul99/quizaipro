@@ -1157,23 +1157,33 @@ def _deck_subject_slug(name, category=None):
     keeps an onerror gradient+initial fallback, so a wrong guess still looks fine."""
     t = " %s %s " % ((name or "").lower(), (category or "").lower())
     rules = [
-        ("english", ("english", "англ", "angl", "beginner", "ielts", "grammar",
-                     "vocabular", "toefl", "speaking", "язык")),
+        ("programming", ("program", "програм", "python", "java", "javascript", " js ",
+                         "typescript", " ts ", "html", "css", "web", "frontend", "backend",
+                         "react", "node", " sql", "database", "баз данн", "code", "код",
+                         "coding", "разработ", "software", "comput", "компьютер", "devops",
+                         "айти", " it ", "c++", "c#", "технолог", "algorithm", "алгоритм")),
+        ("english", ("english", "англ", "angl", "beginner", "elementary", "intermediate",
+                     "advanced", "ielts", "toefl", "grammar", "граммат", "vocabular",
+                     "speaking", "reading", "writing", "listening", "placement",
+                     "приветств", "знаком", "greeting", " a1", " a2", " b1", " b2", " c1",
+                     "язык")),
         ("mathematics", ("math", "матем", "алгебр", "algebra", "геометр", "geometry",
-                         "calculus", "тригоном", "уравнен")),
-        ("programming", ("program", "програм", "python", "java", "code", "код",
-                         "технолог", "software", "comput", "компьютер", "devops", "айти")),
+                         "calculus", "анализ", "производн", "интеграл", "derivative",
+                         "тригоном", "уравнен")),
         ("business", ("business", "бизнес", "эконом", "econom", "finance", "финанс",
-                      "marketing", "маркет", "менеджмент")),
+                      "marketing", "маркет", "менеджмент", "management", "accounting")),
         ("history", ("history", "истор", "древн", "ancient", " рим", "rome", "египет",
-                     "egypt", "средневеков", "война", " век")),
+                     "egypt", "средневеков", "война", " век", "revolution")),
         ("science", ("science", "наук", "biolog", "биолог", "physic", "физик", "chem",
-                     "хим", "geograf", "географ", "astro", "анатом")),
+                     "хим", "geograf", "географ", "astro", "анатом", "anatom", "clinic")),
     ]
     for slug, kws in rules:
         if any(k in t for k in kws):
             return slug
-    return "science"
+    # Unknown subject → return "" so the cover image 404s and the template's
+    # gradient + initial fallback shows (an honest neutral tile beats a random,
+    # misleading subject photo like biology for an "AI 2026-05-31" deck).
+    return ""
 
 
 app.jinja_env.globals["deck_subject_slug"] = _deck_subject_slug
