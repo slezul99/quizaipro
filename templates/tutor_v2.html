@@ -1257,6 +1257,8 @@ const TU_T = {
   error: {{ t('tu_error')|tojson }},
   net_error: {{ t('tu_net_error')|tojson }},
 };
+// CSRF token — required on every POST (server rejects form POSTs without it).
+const TUTOR_CSRF = {{ csrf_token()|tojson }};
 
 /* ════════════════════════════════════════════════════════
    tutorApp() — Alpine component
@@ -1318,6 +1320,7 @@ function tutorApp() {
         }
         // Sinhroniziruyem sessiyu s otkrytym chatom
         const fd = new FormData();
+        fd.append('_csrf', TUTOR_CSRF);
         fd.append('conv_id', id);
         await fetch('/api/tutor/set-conv', { method: 'POST', body: fd });
       } catch(e) {}
@@ -1328,6 +1331,7 @@ function tutorApp() {
       this.messages = [];
       // Sbrasyvayem sessiyu
       const fd = new FormData();
+      fd.append('_csrf', TUTOR_CSRF);
       await fetch('/api/tutor/clear', { method: 'POST', body: fd });
     },
 
@@ -1368,6 +1372,7 @@ function tutorApp() {
       this.$nextTick(() => this.scrollBottom());
       try {
         const fd = new FormData();
+        fd.append('_csrf', TUTOR_CSRF);
         fd.append('message', text);
         fd.append('stream', '1');
         if (this.provider) fd.append('provider', this.provider);
@@ -1412,6 +1417,7 @@ function tutorApp() {
     async clearHistory() {
       if (!confirm(TU_T.clear_confirm)) return;
       const fd = new FormData();
+      fd.append('_csrf', TUTOR_CSRF);
       await fetch('/api/tutor/clear', { method: 'POST', body: fd });
       this.messages = [];
       this.activeConvId = null;
