@@ -887,7 +887,7 @@
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="provider-btn">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span x-text="provider === 'deepseek' ? 'DeepSeek' : provider === 'gemini' ? 'Gemini' : 'Auto'"></span>
+          <span x-text="provider === 'gemini' ? 'Gemini' : 'Auto'"></span>
           <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div x-show="open" @click.outside="open = false" x-transition x-cloak class="provider-panel">
@@ -896,12 +896,6 @@
             class="provider-option" :class="provider === '' ? 'active' : ''">
             <span>⚡ Auto</span>
             <span class="provider-check" x-show="provider === ''">✓</span>
-          </button>
-          <button @click="provider = 'deepseek'; open = false"
-            {% if not deepseek_available %}disabled{% endif %}
-            class="provider-option" :class="provider === 'deepseek' ? 'active' : ''">
-            <span>🌊 DeepSeek V4</span>
-            <span class="provider-check" x-show="provider === 'deepseek'">✓</span>
           </button>
           <button @click="provider = 'gemini'; open = false"
             class="provider-option" :class="provider === 'gemini' ? 'active' : ''">
@@ -1019,7 +1013,7 @@
               </div>
               {% if is_super_admin %}
               <div x-show="m.role === 'assistant' && m.provider" class="msg-provider">
-                <span x-text="m.provider === 'deepseek' ? '🌊 DeepSeek V4' : '✨ Gemini 3.5'"></span>
+                <span>✨ Gemini 3.5</span>
               </div>
               {% endif %}
             </div>
