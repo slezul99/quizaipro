@@ -544,6 +544,81 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
       </div>
       {% endif %}
 
+      <!-- GROWTH TREE (streak stages) -->
+      {% set streak_now = streak_days or current_user.streak or 0 %}
+      {% set tree_stages = [
+        ('seed', 0, t('tree_stage_seed'), '#f59e0b'),
+        ('sprout', 3, t('tree_stage_sprout'), '#34d399'),
+        ('young', 7, t('tree_stage_young'), '#22c55e'),
+        ('blooming', 14, t('tree_stage_blooming'), '#ec4899'),
+        ('mature', 30, t('tree_stage_mature'), '#f59e0b'),
+        ('rare', 60, t('tree_stage_rare'), '#8b5cf6'),
+        ('legendary', 100, t('tree_stage_legendary'), '#eab308'),
+        ('mythical', 200, t('tree_stage_mythical'), '#06b6d4'),
+        ('eternal', 365, t('tree_stage_eternal'), '#a855f7')
+      ] %}
+      {% set ts = namespace(idx=0) %}
+      {% for s in tree_stages %}{% if streak_now >= s[1] %}{% set ts.idx = loop.index0 %}{% endif %}{% endfor %}
+      {% set cur = tree_stages[ts.idx] %}
+      {% set nxt = tree_stages[ts.idx + 1] if ts.idx < 8 else None %}
+      <style>
+        .tree-card{grid-column:span 12;display:flex;align-items:center;gap:26px;overflow:hidden;position:relative}
+        .tree-card::before{content:'';position:absolute;inset:0;background:
+          radial-gradient(120% 140% at 12% 30%, color-mix(in srgb, var(--tg) 14%, transparent), transparent 60%);pointer-events:none}
+        .tree-art{position:relative;width:200px;height:200px;flex-shrink:0;display:grid;place-items:center}
+        .tree-glow{position:absolute;width:150px;height:150px;border-radius:50%;
+          background:radial-gradient(circle, color-mix(in srgb, var(--tg) 55%, transparent), transparent 70%);
+          filter:blur(6px);animation:treeGlow 4.5s ease-in-out infinite;will-change:transform,opacity}
+        .tree-img{position:relative;z-index:2;max-width:180px;max-height:180px;object-fit:contain;
+          animation:treeFloat 5s ease-in-out infinite;will-change:transform;
+          filter:drop-shadow(0 12px 20px rgba(20,16,60,.25))}
+        .tree-p{position:absolute;bottom:34px;width:6px;height:6px;border-radius:50%;
+          background:var(--tg);opacity:0;z-index:1;animation:treeRise 3.4s ease-in infinite;will-change:transform,opacity}
+        .tree-p.a{left:44%;animation-delay:0s}.tree-p.b{left:56%;animation-delay:1.1s}
+        .tree-p.c{left:50%;animation-delay:2.2s;width:4px;height:4px}
+        @keyframes treeFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+        @keyframes treeGlow{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.8;transform:scale(1.12)}}
+        @keyframes treeRise{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-72px);opacity:0}}
+        .tree-info{flex:1;min-width:0}
+        .tree-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+          color:var(--tg);background:color-mix(in srgb, var(--tg) 12%, transparent);
+          padding:4px 11px;border-radius:999px;margin-bottom:11px}
+        .tree-title{font-family:var(--font-head);font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--text);margin-bottom:6px}
+        .tree-sub{font-size:13.5px;color:var(--text-muted);line-height:1.5;margin-bottom:16px}
+        .tree-bar{height:8px;border-radius:999px;background:var(--page-2);overflow:hidden;max-width:340px;margin-bottom:16px}
+        .tree-bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--tg),color-mix(in srgb,var(--tg) 40%,#fff));
+          transform-origin:left;transition:width 1s var(--ease)}
+        .tree-dots{display:flex;gap:7px;flex-wrap:wrap}
+        .tree-dots span{width:9px;height:9px;border-radius:50%;background:var(--page-2);transition:.3s var(--ease)}
+        .tree-dots span.on{background:var(--tg)}
+        .tree-dots span.cur{box-shadow:0 0 0 3px color-mix(in srgb,var(--tg) 25%,transparent);transform:scale(1.15)}
+        @media (max-width:640px){.tree-card{flex-direction:column;text-align:center}.tree-art{width:160px;height:160px}.tree-img{max-width:150px;max-height:150px}.tree-dots{justify-content:center}.tree-bar{margin-left:auto;margin-right:auto}}
+        @media (prefers-reduced-motion:reduce){.tree-img,.tree-glow,.tree-p{animation:none!important}}
+      </style>
+      <div class="card tree-card reveal raise" style="--tg:{{ cur[3] }}">
+        <div class="tree-art">
+          <div class="tree-glow"></div>
+          <span class="tree-p a"></span><span class="tree-p b"></span><span class="tree-p c"></span>
+          <img class="tree-img" loading="lazy"
+               src="{{ url_for('static', filename='trees/' + (ts.idx+1)|string + '_' + cur[0] + '.webp') }}"
+               alt="{{ cur[2] }}">
+        </div>
+        <div class="tree-info">
+          <span class="tree-eyebrow">🌱 {{ t('v2_tree_growing') }}</span>
+          <div class="tree-title">{{ cur[2] }}</div>
+          <div class="tree-sub">
+            🔥 {{ streak_now }} {{ t('v2_day_streak_suffix') }}{% if nxt %} · {{ t('v2_tree_next_pre') }} «{{ nxt[2] }}»: {{ nxt[1] - streak_now }} {{ t('v2_tree_days') }}{% else %} · {{ t('v2_tree_max') }}{% endif %}
+          </div>
+          {% if nxt %}
+          {% set tprog = [((streak_now - cur[1]) / (nxt[1] - cur[1]) * 100) | round | int, 100] | min %}
+          <div class="tree-bar"><i style="width:{{ tprog }}%"></i></div>
+          {% endif %}
+          <div class="tree-dots">
+            {% for s in tree_stages %}<span class="{% if loop.index0 <= ts.idx %}on{% endif %}{% if loop.index0 == ts.idx %} cur{% endif %}" title="{{ s[2] }}"></span>{% endfor %}
+          </div>
+        </div>
+      </div>
+
       <!-- METRIC TILES -->
       {% set goal_off = (195 * (1 - week_done / 7)) | round(1) %}
       <div class="card t-goal reveal raise">
