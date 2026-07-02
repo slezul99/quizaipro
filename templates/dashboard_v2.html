@@ -374,7 +374,7 @@
   /* Floating KPI chips */
   .hero-kpis {
     position: relative; z-index: 3;
-    display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px;
     margin-top: 20px; padding: 0 4px;
   }
   .kpi-chip {
@@ -385,9 +385,15 @@
   }
   .kpi-chip:hover { transform: translateY(-4px); }
   .kpi-ico { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; font-size: 17px; }
+  .kpi-chip > div { min-width: 0; }
   .kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.1; }
-  .kpi-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+  .kpi-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ring-mini { width: 40px; height: 40px; flex-shrink: 0; }
+  /* Rail-present desktop band: 2×2 keeps chips wide enough for full i18n labels
+     (RU/UZ labels run longer than EN) and avoids an awkward 3+1 row. */
+  @media (min-width: 1101px) and (max-width: 1480px) {
+    .hero-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
 
   /* ══════════════════════════════════════════════
      SECTION HEADER — v3 (aliases section-head/title so
