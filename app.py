@@ -1165,25 +1165,43 @@ def _deck_subject_slug(name, category=None):
         ("english", ("english", "англ", "angl", "beginner", "elementary", "intermediate",
                      "advanced", "ielts", "toefl", "grammar", "граммат", "vocabular",
                      "speaking", "reading", "writing", "listening", "placement",
-                     "приветств", "знаком", "greeting", " a1", " a2", " b1", " b2", " c1",
-                     "язык")),
+                     "приветств", "знаком", "greeting", " a1", " a2", " b1", " b2", " c1")),
         ("mathematics", ("math", "матем", "алгебр", "algebra", "геометр", "geometry",
                          "calculus", "анализ", "производн", "интеграл", "derivative",
                          "тригоном", "уравнен")),
+        ("physics", ("physic", "физик", "механик", "mechanic", "квант", "quantum",
+                     "термодин", "оптик")),
+        ("chemistry", ("chem", "хими", "реакц", "reaction", "молекул", "molecul",
+                       "органич", "неорган")),
+        ("biology", ("biolog", "биолог", "анатом", "anatom", "клетк", "cell", "ботаник",
+                     "zoolog", "зоолог", "genetic", "генетик")),
+        ("geography", ("geograf", "географ", "geography", "континент", "страны",
+                       "countries", "capital", "столиц", "флаг", "flag", " map ", "карт")),
+        ("astronomy", ("astro", "астроном", "космос", "space", "планет", "planet",
+                       "звезд", "star", "galaxy", "галакт", "вселен")),
+        ("medicine", ("medic", "медиц", "clinic", "клинич", "болезн", "disease", "врач",
+                      "health", "здоров", "pharma", "фармаколог", "nursing", "анатом")),
         ("business", ("business", "бизнес", "эконом", "econom", "finance", "финанс",
                       "marketing", "маркет", "менеджмент", "management", "accounting")),
         ("history", ("history", "истор", "древн", "ancient", " рим", "rome", "египет",
                      "egypt", "средневеков", "война", " век", "revolution")),
-        ("science", ("science", "наук", "biolog", "биолог", "physic", "физик", "chem",
-                     "хим", "geograf", "географ", "astro", "анатом", "anatom", "clinic")),
+        ("literature", ("literatur", "литератур", "поэз", "poetry", "poem", "стих",
+                        "novel", "роман", "проза", "писател", "writer")),
+        ("art", ("искусств", "живопис", "paint", "рисован", "draw", "дизайн", "design",
+                 "художн", " art ", "art ", " art")),
+        ("music", ("music", "музык", " нот", "song", "песн", "гитар", "guitar", "piano",
+                   "пианино", "инструмент")),
+        ("language", ("язык", "language", "француз", "french", "немец", "german",
+                      "испан", "spanish", "китай", "chinese", "япон", "japan", "корей",
+                      "korean", "араб", "arab", "турец", "turk", "italian", "итальян")),
+        ("science", ("science", "наук", "fan ")),
     ]
     for slug, kws in rules:
         if any(k in t for k in kws):
             return slug
-    # Unknown subject → return "" so the cover image 404s and the template's
-    # gradient + initial fallback shows (an honest neutral tile beats a random,
-    # misleading subject photo like biology for an "AI 2026-05-31" deck).
-    return ""
+    # Unknown subject → premium generic "general" cover (brain + book), so no
+    # marketplace/library deck is left without an image.
+    return "general"
 
 
 app.jinja_env.globals["deck_subject_slug"] = _deck_subject_slug
