@@ -2846,13 +2846,23 @@ def chat_tutor_stream(user_message: str, deck_context: str = "", history: list =
     full_prompt = "\n".join(full_prompt_parts)
 
     any_chunk = False
-    for chunk in _gemini_stream(full_prompt, max_tokens=8000, temperature=0.7):
-        any_chunk = True
-        yield chunk
+    try:
+        for chunk in _gemini_stream(full_prompt, max_tokens=8000, temperature=0.7):
+            any_chunk = True
+            yield chunk
+    except Exception as e:
+        # A crash mid-stream (e.g. SSE blocked by the host proxy) must not bubble
+        # up as a bare error — fall through to the non-streaming path below.
+        print(f"[AI tutor stream] gemini stream crashed: {type(e).__name__}: {e}")
 
-    # Last-resort: non-streaming single shot if streaming yielded nothing.
+    # Last-resort: non-streaming (with retries — more proxy-friendly) if streaming
+    # yielded nothing.
     if not any_chunk:
-        text = chat_tutor(user_message, deck_context, history, lang, provider="gemini")
+        text = None
+        try:
+            text = chat_tutor(user_message, deck_context, history, lang, provider="gemini")
+        except Exception as e:
+            print(f"[AI tutor stream] non-stream fallback crashed: {type(e).__name__}: {e}")
         if text:
             yield text
         else:

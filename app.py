@@ -6958,6 +6958,17 @@ def api_tutor_ask():
                     yield chunk
             except Exception as e:
                 print(f"[/api/tutor/ask stream] {type(e).__name__}: {e}")
+            # Safety net: if the whole pipeline produced nothing (crash before any
+            # yield), send a friendly message so the client never renders a bare
+            # error bubble.
+            if not "".join(full).strip():
+                fallback = {
+                    "ru": "Не получилось ответить прямо сейчас — попробуй ещё раз через минуту.",
+                    "en": "I couldn't answer just now — please try again in a minute.",
+                    "uz": "Hozir javob bera olmadim — bir daqiqadan so'ng qayta urinib ko'ring.",
+                }.get(lang, "Не получилось ответить прямо сейчас — попробуй ещё раз через минуту.")
+                full.append(fallback)
+                yield fallback
             # Posle zaversheniya — sokhranyaem tolko v DB (ne v sessiyu — cookie limit)
             answer_text = "".join(full).strip()
             if answer_text:
