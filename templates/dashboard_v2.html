@@ -288,9 +288,29 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
   .hero-h{font-size:26px}
 }
 @media (max-width:640px){
+  .main{padding:16px 13px 48px}
+  .bento{gap:16px}
   .courses{grid-template-columns:1fr 1fr}
-  .t-goal,.t-streak,.t-xp,.t-ret{grid-column:span 12}
+  /* compact 2×2 metric grid instead of 4 oversized full-width tiles */
+  .t-goal,.t-streak,.t-xp,.t-ret{grid-column:span 6}
+  .card{padding:15px}
+  .mring{width:58px;height:58px}
+  .mring-wrap{gap:11px}
+  .mring-wrap .val{font-size:17px}
+  .mring-wrap .sub{font-size:10.5px}
+  .t-goal .days{display:none}          /* ring % already conveys weekly progress on phone */
+  .xp-big{font-size:26px}
+  .mini-stat{font-size:22px}
+  .hero-h{font-size:24px}
+  .f-title{font-size:22px}
+  .chip.xp{display:none}
   .search{display:none}.lang{display:none}
+}
+@media (max-width:360px){
+  /* very small phones: give tiles & covers full width for breathing room */
+  .t-goal,.t-streak,.t-xp,.t-ret{grid-column:span 12}
+  .t-goal .days{display:flex}
+  .courses{grid-template-columns:1fr}
 }
 </style>
 </head>
