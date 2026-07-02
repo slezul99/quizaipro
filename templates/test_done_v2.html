@@ -133,16 +133,12 @@
   }
 
   /* ── Logo ── */
-  .fc2-logo-tile {
-    width: 30px; height: 30px; border-radius: 9px;
-    background: var(--brand-grad-tri);
-    display: grid; place-items: center;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px; font-weight: 800; color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 3px 10px -2px rgba(99,102,241,.45);
-    letter-spacing: -0.03em;
-  }
+  .fc2-logo-tile { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; }
+  .fc2-logo-tile img { width: 30px; height: 30px; object-fit: contain; border-radius: 8px; }
+  .fc2-logo-tile .logo-light { display: block; }
+  .fc2-logo-tile .logo-dark { display: none; }
+  html.dark .fc2-logo-tile .logo-light { display: none; }
+  html.dark .fc2-logo-tile .logo-dark { display: block; }
   .fc2-wordmark {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 15px; font-weight: 700;
@@ -590,7 +586,10 @@
     <!-- LEFT -->
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
       <a href="{{ url_for('dashboard_v2_page') }}" style="display:flex;align-items:center;gap:6px;text-decoration:none;">
-        <div class="fc2-logo-tile">Q</div>
+        <div class="fc2-logo-tile">
+          <img src="{{ url_for('static', filename='logo-sm.png', v='1') }}" alt="QuizAIPro" class="logo-light">
+          <img src="{{ url_for('static', filename='logo-org-sm.png', v='1') }}" alt="QuizAIPro" class="logo-dark">
+        </div>
       </a>
       {% if deck_id %}
       <a href="{{ url_for('deck_view', deck_id=deck_id) }}" class="fc2-back-btn">

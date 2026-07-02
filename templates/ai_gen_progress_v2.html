@@ -33,11 +33,12 @@
     height:64px; display:flex; align-items:center; gap:10px;
     padding:0 22px; flex-shrink:0;
   }
-  .logo-tile {
-    width:36px; height:36px; border-radius:11px; background:var(--brand-grad-tri);
-    display:grid; place-items:center; font-family:'Space Grotesk'; font-size:18px; font-weight:800;
-    color:#fff; box-shadow:0 4px 12px -2px rgba(99,102,241,.45);
-  }
+  .brand-logo-icon { width:36px; height:36px; flex-shrink:0; display:grid; place-items:center; }
+  .brand-logo-icon img { width:36px; height:36px; object-fit:contain; border-radius:10px; }
+  .brand-logo-icon .logo-light { display:block; }
+  .brand-logo-icon .logo-dark { display:none; }
+  html.dark .brand-logo-icon .logo-light { display:none; }
+  html.dark .brand-logo-icon .logo-dark { display:block; }
   .wordmark {
     font-family:'Space Grotesk'; font-size:17px; font-weight:700; letter-spacing:-.03em;
     background:var(--brand-grad-tri); -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -149,7 +150,10 @@
 <body x-data="aiGenProgress()" x-init="init()">
 
   <header class="prog-top">
-    <div class="logo-tile">Q</div>
+    <div class="brand-logo-icon">
+      <img src="{{ url_for('static', filename='logo-sm.png', v='1') }}" alt="QuizAIPro" class="logo-light">
+      <img src="{{ url_for('static', filename='logo-org-sm.png', v='1') }}" alt="QuizAIPro" class="logo-dark">
+    </div>
     <span class="wordmark">QuizAIPro</span>
     <button class="theme-btn" id="themeToggleBtn" aria-label="Toggle theme">
       <svg class="icon-sun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
