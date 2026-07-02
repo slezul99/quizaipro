@@ -1742,6 +1742,24 @@ def _student_dashboard_data(user):
         'ago': _ago(r['reviewed_at']),
     } for r in activity_rows]
 
+    # Growth "level" for the redesigned hero — the app's real leveling is the
+    # streak-based growth stage (same as /growth). Reused here so the hero can
+    # show "Level N · M days to next" with a real progress bar.
+    _streak = (user["streak"] if user and "streak" in user.keys() else 0) or 0
+    _idx = 0
+    for _i, _s in enumerate(GROWTH_STAGES):
+        if _streak >= _s["start"]:
+            _idx = _i
+    _cur_stage = GROWTH_STAGES[_idx]
+    _nxt_stage = GROWTH_STAGES[_idx + 1] if _idx + 1 < len(GROWTH_STAGES) else None
+    if _nxt_stage:
+        _span = max(1, _nxt_stage["start"] - _cur_stage["start"])
+        level_progress = max(0.0, min(1.0, (_streak - _cur_stage["start"]) / _span))
+        level_days_to_next = max(0, _nxt_stage["start"] - _streak)
+        level_next_title = t(f"gr_t_{_nxt_stage['key']}")
+    else:
+        level_progress, level_days_to_next, level_next_title = 1.0, 0, None
+
     return dict(
         decks=decks, total=total, learned=learned, due=due,
         total_reviews=total_reviews, by_category=by_category,
@@ -1751,6 +1769,9 @@ def _student_dashboard_data(user):
         streak_days=streak_days, week_days=week_days, week_done=week_done,
         series=series, week_reviews=week_reviews, week_xp=week_xp,
         total_xp=total_xp,
+        level_num=(_idx + 1), level_title=t(f"gr_t_{_cur_stage['key']}"),
+        level_next_title=level_next_title, level_progress=level_progress,
+        level_days_to_next=level_days_to_next,
     )
 
 

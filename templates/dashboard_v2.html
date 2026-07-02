@@ -24,8 +24,13 @@
     --topbar-h: 68px;
     --shadow-card: 0 4px 20px -6px rgba(100,90,180,.12);
     --shadow-raised: 0 16px 40px -12px rgba(99,102,241,.22);
+    --shadow-hero: 0 24px 60px -16px rgba(99,102,241,.35);
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
     --text: #1e293b;
+    --text-2: #334155;
+    --text-muted: #64748b;
+    --border-soft: rgba(99,102,241,.08);
+    --input-bg: #f4f3fb;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -298,198 +303,180 @@
   }
   .view-all:hover { color: var(--brand-2); }
 
-  /* ── Hero banner ── */
-  .hero-banner {
-    border-radius: 22px;
-    padding: 28px 32px;
-    background: linear-gradient(135deg, #f3f1fb 0%, #faf9ff 100%);
-    position: relative; overflow: visible;
-    display: flex; align-items: center; gap: 0;
-    min-height: 200px;
-    box-shadow: 0 4px 24px -6px rgba(99,102,241,.12), 0 1px 0 rgba(255,255,255,.9) inset;
-    border: 1px solid rgba(99,102,241,.09);
+  /* ══════════════════════════════════════════════
+     1. HERO — v3
+     ══════════════════════════════════════════════ */
+  .hero {
+    position: relative; border-radius: 28px; overflow: visible;
+    background: var(--brand-grad-tri);
+    box-shadow: var(--shadow-hero);
+    padding: 34px 36px 62px;
+    isolation: isolate;
   }
-
-  /* Illustration side */
-  .hero-illus {
-    width: 250px; min-width: 200px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    align-self: stretch;
-    margin: -28px 0 -28px -32px;
-    padding: 0;
-    overflow: hidden;
-    border-radius: 22px 0 0 22px;
-  }
-  .hero-illus img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-  }
-
-  .hero-content { flex: 1; min-width: 0; padding-left: 26px; }
-  .hero-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 26px; font-weight: 800;
-    letter-spacing: -0.03em; line-height: 1.15;
-    color: var(--text);
-    margin-bottom: 5px;
-  }
-  .hero-sub { font-size: 14px; color: #64748b; margin-bottom: 22px; }
-
-  /* Stat tile row — hero layout: XP hero spans full width, 3 compacts below */
-  .stat-pills {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 10px;
-  }
-  /* Hero stat (XP) — spans full row */
-  .stat-pill--hero {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, rgba(99,102,241,.10) 0%, rgba(139,92,246,.10) 100%);
-    border: 1.5px solid rgba(99,102,241,.22);
-    border-radius: 16px;
-    padding: 16px 18px 15px;
-    box-shadow: 0 4px 16px -6px rgba(99,102,241,.18);
-    transition: all .22s var(--ease);
-    display: flex; align-items: center; gap: 14px;
-  }
-  .stat-pill--hero:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -8px rgba(99,102,241,.28); border-color: rgba(99,102,241,.38); }
-  .stat-pill--hero .stat-chip {
-    width: 40px; height: 40px; border-radius: 12px;
-    display: grid; place-items: center;
-    flex-shrink: 0;
-    background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(139,92,246,.18));
-  }
-  .stat-pill--hero .stat-chip svg { width: 20px; height: 20px; }
-  .stat-pill--hero .stat-pill-val {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 30px; font-weight: 800;
-    color: var(--brand-1); line-height: 1; letter-spacing: -0.03em;
-  }
-  .stat-pill--hero .stat-pill-label {
-    font-size: 11.5px; color: #64748b; font-weight: 600; margin-top: 2px;
-    text-transform: uppercase; letter-spacing: .05em;
-  }
-
-  /* Compact stats */
-  .stat-pill {
-    background: #fff;
-    min-width: 0;
-    border: 1px solid rgba(99,102,241,.10);
-    border-radius: 16px;
-    padding: 13px 12px 12px;
-    box-shadow: 0 2px 10px -4px rgba(99,102,241,.12);
-    transition: all .22s var(--ease);
-    display: flex; flex-direction: column; gap: 0;
-  }
-  .stat-pill:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(99,102,241,.2); border-color: rgba(99,102,241,.2); }
-
-  .stat-chip {
-    width: 38px; height: 38px; border-radius: 11px;
-    display: grid; place-items: center;
-    margin-bottom: 9px;
-    flex-shrink: 0; font-size: 19px;
-  }
-  .stat-chip svg { width: 19px; height: 19px; }
-  .stat-chip-ring { width: 38px; height: 38px; position: relative; margin-bottom: 9px; flex-shrink: 0; display: grid; place-items: center; }
-
-  .stat-pill-val {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 17px; font-weight: 800;
-    color: var(--text); line-height: 1; letter-spacing: -0.02em;
-    margin-bottom: 3px;
-  }
-  .stat-pill-label { font-size: 10.5px; color: #94a3b8; font-weight: 600; }
-
-  /* ── Continue Learning cards ── */
-  .course-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  .course-card {
-    background: #fff;
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid rgba(99,102,241,.08);
-    box-shadow: 0 2px 12px -4px rgba(99,102,241,.10);
-    transition: all .3s var(--ease);
-    cursor: pointer;
-    display: flex; flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-  }
-  .course-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px -10px rgba(99,102,241,.25); border-color: rgba(99,102,241,.18); }
-
-  /* Cover card — initial letter tile (replaces emoji placeholder) */
-  .course-cover-initial {
-    height: 108px; position: relative; overflow: hidden;
-    flex-shrink: 0;
-    display: grid; place-items: center;
-  }
-  /* Decorative shimmer/noise overlay on the cover */
-  .course-cover-initial::after {
-    content: '';
-    position: absolute; inset: 0;
+  .hero::before {
+    content: ''; position: absolute; inset: 0; border-radius: 28px; z-index: 0;
     background:
-      radial-gradient(ellipse at 20% 30%, rgba(255,255,255,.18) 0%, transparent 55%),
-      radial-gradient(ellipse at 80% 75%, rgba(255,255,255,.10) 0%, transparent 50%);
+      radial-gradient(60% 90% at 88% 10%, rgba(255,255,255,.30), transparent 60%),
+      radial-gradient(40% 60% at 10% 100%, rgba(0,0,0,.18), transparent 60%);
     pointer-events: none;
   }
-  .course-cover-img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; z-index: 2;
-    transition: transform .5s cubic-bezier(.16,1,.3,1);
+  .hero-aura {
+    position: absolute; z-index: 0; border-radius: 50%; filter: blur(40px);
+    background: radial-gradient(circle, rgba(255,255,255,.55), transparent 70%);
+    width: 340px; height: 340px; right: -40px; top: -60px; opacity: .55;
+    animation: auraPulse 7s ease-in-out infinite;
   }
-  .course-card:hover .course-cover-img { transform: scale(1.07); }
-  .course-cover-letter {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 46px; font-weight: 800;
-    color: rgba(255,255,255,.92);
-    letter-spacing: -0.03em;
-    line-height: 1;
-    position: relative; z-index: 1;
-    text-shadow: 0 2px 16px rgba(0,0,0,.18);
-    user-select: none;
-  }
+  @keyframes auraPulse { 0%,100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.12); opacity: .7; } }
 
-  .course-body { padding: 14px 15px 15px; flex: 1; display: flex; flex-direction: column; }
-  /* Category badge overlaid on the cover (keeps card bodies vertically aligned) */
+  .hero-inner { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0,1fr) 220px; gap: 20px; align-items: center; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.92); background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25); padding: 5px 12px 5px 9px; border-radius: 999px; backdrop-filter: blur(6px); margin-bottom: 16px; }
+  .hero-greet { font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; color: #fff; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 10px; }
+  .hero-lede { font-size: 15px; color: rgba(255,255,255,.92); line-height: 1.5; margin-bottom: 22px; }
+  .hero-lede b { font-weight: 800; color: #fff; }
+
+  .xp-track-wrap { max-width: 460px; margin-bottom: 24px; }
+  .xp-track-labels { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); margin-bottom: 7px; }
+  .xp-track { height: 10px; border-radius: 999px; background: rgba(255,255,255,.22); overflow: hidden; position: relative; }
+  .xp-track-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#fff,#ffe8f7); box-shadow: 0 0 14px rgba(255,255,255,.7); position: relative; }
+  .xp-track-fill::after { content:''; position:absolute; inset:0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); width: 40%; animation: shimmerSweep 2.6s ease-in-out infinite; }
+  @keyframes shimmerSweep { 0% { transform: translateX(-120%); } 100% { transform: translateX(340%); } }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: #fff; color: var(--brand-1);
+    font-weight: 800; font-size: 14.5px; font-family: 'Space Grotesk', sans-serif;
+    padding: 13px 24px; border-radius: 999px; border: none;
+    box-shadow: 0 14px 32px -10px rgba(0,0,0,.35);
+    transition: transform .22s var(--ease), box-shadow .22s var(--ease);
+    text-decoration: none; cursor: pointer;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 38px -8px rgba(0,0,0,.42); }
+  .btn-primary svg { width: 17px; height: 17px; transition: transform .2s var(--ease); }
+  .btn-primary:hover svg { transform: translateX(3px); }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.14); color: #fff;
+    font-weight: 700; font-size: 13.5px;
+    padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,.28);
+    transition: all .2s var(--ease);
+    text-decoration: none; cursor: pointer;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,.22); transform: translateY(-1px); }
+
+  .hero-mascot-wrap { position: relative; display: grid; place-items: center; }
+  .hero-mascot-glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.45), transparent 70%); filter: blur(6px); animation: mascotGlow 4s ease-in-out infinite; }
+  @keyframes mascotGlow { 0%,100% { opacity: .6; transform: scale(.95); } 50% { opacity: 1; transform: scale(1.05); } }
+  .hero-mascot { width: 176px; height: 176px; object-fit: contain; position: relative; z-index: 2; filter: drop-shadow(0 18px 30px rgba(0,0,0,.28)); animation: mascotFloat 5s ease-in-out infinite; }
+  @keyframes mascotFloat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+  .hero-mascot-fallback { width: 176px; height: 176px; border-radius: 50%; display: grid; place-items: center; font-size: 72px; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), rgba(255,255,255,.08)); position: relative; z-index: 2; animation: mascotFloat 5s ease-in-out infinite; }
+
+  /* Floating KPI chips */
+  .hero-kpis {
+    position: relative; z-index: 3;
+    display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px;
+    margin-top: 20px; padding: 0 4px;
+  }
+  .kpi-chip {
+    background: #fff; border-radius: 18px; padding: 14px 16px;
+    box-shadow: var(--shadow-raised); border: 1px solid var(--border-soft);
+    display: flex; align-items: center; gap: 11px;
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .kpi-chip:hover { transform: translateY(-4px); }
+  .kpi-ico { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; font-size: 17px; }
+  .kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .kpi-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+  .ring-mini { width: 40px; height: 40px; flex-shrink: 0; }
+
+  /* ══════════════════════════════════════════════
+     SECTION HEADER — v3 (aliases section-head/title so
+     the existing markup + JS selectors keep working)
+     ══════════════════════════════════════════════ */
+  .section-head, .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
+  .section-title, .sec-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.01em; display: flex; align-items: center; gap: 9px; }
+  .view-all, .sec-link { font-size: 12.5px; font-weight: 700; color: var(--brand-1); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; text-decoration: none; cursor: pointer; transition: color .15s; }
+  .view-all:hover, .sec-link:hover { color: var(--brand-2); }
+  .sec-link svg { width: 13px; height: 13px; }
+  .sec-overline { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+
+  /* ══════════════════════════════════════════════
+     2. FEATURED CARD + COURSE ROW
+     ══════════════════════════════════════════════ */
+  .featured-card {
+    position: relative; border-radius: 24px; overflow: hidden; min-height: 220px;
+    background: linear-gradient(135deg, #1c1836 0%, #2a2154 45%, #4a1f52 100%);
+    box-shadow: var(--shadow-raised);
+    display: flex; align-items: stretch;
+    transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+    text-decoration: none;
+    margin-bottom: 18px;
+  }
+  .featured-card:hover { transform: translateY(-4px); box-shadow: 0 28px 60px -14px rgba(30,20,60,.5); }
+  .featured-cover { position: absolute; inset: 0; }
+  .featured-cover img { width: 100%; height: 100%; object-fit: cover; opacity: .55; mix-blend-mode: luminosity; }
+  .featured-cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(100deg, rgba(20,14,40,.94) 0%, rgba(30,20,60,.75) 38%, rgba(74,31,82,.35) 75%, rgba(74,31,82,.15) 100%);
+  }
+  .featured-content { position: relative; z-index: 2; padding: 28px 32px; display: flex; flex-direction: column; justify-content: space-between; width: 100%; gap: 18px; }
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28);
+    color: #fff; font-size: 11.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px;
+  }
+  .featured-title { font-size: 25px; font-weight: 700; color: #fff; letter-spacing: -.01em; margin-bottom: 6px; font-family: 'Space Grotesk', sans-serif; }
+  .featured-meta { font-size: 13px; color: rgba(255,255,255,.7); font-weight: 500; }
+  .featured-progress-wrap { max-width: 380px; }
+  .featured-progress-labels { display: flex; justify-content: space-between; font-size: 11.5px; color: rgba(255,255,255,.75); font-weight: 600; margin-bottom: 6px; }
+  .featured-progress { height: 8px; border-radius: 999px; background: rgba(255,255,255,.16); overflow: hidden; }
+  .featured-progress-fill { height: 100%; border-radius: 999px; background: var(--brand-grad-tri); box-shadow: 0 0 12px rgba(139,92,246,.7); }
+  .featured-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .btn-primary-dark {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--brand-grad-tri); color: #fff; font-weight: 800; font-family: 'Space Grotesk', sans-serif;
+    font-size: 13.5px; padding: 11px 20px; border-radius: 999px; border: none;
+    box-shadow: 0 12px 26px -8px rgba(139,92,246,.6);
+    transition: transform .2s var(--ease);
+    text-decoration: none;
+  }
+  .btn-primary-dark:hover { transform: translateY(-2px); }
+  .btn-primary-dark svg { width: 15px; height: 15px; }
+  .btn-ghost-dark { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,.1); color: #fff; font-weight: 600; font-size: 12.5px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); transition: all .2s var(--ease); text-decoration: none; }
+  .btn-ghost-dark:hover { background: rgba(255,255,255,.18); }
+
+  /* Course row */
+  .course-cards { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 16px; }
+  .course-card {
+    position: relative; border-radius: 20px; overflow: hidden; height: 190px;
+    background: #fff; box-shadow: var(--shadow-card); border: 1px solid var(--border-soft);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    transition: transform .28s var(--ease), box-shadow .28s var(--ease);
+    text-decoration: none; color: inherit;
+  }
+  .course-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-raised); }
+  .course-cover-initial { position: absolute; inset: 0; display: block; }
+  .course-cover-initial::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,12,30,0) 22%, rgba(15,12,30,.45) 46%, rgba(12,10,26,.80) 72%, rgba(8,6,20,.94) 100%); }
+  .course-cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transition: transform .5s var(--ease); }
+  .course-card:hover .course-cover-img { transform: scale(1.07); }
+  .course-cover-letter { position: absolute; inset: 0; z-index: 0; display: grid; place-items: center; font-family: 'Space Grotesk', sans-serif; font-size: 46px; font-weight: 800; color: rgba(255,255,255,.92); letter-spacing: -.03em; text-shadow: 0 2px 16px rgba(0,0,0,.18); user-select: none; }
   .course-cover-badge {
-    position: absolute; z-index: 3; top: 8px; left: 8px;
-    max-width: calc(100% - 16px);
-    font-size: 10px; font-weight: 800;
-    letter-spacing: .05em; text-transform: uppercase;
-    padding: 3px 9px; border-radius: 999px;
-    color: #4338ca; background: rgba(255,255,255,.92);
-    box-shadow: 0 2px 8px -2px rgba(0,0,0,.18);
-    backdrop-filter: blur(4px);
+    position: absolute; z-index: 3; top: 10px; right: 10px;
+    max-width: calc(100% - 20px);
+    font-size: 10px; font-weight: 800; letter-spacing: .04em;
+    color: #fff; background: rgba(0,0,0,.38); backdrop-filter: blur(4px);
+    padding: 4px 9px; border-radius: 999px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .course-title {
-    font-weight: 700; font-size: 13.5px; color: var(--text);
-    margin-bottom: 11px; line-height: 1.35;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    overflow: hidden; min-height: 2.7em;
-  }
-  .progress-wrap { margin-bottom: 11px; }
+  .course-due { position: absolute; top: 10px; left: 10px; z-index: 3; font-size: 10px; font-weight: 800; color: #fff; background: rgba(0,0,0,.38); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 999px; }
+  .course-body { position: relative; z-index: 2; padding: 14px 14px 15px; }
+  .course-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.4em; }
+  .progress-wrap { margin-bottom: 0; }
   .progress-pct-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
-  .progress-label { font-size: 10.5px; color: #64748b; font-weight: 600; }
-  .progress-pct-val { font-size: 10.5px; color: var(--brand-1); font-weight: 700; }
-  .progress-track {
-    height: 5px; background: rgba(99,102,241,.08); border-radius: 999px; overflow: hidden;
-  }
-  .progress-fill { height: 100%; border-radius: 999px; background: var(--brand-grad-tri); }
-  .btn-continue {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 12px; font-weight: 700;
-    color: var(--brand-1);
-    background: rgba(99,102,241,.08);
-    border-radius: 999px; padding: 7px 14px;
-    border: 1px solid rgba(99,102,241,.12);
-    cursor: pointer; align-self: flex-start;
-    transition: all .18s;
-    margin-top: auto;
-  }
-  .btn-continue:hover { background: rgba(99,102,241,.16); border-color: rgba(99,102,241,.28); }
+  .progress-label { font-size: 10.5px; color: rgba(255,255,255,.72); font-weight: 600; }
+  .progress-pct-val { font-size: 10.5px; color: #fff; font-weight: 800; }
+  .progress-track { height: 5px; background: rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#fff,#e0e7ff); }
 
   /* chevron nav row */
   .chevron-row { display: flex; gap: 6px; }
@@ -503,189 +490,175 @@
   .chevron-btn:hover { background: #ede9fe; color: var(--brand-1); border-color: rgba(99,102,241,.3); }
   .chevron-btn svg { width: 14px; height: 14px; }
 
-  /* ── Analytics ── */
-  .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  /* ══════════════════════════════════════════════
+     3. AI COACH
+     ══════════════════════════════════════════════ */
+  .coach-panel {
+    position: relative; border-radius: 22px; overflow: hidden;
+    background: linear-gradient(135deg, rgba(99,102,241,.09), rgba(139,92,246,.06) 45%, rgba(236,72,153,.07));
+    border: 1px solid rgba(99,102,241,.18);
+    box-shadow: var(--shadow-card);
+    padding: 24px 26px;
+  }
+  .coach-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; position: relative; z-index: 2; }
+  .coach-ico { width: 42px; height: 42px; border-radius: 13px; background: var(--brand-grad-tri); display: grid; place-items: center; flex-shrink: 0; box-shadow: 0 8px 20px -6px rgba(99,102,241,.55); position: relative; }
+  .coach-ico::after { content:''; position:absolute; inset:-4px; border-radius:16px; border: 2px solid rgba(139,92,246,.35); animation: pulseRing 2.4s ease-out infinite; }
+  @keyframes pulseRing { 0% { transform: scale(.9); opacity: 1; } 100% { transform: scale(1.25); opacity: 0; } }
+  .coach-title { font-size: 16.5px; font-weight: 700; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+  .coach-sub { font-size: 12.5px; color: var(--text-muted); font-weight: 500; }
+
+  .coach-suggestions { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; position: relative; z-index: 2; margin-bottom: 18px; }
+  .sugg-card {
+    background: #fff; border: 1px solid var(--border-soft); border-radius: 16px;
+    padding: 15px; display: flex; flex-direction: column; gap: 10px;
+    transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+    box-shadow: 0 2px 10px -4px rgba(99,102,241,.08);
+    text-decoration: none;
+  }
+  .sugg-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+  .sugg-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; color: var(--brand-1); background: rgba(99,102,241,.1); padding: 4px 9px; border-radius: 999px; width: fit-content; }
+  .sugg-tag.warn { color: #c2410c; background: rgba(249,115,22,.12); }
+  .sugg-tag.info { color: #7c3aed; background: rgba(139,92,246,.12); }
+  .sugg-text { font-size: 13px; font-weight: 600; color: var(--text-2); line-height: 1.4; }
+  .sugg-cta { font-size: 12px; font-weight: 700; color: var(--brand-1); display: inline-flex; align-items: center; gap: 4px; margin-top: auto; }
+  .sugg-cta svg { width: 12px; height: 12px; }
+
+  .coach-quickrow { display: flex; gap: 10px; position: relative; z-index: 2; flex-wrap: wrap; }
+  .quick-btn { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid rgba(99,102,241,.14); color: var(--text-2); font-weight: 700; font-size: 12.5px; padding: 9px 15px; border-radius: 12px; transition: all .2s var(--ease); text-decoration: none; }
+  .quick-btn:hover { border-color: rgba(99,102,241,.4); color: var(--brand-1); transform: translateY(-1px); }
+  .quick-btn svg { width: 14px; height: 14px; }
+
+  /* ══════════════════════════════════════════════
+     4. ANALYTICS STRIP
+     ══════════════════════════════════════════════ */
+  .analytics-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
   .analytics-card {
-    background: #fff;
-    border-radius: 18px; padding: 18px;
-    border: 1px solid rgba(99,102,241,.08);
-    box-shadow: 0 2px 12px -4px rgba(99,102,241,.09);
-    transition: all .3s var(--ease);
+    background: #fff; border: 1px solid var(--border-soft); border-radius: 18px;
+    padding: 16px 18px; box-shadow: var(--shadow-card);
+    display: flex; flex-direction: column; gap: 8px;
+    transition: transform .2s var(--ease), box-shadow .2s var(--ease);
   }
-  .analytics-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -8px rgba(99,102,241,.2); }
-  .analytics-label { font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
-  .analytics-val {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 24px; font-weight: 800;
-    color: var(--text); letter-spacing: -0.02em; line-height: 1;
-    margin-bottom: 3px;
-  }
-  .analytics-delta {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11.5px; font-weight: 700;
-    color: var(--success); margin-bottom: 12px;
-  }
-  .analytics-delta svg { width: 12px; height: 12px; }
+  .analytics-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-raised); }
+  .an-top { display: flex; align-items: center; justify-content: space-between; }
+  .analytics-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 0; }
+  .analytics-delta { font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 999px; color: var(--success); background: rgba(16,185,129,.12); margin-bottom: 0; }
+  .analytics-val { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 0; }
   /* Chart wrapper for gridlines */
   .chart-wrap { position: relative; }
-  .chart-gridlines {
-    position: absolute; inset: 0 0 0 0;
-    display: flex; flex-direction: column; justify-content: space-between;
-    pointer-events: none;
-  }
-  .chart-gridlines span {
-    display: block; height: 1px;
-    background: rgba(99,102,241,.07);
-    width: 100%;
-  }
+  .chart-gridlines { position: absolute; inset: 0 0 0 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+  .chart-gridlines span { display: block; height: 1px; background: rgba(99,102,241,.07); width: 100%; }
 
   /* Analytics empty state — intentional baseline, not a broken chart */
-  .chart-empty {
-    position: relative; height: 52px;
-    display: flex; flex-direction: column; justify-content: flex-end;
-  }
-  .chart-empty-baseline {
-    width: 100%; height: 1px;
-    background: rgba(99,102,241,.12);
-    border-radius: 1px;
-  }
-  .chart-empty-msg {
-    font-size: 11px; color: #94a3b8; font-weight: 500;
-    margin-top: 8px; line-height: 1.4;
-  }
-  /* Sparkline SVG */
+  .chart-empty { position: relative; height: 52px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .chart-empty-baseline { width: 100%; height: 1px; background: rgba(99,102,241,.12); border-radius: 1px; }
+  .chart-empty-msg { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 8px; line-height: 1.4; }
   .sparkline { display: block; width: 100%; }
-  /* Bar chart */
   .bar-chart { width: 100%; }
 
-  /* ── Right rail ── */
+  /* ══════════════════════════════════════════════
+     RIGHT RAIL
+     ══════════════════════════════════════════════ */
   .right-rail { display: flex; flex-direction: column; gap: 20px; }
-  .rail-card { background: #fff; border-radius: 20px; box-shadow: var(--shadow-card); border: 1px solid rgba(99,102,241,.07); padding: 22px; }
-  .rail-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 18px;
-  }
-  .rail-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px; font-weight: 700;
-    color: var(--text); letter-spacing: -0.02em;
-  }
-  .rail-link { font-size: 12.5px; font-weight: 600; color: var(--brand-1); cursor: pointer; text-decoration: none; }
+  .rail-card { background: #fff; border: 1px solid var(--border-soft); border-radius: 20px; padding: 20px; box-shadow: var(--shadow-card); }
+  .rail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .rail-title { font-size: 14.5px; font-weight: 700; color: var(--text); font-family: 'Space Grotesk', sans-serif; letter-spacing: -.01em; }
+  .rail-link { font-size: 12.5px; font-weight: 700; color: var(--brand-1); cursor: pointer; text-decoration: none; }
 
   /* Weekly goal ring */
   .goal-ring-container { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-  .goal-big {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 26px; font-weight: 800;
-    color: var(--text); line-height: 1; letter-spacing: -0.02em;
-  }
-  .goal-sub { font-size: 10px; font-weight: 600; color: #94a3b8; text-align: center; margin-top: 3px; }
-  .goal-caption { font-size: 12px; color: #64748b; text-align: center; line-height: 1.45; margin-bottom: 16px; }
+  .goal-big { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -.02em; }
+  .goal-sub { font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; margin-top: 3px; }
+  .goal-caption { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.45; margin-bottom: 16px; }
 
   /* Day dots */
   .day-dots { display: flex; gap: 7px; justify-content: center; }
   .day-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .day-dot {
-    width: 32px; height: 32px; border-radius: 10px;
+    width: 30px; height: 30px; border-radius: 9px;
     display: grid; place-items: center;
-    font-size: 11px; font-weight: 800;
-    color: #94a3b8;
-    background: rgba(99,102,241,.06);
+    font-size: 10.5px; font-weight: 800;
+    color: var(--text-muted);
+    background: var(--input-bg);
     border: 1.5px solid rgba(99,102,241,.10);
     transition: all .2s;
   }
-  .day-dot.filled {
-    background: var(--brand-grad-tri);
-    border-color: transparent;
-    color: #fff;
-    box-shadow: 0 4px 10px -3px rgba(99,102,241,.45);
-  }
-  .day-dot.future {
-    opacity: 0.4;
-  }
+  .day-dot.filled { background: var(--brand-grad-tri); border-color: transparent; color: #fff; box-shadow: 0 4px 10px -3px rgba(99,102,241,.45); }
+  .day-dot.future { opacity: 0.4; }
   .day-dot svg { width: 13px; height: 13px; }
-  .day-label { font-size: 10px; font-weight: 600; color: #94a3b8; }
+  .day-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+
+  /* Achievements medal row (teaser — reuses achievements_page link) */
+  .medal-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .medal { width: 54px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .medal-disc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; box-shadow: 0 6px 16px -4px rgba(0,0,0,.2); }
+  .medal-disc.gold { background: radial-gradient(circle at 35% 30%, #fde68a, #f59e0b 70%); }
+  .medal-disc.locked { background: var(--input-bg); filter: grayscale(1); opacity: .55; }
 
   /* Recent activity */
   .activity-list { display: flex; flex-direction: column; gap: 1px; }
-  .activity-item {
-    display: flex; align-items: flex-start; gap: 11px;
-    padding: 11px 0;
-    border-bottom: 1px solid rgba(99,102,241,.06);
-  }
-  .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .activity-item { display: flex; align-items: flex-start; gap: 11px; padding: 9px 4px; border-radius: 12px; transition: background .15s; }
+  .activity-item:hover { background: var(--input-bg); }
   /* Icon chip — neutral tint per §3 "Icon chips" */
   .activity-icon {
-    width: 36px; height: 36px; border-radius: 10px;
+    width: 34px; height: 34px; border-radius: 10px;
     display: grid; place-items: center;
-    flex-shrink: 0; font-size: 17px;
+    flex-shrink: 0; font-size: 15px; margin-top: 1px;
     background: rgba(99,102,241,.08);
     border: 1.5px solid rgba(99,102,241,.12);
     position: relative; overflow: visible;
   }
   /* Subject cover art (falls back to the emoji underneath on error) */
-  .activity-icon img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; border-radius: 9px; z-index: 0;
-  }
+  .activity-icon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 9px; z-index: 0; }
   /* Small grade-colour status dot */
-  .activity-icon .grade-dot {
-    position: absolute; bottom: -2px; right: -2px;
-    width: 9px; height: 9px; border-radius: 999px;
-    border: 1.5px solid #fff; z-index: 1;
-  }
+  .activity-icon .grade-dot { position: absolute; bottom: -2px; right: -2px; width: 9px; height: 9px; border-radius: 999px; border: 1.5px solid #fff; z-index: 1; }
   html.dark .activity-icon .grade-dot { border-color: rgba(30,41,75,.9); }
-  html.dark .activity-icon {
-    background: rgba(99,102,241,.12);
-    border-color: rgba(99,102,241,.2);
-  }
+  html.dark .activity-icon { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.2); }
   .activity-content { flex: 1; min-width: 0; }
-  .activity-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
-  .activity-sub { font-size: 11.5px; color: #64748b; margin-top: 2px; }
-  .activity-time { font-size: 11px; font-weight: 600; color: #94a3b8; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .activity-title { font-size: 12.5px; font-weight: 600; color: var(--text); line-height: 1.4; }
+  .activity-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .activity-time { font-size: 11px; color: var(--text-muted); font-weight: 500; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
 
   /* Empty state */
-  .empty-state {
-    text-align: center; padding: 32px 16px;
-    color: #94a3b8; font-size: 13px; font-weight: 500;
-  }
+  .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 13px; font-weight: 500; }
   .empty-state .empty-icon { font-size: 36px; margin-bottom: 10px; }
 
   /* Gradient text utility */
-  .grad-text {
-    background: var(--brand-grad-tri);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
+  .grad-text { background: var(--brand-grad-tri); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-  /* Week dropdown */
-  .week-drop {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12.5px; font-weight: 600; color: #64748b;
-    background: #f4f3fb; border: 1.5px solid rgba(99,102,241,.10);
-    border-radius: 10px; padding: 7px 12px;
-    cursor: pointer; transition: all .18s;
-    border: none;
+  /* Entrance anim (reused from prototype) */
+  .fade-up { opacity: 0; transform: translateY(14px); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+  .fade-up.in { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
   }
-  .week-drop:hover { border-color: rgba(99,102,241,.25); color: var(--brand-1); }
-  .week-drop svg { width: 13px; height: 13px; }
 
   /* Responsive */
   @media (max-width: 1100px) {
     .content-grid { grid-template-columns: 1fr; }
-    .course-cards { grid-template-columns: repeat(2, 1fr); }
+    .right-rail { position: static; }
+    .course-cards { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .coach-suggestions { grid-template-columns: repeat(3, minmax(0,1fr)); }
     .analytics-grid { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 860px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
+    .hero { padding: 26px 20px 54px; border-radius: 22px; }
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-mascot-wrap { display: none; }
+    .hero-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: 16px; }
+    .featured-content { padding: 22px 20px; }
+    .featured-title { font-size: 21px; }
     .course-cards { grid-template-columns: 1fr 1fr; }
+    .coach-suggestions { grid-template-columns: 1fr; }
     .analytics-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
   @media (max-width: 600px) {
     .course-cards, .analytics-grid { grid-template-columns: 1fr; }
     .main-area { padding: 16px; }
-    .stat-pills { gap: 7px; }
-    .stat-pill { padding: 8px 10px; }
+    .hero-kpis { grid-template-columns: 1fr 1fr; }
+    .hero-greet { font-size: 24px; }
+    .coach-suggestions { grid-template-columns: 1fr; }
   }
 
   /* ════════════════════════════════════════════════
@@ -751,73 +724,61 @@
   html.dark .sidebar-user { border-top-color: rgba(99,102,241,.12); }
 
   /* Cards / surfaces */
-  html.dark .stat-pill,
   html.dark .course-card,
   html.dark .analytics-card,
-  html.dark .rail-card {
+  html.dark .rail-card,
+  html.dark .sugg-card,
+  html.dark .kpi-chip,
+  html.dark .quick-btn {
     background: rgba(30,41,75,.65);
     border-color: rgba(99,102,241,.18);
     box-shadow: 0 12px 40px -8px rgba(0,0,0,.5);
   }
 
-  /* Hero banner */
-  html.dark .hero-banner {
-    background: linear-gradient(135deg,rgba(20,28,56,.95) 0%,rgba(30,41,75,.85) 100%);
-    border-color: rgba(99,102,241,.25);
-  }
-  /* Hero illustration panel — darken in dark mode so it doesn't glow */
-  html.dark .hero-illus {
-    background: linear-gradient(135deg,#141c38 0%,#1e2950 100%);
-    position: relative;
-  }
-  html.dark .hero-illus::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 78% 68% at 48% 44%, rgba(20,28,56,0) 26%, rgba(18,25,52,.82) 90%),
-                linear-gradient(180deg, rgba(15,23,41,.15), rgba(15,23,41,.34));
-    pointer-events: none;
-    z-index: 1;
-  }
-  html.dark .hero-illus img { filter: saturate(.92) brightness(.93); }
-
   /* Section headings */
-  html.dark .section-title { color: #e2e8f0; }
-  html.dark .view-all { color: #818cf8; }
+  html.dark .section-title, html.dark .sec-title { color: #e2e8f0; }
+  html.dark .view-all, html.dark .sec-link { color: #818cf8; }
+  html.dark .sec-overline { color: #8b96ac; }
   html.dark .chevron-btn { background: rgba(30,41,75,.65); border-color: rgba(99,102,241,.2); color: #94a3b8; }
   html.dark .chevron-btn:hover { background: rgba(99,102,241,.15); color: #a5b4fc; border-color: rgba(99,102,241,.35); }
 
-  html.dark .hero-sub { color: #94a3b8; }
-  html.dark .stat-pill-val { color: #e2e8f0; }
-  html.dark .stat-pill-label { color: #94a3b8; }
-  html.dark .stat-pill--hero {
-    background: linear-gradient(135deg, rgba(99,102,241,.18) 0%, rgba(139,92,246,.15) 100%);
-    border-color: rgba(99,102,241,.35);
-  }
-  html.dark .stat-pill--hero .stat-pill-val { color: #a5b4fc; }
-  html.dark .stat-pill--hero .stat-pill-label { color: #94a3b8; }
+  /* Hero (brand-gradient card — stays vivid, only the floating KPI chips need dark surfaces) */
+  html.dark .kpi-val { color: #e9ecf5; }
+  html.dark .kpi-lbl { color: #8b96ac; }
 
-  html.dark .course-title { color: #e2e8f0; }
-  html.dark .progress-label { color: #94a3b8; }
-  html.dark .progress-track { background: rgba(99,102,241,.15); }
+  /* Featured + course row */
+  html.dark .course-title { color: #fff; }
+  html.dark .progress-label { color: rgba(255,255,255,.72); }
+  html.dark .progress-track { background: rgba(255,255,255,.18); }
 
+  /* AI Coach */
+  html.dark .coach-panel { background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(139,92,246,.09) 45%, rgba(236,72,153,.1)); border-color: rgba(99,102,241,.28); }
+  html.dark .coach-title { color: #e2e8f0; }
+  html.dark .coach-sub { color: #8b96ac; }
+  html.dark .sugg-text { color: #cbd5e1; }
+  html.dark .quick-btn { color: #cbd5e1; }
+
+  /* Analytics strip */
   html.dark .analytics-val { color: #e2e8f0; }
-  html.dark .analytics-label { color: #94a3b8; }
+  html.dark .analytics-label { color: #8b96ac; }
 
+  /* Right rail */
   html.dark .rail-title { color: #e2e8f0; }
   html.dark .rail-link { color: #818cf8; }
 
   html.dark .goal-big { color: #e2e8f0; }
-  html.dark .goal-sub { color: #94a3b8; }
-  html.dark .goal-caption { color: #94a3b8; }
+  html.dark .goal-sub { color: #8b96ac; }
+  html.dark .goal-caption { color: #8b96ac; }
   html.dark .day-dot { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.2); color: #94a3b8; }
   html.dark .day-label { color: #64748b; }
 
   html.dark .activity-title { color: #e2e8f0; }
-  html.dark .activity-sub { color: #94a3b8; }
-  html.dark .activity-item { border-bottom-color: rgba(99,102,241,.1); }
+  html.dark .activity-sub { color: #8b96ac; }
+  html.dark .activity-time { color: #8b96ac; }
 
-  html.dark .week-drop { background: rgba(15,23,41,.7); border-color: rgba(99,102,241,.25); color: #94a3b8; }
-  html.dark .week-drop:hover { color: #a5b4fc; }
+  html.dark .medal-disc.locked { background: rgba(99,102,241,.12); }
+
+  html.dark .empty-state { color: #8b96ac; }
 
   /* Theme icon swap */
   html:not(.dark) .icon-moon { display: none; }
@@ -883,10 +844,12 @@
     .stages-grid    { grid-template-columns: 1fr 1fr !important; }
     .achievements-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 
-    /* dashboard hero stacks vertically */
-    .hero-banner  { flex-direction: column; align-items: stretch; min-height: 0; padding: 0; }
-    .hero-illus   { width: auto; min-width: 0; margin: 0; height: 150px; border-radius: 22px 22px 0 0; }
-    .hero-content { padding: 20px 22px 22px !important; }
+    /* dashboard hero stacks vertically (v3 hero already collapses via its own
+       @media rules above — this just keeps the mascot hidden + full-width) */
+    .hero-inner       { grid-template-columns: 1fr !important; }
+    .hero-mascot-wrap { display: none !important; }
+    .hero-kpis        { grid-template-columns: 1fr 1fr !important; }
+    .coach-suggestions{ grid-template-columns: 1fr !important; }
   }
 
   @media (max-width: 560px) {
@@ -898,7 +861,7 @@
     .subject-grid    { grid-template-columns: 1fr !important; }
     .stat-cards-grid { grid-template-columns: 1fr !important; }
     .stats-row       { grid-template-columns: 1fr !important; }
-    .hero-title      { font-size: 22px !important; }
+    .hero-greet      { font-size: 22px !important; }
   }
   </style>
 </head>
@@ -1037,87 +1000,130 @@
       <!-- ─── LEFT CONTENT COLUMN ─── -->
       <div class="content-col">
 
-        <!-- 1. HERO BANNER -->
-        <div class="hero-banner">
-          <!-- Illustration side -->
-          <div class="hero-illus">
-            <img src="{{ url_for('static', filename='dashboard/hero_ai.webp') }}" alt="AI learning">
+        {# ── Pick the featured deck: highest due_count, tie-break highest
+             learned/card ratio, else the first deck. Reused below for both
+             the hero CTA and the featured card. ── #}
+        {% set featured = namespace(deck=None, ratio=-1) %}
+        {% for deck in decks %}
+          {% set d_ratio = (deck.learned_count / deck.card_count) if deck.card_count > 0 else 0 %}
+          {% if featured.deck is none %}
+            {% set featured.deck = deck %}
+            {% set featured.ratio = d_ratio %}
+          {% elif deck.due_count > featured.deck.due_count %}
+            {% set featured.deck = deck %}
+            {% set featured.ratio = d_ratio %}
+          {% elif deck.due_count == featured.deck.due_count and d_ratio > featured.ratio %}
+            {% set featured.deck = deck %}
+            {% set featured.ratio = d_ratio %}
+          {% endif %}
+        {% endfor %}
+
+        <!-- 1. HERO -->
+        <section class="hero fade-up">
+          <div class="hero-aura"></div>
+          <div class="hero-inner">
+            <div>
+              <span class="hero-eyebrow">
+                <svg width="13" height="13" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/></svg>
+                {{ t('v2_sec_continue') }}
+              </span>
+              <h1 class="hero-greet">{{ t('v2_welcome_back') }}</h1>
+              <p class="hero-lede">
+                {% if due > 0 %}
+                  {{ t('v2_hero_due_pre') }}<b>{{ due }}</b>{{ t('v2_hero_due_post') }}
+                  {% if level_next_title %}<b>{{ level_days_to_next }}</b> {{ t('v2_days_to_unlock_pre') }} «{{ level_next_title }}».{% endif %}
+                {% else %}
+                  {{ t('v2_all_caught_up') }}
+                {% endif %}
+              </p>
+
+              <div class="xp-track-wrap">
+                <div class="xp-track-labels">
+                  <span>{{ t('v2_level') }} {{ level_num }} · {{ level_title }}</span>
+                  {% if level_next_title %}
+                    <span>{{ level_next_title }}</span>
+                  {% else %}
+                    <span>{{ t('v2_max_level') }}</span>
+                  {% endif %}
+                </div>
+                <div class="xp-track"><div class="xp-track-fill" style="width:{{ (level_progress * 100) | round | int }}%"></div></div>
+              </div>
+
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                {% if featured.deck %}
+                  <a class="btn-primary" href="{{ url_for('deck_view', deck_id=featured.deck.id) }}">
+                    {{ t('v2_sec_continue') }}
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </a>
+                {% endif %}
+                <a class="btn-ghost" href="{{ url_for('tutor_page') }}">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  {{ t('v2_nav_tutor') }}
+                </a>
+              </div>
+            </div>
+
+            <div class="hero-mascot-wrap">
+              <div class="hero-mascot-glow"></div>
+              <img src="{{ url_for('static', filename='dashboard/hero_ai.webp') }}" alt="QuizAIPro AI" class="hero-mascot"
+                   onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'hero-mascot-fallback',innerHTML:'🤖'}))">
+            </div>
           </div>
 
-          <!-- Text + stat tiles -->
-          <div class="hero-content">
-            <div class="hero-title">{{ t('v2_welcome_back') }}</div>
-            <div class="hero-sub">
-              {% if due > 0 %}
-                {{ t('v2_hero_due_pre') }}<strong>{{ due }}</strong>{{ t('v2_hero_due_post') }}
+          <!-- Floating KPI chips -->
+          <div class="hero-kpis">
+            <div class="kpi-chip">
+              <div class="kpi-ico" style="background:rgba(99,102,241,.14);color:#6366f1;">⭐</div>
+              <div>
+                <div class="kpi-val">{{ current_user.xp or 0 }}</div>
+                <div class="kpi-lbl">{{ t('v2_stat_total_xp') }}</div>
+              </div>
+            </div>
+            <div class="kpi-chip">
+              <div class="kpi-ico" style="background:rgba(249,115,22,.14);color:#f97316;">🔥</div>
+              <div>
+                <div class="kpi-val">{{ current_user.streak or 0 }}</div>
+                <div class="kpi-lbl">{{ t('v2_stat_day_streak') }}</div>
+              </div>
+            </div>
+            <div class="kpi-chip">
+              {% if retention and retention.now is not none %}
+                {% set r_pct = (retention.now | round | int) %}
+                {% set r_offset = (100.5 * (1 - r_pct / 100)) | round(1) %}
+                <svg class="ring-mini" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="var(--input-bg)" stroke-width="4"/>
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="url(#ringGrad)" stroke-width="4" stroke-linecap="round"
+                    stroke-dasharray="100.5" stroke-dashoffset="{{ r_offset }}" transform="rotate(-90 20 20)"/>
+                  <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs>
+                </svg>
+                <div>
+                  <div class="kpi-val">{{ r_pct }}%</div>
+                  <div class="kpi-lbl">{{ t('v2_stat_memory_now') }}</div>
+                </div>
               {% else %}
-                {{ t('v2_all_caught_up') }}
+                <div class="kpi-ico" style="background:rgba(16,185,129,.14);color:#10b981;">🧠</div>
+                <div>
+                  <div class="kpi-val">—</div>
+                  <div class="kpi-lbl">{{ t('v2_stat_memory_now') }}</div>
+                </div>
               {% endif %}
             </div>
-
-            <!-- Hero XP + 3 compact stats -->
-            <div class="stat-pills">
-
-              <!-- ★ HERO: Total XP — full-width, dominant number -->
-              <div class="stat-pill--hero">
-                <div class="stat-chip">
-                  <svg fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </div>
-                <div>
-                  <div class="stat-pill-val">{{ current_user.xp or 0 }}</div>
-                  <div class="stat-pill-label">{{ t('v2_stat_total_xp') }}</div>
-                </div>
+            <div class="kpi-chip">
+              <div class="kpi-ico" style="background:rgba(236,72,153,.14);color:#ec4899;">🗂️</div>
+              <div>
+                <div class="kpi-val">{{ total }}</div>
+                <div class="kpi-lbl">{{ t('v2_stat_total_cards') }}</div>
               </div>
-
-              <!-- Compact: Day Streak (orange semantic) -->
-              <div class="stat-pill">
-                <div class="stat-chip" style="background:rgba(249,115,22,.12);font-size:15px;display:grid;place-items:center;">
-                  🔥
-                </div>
-                <div class="stat-pill-val" style="color:#ea580c;">{{ current_user.streak or 0 }}</div>
-                <div class="stat-pill-label">{{ t('v2_stat_day_streak') }}</div>
-              </div>
-
-              <!-- Compact: Memory / Retention ring (green semantic) -->
-              <div class="stat-pill">
-                {% if retention and retention.now is not none %}
-                  {% set r_pct = (retention.now | round | int) %}
-                  {% set offset = (75.4 * (1 - r_pct / 100)) | round(1) %}
-                  <div class="stat-chip-ring">
-                    <svg viewBox="0 0 32 32" width="38" height="38" style="transform:rotate(-90deg);">
-                      <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(16,185,129,.15)" stroke-width="3"/>
-                      <circle cx="16" cy="16" r="12" fill="none" stroke="#10b981" stroke-width="3"
-                        stroke-dasharray="75.4" stroke-dashoffset="{{ offset }}" stroke-linecap="round"/>
-                    </svg>
-                    <div style="position:absolute;inset:0;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:800;color:#059669;">{{ r_pct }}%</div>
-                  </div>
-                  <div class="stat-pill-val" style="color:#059669;">{{ r_pct }}%</div>
-                {% else %}
-                  <div class="stat-chip" style="background:rgba(16,185,129,.12);font-size:15px;display:grid;place-items:center;">🧠</div>
-                  <div class="stat-pill-val">—</div>
-                {% endif %}
-                <div class="stat-pill-label">{{ t('v2_stat_memory_now') }}</div>
-              </div>
-
-              <!-- Compact: Total cards (neutral/indigo) -->
-              <div class="stat-pill">
-                <div class="stat-chip" style="background:rgba(99,102,241,.12);">
-                  <svg fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg>
-                </div>
-                <div class="stat-pill-val">{{ total }}</div>
-                <div class="stat-pill-label">{{ t('v2_stat_total_cards') }}</div>
-              </div>
-
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- 2. CONTINUE LEARNING — real decks -->
-        <div>
+        <section class="fade-up">
           <div class="section-head">
-            <div class="section-title">
-              <svg width="20" height="20" fill="none" stroke="var(--brand-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              {{ t('v2_sec_continue') }}
+            <div>
+              <div class="sec-overline">{{ t('v2_sec_continue') }}</div>
+              <div class="section-title">{{ t('v2_sec_continue') }}</div>
             </div>
             <div style="display:flex;align-items:center;gap:12px;">
               <a class="view-all" href="/dashboard">{{ t('v2_view_all') }}</a>
@@ -1133,49 +1139,79 @@
           </div>
 
           {% if decks %}
-            <div class="course-cards" id="courseCardsRow">
-              {% for deck in decks[:8] %}
-                {# Compute progress percentage safely #}
-                {% set pct = ((deck.learned_count / deck.card_count * 100) | round | int) if deck.card_count > 0 else 0 %}
-                {# 4 on-brand cover gradients cycling by index — indigo/violet/pink family #}
-                {% set cover_grads = [
-                  'linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)',
-                  'linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)',
-                  'linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)',
-                  'linear-gradient(135deg,#8b5cf6 0%,#d946ef 100%)'
-                ] %}
-                <a class="course-card" href="{{ url_for('deck_view', deck_id=deck.id) }}">
-                  <!-- Cover tile: first-letter initial on brand gradient -->
-                  <div class="course-cover-initial" style="background:{{ cover_grads[loop.index0 % 4] }};">
-                    <img src="{{ url_for('static', filename='subjects/' + deck_subject_slug(deck.name, deck.category_name) + '.jpg') }}"
-                         alt="{{ deck.name }}" class="course-cover-img" onerror="this.remove()">
-                    <span class="course-cover-letter">{{ deck.name[0]|upper }}</span>
-                    {% if deck.category_name %}
-                      <span class="course-cover-badge">{{ deck.category_name }}</span>
-                    {% endif %}
-                  </div>
-                  <div class="course-body">
-                    <div class="course-title">{{ deck.name }}</div>
-                    <div class="progress-wrap">
-                      <div class="progress-pct-row">
-                        <span class="progress-label">{{ t('v2_progress_learned') }}</span>
-                        <span class="progress-pct-val">{{ pct }}%</span>
-                      </div>
-                      <div class="progress-track">
-                        <div class="progress-fill" style="width:{{ pct }}%;"></div>
-                      </div>
+            {# 4 on-brand cover gradients cycling by index — indigo/violet/pink family #}
+            {% set cover_grads = [
+              'linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)',
+              'linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)',
+              'linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)',
+              'linear-gradient(135deg,#8b5cf6 0%,#d946ef 100%)'
+            ] %}
+
+            <!-- Featured card -->
+            {% if featured.deck %}
+              {% set f_pct = ((featured.deck.learned_count / featured.deck.card_count * 100) | round | int) if featured.deck.card_count > 0 else 0 %}
+              <a class="featured-card" href="{{ url_for('deck_view', deck_id=featured.deck.id) }}">
+                <div class="featured-cover">
+                  <img src="{{ url_for('static', filename='subjects/' + deck_subject_slug(featured.deck.name, featured.deck.category_name) + '.jpg') }}"
+                       alt="{{ featured.deck.name }}" loading="lazy" onerror="this.style.display='none'">
+                </div>
+                <div class="featured-content">
+                  <span class="ai-badge">✨ {{ t('v2_ai_recommended') }}</span>
+                  <div>
+                    <div class="featured-title">{{ featured.deck.name }}</div>
+                    <div class="featured-meta">
+                      {{ featured.deck.card_count }} {{ t('v2_card_word') }}
+                      {% if featured.deck.due_count > 0 %} · {{ featured.deck.due_count }} {{ t('v2_due_today') }}{% endif %}
+                      {% if featured.deck.category_name %} · {{ featured.deck.category_name }}{% endif %}
                     </div>
-                    <div class="btn-continue">
-                      {% if deck.due_count > 0 %}
-                        {{ t('v2_review_pre') }}{{ deck.due_count }}{{ t('v2_review_suffix') }}
-                      {% else %}
-                        {{ t('v2_study_arrow') }}
+                  </div>
+                  <div class="featured-progress-wrap">
+                    <div class="featured-progress-labels"><span>{{ t('v2_progress_learned') }}</span><span>{{ f_pct }}%</span></div>
+                    <div class="featured-progress"><div class="featured-progress-fill" style="width:{{ f_pct }}%"></div></div>
+                  </div>
+                  <div class="featured-actions">
+                    <span class="btn-primary-dark">
+                      {{ t('v2_sec_continue') }}
+                      <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </span>
+                  </div>
+                </div>
+              </a>
+            {% endif %}
+
+            <!-- Course row — remaining decks -->
+            {% set rest = decks | rejectattr('id', 'equalto', featured.deck.id) | list if featured.deck else decks %}
+            {% if rest %}
+              <div class="course-cards" id="courseCardsRow">
+                {% for deck in rest[:8] %}
+                  {% set pct = ((deck.learned_count / deck.card_count * 100) | round | int) if deck.card_count > 0 else 0 %}
+                  <a class="course-card" href="{{ url_for('deck_view', deck_id=deck.id) }}">
+                    {% if deck.due_count > 0 %}<div class="course-due">{{ deck.due_count }} {{ t('v2_due_word') }}</div>{% endif %}
+                    <!-- Cover tile: cover art over brand gradient, first-letter fallback -->
+                    <div class="course-cover-initial" style="background:{{ cover_grads[loop.index0 % 4] }};">
+                      <span class="course-cover-letter">{{ deck.name[0]|upper }}</span>
+                      <img src="{{ url_for('static', filename='subjects/' + deck_subject_slug(deck.name, deck.category_name) + '.jpg') }}"
+                           alt="{{ deck.name }}" class="course-cover-img" onerror="this.remove()">
+                      {% if deck.category_name %}
+                        <span class="course-cover-badge">{{ deck.category_name }}</span>
                       {% endif %}
                     </div>
-                  </div>
-                </a>
-              {% endfor %}
-            </div>
+                    <div class="course-body">
+                      <div class="course-title">{{ deck.name }}</div>
+                      <div class="progress-wrap">
+                        <div class="progress-pct-row">
+                          <span class="progress-label">{{ t('v2_progress_learned') }}</span>
+                          <span class="progress-pct-val">{{ pct }}%</span>
+                        </div>
+                        <div class="progress-track">
+                          <div class="progress-fill" style="width:{{ pct }}%;"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
           {% else %}
             <div class="empty-state">
               <div class="empty-icon">📚</div>
@@ -1183,16 +1219,60 @@
               <a href="/dashboard" style="color:var(--brand-1);font-weight:700;margin-top:8px;display:inline-block;">{{ t('v2_create_first_deck') }}</a>
             </div>
           {% endif %}
-        </div>
+        </section>
 
-        <!-- 3. LEARNING ANALYTICS — real series data -->
-        <div>
-          <div class="section-head">
-            <div class="section-title">
-              <svg width="19" height="19" fill="none" stroke="var(--brand-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              {{ t('v2_sec_analytics') }}
+        <!-- 3. AI COACH — real, actionable suggestions only -->
+        <section class="coach-panel fade-up">
+          <div class="coach-head">
+            <div class="coach-ico">
+              <svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/></svg>
             </div>
-            <span style="font-size:12px;color:#64748b;font-weight:600;">{{ t('v2_last_7_days') }}</span>
+            <div>
+              <div class="coach-title">{{ t('v2_ai_coach_title') }}</div>
+              <div class="coach-sub">{{ t('v2_ai_coach_sub') }}</div>
+            </div>
+          </div>
+
+          <div class="coach-suggestions">
+            {% if due > 0 and featured.deck %}
+              <a class="sugg-card" href="{{ url_for('deck_view', deck_id=featured.deck.id) }}">
+                <span class="sugg-tag warn">{{ t('v2_due_word') }}</span>
+                <p class="sugg-text">{{ t('v2_review_pre') }}{{ due }}{{ t('v2_review_suffix') }} — {{ featured.deck.name }}</p>
+                <span class="sugg-cta">{{ t('v2_study_arrow') }} <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+              </a>
+            {% endif %}
+            <a class="sugg-card" href="{{ url_for('ai_page') }}">
+              <span class="sugg-tag info">{{ t('v2_nav_generator') }}</span>
+              <p class="sugg-text">{{ t('v2_coach_generate_text') }}</p>
+              <span class="sugg-cta">{{ t('v2_coach_generate_cta') }} <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+            </a>
+            <a class="sugg-card" href="{{ url_for('tutor_page') }}">
+              <span class="sugg-tag">{{ t('v2_nav_tutor') }}</span>
+              <p class="sugg-text">{{ t('v2_coach_tutor_text') }}</p>
+              <span class="sugg-cta">{{ t('v2_coach_tutor_cta') }} <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+            </a>
+          </div>
+
+          <div class="coach-quickrow">
+            <a class="quick-btn" href="{{ url_for('tutor_page') }}">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              {{ t('v2_coach_open_tutor') }}
+            </a>
+            <a class="quick-btn" href="{{ url_for('ai_page') }}">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/></svg>
+              {{ t('v2_coach_open_generator') }}
+            </a>
+          </div>
+        </section>
+
+        <!-- 4. LEARNING ANALYTICS — real series data -->
+        <section class="fade-up">
+          <div class="section-head">
+            <div>
+              <div class="sec-overline">{{ t('v2_last_7_days') }}</div>
+              <div class="section-title">{{ t('v2_sec_analytics') }}</div>
+            </div>
+            <span style="font-size:12px;color:var(--text-muted);font-weight:600;">{{ t('v2_last_7_days') }}</span>
           </div>
 
           <div class="analytics-grid">
@@ -1363,7 +1443,7 @@
             </div>
 
           </div>
-        </div>
+        </section>
 
       </div><!-- /.content-col -->
 
@@ -1371,7 +1451,7 @@
       <div class="right-rail">
 
         <!-- Weekly Goal ring -->
-        <div class="rail-card">
+        <div class="rail-card fade-up">
           <div class="rail-head">
             <span class="rail-title">{{ t('v2_sec_weekly_goal') }}</span>
             <a class="rail-link" href="/growth">{{ t('v2_view_details') }}</a>
@@ -1430,8 +1510,31 @@
           </div>
         </div>
 
+        <!-- Achievements teaser — no achievements list in context; links to the real page -->
+        <div class="rail-card fade-up">
+          <div class="rail-head">
+            <span class="rail-title">{{ t('v2_sec_achievements') }}</span>
+            <a class="rail-link" href="{{ url_for('achievements_page') }}">{{ t('v2_view_all_arrow') }}</a>
+          </div>
+          <div class="medal-row">
+            <div class="medal">
+              <div class="medal-disc locked">🏅</div>
+            </div>
+            <div class="medal">
+              <div class="medal-disc locked">🔥</div>
+            </div>
+            <div class="medal">
+              <div class="medal-disc locked">🧠</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:12px;">
+            <div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:4px;">{{ t('v2_coming_soon') }}</div>
+            <div style="font-size:11.5px;color:var(--text-muted);line-height:1.5;">{{ t('v2_achievements_desc') }}</div>
+          </div>
+        </div>
+
         <!-- Recent Activity — real data -->
-        <div class="rail-card">
+        <div class="rail-card fade-up">
           <div class="rail-head">
             <span class="rail-title">{{ t('v2_sec_recent_activity') }}</span>
           </div>
@@ -1474,7 +1577,7 @@
         </div>
 
         <!-- Study streak card -->
-        <div class="rail-card">
+        <div class="rail-card fade-up">
           <div class="rail-head">
             <span class="rail-title">{{ t('v2_sec_study_activity') }}</span>
             <span style="font-size:11.5px;font-weight:700;color:#10b981;background:rgba(16,185,129,.10);padding:3px 10px;border-radius:999px;">🔥 {{ streak_days }}{{ t('v2_day_streak_suffix') }}</span>
@@ -1508,18 +1611,6 @@
           {% endif %}
         </div>
 
-        <!-- Achievements placeholder (no backing data) -->
-        <div class="rail-card">
-          <div class="rail-head">
-            <span class="rail-title">{{ t('v2_sec_achievements') }}</span>
-          </div>
-          <div style="text-align:center;padding:18px 12px 8px;">
-            <div style="font-size:32px;margin-bottom:10px;">🏅</div>
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;">{{ t('v2_coming_soon') }}</div>
-            <div style="font-size:12px;color:#64748b;line-height:1.5;">{{ t('v2_achievements_desc') }}</div>
-          </div>
-        </div>
-
       </div><!-- /.right-rail -->
 
     </div><!-- /.content-grid -->
@@ -1545,25 +1636,23 @@
     if (row) row.scrollBy({ left: dir * 240, behavior: 'smooth' });
   }
 
-  // ── Card entrance animations ──
+  // ── Section entrance animation (.hero, .coach-panel, sections, rail cards) ──
   window.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.course-card, .analytics-card, .rail-card').forEach(function(el, i) {
+    document.querySelectorAll('.fade-up').forEach(function(el, i) {
+      setTimeout(function() { el.classList.add('in'); }, 40 + i * 70);
+    });
+
+    // Course + analytics card stagger (CSS class fade-up not used per-card to
+    // avoid noisy markup — kept as an inline fallback for these grids only).
+    document.querySelectorAll('.course-card, .analytics-card').forEach(function(el, i) {
       el.style.opacity = '0';
       el.style.transform = 'translateY(16px)';
       el.style.transition = 'opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1)';
       setTimeout(function() {
         el.style.opacity = '1';
         el.style.transform = 'translateY(0)';
-      }, 60 + i * 35);
+      }, 120 + i * 35);
     });
-
-    var hero = document.querySelector('.hero-banner');
-    if (hero) {
-      hero.style.opacity = '0';
-      hero.style.transform = 'translateY(10px)';
-      hero.style.transition = 'opacity .5s cubic-bezier(0.16,1,0.3,1), transform .5s cubic-bezier(0.16,1,0.3,1)';
-      setTimeout(function() { hero.style.opacity = '1'; hero.style.transform = 'none'; }, 30);
-    }
   });
 </script>
 <script>document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('nav-open');});</script>
