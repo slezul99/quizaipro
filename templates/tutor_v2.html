@@ -852,6 +852,98 @@
     .topbar-actions { gap: 5px; }
     :root { --topbar-h: 56px; }
   }
+
+  /* ═══════════════════════════════════════
+     SITE SHELL — unify AI Tutor with the rest
+     of the app (same left nav as every page)
+  ═══════════════════════════════════════ */
+  .app-shell { display: flex; height: 100dvh; overflow: hidden; }
+  .chat-shell { flex: 1 1 auto; min-width: 0; }
+
+  .site-sidebar {
+    width: 240px; flex-shrink: 0;
+    background: #ffffff;
+    border-right: 1px solid rgba(99,102,241,.08);
+    display: flex; flex-direction: column;
+    padding: 18px 12px 14px;
+    height: 100dvh; overflow: hidden;
+    z-index: 60;
+  }
+  .site-brand { display: flex; align-items: center; gap: 10px; padding: 4px 4px 18px; flex-shrink: 0; }
+  .brand-logo-icon { width: 38px; height: 38px; flex-shrink: 0; display: grid; place-items: center; }
+  .brand-logo-icon img { width: 38px; height: 38px; object-fit: contain; border-radius: 10px; }
+  .brand-logo-icon .logo-light { display: block; }
+  .brand-logo-icon .logo-dark { display: none; }
+  html.dark .brand-logo-icon .logo-light { display: none; }
+  html.dark .brand-logo-icon .logo-dark { display: block; }
+  .wordmark { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.03em; background: var(--brand-grad-tri); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
+
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+  .sidebar-nav::-webkit-scrollbar { width: 0; height: 0; }
+  .sidebar-sep { height: 1px; background: rgba(99,102,241,.08); margin: 6px 4px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 8px 12px; border-radius: 11px;
+    font-size: 13.5px; font-weight: 500; color: #64748b;
+    cursor: pointer; transition: all .18s var(--ease);
+    position: relative; border: none; background: transparent;
+    text-align: left; width: 100%; text-decoration: none;
+  }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; padding: 6px; box-sizing: content-box; background: rgba(99,102,241,.07); border-radius: 9px; transition: background .18s, transform .18s; }
+  .nav-item:hover svg { background: rgba(99,102,241,.14); transform: scale(1.05); }
+  .nav-item.active svg { background: rgba(99,102,241,.20); }
+  .nav-item:hover { background: #f4f3fb; color: #1e293b; }
+  .nav-item.active { background: linear-gradient(135deg, rgba(99,102,241,.12), rgba(139,92,246,.08)); color: var(--brand-1); font-weight: 600; }
+  .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 22px; background: var(--brand-grad-tri); border-radius: 0 3px 3px 0; }
+
+  .sidebar-promo { flex-shrink: 0; border-radius: 16px; background: linear-gradient(135deg, rgba(99,102,241,.10), rgba(139,92,246,.12), rgba(236,72,153,.08)); border: 1.5px solid rgba(99,102,241,.18); padding: 14px; margin-top: 14px; }
+  .promo-crown { width: 34px; height: 34px; border-radius: 10px; background: var(--brand-grad-tri); display: grid; place-items: center; margin-bottom: 10px; }
+  .promo-title { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+  .promo-sub { font-size: 11.5px; color: #64748b; line-height: 1.45; margin-bottom: 13px; }
+  .btn-upgrade { display: block; text-align: center; width: 100%; padding: 9px 0; border-radius: 999px; background: var(--brand-grad-tri); color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 6px 16px -4px rgba(99,102,241,.45); transition: all .2s var(--ease); }
+  .btn-upgrade:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -4px rgba(99,102,241,.6); }
+
+  .sidebar-user { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 10px 12px 4px; border-top: 1px solid rgba(99,102,241,.08); margin-top: 10px; }
+  .sidebar-user .av { width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #ec4899 100%); display: grid; place-items: center; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 800; color: #fff; letter-spacing: -0.01em; box-shadow: 0 2px 6px -2px rgba(99,102,241,.35); }
+  .sidebar-user .nm { font-size: 13px; font-weight: 600; color: var(--text); }
+  .sidebar-user .pl { font-size: 11px; color: var(--amber); font-weight: 600; }
+  .kebab { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-size: 16px; display: grid; place-items: center; transition: all .15s; }
+  .kebab:hover { background: #f1f0fa; color: #1e293b; }
+
+  /* Hamburger + scrim for mobile off-canvas */
+  .site-nav-toggle { display: none; width: 38px; height: 38px; border-radius: 11px; background: #f4f3fb; border: 1.5px solid rgba(99,102,241,.10); color: #64748b; cursor: pointer; place-items: center; flex-shrink: 0; }
+  .site-nav-toggle:hover { background: #ece9fb; color: var(--brand-1); }
+  .site-nav-toggle svg { width: 20px; height: 20px; }
+  .site-nav-scrim { display: none; position: fixed; inset: 0; background: rgba(15,15,40,.42); z-index: 55; }
+
+  /* Dark mode — site shell */
+  html.dark .site-sidebar { background: #111a2e; border-right-color: rgba(99,102,241,.15); }
+  html.dark .nav-item { color: #94a3b8; }
+  html.dark .nav-item:hover { background: rgba(99,102,241,.1); color: #e2e8f0; }
+  html.dark .nav-item.active { background: linear-gradient(135deg,rgba(99,102,241,.22),rgba(139,92,246,.15)); color: #a5b4fc; }
+  html.dark .nav-item svg { background: rgba(99,102,241,.12); }
+  html.dark .nav-item:hover svg { background: rgba(99,102,241,.2); }
+  html.dark .nav-item.active svg { background: rgba(99,102,241,.3); }
+  html.dark .sidebar-sep { background: rgba(99,102,241,.12); }
+  html.dark .sidebar-promo { background: linear-gradient(135deg,rgba(99,102,241,.16),rgba(139,92,246,.12)); border-color: rgba(99,102,241,.3); }
+  html.dark .promo-title { color: #e2e8f0; }
+  html.dark .promo-sub { color: #94a3b8; }
+  html.dark .sidebar-user { border-top-color: rgba(99,102,241,.12); }
+  html.dark .site-nav-toggle { background: rgba(30,41,75,.65); border-color: rgba(99,102,241,.2); color: #94a3b8; }
+
+  /* Mobile: site sidebar slides in over the chat */
+  @media (max-width: 980px) {
+    .site-nav-toggle { display: grid; }
+    .site-sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0;
+      transform: translateX(-100%);
+      transition: transform .25s var(--ease);
+      box-shadow: 4px 0 32px rgba(0,0,0,.18);
+    }
+    body.site-nav-open .site-sidebar { transform: translateX(0); }
+    body.site-nav-open .site-nav-scrim { display: block; }
+  }
 </style>
 </head>
 <body>
@@ -859,16 +951,93 @@
 {# ══════════════════════════════════════════════════════
    ROOT — Alpine scope wraps the whole page
    ══════════════════════════════════════════════════════ #}
+<div class="app-shell">
+
+  {# Mobile scrim for the site nav #}
+  <div class="site-nav-scrim" onclick="document.body.classList.remove('site-nav-open')"></div>
+
+  {# ─── GLOBAL SITE SIDEBAR (same as every other page) ─── #}
+  <aside class="site-sidebar">
+    <div class="site-brand">
+      <div class="brand-logo-icon">
+        <img src="{{ url_for('static', filename='logo-sm.png', v='1') }}" alt="QuizAIPro" class="logo-light">
+        <img src="{{ url_for('static', filename='logo-org-sm.png', v='1') }}" alt="QuizAIPro" class="logo-dark">
+      </div>
+      <span class="wordmark">QuizAIPro</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item" onclick="location.href='{{ url_for('dashboard_v2_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        {{ t('v2_nav_dashboard') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('dashboard') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        {{ t('v2_nav_library') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('marketplace_v2_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        {{ t('v2_nav_marketplace') }}
+      </button>
+      <button class="nav-item active">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        {{ t('v2_nav_tutor') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('ai_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/></svg>
+        {{ t('v2_nav_generator') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('stats_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        {{ t('v2_nav_analytics') }}
+      </button>
+      <button class="nav-item" onclick="location.href='{{ url_for('achievements_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        {{ t('v2_nav_achievements') }}
+      </button>
+
+      <div class="sidebar-sep"></div>
+
+      <button class="nav-item" onclick="location.href='{{ url_for('settings_page') }}'">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+        {{ t('v2_nav_settings') }}
+      </button>
+      {% if is_super_admin %}
+      <button class="nav-item" onclick="location.href='{{ url_for('superadmin_dashboard') }}'" style="color:#ec4899;">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Super Admin
+      </button>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-promo">
+      <div class="promo-crown">
+        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 20h20M4 20l2-10 6 4 4-8 4 8 6-4-2 10"/></svg>
+      </div>
+      <div class="promo-title">{{ t('v2_upgrade_title') }}</div>
+      <div class="promo-sub">{{ t('v2_upgrade_sub') }}</div>
+      <button class="btn-upgrade" onclick="location.href='{{ url_for('billing_page') }}'">{{ t('v2_upgrade_btn') }}</button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="av">{{ (current_user.full_name or current_user.username)[0]|upper }}</div>
+      <div>
+        <div class="nm">{{ current_user.full_name or current_user.username }}</div>
+        <div class="pl">{{ current_plan|capitalize if current_plan and current_plan != 'free' else t('v2_free_plan') }}</div>
+      </div>
+      <button class="kebab" aria-label="{{ t('logout') }}" title="{{ t('logout') }}" onclick="location.href='{{ url_for('logout') }}'"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </div>
+  </aside>
+
 <div class="chat-shell" x-data="tutorApp()" x-init="init()">
 
   {# ─── TOPBAR ─── #}
   <header class="v2-topbar">
 
-    {# Back button #}
-    <a href="{{ url_for('dashboard_v2_page') }}" class="back-btn">
-      <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>{{ t('v2_nav_dashboard') }}</span>
-    </a>
+    {# Mobile: open the site nav #}
+    <button class="site-nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('site-nav-open')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
 
     {# Centered title chip #}
     <div class="topbar-title">
@@ -1067,6 +1236,7 @@
   </button>
 
 </div>{# /chat-shell (Alpine root) #}
+</div>{# /app-shell #}
 
 {# ══════════════════════════════════════════════════════
    SERVER-SIDE I18N STRINGS for JS (Jinja-rendered once)
