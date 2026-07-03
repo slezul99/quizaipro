@@ -245,31 +245,48 @@ def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
     return top
 
 
-def format_context(hits, min_score=_MIN_SCORE):
+# Citation labels per UI language — MUST match the frontend chip labels
+# (templates/tutor_v2.html SRC_LABELS) so the answer's "[Card 2]" tokens line up
+# with the rendered source chips.
+_LABELS = {
+    "ru": {"card": "Карточка", "doc": "Документ", "page": "стр."},
+    "en": {"card": "Card", "doc": "Document", "page": "p."},
+    "uz": {"card": "Karta", "doc": "Hujjat", "page": "b."},
+}
+
+
+def _labels(lang):
+    return _LABELS.get(lang, _LABELS["ru"])
+
+
+def format_context(hits, lang="ru", min_score=_MIN_SCORE):
     """Turn retrieval `hits` into (context_string, used_hits): the citation-
-    labelled prompt block plus the filtered hits IN THE SAME [Карточка N] order,
-    so the caller can expose matching, clickable sources (index+1 == N)."""
+    labelled prompt block plus the filtered hits IN THE SAME [Label N] order, so
+    the caller can expose matching, clickable sources (index+1 == N). Labels are
+    localised to `lang`."""
     used = [h for h in (hits or []) if h["score"] >= min_score]
     if not used:
         return "", []
+    L = _labels(lang)
     lines = []
     for i, h in enumerate(used, 1):
         if h.get("type") == "doc":
-            page = f", стр. {h['page']}" if h.get("page") else ""
+            page = f", {L['page']} {h['page']}" if h.get("page") else ""
             txt = (h.get("text") or "").strip().replace("\n", " ")[:400]
-            lines.append(f"[Документ {i}] «{h.get('doc_name')}»{page}: {txt}")
+            lines.append(f"[{L['doc']} {i}] «{h.get('doc_name')}»{page}: {txt}")
         else:
             note = (h.get("note") or "").strip()
             note = f" — {note[:200]}" if note else ""
             front = (h.get("front") or "").strip().replace("\n", " ")[:300]
             back = (h.get("back") or "").strip().replace("\n", " ")[:300]
-            lines.append(f"[Карточка {i}] {front} → {back}{note}")
+            lines.append(f"[{L['card']} {i}] {front} → {back}{note}")
     return "\n".join(lines), used
 
 
 def build_tutor_context(conn, user, query, deck_id=None, k=_DEFAULT_K,
-                        min_score=_MIN_SCORE):
+                        lang="ru", min_score=_MIN_SCORE):
     """Convenience: citation-labelled context string only (see format_context)."""
     ctx, _ = format_context(
-        retrieve(conn, user, query, deck_id=deck_id, k=k), min_score=min_score)
+        retrieve(conn, user, query, deck_id=deck_id, k=k),
+        lang=lang, min_score=min_score)
     return ctx

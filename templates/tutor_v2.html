@@ -1319,12 +1319,12 @@
                     <template x-if="s.type === 'doc'">
                       <button type="button" class="src-chip src-chip--doc"
                         @click="showDocChunk(s)"
-                        :title="`${s.doc_name}${s.page ? ', стр. '+s.page : ''}`"
-                        x-text="`Документ ${s.n}`"></button>
+                        :title="`${s.doc_name}${s.page ? ', '+SRC_LABELS.page+' '+s.page : ''}`"
+                        x-text="`${SRC_LABELS.doc} ${s.n}`"></button>
                     </template>
                     <template x-if="s.type !== 'doc'">
                       <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
-                         target="_blank" rel="noopener" x-text="`Карточка ${s.n}`"></a>
+                         target="_blank" rel="noopener" x-text="`${SRC_LABELS.card} ${s.n}`"></a>
                     </template>
                   </span>
                 </template>
@@ -1385,7 +1385,7 @@
     <div class="doc-preview" @click.stop>
       <div class="doc-preview-head">
         <span class="doc-preview-title"
-          x-text="docPreview ? (docPreview.doc_name + (docPreview.page ? ', стр. ' + docPreview.page : '')) : ''"></span>
+          x-text="docPreview ? (docPreview.doc_name + (docPreview.page ? ', ' + SRC_LABELS.page + ' ' + docPreview.page : '')) : ''"></span>
         <button type="button" class="doc-preview-close" @click="docPreview = null" aria-label="Close">✕</button>
       </div>
       <div class="doc-preview-body" x-text="docPreview ? (docPreview.loading ? '…' : docPreview.text) : ''"></div>
@@ -1414,6 +1414,13 @@ const TU_DOC = {
   added: {{ t('v2_tutor_doc_added')|tojson }},
   failed: {{ t('v2_tutor_doc_failed')|tojson }},
   only_pdf: {{ t('v2_tutor_doc_only_pdf')|tojson }},
+};
+// Source citation labels — MUST match rag.py _LABELS so "[Card 2]" in the answer
+// lines up with the rendered chip.
+const SRC_LABELS = {
+  card: {{ t('v2_src_card')|tojson }},
+  doc: {{ t('v2_src_doc')|tojson }},
+  page: {{ t('v2_src_page')|tojson }},
 };
 // CSRF token — required on every POST (server rejects form POSTs without it).
 const TUTOR_CSRF = {{ csrf_token()|tojson }};

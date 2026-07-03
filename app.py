@@ -6927,7 +6927,7 @@ def api_tutor_ask():
             if deck is not None and can_view_deck(user, deck):
                 scoped = deck_id
         hits = rag.retrieve(conn, user, message, deck_id=scoped)
-        deck_context, used = rag.format_context(hits)
+        deck_context, used = rag.format_context(hits, lang=lang)
         # Compact source list (same [N] order) so the client can render clickable
         # citations — cards link to the deck, documents show name + page.
         tutor_sources = []
