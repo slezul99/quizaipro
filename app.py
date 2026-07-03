@@ -7203,24 +7203,29 @@ def api_tutor_upload_doc():
             # per-document cap. Only PDFs reach OCR (docx/pptx are already text).
             if ext != ".pdf":
                 return jsonify({"error": "empty", "msg": "В файле нет текста"}), 400
-            conn0 = db.get_conn()
             try:
-                remaining, period, used = _ocr_remaining(conn0, user["id"])
-            finally:
-                conn0.close()
-            if remaining <= 0:
-                return jsonify({"error": "ocr_limit",
-                    "msg": "Исчерпан месячный лимит распознавания сканов. Попробуйте позже."}), 429
-            budget = min(_OCR_MAX_PAGES_PER_DOC, remaining)
-            pages = ai_gen.ocr_pdf_pages(fpath, max_pages=budget)
-            if not any((t or "").strip() for _n, t in pages):
-                return jsonify({"error": "empty",
-                                "msg": "Не удалось распознать текст на страницах"}), 400
-            conn0 = db.get_conn()
-            try:
-                _ocr_consume(conn0, user["id"], len(pages), period, used)
-            finally:
-                conn0.close()
+                conn0 = db.get_conn()
+                try:
+                    remaining, period, used = _ocr_remaining(conn0, user["id"])
+                finally:
+                    conn0.close()
+                if remaining <= 0:
+                    return jsonify({"error": "ocr_limit",
+                        "msg": "Исчерпан месячный лимит распознавания сканов. Попробуйте позже."}), 429
+                budget = min(_OCR_MAX_PAGES_PER_DOC, remaining)
+                pages = ai_gen.ocr_pdf_pages(fpath, max_pages=budget)
+                if not any((t or "").strip() for _n, t in pages):
+                    return jsonify({"error": "empty",
+                                    "msg": "Не удалось распознать текст на страницах"}), 400
+                conn0 = db.get_conn()
+                try:
+                    _ocr_consume(conn0, user["id"], len(pages), period, used)
+                finally:
+                    conn0.close()
+            except Exception as e:
+                print(f"[tutor upload-doc OCR] {type(e).__name__}: {e}")
+                return jsonify({"error": "ocr_failed", "msg": "Не удалось распознать скан",
+                                "detail": f"{type(e).__name__}: {e}"[:300]}), 500
 
         conn = db.get_conn()
         try:
