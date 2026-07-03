@@ -752,6 +752,20 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
 .summary-body code { background:rgba(99,102,241,.1); padding:1px 5px; border-radius:5px; font-size:13px; }
 .summary-body strong { color:var(--brand-1); }
 .sum-loading { color:#64748b; padding:26px 4px; text-align:center; }
+.qz-progress { font-size:12px; font-weight:700; color:#64748b; margin-bottom:10px; }
+.qz-q { font-size:16px; font-weight:700; color:var(--text); margin-bottom:14px; line-height:1.4; }
+.qz-opts { display:flex; flex-direction:column; gap:9px; }
+.qz-opt { text-align:left; padding:11px 14px; border:1.5px solid rgba(99,102,241,.2); border-radius:12px; background:transparent; color:var(--text); font:inherit; cursor:pointer; transition:all .15s; }
+.qz-opt:hover:not(:disabled) { border-color:rgba(99,102,241,.5); background:rgba(99,102,241,.05); }
+.qz-opt.qz-sel { border-color:var(--brand-1); background:rgba(99,102,241,.08); }
+.qz-opt.qz-correct { border-color:#10b981; background:rgba(16,185,129,.12); color:#059669; font-weight:700; }
+.qz-opt.qz-wrong { border-color:#ef4444; background:rgba(239,68,68,.1); color:#dc2626; }
+.qz-opt:disabled { cursor:default; }
+.qz-expl { margin-top:12px; padding:11px 14px; background:rgba(99,102,241,.06); border-radius:11px; font-size:13.5px; color:var(--text); line-height:1.5; }
+.qz-actions { margin-top:16px; display:flex; justify-content:flex-end; }
+.qz-result { text-align:center; padding:20px 0; }
+.qz-score { font-family:var(--font-head); font-size:34px; font-weight:800; color:var(--brand-1); }
+.qz-pct { color:#64748b; margin:4px 0 18px; font-weight:600; }
 </style>
   <style id="v2-mobile-shell">
   /* ============ v2 mobile adaptation (drawer + responsive) ============ */
@@ -1050,6 +1064,10 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
         <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         {{ t('v2_summary') }}
       </button>
+      <button type="button" class="btn-ghost" onclick="openQuiz()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        {{ t('v2_quiz') }}
+      </button>
 
       <!-- Spacer -->
       <div class="actions-gap"></div>
@@ -1335,6 +1353,64 @@ function mdToHtml(md){
   closeList();
   return out.join('');
 }
+</script>
+
+<!-- AI Quiz (Квиз) modal -->
+<div class="modal-overlay" id="quizModal" onclick="if(event.target===this)closeQuiz()">
+  <div class="modal-box summary-box">
+    <div class="summary-head">
+      <div class="modal-title" style="margin:0;">{{ t('v2_quiz') }}</div>
+      <button type="button" class="btn-ghost" onclick="closeQuiz()" style="padding:6px 11px;flex-shrink:0;">✕</button>
+    </div>
+    <div class="summary-body" id="quizBody"></div>
+  </div>
+</div>
+<script>
+var QZ={items:[],idx:0,selected:-1,checked:false,correct:0};
+function closeQuiz(){document.getElementById('quizModal').classList.remove('open');}
+function qzEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function openQuiz(force){
+  document.getElementById('quizModal').classList.add('open');
+  var body=document.getElementById('quizBody');
+  body.innerHTML='<div class="sum-loading">⏳ {{ t('v2_quiz_loading') }}</div>';
+  var fd=new FormData(); fd.append('_csrf','{{ csrf_token() }}'); if(force===true)fd.append('force','1');
+  fetch('/api/deck/{{ deck.id }}/quiz',{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json().catch(function(){return {};});})
+    .then(function(d){
+      if(d&&d.ok&&d.quiz&&d.quiz.length){ QZ={items:d.quiz,idx:0,selected:-1,checked:false,correct:0}; renderQuiz(); }
+      else { body.innerHTML='<div class="sum-loading">⚠️ '+((d&&d.msg)||'{{ t('v2_quiz_failed') }}')+'</div>'; }
+    })
+    .catch(function(){ body.innerHTML='<div class="sum-loading">⚠️ {{ t('v2_quiz_failed') }}</div>'; });
+}
+function renderQuiz(){
+  var body=document.getElementById('quizBody');
+  if(QZ.idx>=QZ.items.length){
+    var pct=Math.round(QZ.correct/QZ.items.length*100);
+    body.innerHTML='<div class="qz-result"><div class="qz-score">'+QZ.correct+' / '+QZ.items.length+'</div>'+
+      '<div class="qz-pct">'+pct+'%</div><div class="qz-actions" style="justify-content:center;gap:10px;">'+
+      '<button class="btn-primary" onclick="QZ.idx=0;QZ.selected=-1;QZ.checked=false;QZ.correct=0;renderQuiz()">{{ t('v2_quiz_retry') }}</button>'+
+      '<button class="btn-ghost" onclick="openQuiz(true)">{{ t('v2_quiz_new') }}</button></div></div>';
+    return;
+  }
+  var it=QZ.items[QZ.idx];
+  var html='<div class="qz-progress">'+(QZ.idx+1)+' / '+QZ.items.length+'</div><div class="qz-q">'+qzEsc(it.q)+'</div><div class="qz-opts">';
+  for(var i=0;i<it.options.length;i++){
+    var cls='qz-opt';
+    if(QZ.checked){ if(i===it.correct)cls+=' qz-correct'; else if(i===QZ.selected)cls+=' qz-wrong'; }
+    else if(i===QZ.selected){ cls+=' qz-sel'; }
+    html+='<button class="'+cls+'" '+(QZ.checked?'disabled':'')+' onclick="qzSelect('+i+')">'+String.fromCharCode(65+i)+'. '+qzEsc(it.options[i])+'</button>';
+  }
+  html+='</div>';
+  if(QZ.checked&&it.explanation){ html+='<div class="qz-expl">'+qzEsc(it.explanation)+'</div>'; }
+  html+='<div class="qz-actions">';
+  html+= QZ.checked ? '<button class="btn-primary" onclick="qzNext()">{{ t('v2_quiz_next') }}</button>'
+                    : '<button class="btn-primary" '+(QZ.selected<0?'disabled':'')+' onclick="qzCheck()">{{ t('v2_quiz_check') }}</button>';
+  html+='</div>';
+  body.innerHTML=html;
+}
+function qzSelect(i){ if(QZ.checked)return; QZ.selected=i; renderQuiz(); }
+function qzCheck(){ if(QZ.selected<0)return; QZ.checked=true; if(QZ.selected===QZ.items[QZ.idx].correct)QZ.correct++; renderQuiz(); }
+function qzNext(){ QZ.idx++; QZ.selected=-1; QZ.checked=false; renderQuiz(); }
 </script>
 <script>document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('nav-open');});</script>
 <script>

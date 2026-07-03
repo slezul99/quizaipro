@@ -1900,6 +1900,61 @@ def summarize_deck(cards: list, lang: str = "ru") -> str | None:
     return _gemini_text(prompt, max_tokens=3000, temperature=0.4, label="deck_summary")
 
 
+def generate_quiz(cards: list, lang: str = "ru", n: int = 8) -> list:
+    """Phase 2: generate `n` multiple-choice quiz questions FROM a deck's cards
+    (works even for flashcard-only decks). Returns a list of
+    {q, options[≤4], correct(index), explanation}; [] on failure."""
+    lines = []
+    for c in cards[:150]:
+        f = (c.get("front") or "").strip().replace("\n", " ")
+        b = (c.get("back") or "").strip().replace("\n", " ")
+        if f:
+            lines.append(f"- {f} → {b}")
+    material = "\n".join(lines)[:8000]
+    if not material:
+        return []
+    lang_name = {"ru": "русском", "en": "English", "uz": "o'zbek"}.get(lang, "русском")
+    prompt = (
+        f"На основе учебного материала ниже составь {n} проверочных вопросов с "
+        f"выбором ответа на {lang_name} языке.\n"
+        "Опирайся ТОЛЬКО на материал (не выдумывай факты). У каждого вопроса ровно "
+        "4 варианта, из них ровно один правильный; добавь краткое объяснение.\n"
+        "Верни ТОЛЬКО валидный JSON-массив, без markdown-обрамления, по схеме:\n"
+        '[{"q":"текст вопроса","options":["A","B","C","D"],"correct":0,'
+        '"explanation":"почему этот вариант верный"}]\n\n'
+        f"Материал:\n{material}"
+    )
+    raw = _gemini_text(prompt, max_tokens=4000, temperature=0.5, label="deck_quiz")
+    if not raw:
+        return []
+    txt = raw.strip()
+    txt = re.sub(r"^```(?:json)?", "", txt).strip()
+    txt = re.sub(r"```$", "", txt).strip()
+    try:
+        data = json.loads(txt)
+    except Exception:
+        m = re.search(r"\[.*\]", txt, re.S)
+        if not m:
+            return []
+        try:
+            data = json.loads(m.group(0))
+        except Exception:
+            return []
+    out = []
+    for it in (data if isinstance(data, list) else []):
+        try:
+            q = (it.get("q") or "").strip()
+            opts = [str(o).strip() for o in (it.get("options") or []) if str(o).strip()]
+            corr = int(it.get("correct"))
+        except (AttributeError, TypeError, ValueError):
+            continue
+        opts = opts[:4]
+        if q and len(opts) >= 2 and 0 <= corr < len(opts):
+            out.append({"q": q, "options": opts, "correct": corr,
+                        "explanation": (it.get("explanation") or "").strip()[:400]})
+    return out[:n]
+
+
 # Tutor card actions — each turns a single flashcard into a micro-lesson.
 _CARD_ACTION_INSTRUCTIONS = {
     "explain": "Объясни простыми словами, что это и почему ответ именно такой. Дай контекст и нюансы.",
