@@ -232,6 +232,24 @@
     user-select: none;
     overflow: hidden;
   }
+  /* Card image — prominent, crisp, responsive (shrinks on short screens;
+     the question text below is flex:1 and scrolls, so it never overflows). */
+  .fc2-img {
+    max-height: min(280px, 34vh);
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
+    border-radius: 18px;
+    margin-bottom: 22px;
+    flex-shrink: 0;
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    box-shadow: 0 18px 40px -14px rgba(99, 102, 241, 0.5),
+                0 6px 14px -8px rgba(15, 23, 42, 0.25);
+  }
+  html.dark .fc2-img {
+    border-color: rgba(148, 163, 184, 0.18);
+    box-shadow: 0 18px 44px -14px rgba(0, 0, 0, 0.6);
+  }
   .fc2-front {
     background: linear-gradient(135deg, #ffffff 0%, #f1f5ff 50%, #e9eeff 100%);
     border: 1px solid rgba(99, 102, 241, 0.15);
@@ -816,7 +834,7 @@
             <div class="fc2-face fc2-front">
               <span class="fc2-label" style="color:#6366f1;">{{ t('fc_question') }}</span>
               <template x-if="current && current.image_url">
-                <img :src="current.image_url" :alt="current.front" style="max-height:128px;border-radius:14px;margin-bottom:16px;box-shadow:0 8px 24px -8px rgba(99,102,241,.4);">
+                <img :src="current.image_url" :alt="current.front" class="fc2-img" loading="eager">
               </template>
               <div class="fc2-text" style="color:var(--text);" x-text="current ? current.front : ''"></div>
               <div style="position:absolute;bottom:16px;font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">{{ t('fc_tap_flip') }}</div>

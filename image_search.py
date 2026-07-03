@@ -36,7 +36,7 @@ def search_wikimedia(query: str, limit: int = 1) -> list[str]:
             "gsrlimit": 15,  # fetch more to filter bad results
             "prop": "imageinfo",
             "iiprop": "url|mime|size|canonicaltitle",
-            "iiurlwidth": "600",
+            "iiurlwidth": "1000",  # crisper thumbnail for the larger card image
             "format": "json",
             "origin": "*",
         })
@@ -84,7 +84,12 @@ def search_pexels(query: str, limit: int = 1) -> list[str]:
         with urlreq.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode("utf-8"))
         photos = data.get("photos", [])
-        return [p["src"]["medium"] for p in photos if p.get("src")]
+        # Prefer the "large" src (~940px) over "medium" (~350px tall) so the
+        # bigger flashcard image stays crisp; fall back if absent.
+        return [
+            p["src"].get("large") or p["src"].get("medium")
+            for p in photos if p.get("src")
+        ]
     except Exception as e:
         print(f"[image_search] pexels error for '{query}': {e}")
         return []
