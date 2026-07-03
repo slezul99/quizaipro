@@ -148,19 +148,26 @@ def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
     ]
 
 
-def build_tutor_context(conn, user, query, deck_id=None, k=_DEFAULT_K,
-                        min_score=_MIN_SCORE):
-    """Citation-labelled context string for the tutor prompt, or "" when nothing
-    relevant / embeddings off (caller then falls back to its naive dump)."""
-    hits = [h for h in retrieve(conn, user, query, deck_id=deck_id, k=k)
-            if h["score"] >= min_score]
-    if not hits:
-        return ""
+def format_context(hits, min_score=_MIN_SCORE):
+    """Turn retrieval `hits` into (context_string, used_hits): the citation-
+    labelled prompt block plus the filtered hits IN THE SAME [Карточка N] order,
+    so the caller can expose matching, clickable sources (index+1 == N)."""
+    used = [h for h in (hits or []) if h["score"] >= min_score]
+    if not used:
+        return "", []
     lines = []
-    for i, h in enumerate(hits, 1):
+    for i, h in enumerate(used, 1):
         note = (h["note"] or "").strip()
         note = f" — {note[:200]}" if note else ""
         front = (h["front"] or "").strip().replace("\n", " ")[:300]
         back = (h["back"] or "").strip().replace("\n", " ")[:300]
         lines.append(f"[Карточка {i}] {front} → {back}{note}")
-    return "\n".join(lines)
+    return "\n".join(lines), used
+
+
+def build_tutor_context(conn, user, query, deck_id=None, k=_DEFAULT_K,
+                        min_score=_MIN_SCORE):
+    """Convenience: citation-labelled context string only (see format_context)."""
+    ctx, _ = format_context(
+        retrieve(conn, user, query, deck_id=deck_id, k=k), min_score=min_score)
+    return ctx

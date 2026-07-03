@@ -588,6 +588,43 @@
     font-weight: 600;
   }
 
+  /* Grounded-tutor sources: clickable cards the answer cited */
+  .msg-sources {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding-left: 2px;
+  }
+  .msg-sources-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+  }
+  .src-chip {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.09);
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    border-radius: 999px;
+    padding: 3px 10px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s;
+  }
+  .src-chip:hover {
+    background: rgba(99, 102, 241, 0.16);
+    border-color: rgba(99, 102, 241, 0.45);
+  }
+  html.dark .msg-sources-label { color: #94a3b8; }
+  html.dark .src-chip {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.14);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+
   /* Typing indicator */
   .typing-bubble {
     display: inline-flex;
@@ -1195,6 +1232,14 @@
                 <span>✨ Gemini 3.5</span>
               </div>
               {% endif %}
+              {# Grounded sources — the exact cards this answer cited ([Карточка N]) #}
+              <div x-show="m.role === 'assistant' && m.sources && m.sources.length" class="msg-sources">
+                <span class="msg-sources-label">📎 {{ t('v2_tutor_sources') }}</span>
+                <template x-for="s in m.sources" :key="s.n">
+                  <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
+                     target="_blank" rel="noopener" x-text="`Карточка ${s.n}`"></a>
+                </template>
+              </div>
             </div>
           </div>
         </template>
@@ -1366,7 +1411,7 @@ function tutorApp() {
       if (!this.newMsg.trim() || this.loading) return;
       const text = this.newMsg.trim();
       this.messages.push({ role: 'user', content: text });
-      this.messages.push({ role: 'assistant', content: '' });
+      this.messages.push({ role: 'assistant', content: '', sources: [] });
       this.newMsg = '';
       this.loading = true;
       this.$nextTick(() => this.scrollBottom());
@@ -1385,6 +1430,12 @@ function tutorApp() {
         }
         const usedProvider = r.headers.get('X-AI-Provider') || 'gemini';
         const convId = r.headers.get('X-Conv-Id');
+        // Grounded-tutor sources: cards the answer was based on (clickable).
+        try {
+          const sh = r.headers.get('X-Tutor-Sources');
+          if (sh) this.messages[this.messages.length - 1].sources =
+            JSON.parse(decodeURIComponent(escape(atob(sh))));
+        } catch (e) { /* no sources */ }
         if (convId) {
           const cid = parseInt(convId);
           if (this.activeConvId !== cid) {

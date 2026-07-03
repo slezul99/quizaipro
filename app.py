@@ -6893,6 +6893,7 @@ def api_tutor_ask():
     # tutor answers from — and cites — the user's material instead of dumping
     # the first 20 cards. Falls back to the old dump if embeddings are off.
     deck_context = ""
+    tutor_sources = []
     deck_id = request.form.get("deck_id", type=int)
     conn = db.get_conn()
     try:
@@ -6901,7 +6902,15 @@ def api_tutor_ask():
             deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
             if deck is not None and can_view_deck(user, deck):
                 scoped = deck_id
-        deck_context = rag.build_tutor_context(conn, user, message, deck_id=scoped)
+        hits = rag.retrieve(conn, user, message, deck_id=scoped)
+        deck_context, used = rag.format_context(hits)
+        # Compact source list (same [Карточка N] order) so the client can render
+        # clickable citations linking back to the exact cards.
+        tutor_sources = [
+            {"n": i + 1, "card_id": h["card_id"], "deck_id": h["deck_id"],
+             "front": (h["front"] or "").strip().replace("\n", " ")[:80]}
+            for i, h in enumerate(used)
+        ]
         if not deck_context and scoped:
             cards = conn.execute(
                 "SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (scoped,)).fetchall()
@@ -6909,6 +6918,13 @@ def api_tutor_ask():
                 deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
     finally:
         conn.close()
+
+    # ASCII-safe (base64 of UTF-8 JSON) so Cyrillic fronts survive header encoding.
+    import base64 as _b64
+    import json as _json
+    sources_header = (
+        _b64.b64encode(_json.dumps(tutor_sources, ensure_ascii=False).encode("utf-8")).decode("ascii")
+        if tutor_sources else "")
 
     # VSEGDA gruzim istoriyu iz DB — nadezhno, ne zavisit ot razmera cookie
     conn = db.get_conn()
@@ -7031,6 +7047,7 @@ def api_tutor_ask():
         return Response(_stream(), mimetype="text/plain; charset=utf-8", headers={
             "X-AI-Provider": used_provider,
             "X-Conv-Id": str(conv_id),
+            "X-Tutor-Sources": sources_header,
         })
 
     # Non-stream (legacy)
@@ -7048,7 +7065,7 @@ def api_tutor_ask():
     history.append({"role": "user", "content": message})
     history.append({"role": "assistant", "content": answer})
     session["tutor_history"] = history[-40:]
-    return jsonify({"ok": True, "answer": answer})
+    return jsonify({"ok": True, "answer": answer, "sources": tutor_sources})
 
 
 @app.route("/api/tutor/clear", methods=["POST"])
