@@ -742,6 +742,16 @@ html.dark .modal-box { background:#1a2444; }
 .modal-field input, .modal-field textarea { width:100%; padding:10px 12px; border:1.5px solid rgba(99,102,241,.2); border-radius:11px; font:inherit; color:var(--text); background:transparent; resize:vertical; }
 html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(15,23,41,.5); border-color:rgba(99,102,241,.3); }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+.summary-box { width:min(680px,100%); max-height:82vh; display:flex; flex-direction:column; }
+.summary-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.summary-body { overflow-y:auto; line-height:1.6; color:var(--text); font-size:14.5px; }
+.summary-body h3,.summary-body h4,.summary-body h5 { font-family:var(--font-head); margin:16px 0 8px; line-height:1.3; }
+.summary-body h3 { font-size:17px; } .summary-body h4 { font-size:15px; }
+.summary-body ul { margin:6px 0 10px 20px; padding:0; } .summary-body li { margin:3px 0; }
+.summary-body p { margin:8px 0; } .summary-body hr { border:0; border-top:1px solid rgba(99,102,241,.15); margin:14px 0; }
+.summary-body code { background:rgba(99,102,241,.1); padding:1px 5px; border-radius:5px; font-size:13px; }
+.summary-body strong { color:var(--brand-1); }
+.sum-loading { color:#64748b; padding:26px 4px; text-align:center; }
 </style>
   <style id="v2-mobile-shell">
   /* ============ v2 mobile adaptation (drawer + responsive) ============ */
@@ -1036,6 +1046,10 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
         <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         {{ t('v2_live') }}
       </a>
+      <button type="button" class="btn-ghost" onclick="openSummary()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        {{ t('v2_summary') }}
+      </button>
 
       <!-- Spacer -->
       <div class="actions-gap"></div>
@@ -1271,6 +1285,55 @@ async function saveCard(){
   if(!f||!b){return;}
   var fd=new FormData();fd.append('front',f);fd.append('back',b);fd.append('_csrf','{{ csrf_token() }}');
   try{var r=await fetch('/deck/{{ deck.id }}/card/new',{method:'POST',body:fd});if(r.ok){location.reload();}}catch(e){}
+}
+</script>
+
+<!-- AI Summary (Конспект) modal -->
+<div class="modal-overlay" id="summaryModal" onclick="if(event.target===this)closeSummary()">
+  <div class="modal-box summary-box">
+    <div class="summary-head">
+      <div class="modal-title" style="margin:0;">{{ t('v2_summary') }}</div>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button type="button" class="btn-ghost" onclick="openSummary(true)" title="{{ t('v2_summary_regen') }}" style="padding:6px 11px;">↻</button>
+        <button type="button" class="btn-ghost" onclick="closeSummary()" style="padding:6px 11px;">✕</button>
+      </div>
+    </div>
+    <div class="summary-body" id="sumBody"></div>
+  </div>
+</div>
+<script>
+function closeSummary(){document.getElementById('summaryModal').classList.remove('open');}
+function openSummary(force){
+  var m=document.getElementById('summaryModal'); m.classList.add('open');
+  var body=document.getElementById('sumBody');
+  body.innerHTML='<div class="sum-loading">⏳ {{ t('v2_summary_loading') }}</div>';
+  var fd=new FormData(); fd.append('_csrf','{{ csrf_token() }}'); if(force===true)fd.append('force','1');
+  fetch('/api/deck/{{ deck.id }}/summary',{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json().catch(function(){return {};});})
+    .then(function(d){
+      if(d&&d.ok){ body.innerHTML=mdToHtml(d.content); }
+      else { body.innerHTML='<div class="sum-loading">⚠️ '+((d&&d.msg)||'{{ t('v2_summary_failed') }}')+'</div>'; }
+    })
+    .catch(function(){ body.innerHTML='<div class="sum-loading">⚠️ {{ t('v2_summary_failed') }}</div>'; });
+}
+// Minimal, XSS-safe markdown -> HTML (escape first, then a few block/inline rules).
+function mdToHtml(md){
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function inline(s){return s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code>$1</code>').replace(/\*(.+?)\*/g,'<em>$1</em>');}
+  var lines=esc(md||'').split('\n'), out=[], inList=false;
+  function closeList(){ if(inList){out.push('</ul>');inList=false;} }
+  for(var i=0;i<lines.length;i++){
+    var ln=lines[i];
+    if(/^\s*---+\s*$/.test(ln)){ closeList(); out.push('<hr>'); continue; }
+    var h=ln.match(/^(#{1,4})\s+(.*)$/);
+    if(h){ closeList(); var lvl=Math.min(h[1].length+2,6); out.push('<h'+lvl+'>'+inline(h[2])+'</h'+lvl+'>'); continue; }
+    var li=ln.match(/^\s*[-*]\s+(.*)$/);
+    if(li){ if(!inList){out.push('<ul>');inList=true;} out.push('<li>'+inline(li[1])+'</li>'); continue; }
+    if(ln.trim()===''){ closeList(); continue; }
+    closeList(); out.push('<p>'+inline(ln)+'</p>');
+  }
+  closeList();
+  return out.join('');
 }
 </script>
 <script>document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('nav-open');});</script>

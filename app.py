@@ -2985,6 +2985,66 @@ def test_attempt_detail(attempt_id):
     )
 
 
+@app.route("/api/deck/<int:deck_id>/summary", methods=["POST"])
+@login_required
+def api_deck_summary(deck_id):
+    """Phase 2: AI study conspectus (markdown) generated from a deck's cards,
+    cached per (deck, lang) and regenerated only when the cards change."""
+    import hashlib
+    user = current_user()
+    if not ai_gen.is_available():
+        return jsonify({"error": "unavailable", "msg": "AI недоступен"}), 503
+    lang = session.get("lang", "ru")
+    force = request.form.get("force") == "1"
+    if not rate_limit(f"deck_summary:{user['id']}", max_attempts=20, window_seconds=600):
+        return jsonify({"error": "rate_limit", "msg": "Слишком часто. Подождите минуту."}), 429
+
+    conn = db.get_conn()
+    try:
+        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+        if not deck or not can_view_deck(user, dict(deck)):
+            return jsonify({"error": "not_found"}), 404
+        cards = conn.execute(
+            "SELECT front, back FROM cards WHERE deck_id=? ORDER BY id LIMIT 200",
+            (deck_id,)).fetchall()
+        if not cards:
+            return jsonify({"error": "empty", "msg": "В колоде нет карточек"}), 400
+        digest = hashlib.sha1(
+            ("|".join((c["front"] or "") + ">" + (c["back"] or "") for c in cards)
+             + "|" + lang).encode("utf-8")).hexdigest()
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS deck_summaries ("
+            "deck_id INTEGER NOT NULL, lang TEXT NOT NULL, cards_hash TEXT NOT NULL, "
+            "content TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (deck_id, lang))")
+        conn.commit()  # Postgres: commit the DDL or a later connection won't see it
+        if not force:
+            row = conn.execute(
+                "SELECT content, cards_hash FROM deck_summaries WHERE deck_id=? AND lang=?",
+                (deck_id, lang)).fetchone()
+            if row and row["cards_hash"] == digest:
+                return jsonify({"ok": True, "content": row["content"], "cached": True})
+        card_dicts = [dict(c) for c in cards]
+    finally:
+        conn.close()
+
+    content = ai_gen.summarize_deck(card_dicts, lang=lang)  # LLM call — no open conn held
+    if not content:
+        return jsonify({"error": "ai_failed", "msg": "Не удалось создать конспект"}), 500
+
+    now = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+    conn = db.get_conn()
+    try:
+        conn.execute(
+            "INSERT INTO deck_summaries (deck_id, lang, cards_hash, content, updated_at) "
+            "VALUES (?,?,?,?,?) ON CONFLICT (deck_id, lang) DO UPDATE SET "
+            "cards_hash=excluded.cards_hash, content=excluded.content, updated_at=excluded.updated_at",
+            (deck_id, lang, digest, content, now))
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"ok": True, "content": content, "cached": False})
+
+
 @app.route("/deck/<int:deck_id>/test")
 @login_required
 def test_start(deck_id):

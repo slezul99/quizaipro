@@ -1875,6 +1875,31 @@ def _gemini_text(prompt: str, *, max_tokens: int = 2000, temperature: float = 0.
     return None
 
 
+def summarize_deck(cards: list, lang: str = "ru") -> str | None:
+    """Phase 2: a structured study conspectus (markdown) built from a deck's
+    cards via Gemini. Grounded ONLY in the cards. Returns markdown or None."""
+    lines = []
+    for c in cards[:150]:
+        f = (c.get("front") or "").strip().replace("\n", " ")
+        b = (c.get("back") or "").strip().replace("\n", " ")
+        if f:
+            lines.append(f"- {f} → {b}")
+    material = "\n".join(lines)[:8000]
+    if not material:
+        return None
+    lang_name = {"ru": "русском", "en": "English", "uz": "o'zbek"}.get(lang, "русском")
+    prompt = (
+        f"Ты — генератор учебных конспектов. На основе карточек ниже составь "
+        f"СТРУКТУРИРОВАННЫЙ конспект на {lang_name} языке.\n"
+        "Правила: опирайся ТОЛЬКО на карточки (не выдумывай факты); сгруппируй по темам; "
+        "используй markdown (## заголовки, маркированные списки, **жирный** для терминов). "
+        "Структура: краткий обзор темы; ключевые термины и определения; важные факты; "
+        "короткое резюме в конце. Пиши сжато и по делу, без воды.\n\n"
+        f"Карточки:\n{material}"
+    )
+    return _gemini_text(prompt, max_tokens=3000, temperature=0.4, label="deck_summary")
+
+
 # Tutor card actions — each turns a single flashcard into a micro-lesson.
 _CARD_ACTION_INSTRUCTIONS = {
     "explain": "Объясни простыми словами, что это и почему ответ именно такой. Дай контекст и нюансы.",
