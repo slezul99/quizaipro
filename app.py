@@ -7100,6 +7100,41 @@ def api_tutor_ask():
     return jsonify({"ok": True, "answer": answer, "sources": tutor_sources})
 
 
+def _extract_pdf_pages(fpath):
+    """[(page_no, text)] from a PDF via pypdf (raises ImportError if unavailable)."""
+    from pypdf import PdfReader
+    reader = PdfReader(str(fpath))
+    return [(i + 1, (p.extract_text() or "")) for i, p in enumerate(reader.pages[:60])]
+
+
+def _extract_docx_text(fpath):
+    """Plain text from a .docx — dependency-free (it's a zip of XML). Paragraph
+    boundaries become newlines; all other tags are stripped."""
+    import zipfile
+    import html as _html
+    with zipfile.ZipFile(str(fpath)) as z:
+        xml = z.read("word/document.xml").decode("utf-8", "ignore")
+    xml = re.sub(r"</w:p>", "\n", xml)
+    xml = re.sub(r"<w:tab[^>]*/>", " ", xml)
+    return _html.unescape(re.sub(r"<[^>]+>", "", xml))
+
+
+def _extract_pptx_pages(fpath):
+    """[(slide_no, text)] from a .pptx — dependency-free (zip of per-slide XML)."""
+    import zipfile
+    import html as _html
+    pages = []
+    with zipfile.ZipFile(str(fpath)) as z:
+        slides = [n for n in z.namelist()
+                  if re.match(r"ppt/slides/slide\d+\.xml$", n)]
+        slides.sort(key=lambda n: int(re.search(r"(\d+)", n).group(1)))
+        for i, n in enumerate(slides[:100], 1):
+            xml = z.read(n).decode("utf-8", "ignore")
+            xml = re.sub(r"</a:p>", "\n", xml)
+            pages.append((i, _html.unescape(re.sub(r"<[^>]+>", "", xml))))
+    return pages
+
+
 @app.route("/api/tutor/upload-doc", methods=["POST"])
 @login_required
 def api_tutor_upload_doc():
@@ -7115,27 +7150,30 @@ def api_tutor_upload_doc():
     file = request.files.get("file")
     if not file or not file.filename:
         return jsonify({"error": "no_file", "msg": "Загрузите PDF"}), 400
-    if not file.filename.lower().endswith(".pdf"):
-        return jsonify({"error": "bad_type", "msg": "Пока поддерживается только PDF"}), 400
+    ext = Path(file.filename).suffix.lower()
+    if ext not in (".pdf", ".docx", ".pptx"):
+        return jsonify({"error": "bad_type", "msg": "Поддерживаются PDF, DOCX, PPTX"}), 400
 
     display_name = Path(file.filename).name[:200]
-    fname = secure_filename(file.filename) or f"doc_{secrets.token_hex(4)}.pdf"
+    fname = secure_filename(file.filename) or f"doc_{secrets.token_hex(4)}{ext}"
     fpath = UPLOAD / f"tutordoc_{user['id']}_{secrets.token_hex(4)}_{fname}"
     try:
         file.save(str(fpath))
         try:
-            from pypdf import PdfReader
+            if ext == ".pdf":
+                pages = _extract_pdf_pages(fpath)
+            elif ext == ".docx":
+                pages = [(None, _extract_docx_text(fpath))]
+            else:  # .pptx
+                pages = _extract_pptx_pages(fpath)
         except ImportError:
-            return jsonify({"error": "unavailable", "msg": "PDF-парсер недоступен"}), 503
-        try:
-            reader = PdfReader(str(fpath))
-            pages = [(i + 1, (p.extract_text() or "")) for i, p in enumerate(reader.pages[:60])]
+            return jsonify({"error": "unavailable", "msg": "Парсер недоступен"}), 503
         except Exception as e:
             print(f"[tutor upload-doc] parse {type(e).__name__}: {e}")
-            return jsonify({"error": "parse_failed", "msg": "Не удалось прочитать PDF"}), 400
+            return jsonify({"error": "parse_failed", "msg": "Не удалось прочитать файл"}), 400
         if not any((t or "").strip() for _n, t in pages):
             return jsonify({"error": "empty",
-                            "msg": "В PDF нет текста (возможно, это скан) — пока не поддерживается"}), 400
+                            "msg": "В файле нет текста (возможно, это скан) — пока не поддерживается"}), 400
 
         conn = db.get_conn()
         try:
