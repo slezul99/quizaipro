@@ -902,6 +902,50 @@ def get_last_gemini_error() -> str:
     return _last_gemini_error
 
 
+def ocr_pdf_pages(pdf_path, max_pages: int = 20) -> list[tuple]:
+    """OCR a scanned / no-text-layer PDF via Gemini Vision. Renders up to
+    `max_pages` pages to images and transcribes them in ONE vision call (cheaper),
+    returning [(page_no, text), …]. Empty list on failure. Used by the tutor
+    document upload when pypdf finds no text layer — bounded by a per-user budget
+    at the call site (Vision costs money per page)."""
+    from pathlib import Path as _Path
+    images = _pdf_to_images(_Path(str(pdf_path)), max_pages=max_pages, dpi=175)
+    if not images:
+        return []
+    prompt = (
+        "You are an OCR engine. Transcribe ALL text from each page image VERBATIM, "
+        "preserving reading order. Do NOT summarise, translate, or add commentary. "
+        "There are N images in order (page 1..N). Return ONLY JSON: "
+        '{"pages":[{"page":1,"text":"<full text of page 1>"}, …]} '
+        "— exactly one entry per input image, in order."
+    )
+    raw = _gemini_vision_call(images, prompt=prompt)
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+    except Exception:
+        m = re.search(r"\{.*\}", raw, re.S)
+        if not m:
+            return []
+        try:
+            data = json.loads(m.group(0))
+        except Exception:
+            return []
+    out = []
+    for p in (data.get("pages") if isinstance(data, dict) else None) or []:
+        try:
+            pg = int(p.get("page"))
+        except (TypeError, ValueError):
+            pg = None
+        txt = (p.get("text") or "").strip()
+        if txt:
+            out.append((pg, txt))
+    if not out and isinstance(data, dict) and (data.get("text") or "").strip():
+        out = [(None, data["text"].strip())]
+    return out
+
+
 def _parse_vision_response(text: str) -> list[dict]:
     """Razbiraet otvet Gemini -> spisok kart. MAKSIMALNO GIBKY parser.
     Sokranyaet pole '_number' dlya dedupe."""

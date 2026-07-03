@@ -7100,6 +7100,32 @@ def api_tutor_ask():
     return jsonify({"ok": True, "answer": answer, "sources": tutor_sources})
 
 
+# OCR (Gemini Vision) is only used for scanned / no-text PDFs and costs money per
+# page, so it's bounded by a per-user MONTHLY page budget plus a per-document cap.
+_OCR_MONTHLY_LIMIT = 100
+_OCR_MAX_PAGES_PER_DOC = 20
+
+
+def _ocr_remaining(conn, user_id):
+    """(remaining_pages, period, used) for the current UTC month."""
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS ocr_usage ("
+        "user_id INTEGER PRIMARY KEY, period TEXT NOT NULL, pages INTEGER NOT NULL DEFAULT 0)")
+    period = datetime.utcnow().strftime("%Y-%m")
+    row = conn.execute(
+        "SELECT period, pages FROM ocr_usage WHERE user_id=?", (user_id,)).fetchone()
+    used = row["pages"] if (row and row["period"] == period) else 0
+    return max(0, _OCR_MONTHLY_LIMIT - used), period, used
+
+
+def _ocr_consume(conn, user_id, pages, period, prev_used):
+    conn.execute(
+        "INSERT INTO ocr_usage (user_id, period, pages) VALUES (?,?,?) "
+        "ON CONFLICT (user_id) DO UPDATE SET period=excluded.period, pages=excluded.pages",
+        (user_id, period, prev_used + pages))
+    conn.commit()
+
+
 def _extract_pdf_pages(fpath):
     """[(page_no, text)] from a PDF via pypdf (raises ImportError if unavailable)."""
     from pypdf import PdfReader
@@ -7172,8 +7198,29 @@ def api_tutor_upload_doc():
             print(f"[tutor upload-doc] parse {type(e).__name__}: {e}")
             return jsonify({"error": "parse_failed", "msg": "Не удалось прочитать файл"}), 400
         if not any((t or "").strip() for _n, t in pages):
-            return jsonify({"error": "empty",
-                            "msg": "В файле нет текста (возможно, это скан) — пока не поддерживается"}), 400
+            # No text layer (scan / photo of pages). OCR via Gemini Vision — but
+            # it costs per page, so bound it by a per-user monthly budget + a
+            # per-document cap. Only PDFs reach OCR (docx/pptx are already text).
+            if ext != ".pdf":
+                return jsonify({"error": "empty", "msg": "В файле нет текста"}), 400
+            conn0 = db.get_conn()
+            try:
+                remaining, period, used = _ocr_remaining(conn0, user["id"])
+            finally:
+                conn0.close()
+            if remaining <= 0:
+                return jsonify({"error": "ocr_limit",
+                    "msg": "Исчерпан месячный лимит распознавания сканов. Попробуйте позже."}), 429
+            budget = min(_OCR_MAX_PAGES_PER_DOC, remaining)
+            pages = ai_gen.ocr_pdf_pages(fpath, max_pages=budget)
+            if not any((t or "").strip() for _n, t in pages):
+                return jsonify({"error": "empty",
+                                "msg": "Не удалось распознать текст на страницах"}), 400
+            conn0 = db.get_conn()
+            try:
+                _ocr_consume(conn0, user["id"], len(pages), period, used)
+            finally:
+                conn0.close()
 
         conn = db.get_conn()
         try:
