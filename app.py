@@ -2244,12 +2244,21 @@ def deck_view_v2(deck_id):
         c["a"] = (c.get("back") or "").strip()
 
     retention = fsrs.deck_retention(cards_all)
+    # Whether the deck has any testable (MCQ) card — same detection the test uses
+    # (_parse_card_options scans note/front/back). Flashcard-only decks can't be
+    # tested, so the "Тест" button is gated on this to avoid a broken empty test.
+    has_test = any(
+        _has_mcq_options(c.get("note") or "") or _has_mcq_options(c.get("front") or "")
+        or _has_mcq_options(c.get("back") or "")
+        for c in cards_all
+    )
     cards = cards_all[:30]
     return render_template(
         "deck_v2.html", deck=deck, cards=cards,
         card_total=len(cards_all), shown=len(cards),
         new_count=new_count, learning_count=learning_count, hard_count=hard_count,
         retention=retention, category_name=deck.get("category_name"),
+        has_test=has_test,
     )
 
 
@@ -2997,6 +3006,21 @@ def test_start(deck_id):
     if not cards_raw:
         flash("В колоде нет вопросов", "info")
         return redirect(url_for("deck_view", deck_id=deck_id))
+
+    # Keep only testable (MCQ) cards: flashcards have no A/B/C/D options and
+    # would render a "no options" question. This fixes both flashcard-only decks
+    # (redirect below) and mixed decks (test just the MCQ cards). The "Тест"
+    # button is already gated on the deck page; this guards direct-URL access.
+    mcq_cards = [
+        c for c in cards_raw
+        if _has_mcq_options(dict(c).get("note") or "")
+        or _has_mcq_options(dict(c).get("front") or "")
+        or _has_mcq_options(dict(c).get("back") or "")
+    ]
+    if not mcq_cards:
+        flash("В этой колоде нет вопросов с вариантами — тест недоступен. Используйте «Учить».", "info")
+        return redirect(url_for("deck_view", deck_id=deck_id))
+    cards_raw = mcq_cards
 
     # Fil'tr "Tol'ko trudnye"
     if only_hard:
