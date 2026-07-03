@@ -7111,6 +7111,7 @@ def _ocr_remaining(conn, user_id):
     conn.execute(
         "CREATE TABLE IF NOT EXISTS ocr_usage ("
         "user_id INTEGER PRIMARY KEY, period TEXT NOT NULL, pages INTEGER NOT NULL DEFAULT 0)")
+    conn.commit()  # Postgres: DDL is transactional — commit or a later conn won't see it
     period = datetime.utcnow().strftime("%Y-%m")
     row = conn.execute(
         "SELECT period, pages FROM ocr_usage WHERE user_id=?", (user_id,)).fetchone()
@@ -7224,8 +7225,8 @@ def api_tutor_upload_doc():
                     conn0.close()
             except Exception as e:
                 print(f"[tutor upload-doc OCR] {type(e).__name__}: {e}")
-                return jsonify({"error": "ocr_failed", "msg": "Не удалось распознать скан",
-                                "detail": f"{type(e).__name__}: {e}"[:300]}), 500
+                return jsonify({"error": "ocr_failed",
+                                "msg": "Не удалось распознать скан"}), 500
 
         conn = db.get_conn()
         try:
