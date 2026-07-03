@@ -6935,6 +6935,7 @@ def api_tutor_ask():
             if h.get("type") == "doc":
                 tutor_sources.append({
                     "n": i + 1, "type": "doc", "doc_id": h.get("doc_id"),
+                    "chunk_id": h.get("chunk_id"),
                     "doc_name": h.get("doc_name"), "page": h.get("page"),
                     "front": (h.get("text") or "").strip().replace("\n", " ")[:80]})
             else:
@@ -7150,6 +7151,27 @@ def api_tutor_upload_doc():
                 fpath.unlink()
         except OSError:
             pass
+
+
+@app.route("/api/tutor/doc-chunk/<int:chunk_id>", methods=["GET"])
+@login_required
+def api_tutor_doc_chunk(chunk_id):
+    """Return a single indexed document chunk (the exact passage the tutor cited),
+    scoped to the requesting user, so the client can show "where I got this"."""
+    user = current_user()
+    conn = db.get_conn()
+    try:
+        row = conn.execute(
+            "SELECT dc.text, dc.page, d.name AS doc_name FROM doc_chunks dc "
+            "JOIN documents d ON d.id = dc.doc_id "
+            "WHERE dc.id = ? AND dc.user_id = ?",
+            (chunk_id, user["id"])).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        return jsonify({"error": "not_found"}), 404
+    return jsonify({"ok": True, "doc_name": row["doc_name"],
+                    "page": row["page"], "text": row["text"]})
 
 
 @app.route("/api/tutor/clear", methods=["POST"])

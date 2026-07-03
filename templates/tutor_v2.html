@@ -664,6 +664,45 @@
     padding: 4px 6px 8px;
   }
   html.dark .doc-status { color: #94a3b8; }
+  [x-cloak] { display: none !important; }
+  /* Document passage preview popover */
+  .doc-preview-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(15, 23, 42, .45);
+    display: grid; place-items: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .doc-preview {
+    width: min(560px, 100%);
+    max-height: 70vh;
+    display: flex; flex-direction: column;
+    background: #fff;
+    border: 1px solid rgba(99,102,241,.16);
+    border-radius: 16px;
+    box-shadow: 0 24px 60px -16px rgba(15,23,42,.4);
+    overflow: hidden;
+  }
+  .doc-preview-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(99,102,241,.12);
+  }
+  .doc-preview-title { font-weight: 700; font-size: 14px; color: #0d9488; }
+  .doc-preview-close {
+    border: 0; background: transparent; cursor: pointer;
+    font-size: 16px; color: #94a3b8; line-height: 1;
+  }
+  .doc-preview-close:hover { color: #475569; }
+  .doc-preview-body {
+    padding: 16px 18px; overflow-y: auto;
+    font-size: 14px; line-height: 1.55; color: #334155;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  html.dark .doc-preview { background: #0f172a; border-color: rgba(148,163,184,.2); }
+  html.dark .doc-preview-head { border-color: rgba(148,163,184,.16); }
+  html.dark .doc-preview-title { color: #5eead4; }
+  html.dark .doc-preview-body { color: #cbd5e1; }
 
   /* Typing indicator */
   .typing-bubble {
@@ -1278,9 +1317,10 @@
                 <template x-for="s in m.sources" :key="s.n">
                   <span>
                     <template x-if="s.type === 'doc'">
-                      <span class="src-chip src-chip--doc"
-                        :title="`${s.doc_name}${s.page ? ', стр. '+s.page : ''}: ${s.front}`"
-                        x-text="`Документ ${s.n}`"></span>
+                      <button type="button" class="src-chip src-chip--doc"
+                        @click="showDocChunk(s)"
+                        :title="`${s.doc_name}${s.page ? ', стр. '+s.page : ''}`"
+                        x-text="`Документ ${s.n}`"></button>
                     </template>
                     <template x-if="s.type !== 'doc'">
                       <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
@@ -1340,8 +1380,20 @@
 
   </div>{# /chat-body #}
 
+  {# Document passage preview (opened from a "Документ N" source chip) #}
+  <div class="doc-preview-overlay" x-show="docPreview" @click="docPreview = null" x-cloak>
+    <div class="doc-preview" @click.stop>
+      <div class="doc-preview-head">
+        <span class="doc-preview-title"
+          x-text="docPreview ? (docPreview.doc_name + (docPreview.page ? ', стр. ' + docPreview.page : '')) : ''"></span>
+        <button type="button" class="doc-preview-close" @click="docPreview = null" aria-label="Close">✕</button>
+      </div>
+      <div class="doc-preview-body" x-text="docPreview ? (docPreview.loading ? '…' : docPreview.text) : ''"></div>
+    </div>
+  </div>
+
   {# Mobile FAB to open sidebar #}
-  <button class="mobile-sidebar-fab" @click="sidebarOpen = true" x-show="!sidebarOpen">
+  <button class="mobile-sidebar-fab" @click="sidebarOpen = true" x-show="!sidebarOpen"
     <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
 
@@ -1380,6 +1432,7 @@ function tutorApp() {
     loading: false,
     docUploading: false,
     docStatus: '',
+    docPreview: null,
     provider: localStorage.getItem('tutor_provider') || '',
     sidebarOpen: window.innerWidth >= 768,
     suggestions: [
@@ -1551,6 +1604,23 @@ function tutorApp() {
       }
       this.docUploading = false;
       setTimeout(() => { this.docStatus = ''; }, 7000);
+    },
+
+    async showDocChunk(s) {
+      this.docPreview = { doc_name: s.doc_name, page: s.page, text: '', loading: true };
+      try {
+        const r = await fetch(`/api/tutor/doc-chunk/${s.chunk_id}`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok) {
+          this.docPreview = { doc_name: d.doc_name, page: d.page, text: d.text, loading: false };
+        } else if (this.docPreview) {
+          this.docPreview.loading = false; this.docPreview.text = '—';
+        }
+      } catch (e) {
+        if (this.docPreview) { this.docPreview.loading = false; this.docPreview.text = '—'; }
+      }
     },
 
     async clearHistory() {
