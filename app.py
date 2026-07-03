@@ -6904,13 +6904,20 @@ def api_tutor_ask():
                 scoped = deck_id
         hits = rag.retrieve(conn, user, message, deck_id=scoped)
         deck_context, used = rag.format_context(hits)
-        # Compact source list (same [Карточка N] order) so the client can render
-        # clickable citations linking back to the exact cards.
-        tutor_sources = [
-            {"n": i + 1, "card_id": h["card_id"], "deck_id": h["deck_id"],
-             "front": (h["front"] or "").strip().replace("\n", " ")[:80]}
-            for i, h in enumerate(used)
-        ]
+        # Compact source list (same [N] order) so the client can render clickable
+        # citations — cards link to the deck, documents show name + page.
+        tutor_sources = []
+        for i, h in enumerate(used):
+            if h.get("type") == "doc":
+                tutor_sources.append({
+                    "n": i + 1, "type": "doc", "doc_id": h.get("doc_id"),
+                    "doc_name": h.get("doc_name"), "page": h.get("page"),
+                    "front": (h.get("text") or "").strip().replace("\n", " ")[:80]})
+            else:
+                tutor_sources.append({
+                    "n": i + 1, "type": "card", "card_id": h.get("card_id"),
+                    "deck_id": h.get("deck_id"),
+                    "front": (h.get("front") or "").strip().replace("\n", " ")[:80]})
         if not deck_context and scoped:
             cards = conn.execute(
                 "SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (scoped,)).fetchall()
@@ -7066,6 +7073,59 @@ def api_tutor_ask():
     history.append({"role": "assistant", "content": answer})
     session["tutor_history"] = history[-40:]
     return jsonify({"ok": True, "answer": answer, "sources": tutor_sources})
+
+
+@app.route("/api/tutor/upload-doc", methods=["POST"])
+@login_required
+def api_tutor_upload_doc():
+    """Phase 1b: index an uploaded PDF into the user's knowledge base so the
+    tutor can ground on and cite it. Extracts per-page text (pypdf) → chunks →
+    embeds → stores (rag.index_document)."""
+    user = current_user()
+    if not ai_gen.vertex_enabled():
+        return jsonify({"error": "unavailable", "msg": "Индексация недоступна"}), 503
+    if not rate_limit(f"tutor_doc:{user['id']}", max_attempts=10, window_seconds=600):
+        return jsonify({"error": "rate_limit", "msg": "Слишком много загрузок. Подождите."}), 429
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({"error": "no_file", "msg": "Загрузите PDF"}), 400
+    if not file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "bad_type", "msg": "Пока поддерживается только PDF"}), 400
+
+    display_name = Path(file.filename).name[:200]
+    fname = secure_filename(file.filename) or f"doc_{secrets.token_hex(4)}.pdf"
+    fpath = UPLOAD / f"tutordoc_{user['id']}_{secrets.token_hex(4)}_{fname}"
+    try:
+        file.save(str(fpath))
+        try:
+            from pypdf import PdfReader
+        except ImportError:
+            return jsonify({"error": "unavailable", "msg": "PDF-парсер недоступен"}), 503
+        try:
+            reader = PdfReader(str(fpath))
+            pages = [(i + 1, (p.extract_text() or "")) for i, p in enumerate(reader.pages[:60])]
+        except Exception as e:
+            print(f"[tutor upload-doc] parse {type(e).__name__}: {e}")
+            return jsonify({"error": "parse_failed", "msg": "Не удалось прочитать PDF"}), 400
+        if not any((t or "").strip() for _n, t in pages):
+            return jsonify({"error": "empty",
+                            "msg": "В PDF нет текста (возможно, это скан) — пока не поддерживается"}), 400
+
+        conn = db.get_conn()
+        try:
+            doc_id, chunks = rag.index_document(conn, user["id"], display_name, pages)
+        finally:
+            conn.close()
+        if not doc_id:
+            return jsonify({"error": "index_failed", "msg": "Не удалось проиндексировать"}), 500
+        return jsonify({"ok": True, "doc_id": doc_id, "name": display_name, "chunks": chunks})
+    finally:
+        try:
+            if fpath.exists():
+                fpath.unlink()
+        except OSError:
+            pass
 
 
 @app.route("/api/tutor/clear", methods=["POST"])

@@ -624,6 +624,46 @@
     background: rgba(99, 102, 241, 0.14);
     border-color: rgba(99, 102, 241, 0.3);
   }
+  /* Document source chip (teal, non-link) */
+  .src-chip--doc {
+    color: #0d9488;
+    background: rgba(13, 148, 136, 0.10);
+    border-color: rgba(13, 148, 136, 0.28);
+    cursor: default;
+  }
+  .src-chip--doc:hover {
+    background: rgba(13, 148, 136, 0.16);
+    border-color: rgba(13, 148, 136, 0.45);
+  }
+  html.dark .src-chip--doc {
+    color: #5eead4;
+    background: rgba(13, 148, 136, 0.16);
+    border-color: rgba(13, 148, 136, 0.34);
+  }
+  /* Attach-document button in the composer */
+  .attach-btn {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    border: 1.5px solid var(--border, rgba(99,102,241,.18));
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: color .15s, background .15s, border-color .15s;
+  }
+  .attach-btn:hover:not(:disabled) { color: #6366f1; background: rgba(99,102,241,.07); border-color: rgba(99,102,241,.4); }
+  .attach-btn:disabled { opacity: .5; cursor: default; }
+  .attach-btn svg { width: 18px; height: 18px; }
+  html.dark .attach-btn { color: #94a3b8; border-color: rgba(148,163,184,.22); }
+  .hidden-file { display: none; }
+  .doc-status {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    padding: 4px 6px 8px;
+  }
+  html.dark .doc-status { color: #94a3b8; }
 
   /* Typing indicator */
   .typing-bubble {
@@ -1236,8 +1276,17 @@
               <div x-show="m.role === 'assistant' && m.sources && m.sources.length" class="msg-sources">
                 <span class="msg-sources-label">📎 {{ t('v2_tutor_sources') }}</span>
                 <template x-for="s in m.sources" :key="s.n">
-                  <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
-                     target="_blank" rel="noopener" x-text="`Карточка ${s.n}`"></a>
+                  <span>
+                    <template x-if="s.type === 'doc'">
+                      <span class="src-chip src-chip--doc"
+                        :title="`${s.doc_name}${s.page ? ', стр. '+s.page : ''}: ${s.front}`"
+                        x-text="`Документ ${s.n}`"></span>
+                    </template>
+                    <template x-if="s.type !== 'doc'">
+                      <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
+                         target="_blank" rel="noopener" x-text="`Карточка ${s.n}`"></a>
+                    </template>
+                  </span>
                 </template>
               </div>
             </div>
@@ -1264,7 +1313,13 @@
       {# Input bar #}
       <div class="input-bar">
         <form @submit.prevent="send()">
+          <div x-show="docStatus" class="doc-status" x-text="docStatus"></div>
           <div class="input-row">
+            <button type="button" class="attach-btn" @click="$refs.docInput.click()"
+              :disabled="loading || docUploading" title="{{ t('v2_tutor_attach') }}">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" x-ref="docInput" accept="application/pdf,.pdf" class="hidden-file" @change="uploadDoc($event)">
             <textarea
               x-model="newMsg"
               @keydown.enter.prevent="if (!$event.shiftKey) send()"
@@ -1302,6 +1357,12 @@ const TU_T = {
   error: {{ t('tu_error')|tojson }},
   net_error: {{ t('tu_net_error')|tojson }},
 };
+const TU_DOC = {
+  indexing: {{ t('v2_tutor_doc_indexing')|tojson }},
+  added: {{ t('v2_tutor_doc_added')|tojson }},
+  failed: {{ t('v2_tutor_doc_failed')|tojson }},
+  only_pdf: {{ t('v2_tutor_doc_only_pdf')|tojson }},
+};
 // CSRF token — required on every POST (server rejects form POSTs without it).
 const TUTOR_CSRF = {{ csrf_token()|tojson }};
 
@@ -1317,6 +1378,8 @@ function tutorApp() {
     messages: [],
     newMsg: '',
     loading: false,
+    docUploading: false,
+    docStatus: '',
     provider: localStorage.getItem('tutor_provider') || '',
     sidebarOpen: window.innerWidth >= 768,
     suggestions: [
@@ -1463,6 +1526,31 @@ function tutorApp() {
       }
       this.loading = false;
       this.$nextTick(() => this.scrollBottom());
+    },
+
+    async uploadDoc(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+      if (!/\.pdf$/i.test(file.name)) { this.docStatus = '⚠️ ' + TU_DOC.only_pdf; return; }
+      this.docUploading = true;
+      this.docStatus = '⏳ ' + TU_DOC.indexing;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', TUTOR_CSRF);
+        fd.append('file', file);
+        const r = await fetch('/api/tutor/upload-doc', {
+          method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const data = await r.json().catch(() => ({}));
+        this.docStatus = (r.ok && data.ok)
+          ? '✅ ' + TU_DOC.added.replace('%s', data.name)
+          : '⚠️ ' + (data.msg || TU_DOC.failed);
+      } catch (e) {
+        this.docStatus = '⚠️ ' + TU_DOC.failed;
+      }
+      this.docUploading = false;
+      setTimeout(() => { this.docStatus = ''; }, 7000);
     },
 
     async clearHistory() {

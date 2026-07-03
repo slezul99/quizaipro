@@ -116,36 +116,133 @@ def _ensure_indexed(conn, deck_ids):
     conn.commit()
 
 
+# ── Documents (Phase 1b): user-uploaded source material, chunked + embedded ──
+
+def _ensure_doc_tables(conn):
+    # AUTOINCREMENT is translated to a Postgres IDENTITY by db.translate_sql.
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS documents (
+               id         INTEGER PRIMARY KEY AUTOINCREMENT,
+               user_id    INTEGER NOT NULL,
+               name       TEXT    NOT NULL,
+               created_at TEXT    NOT NULL
+           )""")
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS doc_chunks (
+               id      INTEGER PRIMARY KEY AUTOINCREMENT,
+               doc_id  INTEGER NOT NULL,
+               user_id INTEGER NOT NULL,
+               page    INTEGER,
+               ord     INTEGER,
+               text    TEXT    NOT NULL,
+               vec     TEXT    NOT NULL
+           )""")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_doc_chunks_user ON doc_chunks(user_id)")
+
+
+def _chunk_text(text, max_len=800, min_len=100):
+    """Split a page's text into ~max_len-char chunks on sentence / blank-line
+    boundaries; drop tiny fragments (but never lose a whole short page)."""
+    import re
+    text = (text or "").strip()
+    if not text:
+        return []
+    parts = re.split(r"(?<=[.!?])\s+|\n{2,}", text)
+    chunks, cur = [], ""
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        if len(cur) + len(p) + 1 <= max_len:
+            cur = (cur + " " + p).strip()
+        else:
+            if cur:
+                chunks.append(cur)
+            cur = p if len(p) <= max_len else p[:max_len]
+    if cur:
+        chunks.append(cur)
+    kept = [c for c in chunks if len(c) >= min_len]
+    return kept or ([text[:max_len]] if len(text) >= 40 else [])
+
+
+def index_document(conn, user_id, name, pages, max_chunks=400):
+    """Chunk + embed a document's `pages` [(page_no, text), …] and store it.
+    Returns (doc_id, chunk_count); (None, 0) if embeddings are off / no text."""
+    if not ai_gen.vertex_enabled():
+        return None, 0
+    _ensure_doc_tables(conn)
+    items = []  # (page_no, chunk_text)
+    for page_no, ptext in pages:
+        for ch in _chunk_text(ptext):
+            items.append((page_no, ch))
+            if len(items) >= max_chunks:
+                break
+        if len(items) >= max_chunks:
+            break
+    if not items:
+        return None, 0
+    vecs = ai_gen._embed_texts([t for _p, t in items])
+    if not vecs:
+        return None, 0
+    import datetime as _dt
+    now = _dt.datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+    cur = conn.execute(
+        "INSERT INTO documents (user_id, name, created_at) VALUES (?,?,?) RETURNING id",
+        (user_id, (name or "document")[:200], now))
+    doc_id = cur.fetchone()[0]
+    for i, ((page_no, ch), v) in enumerate(zip(items, vecs)):
+        conn.execute(
+            "INSERT INTO doc_chunks (doc_id, user_id, page, ord, text, vec) "
+            "VALUES (?,?,?,?,?,?)",
+            (doc_id, user_id, page_no, i, ch, _pack(v)))
+    conn.commit()
+    return doc_id, len(items)
+
+
 def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
-    """Top-k cards most relevant to `query`, each a dict
-    {card_id, deck_id, front, back, note, score}. [] if embeddings unavailable."""
+    """Top-k sources most relevant to `query`, merging the user's CARDS and
+    uploaded DOCUMENTS. Each hit is tagged with `type` ('card' | 'doc') plus the
+    metadata that type needs. [] if embeddings unavailable."""
     if not query or not ai_gen.vertex_enabled():
         return []
-    deck_ids = _user_deck_ids(conn, user, deck_id)
-    if not deck_ids:
-        return []
-    _ensure_indexed(conn, deck_ids)
-
     qv = ai_gen._embed_texts([query])
     if not qv:
         return []
     qv = qv[0]
 
-    ph = ",".join("?" * len(deck_ids))
-    rows = conn.execute(
-        f"""SELECT e.card_id, e.deck_id, e.vec, c.front, c.back, c.note
-              FROM card_embeddings e
-              JOIN cards c ON c.id = e.card_id
-             WHERE e.deck_id IN ({ph})""",
-        deck_ids).fetchall()
+    hits = []
 
-    scored = [(ai_gen._cosine(qv, _unpack(r["vec"])), r) for r in rows]
-    scored.sort(key=lambda t: t[0], reverse=True)
-    return [
-        {"card_id": r["card_id"], "deck_id": r["deck_id"], "front": r["front"],
-         "back": r["back"], "note": r["note"], "score": round(float(s), 3)}
-        for s, r in scored[:k]
-    ]
+    # Cards (deck-scoped if a deck is in context, else the user's whole library).
+    deck_ids = _user_deck_ids(conn, user, deck_id)
+    if deck_ids:
+        _ensure_indexed(conn, deck_ids)
+        ph = ",".join("?" * len(deck_ids))
+        for r in conn.execute(
+            f"""SELECT e.card_id, e.deck_id, e.vec, c.front, c.back, c.note
+                  FROM card_embeddings e JOIN cards c ON c.id = e.card_id
+                 WHERE e.deck_id IN ({ph})""", deck_ids).fetchall():
+            hits.append({"type": "card", "card_id": r["card_id"],
+                         "deck_id": r["deck_id"], "front": r["front"],
+                         "back": r["back"], "note": r["note"],
+                         "score": ai_gen._cosine(qv, _unpack(r["vec"]))})
+
+    # Documents the user uploaded (user-scoped, not deck-scoped).
+    _ensure_doc_tables(conn)
+    for r in conn.execute(
+        """SELECT dc.id AS chunk_id, dc.doc_id, dc.page, dc.text, dc.vec,
+                  d.name AS doc_name
+             FROM doc_chunks dc JOIN documents d ON d.id = dc.doc_id
+            WHERE dc.user_id = ?""", (user["id"],)).fetchall():
+        hits.append({"type": "doc", "chunk_id": r["chunk_id"], "doc_id": r["doc_id"],
+                     "doc_name": r["doc_name"], "page": r["page"], "text": r["text"],
+                     "score": ai_gen._cosine(qv, _unpack(r["vec"]))})
+
+    hits.sort(key=lambda h: h["score"], reverse=True)
+    top = hits[:k]
+    for h in top:
+        h["score"] = round(float(h["score"]), 3)
+    return top
 
 
 def format_context(hits, min_score=_MIN_SCORE):
@@ -157,11 +254,16 @@ def format_context(hits, min_score=_MIN_SCORE):
         return "", []
     lines = []
     for i, h in enumerate(used, 1):
-        note = (h["note"] or "").strip()
-        note = f" — {note[:200]}" if note else ""
-        front = (h["front"] or "").strip().replace("\n", " ")[:300]
-        back = (h["back"] or "").strip().replace("\n", " ")[:300]
-        lines.append(f"[Карточка {i}] {front} → {back}{note}")
+        if h.get("type") == "doc":
+            page = f", стр. {h['page']}" if h.get("page") else ""
+            txt = (h.get("text") or "").strip().replace("\n", " ")[:400]
+            lines.append(f"[Документ {i}] «{h.get('doc_name')}»{page}: {txt}")
+        else:
+            note = (h.get("note") or "").strip()
+            note = f" — {note[:200]}" if note else ""
+            front = (h.get("front") or "").strip().replace("\n", " ")[:300]
+            back = (h.get("back") or "").strip().replace("\n", " ")[:300]
+            lines.append(f"[Карточка {i}] {front} → {back}{note}")
     return "\n".join(lines), used
 
 
