@@ -16,8 +16,8 @@ The tutor route builds its `deck_context` from `build_tutor_context()`; on any
 failure (embeddings disabled, nothing indexed) it returns "" and the caller
 falls back to its previous naive behaviour.
 """
-import array
 import hashlib
+import json
 
 import ai_gen
 
@@ -33,12 +33,15 @@ _MIN_SCORE = 0.35
 
 
 def _ensure_table(conn):
+    # Portable across SQLite (dev) and Postgres (prod, via db.py's compat layer):
+    # the vector is stored as a JSON TEXT array — avoids the SQLite-only BLOB type
+    # and psycopg BYTEA/memoryview handling. Compact enough at library scale.
     conn.execute(
         """CREATE TABLE IF NOT EXISTS card_embeddings (
                card_id    INTEGER PRIMARY KEY,
                deck_id    INTEGER NOT NULL,
                text_hash  TEXT    NOT NULL,
-               vec        BLOB    NOT NULL
+               vec        TEXT    NOT NULL
            )""")
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_card_emb_deck ON card_embeddings(deck_id)")
@@ -53,13 +56,11 @@ def _text_hash(front, back, note):
 
 
 def _pack(vec):
-    return array.array("f", vec).tobytes()
+    return json.dumps([float(x) for x in vec])
 
 
 def _unpack(blob):
-    a = array.array("f")
-    a.frombytes(blob)
-    return a
+    return json.loads(blob)
 
 
 def _user_deck_ids(conn, user, deck_id=None):
@@ -105,9 +106,12 @@ def _ensure_indexed(conn, deck_ids):
     if not vecs:
         return
     for (cid, did, h, _txt), v in zip(stale, vecs):
+        # Portable upsert: ON CONFLICT works on SQLite 3.24+ AND Postgres.
         conn.execute(
-            "INSERT OR REPLACE INTO card_embeddings "
-            "(card_id, deck_id, text_hash, vec) VALUES (?,?,?,?)",
+            "INSERT INTO card_embeddings (card_id, deck_id, text_hash, vec) "
+            "VALUES (?,?,?,?) "
+            "ON CONFLICT (card_id) DO UPDATE SET "
+            "deck_id=excluded.deck_id, text_hash=excluded.text_hash, vec=excluded.vec",
             (cid, did, h, _pack(v)))
     conn.commit()
 
