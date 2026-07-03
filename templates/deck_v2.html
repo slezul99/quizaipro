@@ -860,7 +860,7 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
        CANONICAL SIDEBAR — My Library active
        ════════════════════════════════════════ -->
   <aside class="sidebar">
-    <div style="display:flex;align-items:center;gap:10px;padding:4px 4px 18px;flex-shrink:0;">
+    <div onclick="location.href='{{ url_for('dashboard_v2_page') }}'" title="QuizAIPro" style="display:flex;align-items:center;gap:10px;padding:4px 4px 18px;flex-shrink:0;cursor:pointer;">
       <div class="brand-logo-icon">
         <img src="{{ url_for('static', filename='logo-sm.png', v='1') }}" alt="QuizAIPro" class="logo-light">
         <img src="{{ url_for('static', filename='logo-org-sm.png', v='1') }}" alt="QuizAIPro" class="logo-dark">
