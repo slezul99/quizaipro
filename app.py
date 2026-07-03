@@ -3057,6 +3057,14 @@ def api_deck_quiz(deck_id):
         return jsonify({"error": "unavailable", "msg": "AI недоступен"}), 503
     lang = session.get("lang", "ru")
     force = request.form.get("force") == "1"
+    # Exam mode asks for more questions and a fresh set each attempt (fresh=1
+    # bypasses the cache entirely so it never clobbers the cached 8-item quiz).
+    fresh = request.form.get("fresh") == "1"
+    try:
+        count = int(request.form.get("count") or 8)
+    except (TypeError, ValueError):
+        count = 8
+    count = max(3, min(count, 20))
     if not rate_limit(f"deck_quiz:{user['id']}", max_attempts=20, window_seconds=600):
         return jsonify({"error": "rate_limit", "msg": "Слишком часто. Подождите минуту."}), 429
 
@@ -3073,39 +3081,41 @@ def api_deck_quiz(deck_id):
         digest = hashlib.sha1(
             ("|".join((c["front"] or "") + ">" + (c["back"] or "") for c in cards)
              + "|" + lang).encode("utf-8")).hexdigest()
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS deck_quizzes ("
-            "deck_id INTEGER NOT NULL, lang TEXT NOT NULL, cards_hash TEXT NOT NULL, "
-            "content TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (deck_id, lang))")
-        conn.commit()
-        if not force:
-            row = conn.execute(
-                "SELECT content, cards_hash FROM deck_quizzes WHERE deck_id=? AND lang=?",
-                (deck_id, lang)).fetchone()
-            if row and row["cards_hash"] == digest:
-                try:
-                    return jsonify({"ok": True, "quiz": _json.loads(row["content"]), "cached": True})
-                except Exception:
-                    pass
+        if not fresh:
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS deck_quizzes ("
+                "deck_id INTEGER NOT NULL, lang TEXT NOT NULL, cards_hash TEXT NOT NULL, "
+                "content TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (deck_id, lang))")
+            conn.commit()
+            if not force:
+                row = conn.execute(
+                    "SELECT content, cards_hash FROM deck_quizzes WHERE deck_id=? AND lang=?",
+                    (deck_id, lang)).fetchone()
+                if row and row["cards_hash"] == digest:
+                    try:
+                        return jsonify({"ok": True, "quiz": _json.loads(row["content"]), "cached": True})
+                    except Exception:
+                        pass
         card_dicts = [dict(c) for c in cards]
     finally:
         conn.close()
 
-    quiz = ai_gen.generate_quiz(card_dicts, lang=lang)  # LLM call — no open conn held
+    quiz = ai_gen.generate_quiz(card_dicts, lang=lang, n=count)  # LLM — no open conn held
     if not quiz:
         return jsonify({"error": "ai_failed", "msg": "Не удалось создать квиз"}), 500
 
-    now = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
-    conn = db.get_conn()
-    try:
-        conn.execute(
-            "INSERT INTO deck_quizzes (deck_id, lang, cards_hash, content, updated_at) "
-            "VALUES (?,?,?,?,?) ON CONFLICT (deck_id, lang) DO UPDATE SET "
-            "cards_hash=excluded.cards_hash, content=excluded.content, updated_at=excluded.updated_at",
-            (deck_id, lang, digest, _json.dumps(quiz, ensure_ascii=False), now))
-        conn.commit()
-    finally:
-        conn.close()
+    if not fresh:
+        now = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+        conn = db.get_conn()
+        try:
+            conn.execute(
+                "INSERT INTO deck_quizzes (deck_id, lang, cards_hash, content, updated_at) "
+                "VALUES (?,?,?,?,?) ON CONFLICT (deck_id, lang) DO UPDATE SET "
+                "cards_hash=excluded.cards_hash, content=excluded.content, updated_at=excluded.updated_at",
+                (deck_id, lang, digest, _json.dumps(quiz, ensure_ascii=False), now))
+            conn.commit()
+        finally:
+            conn.close()
     return jsonify({"ok": True, "quiz": quiz, "cached": False})
 
 

@@ -766,6 +766,15 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
 .qz-result { text-align:center; padding:20px 0; }
 .qz-score { font-family:var(--font-head); font-size:34px; font-weight:800; color:var(--brand-1); }
 .qz-pct { color:#64748b; margin:4px 0 18px; font-weight:600; }
+.ex-timer { font-family:var(--font-head); font-weight:700; font-size:14px; color:var(--brand-1); background:rgba(99,102,241,.1); padding:4px 10px; border-radius:8px; }
+.ex-timer-low { color:#dc2626; background:rgba(239,68,68,.12); }
+.ex-nav { margin-top:18px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ex-count { font-size:12px; font-weight:700; color:#64748b; }
+.ex-review-title { font-family:var(--font-head); font-weight:800; font-size:16px; margin:20px 0 12px; color:var(--text); }
+.ex-rev-item { padding:12px 0; border-top:1px solid rgba(99,102,241,.12); }
+.ex-rev-q { font-weight:700; color:var(--text); margin-bottom:6px; line-height:1.4; }
+.ex-rev-a { font-size:13.5px; color:#059669; margin:2px 0; }
+.ex-rev-wrong { color:#dc2626; }
 </style>
   <style id="v2-mobile-shell">
   /* ============ v2 mobile adaptation (drawer + responsive) ============ */
@@ -1067,6 +1076,10 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
       <button type="button" class="btn-ghost" onclick="openQuiz()">
         <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         {{ t('v2_quiz') }}
+      </button>
+      <button type="button" class="btn-ghost" onclick="openExam()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+        {{ t('v2_exam') }}
       </button>
 
       <!-- Spacer -->
@@ -1411,6 +1424,89 @@ function renderQuiz(){
 function qzSelect(i){ if(QZ.checked)return; QZ.selected=i; renderQuiz(); }
 function qzCheck(){ if(QZ.selected<0)return; QZ.checked=true; if(QZ.selected===QZ.items[QZ.idx].correct)QZ.correct++; renderQuiz(); }
 function qzNext(){ QZ.idx++; QZ.selected=-1; QZ.checked=false; renderQuiz(); }
+</script>
+
+<!-- AI Exam (Экзамен) modal — timed, no feedback until submit, then graded review -->
+<div class="modal-overlay" id="examModal" onclick="if(event.target===this&&(!EX.items.length||EX.submitted))closeExam()">
+  <div class="modal-box summary-box">
+    <div class="summary-head">
+      <div class="modal-title" style="margin:0;">{{ t('v2_exam') }}</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <span class="ex-timer" id="exTimer"></span>
+        <button type="button" class="btn-ghost" onclick="closeExam()" style="padding:6px 11px;">✕</button>
+      </div>
+    </div>
+    <div class="summary-body" id="examBody"></div>
+  </div>
+</div>
+<script>
+var EX={items:[],answers:[],idx:0,submitted:false,tLeft:0,timer:null};
+var EX_MINUTES=20;
+function closeExam(){ if(EX.timer){clearInterval(EX.timer);EX.timer=null;} document.getElementById('examModal').classList.remove('open'); }
+function openExam(){
+  document.getElementById('examModal').classList.add('open');
+  var body=document.getElementById('examBody'); document.getElementById('exTimer').textContent='';
+  EX={items:[],answers:[],idx:0,submitted:false,tLeft:0,timer:null};
+  body.innerHTML='<div class="sum-loading">⏳ {{ t('v2_exam_loading') }}</div>';
+  var fd=new FormData(); fd.append('_csrf','{{ csrf_token() }}'); fd.append('count','15'); fd.append('fresh','1');
+  fetch('/api/deck/{{ deck.id }}/quiz',{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json().catch(function(){return {};});})
+    .then(function(d){
+      if(d&&d.ok&&d.quiz&&d.quiz.length){
+        EX={items:d.quiz,answers:d.quiz.map(function(){return -1;}),idx:0,submitted:false,tLeft:EX_MINUTES*60,timer:null};
+        EX.timer=setInterval(exTick,1000); exTick(); renderExam();
+      } else { body.innerHTML='<div class="sum-loading">⚠️ '+((d&&d.msg)||'{{ t('v2_exam_failed') }}')+'</div>'; }
+    })
+    .catch(function(){ body.innerHTML='<div class="sum-loading">⚠️ {{ t('v2_exam_failed') }}</div>'; });
+}
+function exTick(){
+  if(EX.submitted)return;
+  var el=document.getElementById('exTimer');
+  var m=Math.floor(EX.tLeft/60), s=EX.tLeft%60;
+  el.textContent='⏱ '+m+':'+(s<10?'0':'')+s;
+  el.className='ex-timer'+(EX.tLeft<=60?' ex-timer-low':'');
+  if(EX.tLeft<=0){ clearInterval(EX.timer); EX.timer=null; exSubmit(); return; }
+  EX.tLeft--;
+}
+function renderExam(){
+  if(EX.submitted){ renderExamReview(); return; }
+  var body=document.getElementById('examBody'), it=EX.items[EX.idx];
+  var html='<div class="qz-progress">'+(EX.idx+1)+' / '+EX.items.length+'</div><div class="qz-q">'+qzEsc(it.q)+'</div><div class="qz-opts">';
+  for(var i=0;i<it.options.length;i++){
+    var cls='qz-opt'+(EX.answers[EX.idx]===i?' qz-sel':'');
+    html+='<button class="'+cls+'" onclick="exSelect('+i+')">'+String.fromCharCode(65+i)+'. '+qzEsc(it.options[i])+'</button>';
+  }
+  html+='</div><div class="ex-nav"><button class="btn-ghost" '+(EX.idx===0?'disabled':'')+' onclick="exGo(-1)">←</button>';
+  html+='<span class="ex-count">'+EX.answers.filter(function(a){return a>=0;}).length+' / '+EX.items.length+'</span>';
+  html+= (EX.idx<EX.items.length-1) ? '<button class="btn-ghost" onclick="exGo(1)">→</button>'
+                                    : '<button class="btn-primary" onclick="exSubmit()">{{ t('v2_exam_finish') }}</button>';
+  html+='</div>';
+  body.innerHTML=html;
+}
+function exSelect(i){ EX.answers[EX.idx]=i; renderExam(); }
+function exGo(d){ EX.idx=Math.max(0,Math.min(EX.items.length-1,EX.idx+d)); renderExam(); }
+function exSubmit(){
+  if(EX.submitted)return; EX.submitted=true;
+  if(EX.timer){clearInterval(EX.timer);EX.timer=null;}
+  document.getElementById('exTimer').textContent=''; renderExamReview();
+}
+function renderExamReview(){
+  var body=document.getElementById('examBody'), correct=0, i;
+  for(i=0;i<EX.items.length;i++){ if(EX.answers[i]===EX.items[i].correct)correct++; }
+  var pct=Math.round(correct/EX.items.length*100);
+  var html='<div class="qz-result"><div class="qz-score">'+correct+' / '+EX.items.length+'</div><div class="qz-pct">'+pct+'%</div>'+
+    '<button class="btn-primary" onclick="openExam()">{{ t('v2_exam_retry') }}</button></div>'+
+    '<div class="ex-review-title">{{ t('v2_exam_review') }}</div>';
+  for(i=0;i<EX.items.length;i++){
+    var it=EX.items[i], ua=EX.answers[i], ok=(ua===it.correct);
+    html+='<div class="ex-rev-item"><div class="ex-rev-q">'+(i+1)+'. '+qzEsc(it.q)+' '+(ok?'✅':'❌')+'</div>';
+    html+='<div class="ex-rev-a"><b>{{ t('v2_exam_correct') }}:</b> '+String.fromCharCode(65+it.correct)+'. '+qzEsc(it.options[it.correct])+'</div>';
+    if(!ok){ html+='<div class="ex-rev-a ex-rev-wrong"><b>{{ t('v2_exam_your') }}:</b> '+(ua>=0?String.fromCharCode(65+ua)+'. '+qzEsc(it.options[ua]):'—')+'</div>'; }
+    if(it.explanation){ html+='<div class="qz-expl">'+qzEsc(it.explanation)+'</div>'; }
+    html+='</div>';
+  }
+  body.innerHTML=html;
+}
 </script>
 <script>document.addEventListener('keydown',function(e){if(e.key==='Escape')document.body.classList.remove('nav-open');});</script>
 <script>
