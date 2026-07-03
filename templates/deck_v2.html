@@ -873,7 +873,7 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
         {{ t('v2_nav_dashboard') }}
       </button>
       <!-- My Library — ACTIVE (deck is a child of library) -->
-      <button class="nav-item active">
+      <button class="nav-item active" onclick="location.href='{{ url_for('library_page') }}'">
         <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         {{ t('v2_nav_library') }}
       </button>
@@ -934,7 +934,7 @@ html.dark .modal-field input, html.dark .modal-field textarea { background:rgba(
   <main class="main-area">
 
   <!-- Back link -->
-  <a href="javascript:history.back()" class="back-link">
+  <a href="{{ url_for('library_page') }}" class="back-link">
     <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     {{ t('v2_nav_library') }}
   </a>

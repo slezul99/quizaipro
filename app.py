@@ -1604,6 +1604,18 @@ def dashboard():
     return _student_dashboard(user)
 
 
+@app.route("/library")
+@login_required
+def library_page():
+    """Dedicated "My Library" — a grid of ALL the student's decks (v4).
+    Reuses _student_dashboard_data so `decks` has the exact same shape/fields
+    the dashboard uses (card_count, learned_count, due_count, category_name)."""
+    user = current_user()
+    if user["role"] in ("admin", "teacher"):
+        return redirect(url_for("dashboard"))
+    return render_template("library_v2.html", **_student_dashboard_data(user))
+
+
 def _student_dashboard_data(user):
     conn = db.get_conn()
     now = datetime.utcnow().isoformat()
