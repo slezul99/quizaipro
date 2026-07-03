@@ -30,6 +30,7 @@ import sm2
 import fsrs
 import importer
 import i18n
+import rag
 import config
 import google_auth
 import billing
@@ -6886,16 +6887,27 @@ def api_tutor_ask():
     # Poluchaem ili sozdaem chat v DB
     conv_id = _tutor_get_or_create_conv(user["id"], message)
 
-    # Kontekst kolody
+    # Kontekst kolody — grounded retrieval over the user's OWN cards (Phase 1
+    # RAG): pull the cards most relevant to the question (deck-scoped if a
+    # deck_id is supplied, otherwise across the user's whole library) so the
+    # tutor answers from — and cites — the user's material instead of dumping
+    # the first 20 cards. Falls back to the old dump if embeddings are off.
     deck_context = ""
     deck_id = request.form.get("deck_id", type=int)
-    if deck_id:
-        conn = db.get_conn()
-        deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
-        if deck is not None and can_view_deck(user, deck):
-            cards = conn.execute("SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (deck_id,)).fetchall()
+    conn = db.get_conn()
+    try:
+        scoped = None
+        if deck_id:
+            deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
+            if deck is not None and can_view_deck(user, deck):
+                scoped = deck_id
+        deck_context = rag.build_tutor_context(conn, user, message, deck_id=scoped)
+        if not deck_context and scoped:
+            cards = conn.execute(
+                "SELECT front, back FROM cards WHERE deck_id=? LIMIT 20", (scoped,)).fetchall()
             if cards:
                 deck_context = "\n".join([f"- {c['front']} → {c['back']}" for c in cards])
+    finally:
         conn.close()
 
     # VSEGDA gruzim istoriyu iz DB — nadezhno, ne zavisit ot razmera cookie
