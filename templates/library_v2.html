@@ -430,7 +430,7 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
       <div class="lib-head reveal">
         <div>
           <h1 class="lib-h1">{{ t('v2_nav_library') }}</h1>
-          <p class="lib-sub"><span id="libCount">{{ decks|length }}</span>&nbsp;{{ t('v2_lib_decks_word') }}</p>
+          <p class="lib-sub"><span id="libCount">{{ decks|length }}</span>&nbsp;<span id="libWord">{{ t('v2_lib_decks_word') }}</span></p>
         </div>
         <a class="lib-new" href="{{ url_for('ai_page') }}">
           <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -511,6 +511,16 @@ document.addEventListener('keydown',function(e){
 });
 </script>
 <script>
+var LIB_LANG='{{ lang }}';
+function libWord(n){
+  if(LIB_LANG==='ru'){var m10=n%10,m100=n%100;
+    if(m10===1&&m100!==11)return'колода';
+    if(m10>=2&&m10<=4&&!(m100>=12&&m100<=14))return'колоды';
+    return'колод';}
+  if(LIB_LANG==='uz')return'toʻplam';
+  return n===1?'deck':'decks';
+}
+function setLibWord(n){var w=document.getElementById('libWord');if(w)w.textContent=libWord(n);}
 function filterLib(){
   var q=(document.getElementById('libSearch').value||'').trim().toLowerCase();
   var cat=window.__libCat||'__all__';
@@ -522,12 +532,14 @@ function filterLib(){
   });
   var nr=document.getElementById('libNoResults');if(nr)nr.style.display=shown?'none':'block';
   var lc=document.getElementById('libCount');if(lc)lc.textContent=shown;
+  setLibWord(shown);
 }
 function setLibCat(btn){
   window.__libCat=btn.getAttribute('data-cat');
   document.querySelectorAll('.lib-chip').forEach(function(b){b.classList.remove('active')});
   btn.classList.add('active');filterLib();
 }
+setLibWord(parseInt((document.getElementById('libCount')||{}).textContent,10)||0);
 </script>
 </body>
 </html>
