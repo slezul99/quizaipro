@@ -494,13 +494,13 @@ html.dark .card::before{background:linear-gradient(90deg,transparent,rgba(255,25
             <div><div class="t">{{ t('v2_ai_coach_title') }}</div><div class="s">{{ t('v2_ai_coach_sub') }}</div></div>
           </div>
           <div class="recs">
-            {% if due > 0 and featured.deck %}
-            <a class="rec" href="{{ url_for('deck_view', deck_id=featured.deck.id) }}">
-              <div class="ric" style="background:rgba(249,115,22,.14);color:#f97316"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2"/><path d="M5 3 2.5 5.5"/><path d="M19 3l2.5 2.5"/></svg></div>
-              <div><span class="tag" style="color:#c2410c;background:rgba(249,115,22,.12)">{{ t('v2_due_word') }}</span><div class="rtx">{{ t('v2_review_pre') }}<b>{{ due }}</b> {{ t('v2_card_word') }} · {{ featured.deck.name }}</div></div>
-              <span class="rgo"><svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+            {% for item in daily_plan %}
+            <a class="rec"{% if item.url %} href="{{ item.url }}"{% endif %}>
+              <div class="ric" style="background:{{ item.accent }}22;color:{{ item.accent }}"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+              <div><span class="tag" style="color:{{ item.accent }};background:{{ item.accent }}1f">{{ item.tag }}</span><div class="rtx">{{ item.text }}</div></div>
+              {% if item.url %}<span class="rgo"><svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>{% endif %}
             </a>
-            {% endif %}
+            {% endfor %}
             <a class="rec" href="{{ url_for('ai_page') }}">
               <div class="ric" style="background:rgba(34,211,238,.16);color:#0891b2"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 3 9.8 8.8 4 11l5.8 2.2L12 19l2.2-5.8L20 11l-5.8-2.2z"/></svg></div>
               <div><span class="tag" style="color:#0e7490;background:rgba(34,211,238,.14)">{{ t('v2_nav_generator') }}</span><div class="rtx">{{ t('v2_coach_generate_text') }}</div></div>

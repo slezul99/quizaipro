@@ -1617,6 +1617,48 @@ def library_page():
     return render_template("library_v2.html", **_student_dashboard_data(user))
 
 
+def _build_daily_plan(decks, total_due, daily_goal, today_reviews):
+    """Phase 3: a prioritised 'what to study today' plan from the dashboard data —
+    due reviews (top decks) → weakest deck → daily-goal progress. Deterministic
+    (no LLM, zero API cost). Each item is {accent, tag, text, url} ready to render."""
+    plan = []
+    # `decks` rows are sqlite3.Row (dev) / compat _Row (prod) — index with [] and
+    # coerce, don't use .get() (sqlite3.Row lacks it).
+    due_decks = sorted((d for d in decks if (d["due_count"] or 0) > 0),
+                       key=lambda d: -(d["due_count"] or 0))[:2]
+    for d in due_decks:
+        plan.append({
+            "accent": "#f97316", "tag": t("v2_due_word"),
+            "text": "%s%s %s · %s" % (t("v2_review_pre"), d["due_count"],
+                                      t("v2_card_word"), d["name"] or ""),
+            "url": "/deck/%s/flashcards" % d["id"],
+        })
+    weak, weak_ratio = None, 1.1
+    for d in decks:
+        cc = d["card_count"] or 0
+        if cc >= 4:
+            ratio = (d["learned_count"] or 0) / cc
+            if ratio < weak_ratio:
+                weak, weak_ratio = d, ratio
+    if weak and weak_ratio < 0.6:
+        plan.append({
+            "accent": "#8b5cf6", "tag": t("v2_plan_weak_tag"),
+            "text": "%s — %s %d%%" % (weak["name"] or "",
+                                      t("v2_plan_learned"), int(weak_ratio * 100)),
+            "url": "/deck/%s/flashcards" % weak["id"],
+        })
+    if daily_goal:
+        remaining = max(0, daily_goal - (today_reviews or 0))
+        text = ("%s%s %s" % (t("v2_plan_goal_pre"), remaining, t("v2_plan_goal_post"))
+                if remaining > 0 else t("v2_plan_goal_done"))
+        plan.append({"accent": "#22c55e", "tag": t("v2_todays_goal"),
+                     "text": text, "url": None})
+    if not due_decks:
+        plan.insert(0, {"accent": "#6366f1", "tag": t("v2_ai_recommended"),
+                        "text": t("v2_plan_all_caught"), "url": "/marketplace"})
+    return plan[:4]
+
+
 def _student_dashboard_data(user):
     conn = db.get_conn()
     now = datetime.utcnow().isoformat()
@@ -1825,6 +1867,7 @@ def _student_dashboard_data(user):
         level_num=(_idx + 1), level_title=t(f"gr_t_{_cur_stage['key']}"),
         level_next_title=level_next_title, level_progress=level_progress,
         level_days_to_next=level_days_to_next,
+        daily_plan=_build_daily_plan(decks, due, daily_goal, today_reviews),
     )
 
 
