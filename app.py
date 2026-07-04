@@ -1073,8 +1073,7 @@ def readyz():
             conn.execute("SELECT 1")
         finally:
             conn.close()
-        return jsonify({"status": "ready", "db": "ok", "backend": backend, "redis": redis_status,
-                        "sha": os.environ.get("RAILWAY_GIT_COMMIT_SHA", "")[:7]})  # TEMP
+        return jsonify({"status": "ready", "db": "ok", "backend": backend, "redis": redis_status})
     except Exception as e:
         app.logger.error("readiness check failed: %s: %s", type(e).__name__, e)
         return jsonify({"status": "unready", "db": "error", "backend": backend, "redis": redis_status}), 503
@@ -7203,6 +7202,7 @@ def api_tutor_ask():
         _t0 = _pc()
         hits = rag.retrieve(conn, user, message, deck_id=scoped)
         _timing["retrieve"] = round(_pc() - _t0, 2)
+        _timing["r"] = dict(getattr(rag, "LAST_TIMING", {}))  # TEMP breakdown
         deck_context, used = rag.format_context(hits, lang=lang)
         # Compact source list (same [N] order) so the client can render clickable
         # citations — cards link to the deck, documents show name + page.
