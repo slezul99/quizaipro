@@ -1664,6 +1664,9 @@ def _recommend_deck(user, own_decks):
     of the user's weakest deck (else most popular), excluding decks they already
     own. Deterministic. Returns {id, name} or None."""
     own_ids = {d["id"] for d in own_decks}
+    # Also exclude by name — a cloned deck keeps its source's name, so this stops
+    # us recommending the original of a deck the user already imported.
+    own_names = {(d["name"] or "").strip().lower() for d in own_decks}
     weak, wr = None, 1.1
     for d in own_decks:
         cc = d["card_count"] or 0
@@ -1682,7 +1685,8 @@ def _recommend_deck(user, own_decks):
         """, (user["id"],)).fetchall()
     finally:
         conn.close()
-    cand = [r for r in rows if r["id"] not in own_ids]
+    cand = [r for r in rows if r["id"] not in own_ids
+            and (r["name"] or "").strip().lower() not in own_names]
     if not cand:
         return None
     if target_subj:
