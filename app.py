@@ -1659,6 +1659,39 @@ def _build_daily_plan(decks, total_due, daily_goal, today_reviews):
     return plan[:4]
 
 
+def _recommend_deck(user, own_decks):
+    """Phase 3: one PUBLIC marketplace deck to recommend — matched to the subject
+    of the user's weakest deck (else most popular), excluding decks they already
+    own. Deterministic. Returns {id, name} or None."""
+    own_ids = {d["id"] for d in own_decks}
+    weak, wr = None, 1.1
+    for d in own_decks:
+        cc = d["card_count"] or 0
+        if cc >= 4:
+            ratio = (d["learned_count"] or 0) / cc
+            if ratio < wr:
+                weak, wr = d, ratio
+    target_subj = _deck_subject_slug(weak["name"]) if weak else None
+    conn = db.get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT d.id, d.name FROM decks d
+            WHERE d.is_public=1 AND (d.owner_id IS NULL OR d.owner_id != ?)
+              AND (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) >= 4
+            ORDER BY d.clones_count DESC, d.id DESC LIMIT 60
+        """, (user["id"],)).fetchall()
+    finally:
+        conn.close()
+    cand = [r for r in rows if r["id"] not in own_ids]
+    if not cand:
+        return None
+    if target_subj:
+        for r in cand:
+            if _deck_subject_slug(r["name"]) == target_subj:
+                return {"id": r["id"], "name": r["name"]}
+    return {"id": cand[0]["id"], "name": cand[0]["name"]}
+
+
 def _student_dashboard_data(user):
     conn = db.get_conn()
     now = datetime.utcnow().isoformat()
@@ -1855,6 +1888,16 @@ def _student_dashboard_data(user):
     else:
         level_progress, level_days_to_next, level_next_title = 1.0, 0, None
 
+    # Daily plan + one marketplace recommendation matched to a weak subject.
+    _daily_plan = _build_daily_plan(decks, due, daily_goal, today_reviews)
+    if len(_daily_plan) < 4:
+        _rec = _recommend_deck(user, decks)
+        if _rec:
+            _daily_plan.append({
+                "accent": "#0891b2", "tag": t("v2_rec_tag"),
+                "text": "%s «%s»" % (t("v2_rec_pre"), _rec["name"]),
+                "url": "/deck/%s" % _rec["id"]})
+
     return dict(
         decks=decks, total=total, learned=learned, due=due,
         total_reviews=total_reviews, by_category=by_category,
@@ -1867,7 +1910,7 @@ def _student_dashboard_data(user):
         level_num=(_idx + 1), level_title=t(f"gr_t_{_cur_stage['key']}"),
         level_next_title=level_next_title, level_progress=level_progress,
         level_days_to_next=level_days_to_next,
-        daily_plan=_build_daily_plan(decks, due, daily_goal, today_reviews),
+        daily_plan=_daily_plan,
     )
 
 
