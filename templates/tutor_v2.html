@@ -1382,7 +1382,7 @@
               :disabled="loading || docUploading" title="{{ t('v2_tutor_attach') }}">
               <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
-            <input type="file" x-ref="docInput" accept=".pdf,.docx,.pptx" class="hidden-file" @change="uploadDoc($event)">
+            <input type="file" x-ref="docInput" accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.ogg,.aac,.flac,audio/*" class="hidden-file" @change="uploadDoc($event)">
             <textarea
               x-model="newMsg"
               @keydown.enter.prevent="if (!$event.shiftKey) send()"
@@ -1437,6 +1437,7 @@ const TU_DOC = {
   added: {{ t('v2_tutor_doc_added')|tojson }},
   failed: {{ t('v2_tutor_doc_failed')|tojson }},
   only_pdf: {{ t('v2_tutor_doc_only_pdf')|tojson }},
+  transcribing: {{ t('v2_tutor_doc_transcribing')|tojson }},
 };
 // Source citation labels — MUST match rag.py _LABELS so "[Card 2]" in the answer
 // lines up with the rendered chip.
@@ -1615,9 +1616,10 @@ function tutorApp() {
       const file = ev.target.files && ev.target.files[0];
       ev.target.value = '';
       if (!file) return;
-      if (!/\.(pdf|docx|pptx)$/i.test(file.name)) { this.docStatus = '⚠️ ' + TU_DOC.only_pdf; return; }
+      const isAudio = /\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name);
+      if (!/\.(pdf|docx|pptx|mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name)) { this.docStatus = '⚠️ ' + TU_DOC.only_pdf; return; }
       this.docUploading = true;
-      this.docStatus = '⏳ ' + TU_DOC.indexing;
+      this.docStatus = '⏳ ' + (isAudio ? TU_DOC.transcribing : TU_DOC.indexing);
       try {
         const fd = new FormData();
         fd.append('_csrf', TUTOR_CSRF);

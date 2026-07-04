@@ -7397,6 +7397,34 @@ def _ocr_consume(conn, user_id, pages, period, prev_used):
     conn.commit()
 
 
+# --- Phase 4: audio ingest (transcribe via Gemini → index like a document) ---
+_AUDIO_MONTHLY_LIMIT = 20          # files / user / month (audio costs API money)
+_AUDIO_MAX_MB = 20                 # inline_data ceiling; keeps clips short
+_AUDIO_EXTS = {".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4",
+               ".ogg": "audio/ogg", ".aac": "audio/aac", ".flac": "audio/flac"}
+
+
+def _audio_remaining(conn, user_id):
+    """(remaining_files, period, used) for the current UTC month."""
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS audio_usage ("
+        "user_id INTEGER PRIMARY KEY, period TEXT NOT NULL, files INTEGER NOT NULL DEFAULT 0)")
+    conn.commit()  # Postgres: DDL is transactional — commit or a later conn won't see it
+    period = datetime.utcnow().strftime("%Y-%m")
+    row = conn.execute(
+        "SELECT period, files FROM audio_usage WHERE user_id=?", (user_id,)).fetchone()
+    used = row["files"] if (row and row["period"] == period) else 0
+    return max(0, _AUDIO_MONTHLY_LIMIT - used), period, used
+
+
+def _audio_consume(conn, user_id, period, prev_used):
+    conn.execute(
+        "INSERT INTO audio_usage (user_id, period, files) VALUES (?,?,?) "
+        "ON CONFLICT (user_id) DO UPDATE SET period=excluded.period, files=excluded.files",
+        (user_id, period, prev_used + 1))
+    conn.commit()
+
+
 def _extract_pdf_pages(fpath):
     """[(page_no, text)] from a PDF via pypdf (raises ImportError if unavailable)."""
     from pypdf import PdfReader
@@ -7448,14 +7476,50 @@ def api_tutor_upload_doc():
     if not file or not file.filename:
         return jsonify({"error": "no_file", "msg": "Загрузите PDF"}), 400
     ext = Path(file.filename).suffix.lower()
-    if ext not in (".pdf", ".docx", ".pptx"):
-        return jsonify({"error": "bad_type", "msg": "Поддерживаются PDF, DOCX, PPTX"}), 400
+    is_audio = ext in _AUDIO_EXTS
+    if ext not in (".pdf", ".docx", ".pptx") and not is_audio:
+        return jsonify({"error": "bad_type",
+                        "msg": "Поддерживаются PDF, DOCX, PPTX, аудио (MP3, WAV, M4A)"}), 400
 
     display_name = Path(file.filename).name[:200]
     fname = secure_filename(file.filename) or f"doc_{secrets.token_hex(4)}{ext}"
     fpath = UPLOAD / f"tutordoc_{user['id']}_{secrets.token_hex(4)}_{fname}"
     try:
         file.save(str(fpath))
+        if is_audio:
+            # Phase 4: transcribe audio via Gemini, then treat the transcript as a
+            # one-"page" document (reuses the whole index/retrieve/cite pipeline).
+            size_mb = fpath.stat().st_size / (1024 * 1024)
+            if size_mb > _AUDIO_MAX_MB:
+                return jsonify({"error": "too_large",
+                    "msg": f"Аудио больше {_AUDIO_MAX_MB} МБ. Загрузите фрагмент покороче."}), 400
+            conn0 = db.get_conn()
+            try:
+                remaining, period, used = _audio_remaining(conn0, user["id"])
+            finally:
+                conn0.close()
+            if remaining <= 0:
+                return jsonify({"error": "audio_limit",
+                    "msg": "Исчерпан месячный лимит расшифровки аудио. Попробуйте позже."}), 429
+            transcript = ai_gen.transcribe_audio(fpath.read_bytes(), _AUDIO_EXTS[ext])
+            if not transcript or not transcript.strip():
+                return jsonify({"error": "transcribe_failed",
+                                "msg": "Не удалось распознать речь в аудио"}), 400
+            pages = [(None, transcript)]
+            conn0 = db.get_conn()
+            try:
+                _audio_consume(conn0, user["id"], period, used)
+            finally:
+                conn0.close()
+            conn = db.get_conn()
+            try:
+                doc_id, chunks = rag.index_document(conn, user["id"], display_name, pages)
+            finally:
+                conn.close()
+            if not doc_id:
+                return jsonify({"error": "index_failed", "msg": "Не удалось проиндексировать"}), 500
+            return jsonify({"ok": True, "doc_id": doc_id, "name": display_name,
+                            "chunks": chunks, "kind": "audio"})
         try:
             if ext == ".pdf":
                 pages = _extract_pdf_pages(fpath)

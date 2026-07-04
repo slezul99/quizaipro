@@ -902,6 +902,48 @@ def get_last_gemini_error() -> str:
     return _last_gemini_error
 
 
+def transcribe_audio(audio_bytes: bytes, mime: str = "audio/mpeg", timeout: int = 300) -> str | None:
+    """Phase 4: transcribe an audio file via Gemini's native audio understanding
+    (no separate STT service). Returns the transcript text, or None on failure.
+    Bounded at the call site by file size + a per-user budget (audio costs money)."""
+    global _last_gemini_error
+    import base64
+    parts = [
+        {"text": "Transcribe this audio VERBATIM in its original language. "
+                 "Return ONLY the transcript text — no timestamps, no speaker "
+                 "labels, no commentary."},
+        {"inline_data": {"mime_type": mime,
+                         "data": base64.b64encode(audio_bytes).decode("ascii")}},
+    ]
+    body = {"contents": [{"role": "user", "parts": parts}],
+            "generationConfig": {"temperature": 0.1, "maxOutputTokens": 8000}}
+    data = json.dumps(body).encode("utf-8")
+    print(f"[AI audio] transcribing {len(audio_bytes)//1024}KB ({mime})")
+    endpoints = _gemini_endpoints()
+    if not endpoints:
+        _last_gemini_error = "no AI endpoint (Vertex SA / GEMINI_API_KEY not set)"
+        return None
+    for model, url, headers in endpoints:
+        req = urlreq.Request(url, data=data, method="POST", headers=headers)
+        try:
+            with urlreq.urlopen(req, timeout=timeout) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            cand = (payload.get("candidates") or [{}])[0]
+            text = (cand.get("content", {}).get("parts", [{}])[0].get("text") or "").strip()
+            if text:
+                print(f"[AI audio] OK on {model}, transcript {len(text)} chars")
+                return text
+        except urlerr.HTTPError as e:
+            _last_gemini_error = f"{model} HTTP {e.code}"
+            print(f"[AI audio] {model} HTTP {e.code} — fallback")
+            continue
+        except Exception as e:
+            _last_gemini_error = f"{model} {type(e).__name__}: {e}"
+            print(f"[AI audio] {model} {type(e).__name__}: {e}")
+            continue
+    return None
+
+
 def ocr_pdf_pages(pdf_path, max_pages: int = 20) -> list[tuple]:
     """OCR a scanned / no-text-layer PDF via Gemini Vision. Renders up to
     `max_pages` pages to images and transcribes them in ONE vision call (cheaper),
