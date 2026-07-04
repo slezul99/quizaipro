@@ -6988,6 +6988,51 @@ def marketplace_clone(deck_id):
     return redirect(url_for("deck_view", deck_id=new_deck_id))
 
 
+def _tutor_nudge(user):
+    """Phase 3: a proactive, data-driven coaching nudge for the tutor's empty
+    state — what to review today. Deterministic (no LLM). {text, url, label} or None."""
+    conn = db.get_conn()
+    now = datetime.utcnow().isoformat()
+    try:
+        if user.get("org_id"):
+            where, wargs = "d.org_id=?", (user["org_id"],)
+        else:
+            where, wargs = "d.owner_id=?", (user["id"],)
+        rows = conn.execute(f"""
+            SELECT d.id, d.name,
+                (SELECT COUNT(*) FROM cards WHERE deck_id=d.id) AS card_count,
+                (SELECT COUNT(*) FROM cards crd LEFT JOIN user_card_progress p
+                   ON p.card_id=crd.id AND p.user_id=?
+                 WHERE crd.deck_id=d.id AND (p.due_at IS NULL OR p.due_at<=?)) AS due_count,
+                (SELECT COUNT(*) FROM cards crd JOIN user_card_progress p ON p.card_id=crd.id
+                 WHERE crd.deck_id=d.id AND p.user_id=? AND p.interval_days>=7) AS learned_count
+            FROM decks d WHERE {where}
+        """, (user["id"], now, user["id"], *wargs)).fetchall()
+    finally:
+        conn.close()
+    if not rows:
+        return None
+    due = sorted((r for r in rows if (r["due_count"] or 0) > 0),
+                 key=lambda r: -(r["due_count"] or 0))
+    if due:
+        r = due[0]
+        return {"text": "%s%s %s «%s»." % (t("v2_nudge_review_pre"), r["due_count"],
+                                           t("v2_card_word"), r["name"]),
+                "url": "/deck/%s/flashcards" % r["id"], "label": t("v2_nudge_review_cta")}
+    weak, wr = None, 1.1
+    for r in rows:
+        cc = r["card_count"] or 0
+        if cc >= 4:
+            ratio = (r["learned_count"] or 0) / cc
+            if ratio < wr:
+                weak, wr = r, ratio
+    if weak and wr < 0.6:
+        return {"text": "«%s» — %s %d%%. %s" % (weak["name"], t("v2_plan_learned"),
+                                                int(wr * 100), t("v2_nudge_weak_tail")),
+                "url": "/deck/%s/flashcards" % weak["id"], "label": t("v2_nudge_weak_cta")}
+    return None
+
+
 @app.route("/tutor")
 @login_required
 def tutor_page():
@@ -7020,6 +7065,7 @@ def tutor_page():
         "tutor_v2.html" if _use_v2() else "tutor.html",
         is_super_admin=is_super_admin(user),
         deepseek_available=ai_gen.is_deepseek_available(),
+        tutor_nudge=_tutor_nudge(user),
     )
 
 

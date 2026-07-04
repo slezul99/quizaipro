@@ -499,6 +499,22 @@
     justify-content: center;
     max-width: 560px;
   }
+  /* Proactive coaching nudge (empty state) */
+  .tutor-nudge {
+    display: flex; align-items: center; gap: 11px;
+    max-width: 560px; margin: 4px auto 20px;
+    padding: 13px 16px; border-radius: 15px;
+    background: linear-gradient(135deg, rgba(99,102,241,.10), rgba(139,92,246,.10));
+    border: 1px solid rgba(99,102,241,.25);
+    text-decoration: none; color: inherit;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .tutor-nudge:hover { transform: translateY(-1px); border-color: rgba(99,102,241,.5); box-shadow: 0 8px 20px -10px rgba(99,102,241,.5); }
+  .tutor-nudge-ic { font-size: 20px; flex-shrink: 0; }
+  .tutor-nudge-text { flex: 1; text-align: left; font-size: 14px; font-weight: 600; color: #334155; line-height: 1.4; }
+  .tutor-nudge-cta { flex-shrink: 0; font-size: 13px; font-weight: 700; color: #6366f1; white-space: nowrap; }
+  html.dark .tutor-nudge-text { color: #cbd5e1; }
+  html.dark .tutor-nudge-cta { color: #a5b4fc; }
   .suggestion-chip {
     padding: 9px 16px;
     border-radius: 999px;
@@ -1282,6 +1298,13 @@
           </div>
           <div class="welcome-h">{{ t('tu_welcome_h') }}</div>
           <p class="welcome-sub">{{ t('tu_welcome_sub') }}</p>
+          {% if tutor_nudge %}
+          <a class="tutor-nudge" href="{{ tutor_nudge.url }}">
+            <span class="tutor-nudge-ic">🎯</span>
+            <span class="tutor-nudge-text">{{ tutor_nudge.text }}</span>
+            <span class="tutor-nudge-cta">{{ tutor_nudge.label }} →</span>
+          </a>
+          {% endif %}
           <div class="suggestion-chips">
             <template x-for="s in suggestions" :key="s">
               <button @click="newMsg = s; send()" class="suggestion-chip" x-text="s"></button>
