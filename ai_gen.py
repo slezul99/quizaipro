@@ -1106,6 +1106,11 @@ def _validate_cards(cards: list[dict], max_len: int = 1500) -> list[dict]:
 
 
 _EMBED_MODEL = "text-multilingual-embedding-002"  # RU/EN/UZ, dim 768
+# Embeddings are served from REGIONAL endpoints — the "global" endpoint (correct
+# for gemini-3.5-flash) hits a slow fallback path for this model (~10s vs ~1s
+# regionally, measured). Keep it regional. Same model → identical 768-d vectors,
+# so already-cached card/doc embeddings stay valid.
+_EMBED_LOCATION = os.environ.get("VERTEX_EMBED_LOCATION", "us-central1").strip() or "us-central1"
 
 
 def _embed_texts(texts: list[str]):
@@ -1117,7 +1122,7 @@ def _embed_texts(texts: list[str]):
     tok = _vertex_token()
     if not tok:
         return None
-    loc = VERTEX_LOCATION
+    loc = _EMBED_LOCATION  # regional — the "global" endpoint is ~10x slower here
     host = "aiplatform.googleapis.com" if loc == "global" else f"{loc}-aiplatform.googleapis.com"
     url = (f"https://{host}/v1/projects/{_vertex_project()}/locations/{loc}"
            f"/publishers/google/models/{_EMBED_MODEL}:predict")

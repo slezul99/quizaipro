@@ -244,21 +244,13 @@ def index_document(conn, user_id, name, pages, max_chunks=400):
     return doc_id, len(items)
 
 
-LAST_TIMING = {}  # TEMP profiling: last retrieve() breakdown
-
-
 def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
     """Top-k sources most relevant to `query`, merging the user's CARDS and
     uploaded DOCUMENTS. Each hit is tagged with `type` ('card' | 'doc') plus the
     metadata that type needs. [] if embeddings unavailable."""
-    from time import perf_counter as _pc  # TEMP profiling
-    global LAST_TIMING
-    LAST_TIMING = {}
     if not query or not ai_gen.vertex_enabled():
         return []
-    _t = _pc()
     qv = ai_gen._embed_texts([query])
-    LAST_TIMING["embed"] = round(_pc() - _t, 2)
     if not qv:
         return []
     qv = qv[0]
@@ -275,23 +267,16 @@ def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
         _ensure_indexed(conn, deck_ids, limit=_SYNC_INDEX_LIMIT)
         _warm_cards_async(deck_ids)
         ph = ",".join("?" * len(deck_ids))
-        _t = _pc()
-        _rows = conn.execute(
+        for r in conn.execute(
             f"""SELECT e.card_id, e.deck_id, e.vec, c.front, c.back, c.note
                   FROM card_embeddings e JOIN cards c ON c.id = e.card_id
-                 WHERE e.deck_id IN ({ph})""", deck_ids).fetchall()
-        LAST_TIMING["card_fetch"] = round(_pc() - _t, 2)
-        _t = _pc()
-        for r in _rows:
+                 WHERE e.deck_id IN ({ph})""", deck_ids).fetchall():
             hits.append({"type": "card", "card_id": r["card_id"],
                          "deck_id": r["deck_id"], "front": r["front"],
                          "back": r["back"], "note": r["note"],
                          "score": ai_gen._cosine(qv, _unpack(r["vec"]))})
-        LAST_TIMING["card_cosine"] = round(_pc() - _t, 2)
-        LAST_TIMING["n_cards"] = len(_rows)
 
     # Documents the user uploaded (user-scoped, not deck-scoped).
-    _t = _pc()
     _ensure_doc_tables(conn)
     for r in conn.execute(
         """SELECT dc.id AS chunk_id, dc.doc_id, dc.page, dc.text, dc.vec,
@@ -301,7 +286,6 @@ def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
         hits.append({"type": "doc", "chunk_id": r["chunk_id"], "doc_id": r["doc_id"],
                      "doc_name": r["doc_name"], "page": r["page"], "text": r["text"],
                      "score": ai_gen._cosine(qv, _unpack(r["vec"]))})
-    LAST_TIMING["doc_scan"] = round(_pc() - _t, 2)
 
     hits.sort(key=lambda h: h["score"], reverse=True)
     top = hits[:k]
