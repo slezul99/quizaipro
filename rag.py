@@ -18,14 +18,19 @@ falls back to its previous naive behaviour.
 """
 import hashlib
 import json
+import threading
 
 import ai_gen
 
-# Bound the work done on a single (synchronous) tutor request: embed at most this
-# many not-yet-indexed cards per call. A big library fills in over a few queries
-# instead of stalling the first one. Deck-scoped queries are almost always well
-# under this.
+# Cards are embedded in batches of this many per pass. Embedding is a network
+# round-trip per 100 texts, so a cold library (thousands of cards) costs tens of
+# seconds — which is why it must NOT happen on the tutor request path.
 _MAX_INDEX_PER_CALL = 300
+# Cards embedded SYNCHRONOUSLY inside retrieve() before answering. Kept tiny so a
+# question never blocks: the tutor answers from whatever is already embedded (+
+# all uploaded docs, which are embedded at upload time) and the rest of the
+# library warms up in a background thread (`_warm_cards_async`).
+_SYNC_INDEX_LIMIT = 0
 _DEFAULT_K = 8
 # Cosine floor for a card to count as "relevant" — keeps off-topic questions from
 # dragging in unrelated cards (then the tutor answers from general knowledge).
@@ -77,11 +82,12 @@ def _user_deck_ids(conn, user, deck_id=None):
     return [r["id"] for r in rows]
 
 
-def _ensure_indexed(conn, deck_ids):
+def _ensure_indexed(conn, deck_ids, limit=_MAX_INDEX_PER_CALL):
     """Embed & cache any cards in `deck_ids` that are new or whose text changed
-    (detected via text_hash). Bounded to _MAX_INDEX_PER_CALL cards per call."""
-    if not deck_ids:
-        return
+    (detected via text_hash), at most `limit` per call. Returns how many were
+    embedded (0 ⇒ nothing stale, i.e. fully warm)."""
+    if not deck_ids or limit <= 0:
+        return 0
     _ensure_table(conn)
     ph = ",".join("?" * len(deck_ids))
     cards = conn.execute(
@@ -97,14 +103,14 @@ def _ensure_indexed(conn, deck_ids):
         if c["ehash"] != h:
             stale.append((c["id"], c["deck_id"], h,
                           _card_text(c["front"], c["back"], c["note"])))
-            if len(stale) >= _MAX_INDEX_PER_CALL:
+            if len(stale) >= limit:
                 break
     if not stale:
-        return
+        return 0
 
     vecs = ai_gen._embed_texts([s[3] for s in stale])
     if not vecs:
-        return
+        return 0
     for (cid, did, h, _txt), v in zip(stale, vecs):
         # Portable upsert: ON CONFLICT works on SQLite 3.24+ AND Postgres.
         conn.execute(
@@ -114,6 +120,44 @@ def _ensure_indexed(conn, deck_ids):
             "deck_id=excluded.deck_id, text_hash=excluded.text_hash, vec=excluded.vec",
             (cid, did, h, _pack(v)))
     conn.commit()
+    return len(stale)
+
+
+# Track which deck-sets are already warming so overlapping tutor questions don't
+# spawn duplicate indexing threads. Per-process; on prod the embeddings land in
+# the shared DB so every worker benefits regardless of which one warmed them.
+_warm_lock = threading.Lock()
+_warming = set()
+
+
+def _warm_cards_async(deck_ids):
+    """Embed the rest of a user's cards OFF the request path so the tutor never
+    blocks on cold indexing. Best-effort, idempotent (text_hash-gated), daemon."""
+    if not deck_ids:
+        return
+    key = tuple(sorted(deck_ids))
+    with _warm_lock:
+        if key in _warming:
+            return
+        _warming.add(key)
+
+    def _run():
+        try:
+            import db  # local import: avoid any import cycle at module load
+            c = db.get_conn()
+            try:
+                for _ in range(200):  # safety bound (~300 cards/pass)
+                    if _ensure_indexed(c, deck_ids, limit=_MAX_INDEX_PER_CALL) == 0:
+                        break
+            finally:
+                c.close()
+        except Exception as e:
+            print(f"[rag warm] {type(e).__name__}: {e}")
+        finally:
+            with _warm_lock:
+                _warming.discard(key)
+
+    threading.Thread(target=_run, daemon=True).start()
 
 
 # ── Documents (Phase 1b): user-uploaded source material, chunked + embedded ──
@@ -216,7 +260,12 @@ def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
     # Cards (deck-scoped if a deck is in context, else the user's whole library).
     deck_ids = _user_deck_ids(conn, user, deck_id)
     if deck_ids:
-        _ensure_indexed(conn, deck_ids)
+        # Do NOT block the answer on cold embedding (thousands of cards = tens of
+        # seconds). Embed at most a tiny sync batch, then warm the rest in the
+        # background; this question grounds on whatever is already embedded plus
+        # all uploaded docs (which are embedded at upload time).
+        _ensure_indexed(conn, deck_ids, limit=_SYNC_INDEX_LIMIT)
+        _warm_cards_async(deck_ids)
         ph = ",".join("?" * len(deck_ids))
         for r in conn.execute(
             f"""SELECT e.card_id, e.deck_id, e.vec, c.front, c.back, c.note

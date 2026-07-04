@@ -2698,8 +2698,10 @@ def _gemini_stream(full_prompt: str, max_tokens: int = 4000, temperature: float 
         "generationConfig": {
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
-            # Cap "thinking" so it doesn't eat the visible-answer budget.
-            "thinkingConfig": {"thinkingBudget": 1024},
+            # No "thinking" pass for the tutor: gemini-3.5-flash otherwise spends
+            # several seconds reasoning BEFORE the first visible token (huge
+            # time-to-first-token on grounded prompts). Q&A doesn't need it.
+            "thinkingConfig": {"thinkingBudget": 0},
         },
     }
     data = json.dumps(body).encode("utf-8")
