@@ -718,7 +718,34 @@
     background: rgba(13,148,136,.10); border: 1px solid rgba(13,148,136,.28);
     border-radius: 999px; padding: 3px 6px 3px 10px;
   }
-  .material-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .material-name, .material-name-btn {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 170px; font: inherit; color: inherit;
+    background: none; border: none; padding: 0; cursor: pointer;
+  }
+  .material-name-btn:hover { text-decoration: underline; }
+  .material-chip--focus {
+    color: #fff; background: #0d9488; border-color: #0d9488;
+  }
+  .material-chip--focus .material-x { background: rgba(255,255,255,.25); color: #fff; }
+  html.dark .material-chip--focus { color: #042f2e; background: #5eead4; border-color: #5eead4; }
+  html.dark .material-chip--focus .material-x { background: rgba(4,47,46,.2); color: #042f2e; }
+  /* Focus banner: tutor answers only from the chosen material */
+  .focus-banner {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12px; font-weight: 600; color: #0f766e;
+    background: rgba(13,148,136,.08); border: 1px solid rgba(13,148,136,.25);
+    border-radius: 10px; padding: 6px 10px; margin-bottom: 8px;
+  }
+  .focus-banner b { font-weight: 700; }
+  .focus-clear {
+    margin-left: auto; font-size: 11px; font-weight: 600; color: #0f766e;
+    background: rgba(13,148,136,.14); border: none; border-radius: 999px;
+    padding: 2px 10px; cursor: pointer;
+  }
+  .focus-clear:hover { background: rgba(239,68,68,.15); color: #ef4444; }
+  html.dark .focus-banner { color: #5eead4; background: rgba(13,148,136,.14); }
+  html.dark .focus-clear { color: #5eead4; background: rgba(13,148,136,.22); }
   .material-x {
     flex-shrink: 0; border: none; background: rgba(13,148,136,.14);
     color: #0d9488; width: 16px; height: 16px; line-height: 1;
@@ -1440,16 +1467,23 @@
       {# Input bar #}
       <div class="input-bar">
         <form @submit.prevent="send()">
-          {# Attached materials — what the tutor already knows about you #}
+          {# Attached materials — click a name to answer ONLY from it #}
           <div x-show="docs.length" class="materials-row" x-cloak>
             <span class="materials-label">📎 {{ t('v2_tutor_materials') }}</span>
             <template x-for="d in docs" :key="d.id">
-              <span class="material-chip" :title="d.name">
-                <span class="material-name" x-text="d.name"></span>
+              <span class="material-chip" :class="{'material-chip--focus': focusDoc && focusDoc.id === d.id}" :title="d.name">
+                <button type="button" class="material-name-btn" @click="toggleFocus(d)"
+                  x-text="d.name" :title="'{{ t('v2_tutor_focus_hint') }}'"></button>
                 <button type="button" class="material-x" @click="deleteDoc(d.id)"
                   :title="'{{ t('v2_tutor_material_remove') }}'">✕</button>
               </span>
             </template>
+          </div>
+          {# Focus banner — tutor answers only from the chosen material #}
+          <div x-show="focusDoc" class="focus-banner" x-cloak>
+            <span>🎯 {{ t('v2_tutor_focus_on') }}</span>
+            <b x-text="focusDoc ? focusDoc.name : ''"></b>
+            <button type="button" class="focus-clear" @click="focusDoc = null">{{ t('v2_tutor_focus_off') }}</button>
           </div>
           <div x-show="docStatus" class="doc-status" x-text="docStatus"></div>
           <div class="input-row">
@@ -1540,6 +1574,7 @@ function tutorApp() {
     docStatus: '',
     docPreview: null,
     docs: [],  // attached materials (PDF/DOCX/PPTX/audio) the tutor can cite
+    focusDoc: null,  // when set, tutor answers ONLY from this material
     provider: localStorage.getItem('tutor_provider') || '',
     sidebarOpen: window.innerWidth >= 768,
     suggestions: [
@@ -1575,7 +1610,12 @@ function tutorApp() {
       } catch (e) { /* non-critical */ }
     },
 
+    toggleFocus(d) {
+      this.focusDoc = (this.focusDoc && this.focusDoc.id === d.id) ? null : { id: d.id, name: d.name };
+    },
+
     async deleteDoc(id) {
+      if (this.focusDoc && this.focusDoc.id === id) this.focusDoc = null;
       const prev = this.docs;
       this.docs = this.docs.filter(d => d.id !== id);  // optimistic
       try {
@@ -1665,6 +1705,7 @@ function tutorApp() {
         fd.append('message', text);
         fd.append('stream', '1');
         if (this.provider) fd.append('provider', this.provider);
+        if (this.focusDoc) fd.append('focus_doc_id', this.focusDoc.id);
         const r = await fetch('/api/tutor/ask', { method: 'POST', body: fd });
         if (!r.ok) {
           const data = await r.json().catch(() => ({}));

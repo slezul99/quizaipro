@@ -244,10 +244,14 @@ def index_document(conn, user_id, name, pages, max_chunks=400):
     return doc_id, len(items)
 
 
-def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
+def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K, doc_id=None):
     """Top-k sources most relevant to `query`, merging the user's CARDS and
     uploaded DOCUMENTS. Each hit is tagged with `type` ('card' | 'doc') plus the
-    metadata that type needs. [] if embeddings unavailable."""
+    metadata that type needs. [] if embeddings unavailable.
+
+    doc_id: FOCUS mode — restrict retrieval to a single uploaded document (skip
+    cards and every other doc). Makes "what's in this file?" meta-questions work,
+    since semantic search alone can't match a question to "which file"."""
     if not query or not ai_gen.vertex_enabled():
         return []
     qv = ai_gen._embed_texts([query])
@@ -256,6 +260,24 @@ def retrieve(conn, user, query, deck_id=None, k=_DEFAULT_K):
     qv = qv[0]
 
     hits = []
+
+    # FOCUS mode: only the chosen document's chunks (user-scoped), nothing else.
+    if doc_id:
+        _ensure_doc_tables(conn)
+        for r in conn.execute(
+            """SELECT dc.id AS chunk_id, dc.doc_id, dc.page, dc.text, dc.vec,
+                      d.name AS doc_name
+                 FROM doc_chunks dc JOIN documents d ON d.id = dc.doc_id
+                WHERE dc.user_id = ? AND dc.doc_id = ?""",
+            (user["id"], doc_id)).fetchall():
+            hits.append({"type": "doc", "chunk_id": r["chunk_id"], "doc_id": r["doc_id"],
+                         "doc_name": r["doc_name"], "page": r["page"], "text": r["text"],
+                         "score": ai_gen._cosine(qv, _unpack(r["vec"]))})
+        hits.sort(key=lambda h: h["score"], reverse=True)
+        top = hits[:k]
+        for h in top:
+            h["score"] = round(float(h["score"]), 3)
+        return top
 
     # Cards (deck-scoped if a deck is in context, else the user's whole library).
     deck_ids = _user_deck_ids(conn, user, deck_id)

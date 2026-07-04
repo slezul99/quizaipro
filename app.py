@@ -7189,6 +7189,7 @@ def api_tutor_ask():
     deck_context = ""
     tutor_sources = []
     deck_id = request.form.get("deck_id", type=int)
+    focus_doc_id = request.form.get("focus_doc_id", type=int)  # answer only from this material
     conn = db.get_conn()
     try:
         scoped = None
@@ -7196,7 +7197,9 @@ def api_tutor_ask():
             deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
             if deck is not None and can_view_deck(user, deck):
                 scoped = deck_id
-        hits = rag.retrieve(conn, user, message, deck_id=scoped)
+        # retrieve() is user-scoped for docs, so an invalid focus_doc_id simply
+        # yields no hits (no cross-user leak).
+        hits = rag.retrieve(conn, user, message, deck_id=scoped, doc_id=focus_doc_id)
         deck_context, used = rag.format_context(hits, lang=lang)
         # Compact source list (same [N] order) so the client can render clickable
         # citations — cards link to the deck, documents show name + page.
