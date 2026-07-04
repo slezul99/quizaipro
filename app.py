@@ -7599,6 +7599,50 @@ def api_tutor_doc_chunk(chunk_id):
                     "page": row["page"], "text": row["text"]})
 
 
+@app.route("/api/tutor/docs", methods=["GET"])
+@login_required
+def api_tutor_docs():
+    """List the materials (PDF/DOCX/PPTX/audio transcripts) the user has attached,
+    so the tutor UI can show "what I already know about you" near the composer."""
+    user = current_user()
+    conn = db.get_conn()
+    try:
+        try:
+            rows = conn.execute(
+                "SELECT d.id, d.name, COUNT(dc.id) AS chunks "
+                "FROM documents d LEFT JOIN doc_chunks dc ON dc.doc_id = d.id "
+                "WHERE d.user_id = ? GROUP BY d.id, d.name ORDER BY d.id DESC",
+                (user["id"],)).fetchall()
+        except Exception:
+            rows = []  # tables not created yet (user never uploaded)
+    finally:
+        conn.close()
+    return jsonify({"ok": True, "docs": [
+        {"id": r["id"], "name": r["name"], "chunks": r["chunks"]} for r in rows]})
+
+
+@app.route("/api/tutor/docs/<int:doc_id>", methods=["DELETE"])
+@login_required
+def api_tutor_doc_delete(doc_id):
+    """Remove one attached material (and its chunks), user-scoped."""
+    user = current_user()
+    conn = db.get_conn()
+    try:
+        owned = conn.execute(
+            "SELECT id FROM documents WHERE id = ? AND user_id = ?",
+            (doc_id, user["id"])).fetchone()
+        if not owned:
+            return jsonify({"error": "not_found"}), 404
+        conn.execute("DELETE FROM doc_chunks WHERE doc_id = ? AND user_id = ?",
+                     (doc_id, user["id"]))
+        conn.execute("DELETE FROM documents WHERE id = ? AND user_id = ?",
+                     (doc_id, user["id"]))
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"ok": True})
+
+
 @app.route("/api/tutor/clear", methods=["POST"])
 @login_required
 def api_tutor_clear():

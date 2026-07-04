@@ -604,7 +604,7 @@
     font-weight: 600;
   }
 
-  /* Grounded-tutor sources: clickable cards the answer cited */
+  /* Grounded-tutor sources: collapsed one-liner, expands to the cited cards/docs */
   .msg-sources {
     display: flex;
     flex-wrap: wrap;
@@ -618,6 +618,40 @@
     font-weight: 700;
     color: #64748b;
   }
+  .msg-sources-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    padding: 2px 2px;
+    cursor: pointer;
+    transition: color .15s;
+  }
+  .msg-sources-toggle:hover { color: #6366f1; }
+  .src-count {
+    min-width: 16px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.12);
+    border-radius: 999px;
+    padding: 1px 6px;
+  }
+  .src-caret { font-size: 9px; opacity: .7; }
+  .src-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    margin-top: 4px;
+  }
+  html.dark .msg-sources-toggle { color: #64748b; }
+  html.dark .src-count { color: #a5b4fc; background: rgba(99, 102, 241, 0.2); }
   .src-chip {
     font-size: 11px;
     font-weight: 600;
@@ -672,6 +706,29 @@
   .attach-btn:disabled { opacity: .5; cursor: default; }
   .attach-btn svg { width: 18px; height: 18px; }
   html.dark .attach-btn { color: #94a3b8; border-color: rgba(148,163,184,.22); }
+  /* Attached-materials row above the composer */
+  .materials-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    margin-bottom: 8px;
+  }
+  .materials-label { font-size: 11px; font-weight: 700; color: #94a3b8; }
+  .material-chip {
+    display: inline-flex; align-items: center; gap: 6px; max-width: 220px;
+    font-size: 11px; font-weight: 600; color: #0d9488;
+    background: rgba(13,148,136,.10); border: 1px solid rgba(13,148,136,.28);
+    border-radius: 999px; padding: 3px 6px 3px 10px;
+  }
+  .material-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .material-x {
+    flex-shrink: 0; border: none; background: rgba(13,148,136,.14);
+    color: #0d9488; width: 16px; height: 16px; line-height: 1;
+    border-radius: 999px; cursor: pointer; font-size: 10px; padding: 0;
+    transition: background .15s;
+  }
+  .material-x:hover { background: rgba(239,68,68,.18); color: #ef4444; }
+  html.dark .materials-label { color: #64748b; }
+  html.dark .material-chip { color: #5eead4; background: rgba(13,148,136,.16); }
+  html.dark .material-x { color: #5eead4; background: rgba(13,148,136,.22); }
   .hidden-file { display: none; }
   .doc-status {
     font-size: 12px;
@@ -1334,23 +1391,30 @@
                 <span>✨ Gemini 3.5</span>
               </div>
               {% endif %}
-              {# Grounded sources — the exact cards this answer cited ([Карточка N]) #}
+              {# Grounded sources — collapsed to one subtle line; expand for the
+                 exact cards/docs this answer cited. Keeps the chat minimal. #}
               <div x-show="m.role === 'assistant' && m.sources && m.sources.length" class="msg-sources">
-                <span class="msg-sources-label">📎 {{ t('v2_tutor_sources') }}</span>
-                <template x-for="s in m.sources" :key="s.n">
-                  <span>
-                    <template x-if="s.type === 'doc'">
-                      <button type="button" class="src-chip src-chip--doc"
-                        @click="showDocChunk(s)"
-                        :title="`${s.doc_name}${s.page ? ', '+SRC_LABELS.page+' '+s.page : ''}`"
-                        x-text="`${SRC_LABELS.doc} ${s.n}`"></button>
-                    </template>
-                    <template x-if="s.type !== 'doc'">
-                      <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
-                         target="_blank" rel="noopener" x-text="`${SRC_LABELS.card} ${s.n}`"></a>
-                    </template>
-                  </span>
-                </template>
+                <button type="button" class="msg-sources-toggle" @click="m._srcOpen = !m._srcOpen">
+                  <span>📎 {{ t('v2_tutor_based_on') }}</span>
+                  <span class="src-count" x-text="m.sources ? m.sources.length : ''"></span>
+                  <span class="src-caret" x-text="m._srcOpen ? '▾' : '▸'"></span>
+                </button>
+                <div class="src-chips" x-show="m._srcOpen" x-cloak>
+                  <template x-for="s in m.sources" :key="s.n">
+                    <span>
+                      <template x-if="s.type === 'doc'">
+                        <button type="button" class="src-chip src-chip--doc"
+                          @click="showDocChunk(s)"
+                          :title="`${s.doc_name}${s.page ? ', '+SRC_LABELS.page+' '+s.page : ''}`"
+                          x-text="s.doc_name || `${SRC_LABELS.doc} ${s.n}`"></button>
+                      </template>
+                      <template x-if="s.type !== 'doc'">
+                        <a class="src-chip" :href="`/deck/${s.deck_id}`" :title="s.front"
+                           target="_blank" rel="noopener" x-text="s.front || `${SRC_LABELS.card} ${s.n}`"></a>
+                      </template>
+                    </span>
+                  </template>
+                </div>
               </div>
             </div>
           </div>
@@ -1376,6 +1440,17 @@
       {# Input bar #}
       <div class="input-bar">
         <form @submit.prevent="send()">
+          {# Attached materials — what the tutor already knows about you #}
+          <div x-show="docs.length" class="materials-row" x-cloak>
+            <span class="materials-label">📎 {{ t('v2_tutor_materials') }}</span>
+            <template x-for="d in docs" :key="d.id">
+              <span class="material-chip" :title="d.name">
+                <span class="material-name" x-text="d.name"></span>
+                <button type="button" class="material-x" @click="deleteDoc(d.id)"
+                  :title="'{{ t('v2_tutor_material_remove') }}'">✕</button>
+              </span>
+            </template>
+          </div>
           <div x-show="docStatus" class="doc-status" x-text="docStatus"></div>
           <div class="input-row">
             <button type="button" class="attach-btn" @click="$refs.docInput.click()"
@@ -1464,6 +1539,7 @@ function tutorApp() {
     docUploading: false,
     docStatus: '',
     docPreview: null,
+    docs: [],  // attached materials (PDF/DOCX/PPTX/audio) the tutor can cite
     provider: localStorage.getItem('tutor_provider') || '',
     sidebarOpen: window.innerWidth >= 768,
     suggestions: [
@@ -1488,6 +1564,27 @@ function tutorApp() {
       this.scrollBottom();
       this.$watch('provider', v => localStorage.setItem('tutor_provider', v));
       await this.loadConvs();
+      this.loadDocs();
+    },
+
+    async loadDocs() {
+      try {
+        const r = await fetch('/api/tutor/docs', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok) this.docs = d.docs || [];
+      } catch (e) { /* non-critical */ }
+    },
+
+    async deleteDoc(id) {
+      const prev = this.docs;
+      this.docs = this.docs.filter(d => d.id !== id);  // optimistic
+      try {
+        const r = await fetch(`/api/tutor/docs/${id}`, {
+          method: 'DELETE',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': TUTOR_CSRF },
+        });
+        if (!r.ok) this.docs = prev;  // revert on failure
+      } catch (e) { this.docs = prev; }
     },
 
     async loadConvs() {
@@ -1628,9 +1725,12 @@ function tutorApp() {
           method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
         });
         const data = await r.json().catch(() => ({}));
-        this.docStatus = (r.ok && data.ok)
-          ? '✅ ' + TU_DOC.added.replace('%s', data.name)
-          : '⚠️ ' + (data.msg || TU_DOC.failed);
+        if (r.ok && data.ok) {
+          this.docStatus = '✅ ' + TU_DOC.added.replace('%s', data.name);
+          this.loadDocs();  // show it in the attached-materials row
+        } else {
+          this.docStatus = '⚠️ ' + (data.msg || TU_DOC.failed);
+        }
       } catch (e) {
         this.docStatus = '⚠️ ' + TU_DOC.failed;
       }
