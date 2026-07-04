@@ -1073,7 +1073,8 @@ def readyz():
             conn.execute("SELECT 1")
         finally:
             conn.close()
-        return jsonify({"status": "ready", "db": "ok", "backend": backend, "redis": redis_status})
+        return jsonify({"status": "ready", "db": "ok", "backend": backend, "redis": redis_status,
+                        "sha": os.environ.get("RAILWAY_GIT_COMMIT_SHA", "")[:7]})  # TEMP
     except Exception as e:
         app.logger.error("readiness check failed: %s: %s", type(e).__name__, e)
         return jsonify({"status": "unready", "db": "error", "backend": backend, "redis": redis_status}), 503
@@ -7186,6 +7187,9 @@ def api_tutor_ask():
     # deck_id is supplied, otherwise across the user's whole library) so the
     # tutor answers from — and cites — the user's material instead of dumping
     # the first 20 cards. Falls back to the old dump if embeddings are off.
+    from time import perf_counter as _pc  # TEMP instrumentation
+    _t_all0 = _pc()
+    _timing = {}
     deck_context = ""
     tutor_sources = []
     deck_id = request.form.get("deck_id", type=int)
@@ -7196,7 +7200,9 @@ def api_tutor_ask():
             deck = conn.execute("SELECT * FROM decks WHERE id=?", (deck_id,)).fetchone()
             if deck is not None and can_view_deck(user, deck):
                 scoped = deck_id
+        _t0 = _pc()
         hits = rag.retrieve(conn, user, message, deck_id=scoped)
+        _timing["retrieve"] = round(_pc() - _t0, 2)
         deck_context, used = rag.format_context(hits, lang=lang)
         # Compact source list (same [N] order) so the client can render clickable
         # citations — cards link to the deck, documents show name + page.
@@ -7235,8 +7241,11 @@ def api_tutor_ask():
         (conv_id,)
     ).fetchall()
     # Learner model (RAG): the user's weakest cards, for personalisation.
+    _t0 = _pc()
     learner_context = db.tutor_learner_context(conn, user["id"])
+    _timing["learner"] = round(_pc() - _t0, 2)
     conn.close()
+    _timing["pre_stream_total"] = round(_pc() - _t_all0, 2)
     history = [{"role": m["role"], "content": m["content"]} for m in db_msgs]
 
     # Sohranim user-soobshchenie v DB
@@ -7350,6 +7359,7 @@ def api_tutor_ask():
             "X-AI-Provider": used_provider,
             "X-Conv-Id": str(conv_id),
             "X-Tutor-Sources": sources_header,
+            "X-Timing": _json.dumps(_timing),  # TEMP instrumentation
         })
 
     # Non-stream (legacy)
