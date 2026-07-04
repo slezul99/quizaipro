@@ -944,6 +944,116 @@ def transcribe_audio(audio_bytes: bytes, mime: str = "audio/mpeg", timeout: int 
     return None
 
 
+# --- Phase 4 (async): long audio/video via the Gemini Files API --------------
+# The Developer API (generativelanguage, ?key=) accepts multi-hundred-MB media by
+# reference (upload → file_uri) instead of inline base64 (~20 MB cap). Gemini
+# understands video natively (transcribes the audio track) so no ffmpeg/GCS is
+# needed. Runs on GEMINI_API_KEY (the Developer key), not the Vertex SA.
+_FILES_BASE = "https://generativelanguage.googleapis.com"
+
+
+def gemini_files_available() -> bool:
+    """Whether long-media transcription (Files API) can run — needs the dev key."""
+    return bool(_key())
+
+
+def _files_upload(data: bytes, mime: str, display_name: str, timeout: int = 300):
+    """Resumable-upload `data` to the Gemini Files API; return the file dict
+    ({name, uri, state, …}) once it exists, or None. Caller polls for ACTIVE."""
+    key = _key()
+    if not key:
+        return None
+    # 1) start a resumable session
+    start = urlreq.Request(
+        f"{_FILES_BASE}/upload/v1beta/files?key={key}",
+        data=json.dumps({"file": {"display_name": display_name[:120]}}).encode("utf-8"),
+        method="POST",
+        headers={"X-Goog-Upload-Protocol": "resumable",
+                 "X-Goog-Upload-Command": "start",
+                 "X-Goog-Upload-Header-Content-Length": str(len(data)),
+                 "X-Goog-Upload-Header-Content-Type": mime,
+                 "Content-Type": "application/json"})
+    with urlreq.urlopen(start, timeout=60) as r:
+        upload_url = r.headers.get("X-Goog-Upload-URL")
+    if not upload_url:
+        return None
+    # 2) upload the bytes and finalize
+    up = urlreq.Request(
+        upload_url, data=data, method="POST",
+        headers={"X-Goog-Upload-Offset": "0",
+                 "X-Goog-Upload-Command": "upload, finalize",
+                 "Content-Length": str(len(data))})
+    with urlreq.urlopen(up, timeout=timeout) as r:
+        return json.loads(r.read().decode("utf-8")).get("file")
+
+
+def transcribe_media_file(data: bytes, mime: str, display_name: str = "media",
+                          poll_seconds: int = 300) -> str | None:
+    """Transcribe a long audio/video file via the Files API. Uploads it, waits
+    for the server to finish processing (video encoding takes a while), asks
+    Gemini for a verbatim transcript, then deletes the file. None on failure.
+    Bounded at the call site by size + a per-user budget."""
+    global _last_gemini_error
+    key = _key()
+    if not key:
+        _last_gemini_error = "Files API unavailable (GEMINI_API_KEY not set)"
+        return None
+    try:
+        fobj = _files_upload(data, mime, display_name)
+    except Exception as e:
+        _last_gemini_error = f"files upload {type(e).__name__}: {e}"
+        print(f"[AI media] upload failed: {type(e).__name__}: {e}")
+        return None
+    if not fobj or not fobj.get("uri"):
+        return None
+    name, uri = fobj["name"], fobj["uri"]
+    try:
+        # Wait until the file is ACTIVE (PROCESSING → ACTIVE; FAILED aborts).
+        state = fobj.get("state")
+        waited = 0
+        while state == "PROCESSING" and waited < poll_seconds:
+            time.sleep(3)
+            waited += 3
+            q = urlreq.Request(f"{_FILES_BASE}/v1beta/{name}?key={key}")
+            with urlreq.urlopen(q, timeout=30) as r:
+                state = json.loads(r.read().decode("utf-8")).get("state")
+        if state != "ACTIVE":
+            _last_gemini_error = f"file not ACTIVE (state={state})"
+            print(f"[AI media] file {name} state={state}")
+            return None
+        prompt = ("Transcribe this recording VERBATIM in its original language. "
+                  "Return ONLY the transcript text — no timestamps, no speaker "
+                  "labels, no commentary.")
+        body = {"contents": [{"role": "user", "parts": [
+            {"text": prompt},
+            {"file_data": {"mime_type": mime, "file_uri": uri}}]}],
+            "generationConfig": {"temperature": 0.1, "maxOutputTokens": 8000}}
+        data_b = json.dumps(body).encode("utf-8")
+        for model in (_GEMINI_MODEL, "gemini-2.5-flash"):
+            url = f"{_FILES_BASE}/v1beta/models/{model}:generateContent?key={key}"
+            req = urlreq.Request(url, data=data_b, method="POST",
+                                 headers={"Content-Type": "application/json"})
+            try:
+                with urlreq.urlopen(req, timeout=300) as r:
+                    payload = json.loads(r.read().decode("utf-8"))
+                cand = (payload.get("candidates") or [{}])[0]
+                text = (cand.get("content", {}).get("parts", [{}])[0].get("text") or "").strip()
+                if text:
+                    print(f"[AI media] OK on {model}, transcript {len(text)} chars")
+                    return text
+            except Exception as e:
+                _last_gemini_error = f"{model} {type(e).__name__}: {e}"
+                print(f"[AI media] {model} {type(e).__name__}: {e}")
+                continue
+        return None
+    finally:
+        try:
+            urlreq.urlopen(urlreq.Request(
+                f"{_FILES_BASE}/v1beta/{name}?key={key}", method="DELETE"), timeout=30)
+        except Exception:
+            pass
+
+
 def ocr_pdf_pages(pdf_path, max_pages: int = 20) -> list[tuple]:
     """OCR a scanned / no-text-layer PDF via Gemini Vision. Renders up to
     `max_pages` pages to images and transcribes them in ONE vision call (cheaper),

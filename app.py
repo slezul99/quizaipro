@@ -55,9 +55,9 @@ app = Flask(__name__)
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
-# Upload limit: 50 MB. Bolshiye fayly (PDF, Word, video) — eshchyo razumno,
-# no ne 200 MB DoS vector.
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+# Upload limit: 100 MB. Big enough for a full lecture's audio (and short video)
+# for the async media transcription; still a bounded DoS surface (auth + rate limit).
+app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 app.config["UPLOAD_FOLDER"] = str(UPLOAD)
 
 # === Mobile /api/v1 JSON REST layer (isolated Blueprint, JWT-based, no session coupling) ===
@@ -7428,6 +7428,94 @@ def _audio_consume(conn, user_id, period, prev_used):
     conn.commit()
 
 
+# --- Phase 4 async: long audio/VIDEO via the Gemini Files API + a background ---
+# worker. Big files (a full lecture) can't go inline (~20 MB) or run synchronously
+# (transcription takes minutes), so upload → a media_jobs row → a daemon thread
+# transcribes it (ai_gen.transcribe_media_file) → indexes it like a document. The
+# job row lives in Postgres; the client polls /api/tutor/media-jobs.
+_MEDIA_MONTHLY_LIMIT = 10          # long-media transcriptions / user / month
+_MEDIA_MAX_MB = 100                # matches MAX_CONTENT_LENGTH; huge video = future
+_MEDIA_STUCK_MIN = 20              # a job still running after this = interrupted
+_MEDIA_EXTS = dict(_AUDIO_EXTS)
+_MEDIA_EXTS.update({".mp4": "video/mp4", ".mov": "video/quicktime",
+                    ".webm": "video/webm", ".mkv": "video/x-matroska",
+                    ".m4v": "video/mp4", ".avi": "video/x-msvideo",
+                    ".3gp": "video/3gpp", ".mpeg": "video/mpeg", ".mpg": "video/mpeg"})
+
+
+def _media_remaining(conn, user_id):
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS media_usage ("
+        "user_id INTEGER PRIMARY KEY, period TEXT NOT NULL, files INTEGER NOT NULL DEFAULT 0)")
+    conn.commit()  # Postgres: DDL is transactional
+    period = datetime.utcnow().strftime("%Y-%m")
+    row = conn.execute(
+        "SELECT period, files FROM media_usage WHERE user_id=?", (user_id,)).fetchone()
+    used = row["files"] if (row and row["period"] == period) else 0
+    return max(0, _MEDIA_MONTHLY_LIMIT - used), period, used
+
+
+def _media_consume(conn, user_id, period, prev_used):
+    conn.execute(
+        "INSERT INTO media_usage (user_id, period, files) VALUES (?,?,?) "
+        "ON CONFLICT (user_id) DO UPDATE SET period=excluded.period, files=excluded.files",
+        (user_id, period, prev_used + 1))
+    conn.commit()
+
+
+def _ensure_media_jobs(conn):
+    # AUTOINCREMENT → Postgres IDENTITY via db.translate_sql.
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS media_jobs ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, "
+        "name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued', "
+        "error TEXT, doc_id INTEGER, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)")
+    conn.commit()
+
+
+def _media_set(conn, job_id, status, error=None, doc_id=None):
+    conn.execute(
+        "UPDATE media_jobs SET status=?, error=?, doc_id=?, updated_at=? WHERE id=?",
+        (status, error, doc_id, datetime.utcnow().isoformat(), job_id))
+    conn.commit()
+
+
+def _process_media_job(job_id, path, mime, name, user_id):
+    """Daemon worker: transcribe an uploaded media file and index it. Each thread
+    owns its DB connection; failures are recorded on the job, never raised."""
+    def _run():
+        conn = db.get_conn()
+        try:
+            _media_set(conn, job_id, "processing")
+            with open(path, "rb") as f:
+                data = f.read()
+            transcript = ai_gen.transcribe_media_file(data, mime, name)
+            if not transcript or not transcript.strip():
+                _media_set(conn, job_id, "error",
+                           error="Не удалось распознать речь в файле")
+                return
+            doc_id, _chunks = rag.index_document(conn, user_id, name, [(None, transcript)])
+            if not doc_id:
+                _media_set(conn, job_id, "error", error="Не удалось проиндексировать")
+                return
+            remaining, period, used = _media_remaining(conn, user_id)
+            _media_consume(conn, user_id, period, used)  # count only on success
+            _media_set(conn, job_id, "done", doc_id=doc_id)
+        except Exception as e:
+            print(f"[media job {job_id}] {type(e).__name__}: {e}")
+            try:
+                _media_set(conn, job_id, "error", error="Ошибка обработки")
+            except Exception:
+                pass
+        finally:
+            conn.close()
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+    threading.Thread(target=_run, daemon=True).start()
+
+
 def _extract_pdf_pages(fpath):
     """[(page_no, text)] from a PDF via pypdf (raises ImportError if unavailable)."""
     from pypdf import PdfReader
@@ -7644,6 +7732,95 @@ def api_tutor_doc_delete(doc_id):
     finally:
         conn.close()
     return jsonify({"ok": True})
+
+
+@app.route("/api/tutor/upload-media", methods=["POST"])
+@login_required
+def api_tutor_upload_media():
+    """Phase 4 async: accept a LONG audio/video file, enqueue a media_jobs row and
+    transcribe it in the background (Gemini Files API). Returns immediately with a
+    job id; the client polls /api/tutor/media-jobs."""
+    user = current_user()
+    if not ai_gen.gemini_files_available():
+        return jsonify({"error": "unavailable",
+                        "msg": "Обработка длинных медиа недоступна на сервере"}), 503
+    if not rate_limit(f"tutor_media:{user['id']}", max_attempts=8, window_seconds=1800):
+        return jsonify({"error": "rate_limit", "msg": "Слишком много загрузок. Подождите."}), 429
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({"error": "no_file", "msg": "Загрузите файл"}), 400
+    ext = Path(file.filename).suffix.lower()
+    if ext not in _MEDIA_EXTS:
+        return jsonify({"error": "bad_type",
+                        "msg": "Поддерживаются аудио и видео файлы"}), 400
+
+    display_name = Path(file.filename).name[:200]
+    fname = secure_filename(file.filename) or f"media_{secrets.token_hex(4)}{ext}"
+    fpath = UPLOAD / f"tutormedia_{user['id']}_{secrets.token_hex(6)}_{fname}"
+    file.save(str(fpath))
+    size_mb = fpath.stat().st_size / (1024 * 1024)
+    if size_mb > _MEDIA_MAX_MB:
+        try:
+            fpath.unlink()
+        except OSError:
+            pass
+        return jsonify({"error": "too_large",
+                        "msg": f"Файл больше {_MEDIA_MAX_MB} МБ"}), 400
+
+    conn = db.get_conn()
+    try:
+        remaining, _period, _used = _media_remaining(conn, user["id"])
+        if remaining <= 0:
+            try:
+                fpath.unlink()
+            except OSError:
+                pass
+            return jsonify({"error": "media_limit",
+                "msg": "Исчерпан месячный лимит обработки медиа. Попробуйте позже."}), 429
+        _ensure_media_jobs(conn)
+        now = datetime.utcnow().isoformat()
+        cur = conn.execute(
+            "INSERT INTO media_jobs (user_id, name, status, created_at, updated_at) "
+            "VALUES (?,?, 'queued', ?, ?) RETURNING id",
+            (user["id"], display_name, now, now))
+        job_id = cur.fetchone()[0]
+        conn.commit()
+    finally:
+        conn.close()
+
+    _process_media_job(job_id, str(fpath), _MEDIA_EXTS[ext], display_name, user["id"])
+    return jsonify({"ok": True, "job_id": job_id, "name": display_name, "status": "queued"})
+
+
+@app.route("/api/tutor/media-jobs", methods=["GET"])
+@login_required
+def api_tutor_media_jobs():
+    """Recent media-transcription jobs for the user (for the 'processing' chips).
+    Also flips jobs left running past _MEDIA_STUCK_MIN to 'error' (a server restart
+    kills the in-process worker and the temp file, so they can't resume)."""
+    user = current_user()
+    conn = db.get_conn()
+    try:
+        _ensure_media_jobs(conn)
+        stuck = (datetime.utcnow() - timedelta(minutes=_MEDIA_STUCK_MIN)).isoformat()
+        conn.execute(
+            "UPDATE media_jobs SET status='error', error=?, updated_at=? "
+            "WHERE user_id=? AND status IN ('queued','processing') AND updated_at < ?",
+            ("Прервано — загрузите файл заново", datetime.utcnow().isoformat(),
+             user["id"], stuck))
+        conn.commit()
+        cutoff = (datetime.utcnow() - timedelta(hours=6)).isoformat()
+        rows = conn.execute(
+            "SELECT id, name, status, error, doc_id FROM media_jobs "
+            "WHERE user_id=? AND (status IN ('queued','processing') OR created_at > ?) "
+            "ORDER BY id DESC LIMIT 20",
+            (user["id"], cutoff)).fetchall()
+    finally:
+        conn.close()
+    return jsonify({"ok": True, "jobs": [
+        {"id": r["id"], "name": r["name"], "status": r["status"],
+         "error": r["error"], "doc_id": r["doc_id"]} for r in rows]})
 
 
 @app.route("/api/tutor/clear", methods=["POST"])

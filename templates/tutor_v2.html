@@ -753,6 +753,12 @@
     transition: background .15s;
   }
   .material-x:hover { background: rgba(239,68,68,.18); color: #ef4444; }
+  .material-chip--processing {
+    color: #b45309; background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.35);
+  }
+  html.dark .material-chip--processing { color: #fbbf24; background: rgba(245,158,11,.15); }
+  .job-spin { display: inline-block; animation: job-spin 1s linear infinite; }
+  @keyframes job-spin { to { transform: rotate(360deg); } }
   html.dark .materials-label { color: #64748b; }
   html.dark .material-chip { color: #5eead4; background: rgba(13,148,136,.16); }
   html.dark .material-x { color: #5eead4; background: rgba(13,148,136,.22); }
@@ -1479,6 +1485,16 @@
               </span>
             </template>
           </div>
+          {# Long media being transcribed in the background #}
+          <div x-show="mediaJobs.length" class="materials-row" x-cloak>
+            <span class="materials-label">⏳ {{ t('v2_tutor_processing') }}</span>
+            <template x-for="j in mediaJobs" :key="j.id">
+              <span class="material-chip material-chip--processing" :title="j.name">
+                <span class="job-spin">◐</span>
+                <span class="material-name" x-text="j.name"></span>
+              </span>
+            </template>
+          </div>
           {# Focus banner — tutor answers only from the chosen material #}
           <div x-show="focusDoc" class="focus-banner" x-cloak>
             <span>🎯 {{ t('v2_tutor_focus_on') }}</span>
@@ -1491,7 +1507,7 @@
               :disabled="loading || docUploading" title="{{ t('v2_tutor_attach') }}">
               <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
-            <input type="file" x-ref="docInput" accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.ogg,.aac,.flac,audio/*" class="hidden-file" @change="uploadDoc($event)">
+            <input type="file" x-ref="docInput" accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mov,.webm,.mkv,.m4v,.avi,.3gp,.mpeg,.mpg,audio/*,video/*" class="hidden-file" @change="uploadDoc($event)">
             <textarea
               x-model="newMsg"
               @keydown.enter.prevent="if (!$event.shiftKey) send()"
@@ -1547,6 +1563,10 @@ const TU_DOC = {
   failed: {{ t('v2_tutor_doc_failed')|tojson }},
   only_pdf: {{ t('v2_tutor_doc_only_pdf')|tojson }},
   transcribing: {{ t('v2_tutor_doc_transcribing')|tojson }},
+  too_large: {{ t('v2_tutor_media_toolarge')|tojson }},
+  media_uploading: {{ t('v2_tutor_media_uploading')|tojson }},
+  media_processing: {{ t('v2_tutor_media_processing')|tojson }},
+  media_done: {{ t('v2_tutor_media_done')|tojson }},
 };
 // Source citation labels — MUST match rag.py _LABELS so "[Card 2]" in the answer
 // lines up with the rendered chip.
@@ -1575,6 +1595,7 @@ function tutorApp() {
     docPreview: null,
     docs: [],  // attached materials (PDF/DOCX/PPTX/audio) the tutor can cite
     focusDoc: null,  // when set, tutor answers ONLY from this material
+    mediaJobs: [],  // long audio/video being transcribed in the background
     provider: localStorage.getItem('tutor_provider') || '',
     sidebarOpen: window.innerWidth >= 768,
     suggestions: [
@@ -1600,6 +1621,7 @@ function tutorApp() {
       this.$watch('provider', v => localStorage.setItem('tutor_provider', v));
       await this.loadConvs();
       this.loadDocs();
+      this.pollMediaJobs();  // resume showing any in-flight transcriptions
     },
 
     async loadDocs() {
@@ -1754,7 +1776,11 @@ function tutorApp() {
       const file = ev.target.files && ev.target.files[0];
       ev.target.value = '';
       if (!file) return;
+      const isVideo = /\.(mp4|mov|webm|mkv|m4v|avi|3gp|mpe?g)$/i.test(file.name);
       const isAudio = /\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name);
+      // Long media (any video, or audio > 18 MB) can't go inline/synchronously —
+      // route it to the background worker (Files API), which transcribes + indexes.
+      if (isVideo || (isAudio && file.size > 18 * 1024 * 1024)) { return this.uploadMedia(file); }
       if (!/\.(pdf|docx|pptx|mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name)) { this.docStatus = '⚠️ ' + TU_DOC.only_pdf; return; }
       this.docUploading = true;
       this.docStatus = '⏳ ' + (isAudio ? TU_DOC.transcribing : TU_DOC.indexing);
@@ -1777,6 +1803,59 @@ function tutorApp() {
       }
       this.docUploading = false;
       setTimeout(() => { this.docStatus = ''; }, 7000);
+    },
+
+    async uploadMedia(file) {
+      if (file.size > 100 * 1024 * 1024) { this.docStatus = '⚠️ ' + TU_DOC.too_large; return; }
+      this.docUploading = true;
+      this.docStatus = '⏳ ' + TU_DOC.media_uploading;
+      try {
+        const fd = new FormData();
+        fd.append('_csrf', TUTOR_CSRF);
+        fd.append('file', file);
+        const r = await fetch('/api/tutor/upload-media', {
+          method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.ok) {
+          this.docStatus = '⏳ ' + TU_DOC.media_processing;
+          this.mediaJobs.push({ id: data.job_id, name: data.name, status: 'queued' });
+          this.pollMediaJobs();
+        } else {
+          this.docStatus = '⚠️ ' + (data.msg || TU_DOC.failed);
+        }
+      } catch (e) {
+        this.docStatus = '⚠️ ' + TU_DOC.failed;
+      }
+      this.docUploading = false;
+      setTimeout(() => { if (this.docStatus.indexOf('⏳') !== 0) this.docStatus = ''; }, 7000);
+    },
+
+    async pollMediaJobs() {
+      if (this._mediaPolling) return;
+      this._mediaPolling = true;
+      this._doneSeen = this._doneSeen || new Set();
+      const tick = async () => {
+        try {
+          const r = await fetch('/api/tutor/media-jobs', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+          const d = await r.json().catch(() => ({}));
+          if (r.ok && d.ok) {
+            this.mediaJobs = d.jobs.filter(j => j.status === 'queued' || j.status === 'processing');
+            const freshDone = d.jobs.filter(j => j.status === 'done' && !this._doneSeen.has(j.id));
+            if (freshDone.length) {
+              freshDone.forEach(j => this._doneSeen.add(j.id));
+              this.docStatus = '✅ ' + TU_DOC.media_done;
+              this.loadDocs();
+              setTimeout(() => { if (this.docStatus.indexOf('✅') === 0) this.docStatus = ''; }, 6000);
+            }
+            const err = d.jobs.find(j => j.status === 'error' && !this._doneSeen.has(j.id));
+            if (err) { this._doneSeen.add(err.id); this.docStatus = '⚠️ ' + (err.error || TU_DOC.failed); }
+          }
+        } catch (e) { /* keep trying */ }
+        if (this.mediaJobs.length) setTimeout(tick, 5000);
+        else this._mediaPolling = false;
+      };
+      tick();
     },
 
     async showDocChunk(s) {
