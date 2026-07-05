@@ -807,6 +807,37 @@ def _card_is_mcq(card_row) -> bool:
     return False
 
 
+_DECK_NAME_I18N = None  # {ru_name: {"en":…, "uz":…}} from public decks (lazy cache)
+
+
+def _deck_name_map():
+    """Name→translation map built from PUBLIC decks that carry name_en/name_uz.
+    Used as a fallback for CLONED/copied decks, which don't inherit the seeded
+    translations — so a clone of a standard deck still shows a localized name.
+    Cached per process (public decks change rarely; refreshed on redeploy)."""
+    global _DECK_NAME_I18N
+    if _DECK_NAME_I18N is None:
+        m = {}
+        try:
+            c = db.get_conn()
+            try:
+                for r in c.execute(
+                    "SELECT name, name_en, name_uz FROM decks WHERE is_public=1"):
+                    if not (r["name_en"] or r["name_uz"]):
+                        continue
+                    e = m.setdefault(r["name"], {})
+                    if r["name_en"]:
+                        e.setdefault("en", r["name_en"])
+                    if r["name_uz"]:
+                        e.setdefault("uz", r["name_uz"])
+            finally:
+                c.close()
+        except Exception:
+            pass
+        _DECK_NAME_I18N = m
+    return _DECK_NAME_I18N
+
+
 def _localize_deck_fields(deck_dict, lang):
     """Swap a deck's name/description for their _en/_uz translation if one
     exists (seeded marketplace decks). Mirrors _localize_card_fields — `name`
@@ -816,6 +847,12 @@ def _localize_deck_fields(deck_dict, lang):
             tr = deck_dict.get(f"{fld}_{lang}")
             if tr:
                 deck_dict[fld] = tr
+        # Cloned decks don't carry name_en/uz — fall back to a public deck of the
+        # same name that has a translation.
+        if not deck_dict.get(f"name_{lang}"):
+            tr = _deck_name_map().get(deck_dict.get("name"), {}).get(lang)
+            if tr:
+                deck_dict["name"] = tr
     return deck_dict
 
 
@@ -1876,8 +1913,12 @@ def _student_dashboard_data(user):
         return '%dd' % (sec // 86400)
 
     def _act_name(r):
-        if lang in ("en", "uz") and r["deck_name_" + lang]:
-            return r["deck_name_" + lang]
+        if lang in ("en", "uz"):
+            if r["deck_name_" + lang]:
+                return r["deck_name_" + lang]
+            tr = _deck_name_map().get(r["deck_name"], {}).get(lang)  # cloned decks
+            if tr:
+                return tr
         return r["deck_name"]
 
     recent_activity = [{
@@ -2509,14 +2550,32 @@ def deck_clone(deck_id):
 
     new_name = (request.form.get("new_name") or "").strip() or f"{src['name']} (копия)"
 
+    # Carry the seeded translations so a cloned standard deck stays localized —
+    # but only when the name is unchanged (a renamed clone must not show a stale
+    # translated title).
+    _keep_tr = (new_name == src["name"])
+
+    def _tr(row, col):
+        if not _keep_tr:
+            return None
+        try:
+            return row[col]
+        except (KeyError, IndexError):
+            return None
     if user["org_id"]:
-        cur = conn.execute("""INSERT INTO decks (org_id, category_id, name, icon, description)
-                              VALUES (?, ?, ?, ?, ?) RETURNING id""",
-                          (user["org_id"], src["category_id"], new_name, src["icon"], src["description"]))
+        cur = conn.execute("""INSERT INTO decks (org_id, category_id, name, icon, description,
+                              name_en, name_uz, description_en, description_uz)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id""",
+                          (user["org_id"], src["category_id"], new_name, src["icon"], src["description"],
+                           _tr(src, "name_en"), _tr(src, "name_uz"),
+                           _tr(src, "description_en"), _tr(src, "description_uz")))
     else:
-        cur = conn.execute("""INSERT INTO decks (owner_id, category_id, name, icon, description)
-                              VALUES (?, ?, ?, ?, ?) RETURNING id""",
-                          (user["id"], src["category_id"], new_name, src["icon"], src["description"]))
+        cur = conn.execute("""INSERT INTO decks (owner_id, category_id, name, icon, description,
+                              name_en, name_uz, description_en, description_uz)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id""",
+                          (user["id"], src["category_id"], new_name, src["icon"], src["description"],
+                           _tr(src, "name_en"), _tr(src, "name_uz"),
+                           _tr(src, "description_en"), _tr(src, "description_uz")))
     new_deck_id = cur.fetchone()[0]
 
     # Kopiruem karty (bez progressа — eto novaya kolod dlya samostoyatelnogo izucheniya)
