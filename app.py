@@ -4360,6 +4360,7 @@ def achievements_page():
     unlocked_count = sum(1 for i in items if i["unlocked"])
     total_count = len(items)
     conn.close()
+    items = ach_mod.localize(items, session.get("lang", "ru"))  # EN/UZ names + descs
     return render_template("achievements_v2.html" if _use_v2() else "achievements.html",
         items=items,
         unlocked_count=unlocked_count,

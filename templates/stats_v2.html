@@ -938,8 +938,7 @@
         <div class="section-head">
           <div class="section-title">
             <svg width="19" height="19" fill="none" stroke="var(--brand-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            {# i18n TODO: key v2_sec_all_time or similar; using literal for now #}
-            Общая статистика
+            {{ t('v2_stats_all_time') }}
           </div>
         </div>
 
@@ -999,8 +998,7 @@
           {% else %}
             <div class="period-acc indigo" style="font-size:26px;opacity:.4;">—</div>
             <div class="period-hint">
-              {# i18n TODO #}
-              Нет активности за последние 7 дней
+              {{ t('v2_stats_no_7d') }}
             </div>
             <div class="progress-track">
               <div class="progress-fill-indigo" style="width:0%;"></div>
@@ -1023,8 +1021,7 @@
           {% else %}
             <div class="period-acc purple" style="font-size:26px;opacity:.4;">—</div>
             <div class="period-hint">
-              {# i18n TODO #}
-              Нет активности за последние 30 дней
+              {{ t('v2_stats_no_30d') }}
             </div>
             <div class="progress-track">
               <div class="progress-fill-purple" style="width:0%;"></div>
@@ -1050,10 +1047,9 @@
           <div class="empty-state" style="padding: 28px 0 8px;">
             <div class="empty-icon">📊</div>
             <div class="empty-title">
-              {# i18n TODO #}
-              Нет данных за последние 30 дней
+              {{ t('v2_stats_no_30d_data') }}
             </div>
-            <div class="empty-sub">Начните повторять карточки, и статистика появится здесь.</div>
+            <div class="empty-sub">{{ t('v2_stats_empty_sub') }}</div>
           </div>
         {% else %}
           <div class="bar-chart-wrap">
@@ -1208,10 +1204,9 @@
           <div class="empty-state">
             <div class="empty-icon">🗓️</div>
             <div class="empty-title">
-              {# i18n TODO #}
-              Активность за год не найдена
+              {{ t('v2_stats_no_year') }}
             </div>
-            <div class="empty-sub">Данные появятся после первых сессий повторения.</div>
+            <div class="empty-sub">{{ t('v2_stats_year_sub') }}</div>
           </div>
         {% endif %}
       </div>

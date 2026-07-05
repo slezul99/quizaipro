@@ -65,6 +65,93 @@ EVOLUTION_STAGES = [
 # Slovar' dlya bystrogo dostupa
 ACH_BY_KEY = {a["key"]: a for a in ACHIEVEMENTS}
 
+# EN/UZ translations of each achievement (name, desc). RU is the default above.
+ACH_I18N = {
+    "en": {
+        "first_step": ("First Step", "Learn your first card"),
+        "ten_cards": ("Ten", "Learn 10 cards"),
+        "hundred_cards": ("Century", "Learn 100 cards"),
+        "thousand_cards": ("Thousandaire", "Learn 1000 cards"),
+        "streak_3": ("Warming Up", "3 days in a row"),
+        "streak_7": ("Week of Power", "7 days in a row"),
+        "streak_30": ("Flawless Month", "30 days in a row"),
+        "streak_100": ("King of Discipline", "100 days in a row"),
+        "perfect_test": ("Perfect Test", "Score 100% on a test"),
+        "speed_demon": ("Speed Demon", "Finish top-3 in a Live test"),
+        "xp_500": ("Little Star", "Earn 500 XP"),
+        "xp_2000": ("Rising Star", "Earn 2000 XP"),
+        "xp_10000": ("Superstar", "Earn 10000 XP"),
+        "early_bird": ("Early Bird", "Study before 7 AM"),
+        "night_owl": ("Night Owl", "Study after midnight"),
+        "weekend_warrior": ("Weekend Warrior", "Study on Saturday or Sunday"),
+        "deck_master": ("Deck Master", "Master all cards in a deck"),
+        "goal_done": ("Goal-Getter", "Complete your daily goal"),
+        "goal_x5": ("Overachiever", "Complete your goal 5 times"),
+        "first_test": ("First Test", "Complete your first test"),
+        "test_x10": ("Tester", "Complete 10 tests"),
+        "test_x50": ("Test Master", "Complete 50 tests"),
+        "first_match": ("First Match", "Play your first Match"),
+        "match_x10": ("Matcher", "Play 10 Matches"),
+        "first_duel": ("First Duel", "Play your first duel"),
+        "duel_x10": ("Duelist", "Play 10 duels"),
+        "duel_win": ("Duel Victory", "Win your first duel"),
+        "duel_win_x5": ("Serial Winner", "Win 5 duels"),
+        "duel_win_x20": ("Duel Champion", "Win 20 duels"),
+        "first_live": ("First Live Game", "Play a Live test"),
+        "live_host": ("Host", "Host your first Live test"),
+        "live_x10": ("Live Player", "Play 10 Live tests"),
+    },
+    "uz": {
+        "first_step": ("Birinchi qadam", "Birinchi kartangizni o'rganing"),
+        "ten_cards": ("O'nlik", "10 ta karta o'rganing"),
+        "hundred_cards": ("Yuzlik", "100 ta karta o'rganing"),
+        "thousand_cards": ("Minglik", "1000 ta karta o'rganing"),
+        "streak_3": ("Qizib olmoqda", "Ketma-ket 3 kun"),
+        "streak_7": ("Kuch haftasi", "Ketma-ket 7 kun"),
+        "streak_30": ("Uzluksiz oy", "Ketma-ket 30 kun"),
+        "streak_100": ("Intizom qiroli", "Ketma-ket 100 kun"),
+        "perfect_test": ("Mukammal test", "Testni 100% bajaring"),
+        "speed_demon": ("Tezlik jini", "Live testda top-3 ga kiring"),
+        "xp_500": ("Yulduzcha", "500 XP to'plang"),
+        "xp_2000": ("Ko'tarilayotgan yulduz", "2000 XP to'plang"),
+        "xp_10000": ("Superyulduz", "10000 XP to'plang"),
+        "early_bird": ("Erta qush", "Ertalab 7 gacha o'qing"),
+        "night_owl": ("Tungi boyqush", "Yarim tundan keyin o'qing"),
+        "weekend_warrior": ("Dam olish jangchisi", "Shanba yoki yakshanba kuni o'qing"),
+        "deck_master": ("To'plam ustasi", "To'plamdagi barcha kartalarni o'zlashtiring"),
+        "goal_done": ("Maqsadli", "Kunlik maqsadni bajaring"),
+        "goal_x5": ("Ortig'i bilan", "Maqsadni 5 marta bajaring"),
+        "first_test": ("Birinchi test", "Birinchi testni bajaring"),
+        "test_x10": ("Sinovchi", "10 ta test bajaring"),
+        "test_x50": ("Test ustasi", "50 ta test bajaring"),
+        "first_match": ("Birinchi juftlik", "Birinchi Match o'ynang"),
+        "match_x10": ("Moslashtiruvchi", "10 ta Match o'ynang"),
+        "first_duel": ("Birinchi duel", "Birinchi duelni o'ynang"),
+        "duel_x10": ("Duelchi", "10 ta duel o'ynang"),
+        "duel_win": ("Duel g'alabasi", "Birinchi duelda g'alaba qozoning"),
+        "duel_win_x5": ("Ketma-ket g'olib", "5 ta duelda g'alaba qozoning"),
+        "duel_win_x20": ("Duel chempioni", "20 ta duelda g'alaba qozoning"),
+        "first_live": ("Birinchi jonli o'yin", "Live testda o'ynang"),
+        "live_host": ("Boshlovchi", "Birinchi Live testni o'tkazing"),
+        "live_x10": ("Jonli o'yinchi", "10 ta Live test o'ynang"),
+    },
+}
+
+
+def localize(items, lang):
+    """Return achievement items with name/desc swapped to `lang` (RU = default)."""
+    tr = ACH_I18N.get(lang)
+    if not tr:
+        return items
+    out = []
+    for it in items:
+        d = dict(it)
+        pair = tr.get(d.get("key"))
+        if pair:
+            d["name"], d["desc"] = pair
+        out.append(d)
+    return out
+
 
 def check_and_award(conn, user_id):
     """Proveryaet vse pravila i dobavlyayet novye achievements.
