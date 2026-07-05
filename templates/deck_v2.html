@@ -1299,11 +1299,11 @@ window.addEventListener('DOMContentLoaded', function() {
 <div class="modal-overlay" id="addCardModal" onclick="if(event.target===this)closeAddCard()">
   <div class="modal-box">
     <div class="modal-title">{{ t('v2_add_card') }}</div>
-    <div class="modal-field"><label>Вопрос</label><input id="ac_front" type="text" autocomplete="off"></div>
-    <div class="modal-field"><label>Ответ</label><textarea id="ac_back" rows="2"></textarea></div>
+    <div class="modal-field"><label>{{ t('v2_add_q') }}</label><input id="ac_front" type="text" autocomplete="off"></div>
+    <div class="modal-field"><label>{{ t('v2_add_a') }}</label><textarea id="ac_back" rows="2"></textarea></div>
     <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeAddCard()">Отмена</button>
-      <button class="btn-primary" onclick="saveCard()">Сохранить</button>
+      <button class="btn-ghost" onclick="closeAddCard()">{{ t('cancel') }}</button>
+      <button class="btn-primary" onclick="saveCard()">{{ t('save') }}</button>
     </div>
   </div>
 </div>
