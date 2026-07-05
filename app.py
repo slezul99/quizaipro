@@ -1751,6 +1751,12 @@ def _student_dashboard_data(user):
             WHERE d.owner_id=? ORDER BY pc.name, c.name, d.created_at DESC
         """, (user["id"], now, user["id"], user["id"])).fetchall()
 
+    # Show seeded/public deck names in the user's language (name_en / name_uz),
+    # falling back to the original for user-created decks. Same helper the deck
+    # and marketplace pages use — the dashboard/library just never applied it.
+    lang = session.get("lang", "ru")
+    decks = [_localize_deck_fields(dict(d), lang) for d in decks]
+
     total = sum(d["card_count"] for d in decks)
     learned = sum(d["learned_count"] for d in decks)
     due = sum(d["due_count"] for d in decks)
@@ -1797,7 +1803,8 @@ def _student_dashboard_data(user):
     # Recent activity — real review events (deck + grade + timestamp), newest first.
     activity_rows = conn.execute("""
         SELECT r.grade AS grade, r.reviewed_at AS reviewed_at,
-               d.name AS deck_name, d.icon AS deck_icon
+               d.name AS deck_name, d.name_en AS deck_name_en,
+               d.name_uz AS deck_name_uz, d.icon AS deck_icon
         FROM reviews r
         JOIN cards c ON c.id = r.card_id
         JOIN decks d ON d.id = c.deck_id
@@ -1868,9 +1875,14 @@ def _student_dashboard_data(user):
             return '%dh' % (sec // 3600)
         return '%dd' % (sec // 86400)
 
+    def _act_name(r):
+        if lang in ("en", "uz") and r["deck_name_" + lang]:
+            return r["deck_name_" + lang]
+        return r["deck_name"]
+
     recent_activity = [{
         'grade': r['grade'], 'reviewed_at': r['reviewed_at'],
-        'deck_name': r['deck_name'], 'deck_icon': r['deck_icon'],
+        'deck_name': _act_name(r), 'deck_icon': r['deck_icon'],
         'ago': _ago(r['reviewed_at']),
     } for r in activity_rows]
 
