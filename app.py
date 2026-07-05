@@ -7823,6 +7823,29 @@ def api_tutor_media_jobs():
          "error": r["error"], "doc_id": r["doc_id"]} for r in rows]})
 
 
+@app.route("/api/tutor/voice-transcribe", methods=["POST"])
+@login_required
+def api_tutor_voice_transcribe():
+    """Phase 5: transcribe a short spoken question (WAV recorded in the browser)
+    so it can be sent to the tutor like a typed message. Synchronous — voice
+    questions are a few seconds — via Vertex (funded). Returns {ok, text}."""
+    user = current_user()
+    if not ai_gen.vertex_enabled():
+        return jsonify({"error": "unavailable", "msg": "Голос недоступен"}), 503
+    if not rate_limit(f"tutor_voice:{user['id']}", max_attempts=40, window_seconds=600):
+        return jsonify({"error": "rate_limit", "msg": "Слишком много запросов. Подождите."}), 429
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "no_file"}), 400
+    data = file.read()
+    if not data or len(data) > 10 * 1024 * 1024:  # a spoken question is tiny
+        return jsonify({"error": "bad_audio", "msg": "Пустая или слишком длинная запись"}), 400
+    text = ai_gen.transcribe_audio(data, "audio/wav")
+    if not text or not text.strip():
+        return jsonify({"ok": False, "text": ""})
+    return jsonify({"ok": True, "text": text.strip()[:1000]})
+
+
 @app.route("/api/tutor/clear", methods=["POST"])
 @login_required
 def api_tutor_clear():

@@ -706,6 +706,15 @@
   .attach-btn:disabled { opacity: .5; cursor: default; }
   .attach-btn svg { width: 18px; height: 18px; }
   html.dark .attach-btn { color: #94a3b8; border-color: rgba(148,163,184,.22); }
+  .voice-btn svg { width: 18px; height: 18px; }
+  .voice-btn--rec {
+    color: #fff !important; background: #ef4444 !important; border-color: #ef4444 !important;
+    animation: voice-pulse 1.3s ease-in-out infinite;
+  }
+  @keyframes voice-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
+    50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+  }
   /* Attached-materials row above the composer */
   .materials-row {
     display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
@@ -1508,6 +1517,12 @@
               <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
             <input type="file" x-ref="docInput" accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mov,.webm,.mkv,.m4v,.avi,.3gp,.mpeg,.mpg,audio/*,video/*" class="hidden-file" @change="uploadDoc($event)">
+            <button type="button" class="attach-btn voice-btn" :class="{'voice-btn--rec': recording}"
+              @click="toggleVoice()" :disabled="loading || docUploading || voiceBusy"
+              :title="recording ? '{{ t('v2_voice_stop') }}' : '{{ t('v2_voice_start') }}'">
+              <svg x-show="!recording" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+              <svg x-show="recording" x-cloak fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+            </button>
             <textarea
               x-model="newMsg"
               @keydown.enter.prevent="if (!$event.shiftKey) send()"
@@ -1557,6 +1572,11 @@ const TU_T = {
   error: {{ t('tu_error')|tojson }},
   net_error: {{ t('tu_net_error')|tojson }},
 };
+const VOICE = {
+  no_mic: {{ t('v2_voice_no_mic')|tojson }},
+  transcribing: {{ t('v2_voice_transcribing')|tojson }},
+  no_speech: {{ t('v2_voice_no_speech')|tojson }},
+};
 const TU_DOC = {
   indexing: {{ t('v2_tutor_doc_indexing')|tojson }},
   added: {{ t('v2_tutor_doc_added')|tojson }},
@@ -1596,6 +1616,8 @@ function tutorApp() {
     docs: [],  // attached materials (PDF/DOCX/PPTX/audio) the tutor can cite
     focusDoc: null,  // when set, tutor answers ONLY from this material
     mediaJobs: [],  // long audio/video being transcribed in the background
+    recording: false,  // voice question in progress
+    voiceBusy: false,  // transcribing a voice question
     provider: localStorage.getItem('tutor_provider') || '',
     sidebarOpen: window.innerWidth >= 768,
     suggestions: [
@@ -1856,6 +1878,116 @@ function tutorApp() {
         else this._mediaPolling = false;
       };
       tick();
+    },
+
+    // ---- Phase 5: voice question → transcribe → tutor → read the answer aloud ----
+    async toggleVoice() {
+      if (this.recording) { this.recording = false; await this._voiceStop(); return; }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();  // stop any prior speech
+      try {
+        await this._startRecording();
+        this.recording = true;
+      } catch (e) {
+        this.docStatus = '⚠️ ' + VOICE.no_mic;
+        setTimeout(() => { this.docStatus = ''; }, 6000);
+      }
+    },
+
+    async _voiceStop() {
+      this.voiceBusy = true;
+      this.docStatus = '⏳ ' + VOICE.transcribing;
+      try {
+        const wav = await this._finishRecording();
+        if (!wav || wav.size < 2000) { this.docStatus = '⚠️ ' + VOICE.no_speech; this.voiceBusy = false; return; }
+        const fd = new FormData();
+        fd.append('_csrf', TUTOR_CSRF);
+        fd.append('file', wav, 'voice.wav');
+        const r = await fetch('/api/tutor/voice-transcribe', {
+          method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!(r.ok && d.ok && d.text)) { this.docStatus = '⚠️ ' + (d.msg || VOICE.no_speech); this.voiceBusy = false; return; }
+        this.docStatus = '';
+        this.newMsg = d.text;
+        this._speakNext = true;
+        this.voiceBusy = false;
+        await this.send();
+        if (this._speakNext) {
+          this._speakNext = false;
+          this.speak(this.messages[this.messages.length - 1].content);
+        }
+      } catch (e) {
+        this.docStatus = '⚠️ ' + VOICE.no_speech;
+        this.voiceBusy = false;
+      }
+    },
+
+    speak(text) {
+      if (!text || !('speechSynthesis' in window)) return;
+      // Strip markdown + [citations] so the voice reads clean prose.
+      const clean = text.replace(/\[[^\]]*\]/g, ' ').replace(/[*#_`>|~]/g, '')
+        .replace(/\(https?:[^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+      if (!clean) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(clean);
+      const lang = (document.documentElement.lang || 'ru').slice(0, 2);
+      u.lang = lang === 'en' ? 'en-US' : (lang === 'uz' ? 'uz-UZ' : 'ru-RU');
+      window.speechSynthesis.speak(u);
+    },
+
+    async _startRecording() {
+      this._recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      this._recCtx = new Ctx();
+      this._recRate = this._recCtx.sampleRate;
+      this._recSource = this._recCtx.createMediaStreamSource(this._recStream);
+      this._recProc = this._recCtx.createScriptProcessor(4096, 1, 1);
+      this._recBuffers = [];
+      this._recProc.onaudioprocess = (e) => {
+        this._recBuffers.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+      };
+      this._recSource.connect(this._recProc);
+      this._recProc.connect(this._recCtx.destination);
+    },
+
+    async _finishRecording() {
+      try { this._recProc.disconnect(); this._recSource.disconnect(); } catch (e) {}
+      if (this._recStream) this._recStream.getTracks().forEach(t => t.stop());
+      let rate = this._recRate || 44100;
+      const total = (this._recBuffers || []).reduce((a, b) => a + b.length, 0);
+      const pcm = new Float32Array(total);
+      let off = 0;
+      (this._recBuffers || []).forEach(b => { pcm.set(b, off); off += b.length; });
+      try { await this._recCtx.close(); } catch (e) {}
+      this._recBuffers = [];
+      return this._encodeWav(pcm, rate);
+    },
+
+    _encodeWav(samples, rate) {
+      // Downsample to 16 kHz mono 16-bit PCM WAV (a format Gemini accepts).
+      const target = 16000;
+      let data = samples;
+      if (rate > target) {
+        const ratio = rate / target;
+        const nlen = Math.floor(samples.length / ratio);
+        data = new Float32Array(nlen);
+        for (let i = 0; i < nlen; i++) data[i] = samples[Math.floor(i * ratio)] || 0;
+        rate = target;
+      }
+      const buf = new ArrayBuffer(44 + data.length * 2);
+      const view = new DataView(buf);
+      const ws = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+      ws(0, 'RIFF'); view.setUint32(4, 36 + data.length * 2, true); ws(8, 'WAVE');
+      ws(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true); view.setUint32(24, rate, true);
+      view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true); ws(36, 'data'); view.setUint32(40, data.length * 2, true);
+      let o = 44;
+      for (let i = 0; i < data.length; i++) {
+        const s = Math.max(-1, Math.min(1, data[i]));
+        view.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true); o += 2;
+      }
+      return new Blob([view], { type: 'audio/wav' });
     },
 
     async showDocChunk(s) {
